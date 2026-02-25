@@ -3,10 +3,18 @@
   "private": true,
   "workspaces": {
     "packages": ["packages/*", "apps/*"],
-    "catalog": {},
+    "catalog": {
+      "@types/node": "25.3.0"
+    },
     "catalogs": {
       "cloudflare": {
         "wrangler": "4.68.1"
+      },
+      "react": {
+        "@types/react": "19.2.14",
+        "@types/react-dom": "19.2.3",
+        "react": "19.2.4",
+        "react-dom": "19.2.3"
       }
     }
   },
