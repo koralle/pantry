@@ -1,0 +1,17 @@
+{
+  "name": "@pantry/monorepo",
+  "private": true,
+  "workspaces": {
+    "packages": ["packages/*", "apps/*"],
+    "catalog": {},
+    "catalogs": {
+      "cloudflare": {
+        "wrangler": "4.68.1"
+      }
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "lefthook": "2.1.1"
+  }
+}
