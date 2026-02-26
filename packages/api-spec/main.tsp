@@ -29,6 +29,20 @@ enum TagFilterMode {
   or: "or",
 }
 
+enum ErrorCode {
+  INVALID_INPUT: "INVALID_INPUT",
+  UNAUTHORIZED: "UNAUTHORIZED",
+  NOT_FOUND: "NOT_FOUND",
+  URL_CONFLICT: "URL_CONFLICT",
+  INVALID_CURSOR: "INVALID_CURSOR",
+  CURSOR_MISMATCH: "CURSOR_MISMATCH",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
+}
+
+@format("uuid")
+@pattern("^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
+scalar BookmarkId extends string;
+
 @minLength(1)
 @maxLength(32)
 scalar TagInput extends string;
@@ -45,8 +59,8 @@ scalar BookmarkTitle extends string;
 @maxLength(4000)
 scalar BookmarkNote extends string;
 
-model ErrorBody {
-  code: string;
+model ErrorBody<Code extends ErrorCode = ErrorCode> {
+  code: Code;
   message: string;
   details?: string[];
 }
@@ -54,29 +68,41 @@ model ErrorBody {
 @error
 model UnauthorizedError {
   @statusCode statusCode: 401;
-  error: ErrorBody;
+  error: ErrorBody<ErrorCode.UNAUTHORIZED>;
 }
 
 @error
 model BadRequestError {
   @statusCode statusCode: 400;
-  error: ErrorBody;
+  error: ErrorBody<ErrorCode.INVALID_INPUT>;
 }
 
 @error
 model NotFoundError {
   @statusCode statusCode: 404;
-  error: ErrorBody;
+  error: ErrorBody<ErrorCode.NOT_FOUND>;
 }
 
 @error
 model ConflictError {
   @statusCode statusCode: 409;
-  error: ErrorBody;
+  error: ErrorBody<ErrorCode.URL_CONFLICT>;
+}
+
+@error
+model InvalidCursorError {
+  @statusCode statusCode: 400;
+  error: ErrorBody<ErrorCode.INVALID_CURSOR>;
+}
+
+@error
+model CursorMismatchError {
+  @statusCode statusCode: 400;
+  error: ErrorBody<ErrorCode.CURSOR_MISMATCH>;
 }
 
 model BookmarkSummary {
-  id: string;
+  id: BookmarkId;
   url: BookmarkUrl;
   title: BookmarkTitle;
   note?: BookmarkNote;
@@ -89,17 +115,20 @@ model BookmarkDetail extends BookmarkSummary {}
 
 model ListBookmarksQuery {
   @query q?: string;
+  // Repeat query key form only: tags=a&tags=b
   @query tags?: string[];
-  @query tagMode?: TagFilterMode;
-  @query sort?: BookmarkSort;
-  @query limit?: int32;
+  @query tagMode?: TagFilterMode = TagFilterMode.and;
+  @query sort?: BookmarkSort = BookmarkSort.newest;
+  @minValue(1)
+  @maxValue(100)
+  @query limit?: int32 = 20;
   @query cursor?: string;
 }
 
 model ListBookmarksOk {
   @statusCode statusCode: 200;
   items: BookmarkSummary[];
-  nextCursor?: string;
+  nextCursor?: string | null;
 }
 
 model GetBookmarkOk {
@@ -137,8 +166,12 @@ model UpdateBookmarkOk {
 }
 
 model SuggestTagsQuery {
+  // Server trims q; empty after trim is INVALID_INPUT
+  @minLength(1)
   @query q: string;
-  @query limit?: int32;
+  @minValue(1)
+  @maxValue(20)
+  @query limit?: int32 = 10;
 }
 
 model TagSuggestion {
@@ -156,7 +189,9 @@ namespace V1 {
   @route("/bookmarks")
   interface BookmarksApi {
     @get
-    op list(...ListBookmarksQuery): ListBookmarksOk | UnauthorizedError | BadRequestError;
+    op list(
+      ...ListBookmarksQuery,
+    ): ListBookmarksOk | UnauthorizedError | BadRequestError | InvalidCursorError | CursorMismatchError;
 
     @post
     op create(
@@ -165,18 +200,18 @@ namespace V1 {
 
     @get
     @route("/{bookmarkId}")
-    op get(@path bookmarkId: string): GetBookmarkOk | UnauthorizedError | NotFoundError;
+    op get(@path bookmarkId: BookmarkId): GetBookmarkOk | UnauthorizedError | NotFoundError;
 
     @patch(#{ implicitOptionality: false })
     @route("/{bookmarkId}")
     op update(
-      @path bookmarkId: string,
+      @path bookmarkId: BookmarkId,
       @body body: UpdateBookmarkRequest,
     ): UpdateBookmarkOk | UnauthorizedError | BadRequestError | NotFoundError | ConflictError;
 
     @delete
     @route("/{bookmarkId}")
-    op delete(@path bookmarkId: string): NoContentResponse | UnauthorizedError | NotFoundError;
+    op delete(@path bookmarkId: BookmarkId): NoContentResponse | UnauthorizedError | NotFoundError;
   }
 
   @route("/tags")
