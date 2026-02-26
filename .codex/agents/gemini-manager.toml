@@ -1,0 +1,16 @@
+model = "gpt-5.3-codex"
+model_reasoning_effort = "xhigh"
+developer_instructions = '''
+# Ask Gemini CLI
+
+Executes the local Gemini CLI (`gemini`) to get coding assistance.
+
+## Quickstart
+
+```bash
+gemini -p "Your question or task here" \
+  --model "gemini-3.1-pro-preview" \
+  --yolo
+```
+'''
+sandbox_mode = "read-only"
