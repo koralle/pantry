@@ -70,6 +70,7 @@
 - `GET /v1/bookmarks`:
   - `q` は `title/url/note` を検索
   - `tags` クエリ形式は `tags=a&tags=b` の繰り返しのみを受け付ける
+  - `tags=a,b` のCSV形式は受け付けず `400 INVALID_INPUT`
   - `tagMode=and|or` でタグ条件を切替（default: `and`）
 - `GET /v1/tags/suggest`:
   - `q` は必須。サーバーで `trim` 後、空文字は `400 INVALID_INPUT`
@@ -89,9 +90,10 @@
   - `newest`: `created_at DESC, id DESC`
   - `updated`: `updated_at DESC, id DESC`
 - `nextCursor`:
+  - レスポンスでは常に `nextCursor` キーを返す
   - opaque文字列（クライアントは中身を解釈しない）
   - 内部情報: `v`, `sort`, `filterHash`, `lastKey`, `lastId`
-  - 終端時は `nextCursor: null`
+  - 非終端時は `nextCursor: <opaque string>`、終端時は `nextCursor: null`
 - 異常cursor:
   - 破損/改ざんは `400` + `INVALID_CURSOR`
   - 条件不一致（sort/filter変更）は `400` + `CURSOR_MISMATCH`

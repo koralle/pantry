@@ -41,6 +41,8 @@
 - `TEST-CON-009`: `createdAt` / `updatedAt` が `utcDateTime` として契約化されている
 - `TEST-CON-010`: `tagMode` の default が `and` として契約化されている
 - `TEST-CON-011`: `GET /v1/tags/suggest` の `limit` 制約（default=10, min=1, max=20）が契約に含まれる
+- `TEST-CON-012`: `GET /v1/bookmarks` の `tags` クエリが繰り返し形式（`tags=a&tags=b`。OpenAPI上は `explode=true` の明示またはデフォルト適用）として契約化されている
+- `TEST-CON-013`: `ListBookmarksOk.nextCursor` が「必須キー + nullable（`string | null`）」として契約化されている
 
 ### 4.2 Unit
 
@@ -85,6 +87,10 @@
 - `TEST-INT-026`: タグ補完結果が `prefix一致 -> count desc -> name asc` の順で返る
 - `TEST-INT-027`: `GET /v1/tags/suggest` で `q` がtrim後空文字なら `400 INVALID_INPUT` になる
 - `TEST-INT-028`: 想定外例外時に共通ハンドラで `500 INTERNAL_ERROR` を返し、スタックトレースを含まない
+- `TEST-INT-029`: `GET /v1/bookmarks?tags=a,b` のCSV形式は `400 INVALID_INPUT` になる
+- `TEST-INT-030`: `sort=newest` で同一 `created_at` のレコードが `id desc` で安定ソートされ、cursorページングで重複・欠落が発生しない
+- `TEST-INT-031`: `sort=updated` で同一 `updated_at` のレコードが `id desc` で安定ソートされ、cursorページングで重複・欠落が発生しない
+- `TEST-INT-032`: 一覧APIレスポンスで `nextCursor` キーが常に存在し、非終端では `string`、終端では `null` になる
 
 ### 4.4 E2E
 
@@ -113,13 +119,13 @@
 9. `REQ-SORT-001`: 並び順（新着順/更新順）切替が正しく動作する。
 10. `REQ-BOOK-003`: 同一ユーザー内URL重複時は `409 Conflict` を返す。
 11. `REQ-BOOK-004`: `PATCH note: null` でメモ削除（NULL化）ができる。
-12. `REQ-PAGE-001`: cursorページング（default/max/終端null）が仕様どおり動作する。
+12. `REQ-PAGE-001`: cursorページング（default/max/終端null）で `nextCursor` キーを常に返し、同一時刻タイ時の `id desc` 安定順序が仕様どおり動作する。
 13. `REQ-URL-001`: URL正規化ルールに基づいて重複判定される。
 14. `REQ-FETCH-001`: タイトル取得ポリシー（timeout/redirect/size/SSRF）を満たす。
 15. `REQ-ERR-001`: `error.code` が標準列挙に従って返る。
 16. `REQ-ID-001`: エンティティIDが UUID v7 である。
 17. `REQ-TIME-001`: `created_at` / `updated_at` が UTC で保存・返却される。
-18. `REQ-QUERY-001`: `tags` クエリは `tags=a&tags=b` 形式で受け付ける。
+18. `REQ-QUERY-001`: `tags` クエリは `tags=a&tags=b` 形式のみ受け付け、`tags=a,b` は拒否する。
 19. `REQ-BOOK-005`: `DELETE` がソフトデリートとして機能する。
 20. `REQ-TIME-002`: UIでの日時表示が `Asia/Tokyo` である。
 21. `REQ-TAG-004`: タグ補完が `q/limit/並び順` 仕様どおり動作する。
@@ -135,6 +141,7 @@
   - タグ単一一致
   - タグ複数一致（AND検証用）
 - 日時差分データを用意し、並び順を検証する。
+- 同一 `created_at` / `updated_at` のデータを用意し、`id desc` の安定ソートを検証する。
 - 競合検証用に同一URLデータを準備（`trim`差異を含む）
 
 ## 7. 回帰観点（重点）
@@ -178,7 +185,7 @@
 | `REQ-BOOK-004` | `PATCH note: null` で削除 | `TEST-CON-004`, `TEST-INT-004`, `TEST-E2E-006` |
 | `REQ-BOOK-005` | ソフトデリート | `TEST-INT-023`, `TEST-E2E-010` |
 | `REQ-ID-001` | UUID v7 ID | `TEST-CON-008`, `TEST-INT-018` |
-| `REQ-QUERY-001` | `tags` 繰り返しクエリ形式 | `TEST-INT-020` |
+| `REQ-QUERY-001` | `tags` 繰り返しクエリ形式 | `TEST-CON-012`, `TEST-INT-020`, `TEST-INT-029` |
 | `REQ-TAG-001` | タグ正規化（trim + lowercase） | `TEST-UNIT-001`, `TEST-INT-001` |
 | `REQ-TAG-002` | タグ制約（20件/32文字/空文字/重複） | `TEST-UNIT-002`, `TEST-UNIT-003`, `TEST-UNIT-004`, `TEST-UNIT-005` |
 | `REQ-TAG-003` | タグ AND / OR（default and） | `TEST-CON-010`, `TEST-INT-006`, `TEST-INT-007`, `TEST-INT-021`, `TEST-E2E-004` |
@@ -190,7 +197,7 @@
 | `REQ-SCREEN-001` | 必須画面提供 | `TEST-E2E-001`, `TEST-E2E-002`, `TEST-E2E-007` |
 | `REQ-DATA-001` | D1永続化・2環境運用 | `TEST-INT-001`, `TEST-INT-002` |
 | `REQ-OPS-001` | TypeSpec SSOT・OpenAPI生成 | `TEST-CON-001` |
-| `REQ-PAGE-001` | cursorページング仕様 | `TEST-CON-005`, `TEST-INT-012`, `TEST-INT-014`, `TEST-E2E-008` |
+| `REQ-PAGE-001` | cursorページング仕様 | `TEST-CON-005`, `TEST-CON-013`, `TEST-INT-012`, `TEST-INT-014`, `TEST-INT-030`, `TEST-INT-031`, `TEST-INT-032`, `TEST-E2E-008` |
 | `REQ-URL-001` | URL正規化重複判定 | `TEST-UNIT-008`, `TEST-UNIT-009`, `TEST-UNIT-010`, `TEST-INT-003` |
 | `REQ-FETCH-001` | タイトル取得ポリシー | `TEST-INT-017` |
 | `REQ-ERR-001` | `error.code` 標準化 | `TEST-CON-006`, `TEST-INT-013`, `TEST-INT-015`, `TEST-INT-016` |

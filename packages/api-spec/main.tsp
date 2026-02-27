@@ -116,7 +116,7 @@ model BookmarkDetail extends BookmarkSummary {}
 model ListBookmarksQuery {
   @query q?: string;
   // Repeat query key form only: tags=a&tags=b
-  @query tags?: string[];
+  @query(#{ name: "tags", explode: true }) tags?: string[];
   @query tagMode?: TagFilterMode = TagFilterMode.and;
   @query sort?: BookmarkSort = BookmarkSort.newest;
   @minValue(1)
@@ -128,7 +128,7 @@ model ListBookmarksQuery {
 model ListBookmarksOk {
   @statusCode statusCode: 200;
   items: BookmarkSummary[];
-  nextCursor?: string | null;
+  nextCursor: string | null;
 }
 
 model GetBookmarkOk {
