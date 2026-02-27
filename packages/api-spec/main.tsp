@@ -116,7 +116,9 @@ model BookmarkDetail extends BookmarkSummary {}
 model ListBookmarksQuery {
   @query q?: string;
   // Repeat query key form only: tags=a&tags=b
-  @query(#{ name: "tags", explode: true }) tags?: string[];
+  // Server additionally trims values; empty after trim is INVALID_INPUT.
+  @maxItems(20)
+  @query(#{ name: "tags", explode: true }) tags?: TagInput[];
   @query tagMode?: TagFilterMode = TagFilterMode.and;
   @query sort?: BookmarkSort = BookmarkSort.newest;
   @minValue(1)

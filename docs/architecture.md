@@ -70,6 +70,7 @@
 - `GET /v1/bookmarks`:
   - `q` は `title/url/note` を検索
   - `tags` クエリ形式は `tags=a&tags=b` の繰り返しのみを受け付ける
+  - `tags` は最大 `20` 件、各要素は `trim` 後 `1..32` 文字（空文字は `400 INVALID_INPUT`）
   - `tags=a,b` のCSV形式は受け付けず `400 INVALID_INPUT`
   - `tagMode=and|or` でタグ条件を切替（default: `and`）
 - `GET /v1/tags/suggest`:
@@ -264,7 +265,7 @@
 - `REQ-BOOK-004`: `PATCH note: null` でメモ削除（NULL化）できる
 - `REQ-BOOK-005`: `DELETE` はソフトデリートとして扱い、`deleted_at` を記録する
 - `REQ-ID-001`: すべてのエンティティIDは UUID v7 を利用する
-- `REQ-QUERY-001`: `tags` クエリは `tags=a&tags=b` の繰り返し形式のみ受け付ける
+- `REQ-QUERY-001`: `tags` クエリは `tags=a&tags=b` の繰り返し形式のみ受け付け、最大20件・各要素1..32文字（trim後空文字拒否）を満たす
 - `REQ-TAG-001`: タグは `trim + 小文字化` で正規化する
 - `REQ-TAG-002`: タグ制約（最大20件、1タグ最大32文字、空文字拒否、重複除去）を満たす
 - `REQ-TAG-003`: タグ絞り込み `AND / OR` に対応し、未指定時の `tagMode` は `and`

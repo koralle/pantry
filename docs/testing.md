@@ -43,6 +43,7 @@
 - `TEST-CON-011`: `GET /v1/tags/suggest` の `limit` 制約（default=10, min=1, max=20）が契約に含まれる
 - `TEST-CON-012`: `GET /v1/bookmarks` の `tags` クエリが繰り返し形式（`tags=a&tags=b`。OpenAPI上は `explode=true` の明示またはデフォルト適用）として契約化されている
 - `TEST-CON-013`: `ListBookmarksOk.nextCursor` が「必須キー + nullable（`string | null`）」として契約化されている
+- `TEST-CON-014`: `GET /v1/bookmarks` の `tags` クエリに制約（`maxItems=20` / item `minLength=1,maxLength=32`）が契約化されている
 
 ### 4.2 Unit
 
@@ -91,6 +92,9 @@
 - `TEST-INT-030`: `sort=newest` で同一 `created_at` のレコードが `id desc` で安定ソートされ、cursorページングで重複・欠落が発生しない
 - `TEST-INT-031`: `sort=updated` で同一 `updated_at` のレコードが `id desc` で安定ソートされ、cursorページングで重複・欠落が発生しない
 - `TEST-INT-032`: 一覧APIレスポンスで `nextCursor` キーが常に存在し、非終端では `string`、終端では `null` になる
+- `TEST-INT-033`: `GET /v1/bookmarks` で `tags` が21件以上の場合は `400 INVALID_INPUT` になる
+- `TEST-INT-034`: `GET /v1/bookmarks` で `tags` に33文字以上の要素が含まれる場合は `400 INVALID_INPUT` になる
+- `TEST-INT-035`: `GET /v1/bookmarks` で `tags` に trim後空文字の要素が含まれる場合は `400 INVALID_INPUT` になる
 
 ### 4.4 E2E
 
@@ -125,7 +129,7 @@
 15. `REQ-ERR-001`: `error.code` が標準列挙に従って返る。
 16. `REQ-ID-001`: エンティティIDが UUID v7 である。
 17. `REQ-TIME-001`: `created_at` / `updated_at` が UTC で保存・返却される。
-18. `REQ-QUERY-001`: `tags` クエリは `tags=a&tags=b` 形式のみ受け付け、`tags=a,b` は拒否する。
+18. `REQ-QUERY-001`: `tags` クエリは `tags=a&tags=b` 形式のみ受け付け、`max20件`・`各要素1..32文字` を満たし、`tags=a,b` と trim後空文字は拒否する。
 19. `REQ-BOOK-005`: `DELETE` がソフトデリートとして機能する。
 20. `REQ-TIME-002`: UIでの日時表示が `Asia/Tokyo` である。
 21. `REQ-TAG-004`: タグ補完が `q/limit/並び順` 仕様どおり動作する。
@@ -185,7 +189,7 @@
 | `REQ-BOOK-004` | `PATCH note: null` で削除 | `TEST-CON-004`, `TEST-INT-004`, `TEST-E2E-006` |
 | `REQ-BOOK-005` | ソフトデリート | `TEST-INT-023`, `TEST-E2E-010` |
 | `REQ-ID-001` | UUID v7 ID | `TEST-CON-008`, `TEST-INT-018` |
-| `REQ-QUERY-001` | `tags` 繰り返しクエリ形式 | `TEST-CON-012`, `TEST-INT-020`, `TEST-INT-029` |
+| `REQ-QUERY-001` | `tags` 繰り返しクエリ形式 | `TEST-CON-012`, `TEST-CON-014`, `TEST-INT-020`, `TEST-INT-029`, `TEST-INT-033`, `TEST-INT-034`, `TEST-INT-035` |
 | `REQ-TAG-001` | タグ正規化（trim + lowercase） | `TEST-UNIT-001`, `TEST-INT-001` |
 | `REQ-TAG-002` | タグ制約（20件/32文字/空文字/重複） | `TEST-UNIT-002`, `TEST-UNIT-003`, `TEST-UNIT-004`, `TEST-UNIT-005` |
 | `REQ-TAG-003` | タグ AND / OR（default and） | `TEST-CON-010`, `TEST-INT-006`, `TEST-INT-007`, `TEST-INT-021`, `TEST-E2E-004` |
