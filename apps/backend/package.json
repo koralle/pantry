@@ -12,6 +12,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "25.3.3",
+    "oxfmt": "catalog:formatter",
 		"wrangler": "4.69.0"
 	}
 }
