@@ -1,0 +1,21 @@
+{
+  "name": "api-spec",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsp compile main.tsp",
+    "dev:watch": "tsp compile main.tsp --watch",
+    "format:check": "tsp format main.tsp --check",
+    "format:fix": "tsp format main.tsp",
+    "format": "bun run format:fix"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@typespec/compiler": "catalog:typespec",
+    "@typespec/http": "catalog:typespec",
+    "@typespec/rest": "catalog:typespec",
+    "@typespec/openapi": "catalog:typespec",
+    "@typespec/openapi3": "catalog:typespec"
+  }
+}

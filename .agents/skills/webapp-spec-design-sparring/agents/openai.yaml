@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web App Spec Sparring"
+  short_description: "Partner on web app specs and design tradeoffs"
+  default_prompt: "Use $webapp-spec-design-sparring to pressure-test my web app requirements and produce a concrete spec draft."
