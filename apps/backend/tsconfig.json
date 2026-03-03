@@ -1,13 +1,12 @@
 {
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "lib": ["ESNext"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "types": ["./worker-configuration.d.ts", "node"]
+    "target": "es2025",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["es2025"],
+    "types": ["./worker-configuration.d.ts", "node"],
+
+    "noEmit": true
   }
 }

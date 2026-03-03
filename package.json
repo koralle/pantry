@@ -25,6 +25,13 @@
       },
       "formatter": {
         "oxfmt": "0.36.0"
+      },
+      "typescript": {
+        "@tsconfig/strictest": "2.0.8",
+        "@typescript/native-preview": "7.0.0-dev.20260302.1"
+      },
+      "node": {
+        "@types/node": "25.3.3"
       }
     }
   },
