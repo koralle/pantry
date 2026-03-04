@@ -4,7 +4,7 @@
  * Pantry API
  * OpenAPI spec version: 0.0.0
  */
-import { z as zod } from "zod";
+import zod from "zod";
 
 export const bookmarksApiListQueryTagsItemMax = 32;
 
