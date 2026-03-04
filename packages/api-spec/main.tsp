@@ -189,6 +189,7 @@ model SuggestTagsOk {
 @route("/v1")
 namespace V1 {
   @route("/bookmarks")
+  @tag("bookmarks")
   interface BookmarksApi {
     @get
     op list(
@@ -217,6 +218,7 @@ namespace V1 {
   }
 
   @route("/tags")
+  @tag("tags")
   interface TagsApi {
     @get
     @route("/suggest")

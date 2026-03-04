@@ -32,6 +32,16 @@
       },
       "node": {
         "@types/node": "25.3.3"
+      },
+      "orval": {
+        "orval": "8.5.1"
+      },
+      "schema": {
+        "zod": "4.3.6"
+      },
+      "testing": {
+        "@vitest/ui": "4.0.18",
+        "vitest": "4.0.18"
       }
     }
   },

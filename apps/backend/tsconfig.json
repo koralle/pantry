@@ -1,12 +1,13 @@
 {
   "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "target": "es2025",
+    "target": "es2024",
     "module": "preserve",
     "moduleResolution": "bundler",
-    "lib": ["es2025"],
-    "types": ["./worker-configuration.d.ts", "node"],
+    "lib": ["es2024"],
+    "types": ["./worker-configuration.d.ts", "node", "vitest/globals"],
 
     "noEmit": true
-  }
+  },
+  "include": ["src", "orval.config.ts", "worker-configuration.d.ts", "vitest.config.ts"]
 }

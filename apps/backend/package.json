@@ -8,16 +8,24 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "typecheck": "tsgo"
+    "typecheck": "tsgo",
+    "gen": "orval --config orval.config.ts",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "hono": "4.12.3"
+    "@hono/zod-validator": "0.7.6",
+    "hono": "4.12.3",
+    "zod": "catalog:schema"
   },
   "devDependencies": {
     "@tsconfig/strictest": "catalog:typescript",
     "@types/node": "catalog:node",
     "@typescript/native-preview": "catalog:typescript",
+    "@vitest/ui": "catalog:testing",
+    "orval": "catalog:orval",
     "oxfmt": "catalog:formatter",
+    "vitest": "catalog:testing",
     "wrangler": "catalog:cloudflare"
   }
 }
