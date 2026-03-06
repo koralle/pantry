@@ -6,6 +6,7 @@ export const withDependencies = (
 ): MiddlewareHandler<AppEnv> => {
   return async (c, next) => {
     c.set("bookmarksService", dependencies.bookmarksService);
+    c.set("tagsService", dependencies.tagsService);
     await next();
   };
 };

@@ -2,16 +2,23 @@ import { createFactory } from "hono/factory";
 import { zValidator } from "../generated/validator";
 import { BookmarksApiCreateContext } from "../generated/bookmarks/bookmarks.context";
 import { BookmarksApiCreateBody } from "../generated/bookmarks/bookmarks.zod";
-import { getAppDependency } from "../dependencies";
+import { AppEnv, getAppDependency } from "../dependencies";
+import {
+  toCreateBookmarkApiResponse,
+  toCreateBookmarkServiceInput,
+} from "./bookmarks.mapper";
 
 const factory = createFactory();
+
 export const bookmarksApiCreateHandlers = factory.createHandlers(
   zValidator("json", BookmarksApiCreateBody),
-  async (c: BookmarksApiCreateContext) => {
+  async (c: BookmarksApiCreateContext<AppEnv>) => {
     const bookmarksService = getAppDependency(c, "bookmarksService");
     const body = c.req.valid("json");
-    const result = await bookmarksService.create(body);
+    const serviceInput = toCreateBookmarkServiceInput(body);
+    const result = await bookmarksService.create(serviceInput);
+    const response = toCreateBookmarkApiResponse(result);
 
-    return c.json(result, 201);
+    return c.json(response, 201);
   },
 );

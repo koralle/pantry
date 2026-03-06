@@ -1,8 +1,10 @@
 import type { Context } from "hono";
 import type { BookmarksService } from "./services/bookmarks";
+import type { TagsService } from "./services/tags";
 
 export interface AppDependencies {
   bookmarksService: BookmarksService;
+  tagsService: TagsService;
 }
 
 export type AppEnv = {

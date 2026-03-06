@@ -1,13 +1,15 @@
 import { createApp } from "../../createApp";
+import { HTTPException } from "hono/http-exception";
 import type { BookmarksService } from "../../services/bookmarks";
 import {
   TEST_BOOKMARK_ID,
   createMockBookmarkDetail,
   createMockDependencies,
+  expectSpecErrorResponse,
 } from "../helpers/mockDependencies";
 
 describe("PATCH /v1/bookmarks/:bookmarkId", () => {
-  test("injectしたserviceの結果を返す", async () => {
+  test("[TEST-INT-004] note:nullをserviceに渡して更新できる", async () => {
     const result = {
       bookmark: createMockBookmarkDetail(),
     };
@@ -16,7 +18,7 @@ describe("PATCH /v1/bookmarks/:bookmarkId", () => {
       .mockResolvedValue(result);
     const app = createApp(createMockDependencies({ update: updateMock }));
     const body = {
-      title: "Updated title",
+      note: null,
     };
 
     const res = await app.request(`/v1/bookmarks/${TEST_BOOKMARK_ID}`, {
@@ -32,12 +34,14 @@ describe("PATCH /v1/bookmarks/:bookmarkId", () => {
     expect(updateMock).toHaveBeenCalledTimes(1);
     expect(updateMock).toHaveBeenCalledWith({
       bookmarkId: TEST_BOOKMARK_ID,
-      ...body,
+      note: null,
     });
   });
 
-  test("不正なbodyは400でserviceが呼ばれない", async () => {
-    const updateMock = vi.fn<BookmarksService["update"]>();
+  test("[TEST-INT-004] 不正なbodyは400 INVALID_INPUTでserviceが呼ばれない", async () => {
+    const updateMock = vi
+      .fn<BookmarksService["update"]>()
+      .mockResolvedValue({ bookmark: createMockBookmarkDetail() });
     const app = createApp(createMockDependencies({ update: updateMock }));
 
     const res = await app.request(`/v1/bookmarks/${TEST_BOOKMARK_ID}`, {
@@ -50,7 +54,33 @@ describe("PATCH /v1/bookmarks/:bookmarkId", () => {
       }),
     });
 
-    expect(res.status).toBe(400);
+    await expectSpecErrorResponse(res, 400, "INVALID_INPUT");
     expect(updateMock).not.toHaveBeenCalled();
+  });
+
+  test("[TEST-INT-003] URL重複更新時は409 URL_CONFLICTを返す", async () => {
+    const updateMock = vi.fn<BookmarksService["update"]>().mockImplementation(() => {
+      throw new HTTPException(409, {
+        message: "URL_CONFLICT",
+      });
+    });
+    const app = createApp(createMockDependencies({ update: updateMock }));
+
+    const res = await app.request(`/v1/bookmarks/${TEST_BOOKMARK_ID}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: "https://example.com",
+      }),
+    });
+
+    await expectSpecErrorResponse(res, 409, "URL_CONFLICT");
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    expect(updateMock).toHaveBeenCalledWith({
+      bookmarkId: TEST_BOOKMARK_ID,
+      url: "https://example.com",
+    });
   });
 });

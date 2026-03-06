@@ -2,15 +2,17 @@ import { createFactory } from "hono/factory";
 import { zValidator } from "../generated/validator";
 import { BookmarksApiDeleteContext } from "../generated/bookmarks/bookmarks.context";
 import { BookmarksApiDeleteParams } from "../generated/bookmarks/bookmarks.zod";
-import { getAppDependency } from "../dependencies";
+import { AppEnv, getAppDependency } from "../dependencies";
+import { toDeleteBookmarkServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();
 export const bookmarksApiDeleteHandlers = factory.createHandlers(
   zValidator("param", BookmarksApiDeleteParams),
-  async (c: BookmarksApiDeleteContext) => {
+  async (c: BookmarksApiDeleteContext<AppEnv>) => {
     const bookmarksService = getAppDependency(c, "bookmarksService");
     const params = c.req.valid("param");
-    await bookmarksService.delete(params);
+    const serviceInput = toDeleteBookmarkServiceInput(params);
+    await bookmarksService.delete(serviceInput);
 
     return c.body(null, 204);
   },

@@ -1,33 +1,25 @@
-import type { z } from "zod";
-import {
-  BookmarksApiCreateBody,
-  BookmarksApiDeleteParams,
-  BookmarksApiGetParams,
-  BookmarksApiListQueryParams,
-  BookmarksApiListResponse,
-  BookmarksApiUpdateBody,
-  BookmarksApiUpdateParams,
-} from "../generated/bookmarks/bookmarks.zod";
-import { TagsApiSuggestQueryParams } from "../generated/tags/tags.zod";
 import type {
-  CreateBookmarkCreated,
-  GetBookmarkOk,
-  SuggestTagsOk,
-  UpdateBookmarkOk,
-} from "../generated/schemas";
+  BookmarkDetailDto,
+  CreateBookmarkInputDto,
+  CreateBookmarkOutputDto,
+  DeleteBookmarkInputDto,
+  GetBookmarkInputDto,
+  GetBookmarkOutputDto,
+  ListBookmarksInputDto,
+  ListBookmarksOutputDto,
+  UpdateBookmarkInputDto,
+  UpdateBookmarkOutputDto,
+} from "./bookmarks.dto";
 
-export type ListBookmarksInput = z.output<typeof BookmarksApiListQueryParams>;
-export type ListBookmarksOutput = z.output<typeof BookmarksApiListResponse>;
-export type CreateBookmarkInput = z.output<typeof BookmarksApiCreateBody>;
-export type CreateBookmarkOutput = CreateBookmarkCreated;
-export type GetBookmarkInput = z.output<typeof BookmarksApiGetParams>;
-export type GetBookmarkOutput = GetBookmarkOk;
-export type UpdateBookmarkInput = z.output<typeof BookmarksApiUpdateParams> &
-  z.output<typeof BookmarksApiUpdateBody>;
-export type UpdateBookmarkOutput = UpdateBookmarkOk;
-export type DeleteBookmarkInput = z.output<typeof BookmarksApiDeleteParams>;
-export type SuggestTagsInput = z.output<typeof TagsApiSuggestQueryParams>;
-export type SuggestTagsOutput = SuggestTagsOk;
+export type ListBookmarksInput = ListBookmarksInputDto;
+export type ListBookmarksOutput = ListBookmarksOutputDto;
+export type CreateBookmarkInput = CreateBookmarkInputDto;
+export type CreateBookmarkOutput = CreateBookmarkOutputDto;
+export type GetBookmarkInput = GetBookmarkInputDto;
+export type GetBookmarkOutput = GetBookmarkOutputDto;
+export type UpdateBookmarkInput = UpdateBookmarkInputDto;
+export type UpdateBookmarkOutput = UpdateBookmarkOutputDto;
+export type DeleteBookmarkInput = DeleteBookmarkInputDto;
 
 export interface BookmarksService {
   list(input: ListBookmarksInput): Promise<ListBookmarksOutput>;
@@ -35,10 +27,9 @@ export interface BookmarksService {
   get(input: GetBookmarkInput): Promise<GetBookmarkOutput>;
   update(input: UpdateBookmarkInput): Promise<UpdateBookmarkOutput>;
   delete(input: DeleteBookmarkInput): Promise<void>;
-  suggestTags(input: SuggestTagsInput): Promise<SuggestTagsOutput>;
 }
 
-const mockBookmark: GetBookmarkOutput["bookmark"] = {
+const mockBookmark: BookmarkDetailDto = {
   id: "018f47a8-3f13-7cc0-8f2a-9ad0b7f6eaf1",
   url: "https://example.com",
   title: "Example",
@@ -70,9 +61,4 @@ export const createBookmarksService = (): BookmarksService => ({
     };
   },
   async delete() {},
-  async suggestTags() {
-    return {
-      items: [],
-    };
-  },
 });

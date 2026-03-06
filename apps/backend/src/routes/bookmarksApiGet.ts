@@ -5,17 +5,23 @@ import {
   BookmarksApiGetParams,
   BookmarksApiGetResponse,
 } from "../generated/bookmarks/bookmarks.zod";
-import { getAppDependency } from "../dependencies";
+import { AppEnv, getAppDependency } from "../dependencies";
+import {
+  toGetBookmarkApiResponse,
+  toGetBookmarkServiceInput,
+} from "./bookmarks.mapper";
 
 const factory = createFactory();
 export const bookmarksApiGetHandlers = factory.createHandlers(
   zValidator("param", BookmarksApiGetParams),
   zValidator("response", BookmarksApiGetResponse),
-  async (c: BookmarksApiGetContext) => {
+  async (c: BookmarksApiGetContext<AppEnv>) => {
     const bookmarksService = getAppDependency(c, "bookmarksService");
     const params = c.req.valid("param");
-    const result = await bookmarksService.get(params);
+    const serviceInput = toGetBookmarkServiceInput(params);
+    const result = await bookmarksService.get(serviceInput);
+    const response = toGetBookmarkApiResponse(result);
 
-    return c.json(result);
+    return c.json(response);
   },
 );

@@ -6,16 +6,16 @@ import {
   TagsApiSuggestResponse,
   tagsApiSuggestQueryLimitDefault,
 } from "../generated/tags/tags.zod";
-import { getAppDependency } from "../dependencies";
+import { AppEnv, getAppDependency } from "../dependencies";
 
 const factory = createFactory();
 export const tagsApiSuggestHandlers = factory.createHandlers(
   zValidator("query", TagsApiSuggestQueryParams),
   zValidator("response", TagsApiSuggestResponse),
-  async (c: TagsApiSuggestContext) => {
-    const bookmarksService = getAppDependency(c, "bookmarksService");
+  async (c: TagsApiSuggestContext<AppEnv>) => {
+    const tagsService = getAppDependency(c, "tagsService");
     const query = c.req.valid("query");
-    const result = await bookmarksService.suggestTags({
+    const result = await tagsService.suggestTags({
       ...query,
       limit: query.limit ?? tagsApiSuggestQueryLimitDefault,
     });

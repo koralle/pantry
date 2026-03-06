@@ -1,13 +1,15 @@
 import { createApp } from "../../createApp";
+import { HTTPException } from "hono/http-exception";
 import type { BookmarksService } from "../../services/bookmarks";
 import {
   TEST_BOOKMARK_ID,
   createMockBookmarkDetail,
   createMockDependencies,
+  expectSpecErrorResponse,
 } from "../helpers/mockDependencies";
 
 describe("GET /v1/bookmarks/:bookmarkId", () => {
-  test("injectしたserviceの結果を返す", async () => {
+  test("[TEST-INT-001] service結果を返す", async () => {
     const result = {
       bookmark: createMockBookmarkDetail(),
     };
@@ -24,13 +26,32 @@ describe("GET /v1/bookmarks/:bookmarkId", () => {
     });
   });
 
-  test("不正なbookmarkIdは400でserviceが呼ばれない", async () => {
-    const getMock = vi.fn<BookmarksService["get"]>();
+  test("[TEST-INT-001] 不正なbookmarkIdは400 INVALID_INPUTでserviceが呼ばれない", async () => {
+    const getMock = vi
+      .fn<BookmarksService["get"]>()
+      .mockResolvedValue({ bookmark: createMockBookmarkDetail() });
     const app = createApp(createMockDependencies({ get: getMock }));
 
     const res = await app.request("/v1/bookmarks/not-a-uuid");
 
-    expect(res.status).toBe(400);
+    await expectSpecErrorResponse(res, 400, "INVALID_INPUT");
     expect(getMock).not.toHaveBeenCalled();
+  });
+
+  test("[TEST-INT-001] ブックマーク未存在時は404 NOT_FOUNDを返す", async () => {
+    const getMock = vi.fn<BookmarksService["get"]>().mockImplementation(() => {
+      throw new HTTPException(404, {
+        message: "NOT_FOUND",
+      });
+    });
+    const app = createApp(createMockDependencies({ get: getMock }));
+
+    const res = await app.request(`/v1/bookmarks/${TEST_BOOKMARK_ID}`);
+
+    await expectSpecErrorResponse(res, 404, "NOT_FOUND");
+    expect(getMock).toHaveBeenCalledTimes(1);
+    expect(getMock).toHaveBeenCalledWith({
+      bookmarkId: TEST_BOOKMARK_ID,
+    });
   });
 });

@@ -6,21 +6,27 @@ import {
   BookmarksApiListResponse,
   bookmarksApiListQueryLimitDefault,
 } from "../generated/bookmarks/bookmarks.zod";
-import { getAppDependency } from "../dependencies";
+import { AppEnv, getAppDependency } from "../dependencies";
+import {
+  toListBookmarksApiResponse,
+  toListBookmarksServiceInput,
+} from "./bookmarks.mapper";
 
 const factory = createFactory();
 
 export const bookmarksApiListHandlers = factory.createHandlers(
   zValidator("query", BookmarksApiListQueryParams),
   zValidator("response", BookmarksApiListResponse),
-  async (c: BookmarksApiListContext) => {
+  async (c: BookmarksApiListContext<AppEnv>) => {
     const bookmarksService = getAppDependency(c, "bookmarksService");
     const query = c.req.valid("query");
-    const result = await bookmarksService.list({
-      ...query,
-      limit: query.limit ?? bookmarksApiListQueryLimitDefault,
-    });
+    const serviceInput = toListBookmarksServiceInput(
+      query,
+      bookmarksApiListQueryLimitDefault,
+    );
+    const result = await bookmarksService.list(serviceInput);
+    const response = toListBookmarksApiResponse(result);
 
-    return c.json(result);
+    return c.json(response);
   },
 );
