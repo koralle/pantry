@@ -1,13 +1,10 @@
 import { createApp } from "../../createApp";
 import { bookmarksApiListQueryLimitDefault } from "../../generated/bookmarks/bookmarks.zod";
 import type { BookmarksService } from "../../services/bookmarks";
-import {
-  createMockDependencies,
-  expectSpecErrorResponse,
-} from "../helpers/mockDependencies";
+import { createMockDependencies, expectSpecErrorResponse } from "../helpers/mockDependencies";
 
 describe("GET /v1/bookmarks", () => {
-  test("[TEST-INT-012] limit未指定時はdefault 20をserviceに渡す", async () => {
+  test("[TEST-INT-012] limit未指定のとき、GET /v1/bookmarks を呼ぶと、default 20 を service に渡して 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -28,7 +25,7 @@ describe("GET /v1/bookmarks", () => {
     });
   });
 
-  test("[TEST-INT-005] qをserviceに渡す", async () => {
+  test("[TEST-INT-005] q=example を指定したとき、GET /v1/bookmarks を呼ぶと、q を service に渡して 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -45,7 +42,7 @@ describe("GET /v1/bookmarks", () => {
     });
   });
 
-  test("[TEST-INT-006] tagMode=andをserviceに渡す", async () => {
+  test("[TEST-INT-006] tags=a&tags=b と tagMode=and を指定したとき、GET /v1/bookmarks を呼ぶと、tags と tagMode=and を service に渡して 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -63,7 +60,7 @@ describe("GET /v1/bookmarks", () => {
     });
   });
 
-  test("[TEST-INT-007] tagMode=orをserviceに渡す", async () => {
+  test("[TEST-INT-007] tags=a&tags=b と tagMode=or を指定したとき、GET /v1/bookmarks を呼ぶと、tags と tagMode=or を service に渡して 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -81,7 +78,7 @@ describe("GET /v1/bookmarks", () => {
     });
   });
 
-  test("[TEST-INT-020] tags=a&tags=b形式を受け付ける", async () => {
+  test("[TEST-INT-020] tags を繰り返し形式で指定したとき、GET /v1/bookmarks を呼ぶと、tags を配列として service に渡して 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -98,7 +95,7 @@ describe("GET /v1/bookmarks", () => {
     });
   });
 
-  test("[TEST-INT-021] tagMode未指定時はandとしてserviceに渡す", async () => {
+  test("[TEST-INT-021] tags を指定して tagMode を省略したとき、GET /v1/bookmarks を呼ぶと、tagMode=and を service に渡して 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -116,7 +113,7 @@ describe("GET /v1/bookmarks", () => {
     });
   });
 
-  test("[TEST-INT-013] limit>100は400 INVALID_INPUT", async () => {
+  test("[TEST-INT-013] limit=101 を指定したとき、GET /v1/bookmarks を呼ぶと、400 INVALID_INPUT を返して service を呼ばない", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -129,7 +126,7 @@ describe("GET /v1/bookmarks", () => {
     expect(listMock).not.toHaveBeenCalled();
   });
 
-  test("[TEST-INT-029] tags=a,bは400 INVALID_INPUT", async () => {
+  test("[TEST-INT-029] tags を CSV 形式で指定したとき、GET /v1/bookmarks を呼ぶと、400 INVALID_INPUT を返して service を呼ばない", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -142,7 +139,7 @@ describe("GET /v1/bookmarks", () => {
     expect(listMock).not.toHaveBeenCalled();
   });
 
-  test("[TEST-INT-033] tagsが21件以上は400 INVALID_INPUT", async () => {
+  test("[TEST-INT-033] tags を 21 件指定したとき、GET /v1/bookmarks を呼ぶと、400 INVALID_INPUT を返して service を呼ばない", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -159,7 +156,7 @@ describe("GET /v1/bookmarks", () => {
     expect(listMock).not.toHaveBeenCalled();
   });
 
-  test("[TEST-INT-034] tagsに33文字以上の要素がある場合は400 INVALID_INPUT", async () => {
+  test("[TEST-INT-034] 33 文字以上の tag を含めたとき、GET /v1/bookmarks を呼ぶと、400 INVALID_INPUT を返して service を呼ばない", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -173,7 +170,7 @@ describe("GET /v1/bookmarks", () => {
     expect(listMock).not.toHaveBeenCalled();
   });
 
-  test("[TEST-INT-035] tagsにtrim後空文字がある場合は400 INVALID_INPUT", async () => {
+  test("[TEST-INT-035] trim 後に空文字になる tag を含めたとき、GET /v1/bookmarks を呼ぶと、400 INVALID_INPUT を返して service を呼ばない", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -186,7 +183,7 @@ describe("GET /v1/bookmarks", () => {
     expect(listMock).not.toHaveBeenCalled();
   });
 
-  test("[TEST-INT-032] nextCursorキーを常に返す（終端はnull）", async () => {
+  test("[TEST-INT-032] service が nextCursor=null を返すとき、GET /v1/bookmarks を呼ぶと、レスポンスに nextCursor キーを含めて 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: null,
@@ -201,7 +198,7 @@ describe("GET /v1/bookmarks", () => {
     // expect(body.nextCursor).toBeNull();
   });
 
-  test("[TEST-INT-032] nextCursorキーを常に返す（非終端はstring）", async () => {
+  test("[TEST-INT-032] service が nextCursor に文字列を返すとき、GET /v1/bookmarks を呼ぶと、レスポンスに nextCursor キーを含めて 200 を返す", async () => {
     const listMock = vi.fn<BookmarksService["list"]>().mockResolvedValue({
       items: [],
       nextCursor: "opaque-cursor",
@@ -216,7 +213,7 @@ describe("GET /v1/bookmarks", () => {
     // expect(body.nextCursor).toBeTypeOf("string");
   });
 
-  test("[TEST-INT-028] 想定外例外時は500 INTERNAL_ERRORでスタックを返さない", async () => {
+  test("[TEST-INT-028] service が想定外例外を投げるとき、GET /v1/bookmarks を呼ぶと、500 INTERNAL_ERROR を返しスタックを含めない", async () => {
     const listMock = vi
       .fn<BookmarksService["list"]>()
       .mockRejectedValue(new Error("unexpected boom"));

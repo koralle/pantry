@@ -48,11 +48,7 @@ export const createMockDependencies = (
   };
 };
 
-export const expectSpecErrorResponse = async (
-  res: Response,
-  status: number,
-  code: string,
-) => {
+export const expectSpecErrorResponse = async (res: Response, status: number, code: string) => {
   expect(res.status).toBe(status);
   const contentType = res.headers.get("content-type");
   expect(contentType).toEqual(expect.any(String));

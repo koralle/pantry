@@ -6,10 +6,7 @@ import {
   BookmarksApiGetResponse,
 } from "../generated/bookmarks/bookmarks.zod";
 import { AppEnv, getAppDependency } from "../dependencies";
-import {
-  toGetBookmarkApiResponse,
-  toGetBookmarkServiceInput,
-} from "./bookmarks.mapper";
+import { toGetBookmarkApiResponse, toGetBookmarkServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();
 export const bookmarksApiGetHandlers = factory.createHandlers(

@@ -82,18 +82,10 @@ describe("bookmarks mapper", () => {
     const getResponse = toGetBookmarkApiResponse(getResult);
     const updateResponse = toUpdateBookmarkApiResponse(updateResult);
 
-    expect(Object.prototype.hasOwnProperty.call(listResponse.items[0], "note")).toBe(
-      false,
-    );
-    expect(
-      Object.prototype.hasOwnProperty.call(createResponse.bookmark, "note"),
-    ).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(getResponse.bookmark, "note")).toBe(
-      false,
-    );
-    expect(
-      Object.prototype.hasOwnProperty.call(updateResponse.bookmark, "note"),
-    ).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(listResponse.items[0], "note")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(createResponse.bookmark, "note")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(getResponse.bookmark, "note")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(updateResponse.bookmark, "note")).toBe(false);
   });
 
   test("toDeleteBookmarkServiceInput maps bookmarkId", () => {

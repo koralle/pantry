@@ -7,10 +7,7 @@ import {
   bookmarksApiListQueryLimitDefault,
 } from "../generated/bookmarks/bookmarks.zod";
 import { AppEnv, getAppDependency } from "../dependencies";
-import {
-  toListBookmarksApiResponse,
-  toListBookmarksServiceInput,
-} from "./bookmarks.mapper";
+import { toListBookmarksApiResponse, toListBookmarksServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();
 
@@ -20,10 +17,7 @@ export const bookmarksApiListHandlers = factory.createHandlers(
   async (c: BookmarksApiListContext<AppEnv>) => {
     const bookmarksService = getAppDependency(c, "bookmarksService");
     const query = c.req.valid("query");
-    const serviceInput = toListBookmarksServiceInput(
-      query,
-      bookmarksApiListQueryLimitDefault,
-    );
+    const serviceInput = toListBookmarksServiceInput(query, bookmarksApiListQueryLimitDefault);
     const result = await bookmarksService.list(serviceInput);
     const response = toListBookmarksApiResponse(result);
 

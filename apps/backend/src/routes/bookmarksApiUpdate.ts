@@ -7,10 +7,7 @@ import {
   BookmarksApiUpdateResponse,
 } from "../generated/bookmarks/bookmarks.zod";
 import { AppEnv, getAppDependency } from "../dependencies";
-import {
-  toUpdateBookmarkApiResponse,
-  toUpdateBookmarkServiceInput,
-} from "./bookmarks.mapper";
+import { toUpdateBookmarkApiResponse, toUpdateBookmarkServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();
 export const bookmarksApiUpdateHandlers = factory.createHandlers(

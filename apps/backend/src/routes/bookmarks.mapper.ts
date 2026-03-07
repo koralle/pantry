@@ -65,18 +65,14 @@ export const toListBookmarksServiceInput = (
   ...withDefined("cursor", query.cursor),
 });
 
-export const toCreateBookmarkServiceInput = (
-  body: CreateBookmarkRequest,
-): CreateBookmarkInput => ({
+export const toCreateBookmarkServiceInput = (body: CreateBookmarkRequest): CreateBookmarkInput => ({
   url: body.url,
   ...withDefined("title", body.title),
   ...withDefined("note", body.note),
   ...withDefined("tags", body.tags),
 });
 
-export const toGetBookmarkServiceInput = (params: {
-  bookmarkId: string;
-}): GetBookmarkInput => ({
+export const toGetBookmarkServiceInput = (params: { bookmarkId: string }): GetBookmarkInput => ({
   bookmarkId: params.bookmarkId,
 });
 
@@ -97,9 +93,7 @@ export const toDeleteBookmarkServiceInput = (params: {
   bookmarkId: params.bookmarkId,
 });
 
-export const toListBookmarksApiResponse = (
-  result: ListBookmarksOutput,
-): ListBookmarksOk => ({
+export const toListBookmarksApiResponse = (result: ListBookmarksOutput): ListBookmarksOk => ({
   items: result.items.map(mapBookmarkSummary),
   nextCursor: result.nextCursor,
 });
@@ -110,14 +104,10 @@ export const toCreateBookmarkApiResponse = (
   bookmark: mapBookmarkDetail(result.bookmark),
 });
 
-export const toGetBookmarkApiResponse = (
-  result: GetBookmarkOutput,
-): GetBookmarkOk => ({
+export const toGetBookmarkApiResponse = (result: GetBookmarkOutput): GetBookmarkOk => ({
   bookmark: mapBookmarkDetail(result.bookmark),
 });
 
-export const toUpdateBookmarkApiResponse = (
-  result: UpdateBookmarkOutput,
-): UpdateBookmarkOk => ({
+export const toUpdateBookmarkApiResponse = (result: UpdateBookmarkOutput): UpdateBookmarkOk => ({
   bookmark: mapBookmarkDetail(result.bookmark),
 });

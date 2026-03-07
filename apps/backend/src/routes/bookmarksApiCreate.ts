@@ -3,10 +3,7 @@ import { zValidator } from "../generated/validator";
 import { BookmarksApiCreateContext } from "../generated/bookmarks/bookmarks.context";
 import { BookmarksApiCreateBody } from "../generated/bookmarks/bookmarks.zod";
 import { AppEnv, getAppDependency } from "../dependencies";
-import {
-  toCreateBookmarkApiResponse,
-  toCreateBookmarkServiceInput,
-} from "./bookmarks.mapper";
+import { toCreateBookmarkApiResponse, toCreateBookmarkServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();
 
