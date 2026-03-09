@@ -2,7 +2,10 @@
   "name": "@pantry/monorepo",
   "private": true,
   "workspaces": {
-    "packages": ["packages/*", "apps/*"],
+    "packages": [
+      "packages/*",
+      "apps/*"
+    ],
     "catalog": {
       "@types/node": "25.3.0"
     },
@@ -22,6 +25,9 @@
         "@typespec/openapi": "1.9.0",
         "@typespec/openapi3": "1.9.0",
         "@typespec/rest": "0.79.0"
+      },
+      "linter": {
+        "@biomejs/biome": "2.4.6"
       },
       "formatter": {
         "oxfmt": "0.36.0"

@@ -1,8 +1,8 @@
 import { createFactory } from "hono/factory";
-import { zValidator } from "../generated/validator";
-import { BookmarksApiDeleteContext } from "../generated/bookmarks/bookmarks.context";
+import { type AppEnv, getAppDependency } from "../dependencies";
+import type { BookmarksApiDeleteContext } from "../generated/bookmarks/bookmarks.context";
 import { BookmarksApiDeleteParams } from "../generated/bookmarks/bookmarks.zod";
-import { AppEnv, getAppDependency } from "../dependencies";
+import { zValidator } from "../generated/validator";
 import { toDeleteBookmarkServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();

@@ -36,9 +36,9 @@ describe("bookmarks mapper", () => {
     expect(result).toStrictEqual({
       url: "https://example.com",
     });
-    expect(Object.prototype.hasOwnProperty.call(result, "title")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(result, "note")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(result, "tags")).toBe(false);
+    expect(Object.hasOwn(result, "title")).toBe(false);
+    expect(Object.hasOwn(result, "note")).toBe(false);
+    expect(Object.hasOwn(result, "tags")).toBe(false);
   });
 
   test("toUpdateBookmarkServiceInput keeps note:null and omits undefined properties", () => {
@@ -56,8 +56,8 @@ describe("bookmarks mapper", () => {
       bookmarkId: "018f47a8-3f13-7cc0-8f2a-9ad0b7f6eaf1",
       note: null,
     });
-    expect(Object.prototype.hasOwnProperty.call(result, "title")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(result, "tags")).toBe(false);
+    expect(Object.hasOwn(result, "title")).toBe(false);
+    expect(Object.hasOwn(result, "tags")).toBe(false);
   });
 
   test("to*ApiResponse omits note when undefined", () => {
@@ -82,10 +82,10 @@ describe("bookmarks mapper", () => {
     const getResponse = toGetBookmarkApiResponse(getResult);
     const updateResponse = toUpdateBookmarkApiResponse(updateResult);
 
-    expect(Object.prototype.hasOwnProperty.call(listResponse.items[0], "note")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(createResponse.bookmark, "note")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(getResponse.bookmark, "note")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(updateResponse.bookmark, "note")).toBe(false);
+    expect(Object.hasOwn(listResponse.items[0], "note")).toBe(false);
+    expect(Object.hasOwn(createResponse.bookmark, "note")).toBe(false);
+    expect(Object.hasOwn(getResponse.bookmark, "note")).toBe(false);
+    expect(Object.hasOwn(updateResponse.bookmark, "note")).toBe(false);
   });
 
   test("toDeleteBookmarkServiceInput maps bookmarkId", () => {

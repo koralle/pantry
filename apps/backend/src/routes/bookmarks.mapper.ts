@@ -1,7 +1,7 @@
 import type {
-  BookmarksApiListParams,
   BookmarkDetail,
   BookmarkSummary,
+  BookmarksApiListParams,
   CreateBookmarkCreated,
   CreateBookmarkRequest,
   GetBookmarkOk,

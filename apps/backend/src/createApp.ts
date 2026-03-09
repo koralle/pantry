@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import routes from "./generated/routes";
 import type { AppDependencies, AppEnv } from "./dependencies";
+import routes from "./generated/routes";
 import { withDependencies } from "./middlewares/withDependencies";
 
 export const createApp = (dependencies: AppDependencies) => {

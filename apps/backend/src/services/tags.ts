@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import { TagsApiSuggestQueryParams } from "../generated/tags/tags.zod";
 import type { SuggestTagsOk } from "../generated/schemas";
+import type { TagsApiSuggestQueryParams } from "../generated/tags/tags.zod";
 
 export type SuggestTagsInput = z.output<typeof TagsApiSuggestQueryParams>;
 export type SuggestTagsOutput = SuggestTagsOk;

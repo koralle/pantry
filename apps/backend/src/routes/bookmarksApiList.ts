@@ -1,12 +1,12 @@
 import { createFactory } from "hono/factory";
-import { zValidator } from "../generated/validator";
-import { BookmarksApiListContext } from "../generated/bookmarks/bookmarks.context";
+import { type AppEnv, getAppDependency } from "../dependencies";
+import type { BookmarksApiListContext } from "../generated/bookmarks/bookmarks.context";
 import {
   BookmarksApiListQueryParams,
   BookmarksApiListResponse,
   bookmarksApiListQueryLimitDefault,
 } from "../generated/bookmarks/bookmarks.zod";
-import { AppEnv, getAppDependency } from "../dependencies";
+import { zValidator } from "../generated/validator";
 import { toListBookmarksApiResponse, toListBookmarksServiceInput } from "./bookmarks.mapper";
 
 const factory = createFactory();

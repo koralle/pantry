@@ -1,12 +1,12 @@
 import { createFactory } from "hono/factory";
-import { zValidator } from "../generated/validator";
-import { TagsApiSuggestContext } from "../generated/tags/tags.context";
+import { type AppEnv, getAppDependency } from "../dependencies";
+import type { TagsApiSuggestContext } from "../generated/tags/tags.context";
 import {
   TagsApiSuggestQueryParams,
   TagsApiSuggestResponse,
   tagsApiSuggestQueryLimitDefault,
 } from "../generated/tags/tags.zod";
-import { AppEnv, getAppDependency } from "../dependencies";
+import { zValidator } from "../generated/validator";
 
 const factory = createFactory();
 export const tagsApiSuggestHandlers = factory.createHandlers(
