@@ -1,10 +1,13 @@
 import type {
   BookmarkDetail,
   BookmarkSummary,
+  BookmarksApiListParams,
   CreateBookmarkCreated,
+  CreateBookmarkRequest,
   GetBookmarkOk,
   ListBookmarksOk,
   UpdateBookmarkOk,
+  UpdateBookmarkRequest,
 } from "../generated/schemas";
 import type {
   CreateBookmarkInput,
@@ -51,14 +54,7 @@ const mapBookmarkDetail = (bookmark: BookmarkDetailDto): BookmarkDetail => ({
 });
 
 export const toListBookmarksServiceInput = (
-  query: {
-    q?: string | undefined;
-    tags?: string[] | undefined;
-    tagMode?: "and" | "or" | undefined;
-    sort?: "newest" | "updated" | undefined;
-    limit?: number | undefined;
-    cursor?: string | undefined;
-  },
+  query: BookmarksApiListParams,
   defaultLimit: number,
 ): ListBookmarksInput => ({
   limit: query.limit ?? defaultLimit,
@@ -69,12 +65,7 @@ export const toListBookmarksServiceInput = (
   ...withDefined("cursor", query.cursor),
 });
 
-export const toCreateBookmarkServiceInput = (body: {
-  url: string;
-  title?: string | undefined;
-  note?: string | undefined;
-  tags?: string[] | undefined;
-}): CreateBookmarkInput => ({
+export const toCreateBookmarkServiceInput = (body: CreateBookmarkRequest): CreateBookmarkInput => ({
   url: body.url,
   ...withDefined("title", body.title),
   ...withDefined("note", body.note),
@@ -87,12 +78,7 @@ export const toGetBookmarkServiceInput = (params: { bookmarkId: string }): GetBo
 
 export const toUpdateBookmarkServiceInput = (
   params: { bookmarkId: string },
-  body: {
-    url?: string | undefined;
-    title?: string | undefined;
-    note?: string | null | undefined;
-    tags?: string[] | undefined;
-  },
+  body: UpdateBookmarkRequest,
 ): UpdateBookmarkInput => ({
   bookmarkId: params.bookmarkId,
   ...withDefined("url", body.url),

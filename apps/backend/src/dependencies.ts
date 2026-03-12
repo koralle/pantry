@@ -1,18 +1,14 @@
 import type { Context } from "hono";
-import type { Actor } from "./auth/actor";
 import type { BookmarksService } from "./services/bookmarks";
 import type { TagsService } from "./services/tags";
 
 export interface AppDependencies {
-  actor: Actor;
   bookmarksService: BookmarksService;
   tagsService: TagsService;
 }
 
-export type AppDependencyFactory = (c: Context<AppEnv>) => AppDependencies;
-
 export type AppEnv = {
-  Bindings: CloudflareBindings & { DB: D1Database };
+  Bindings: CloudflareBindings;
   Variables: AppDependencies;
 };
 

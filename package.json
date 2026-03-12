@@ -1,11 +1,6 @@
 {
   "name": "@pantry/monorepo",
   "private": true,
-  "scripts": {
-    "test": "bun run --cwd packages/api-spec test:contract && bun run --cwd apps/backend test",
-    "typecheck": "bun run --cwd apps/backend typecheck",
-    "lint": "bun run --cwd apps/backend lint"
-  },
   "workspaces": {
     "packages": [
       "packages/*",

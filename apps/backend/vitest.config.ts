@@ -1,17 +1,11 @@
-import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
+import { defineConfig } from "vitest/config";
 
-export default defineWorkersConfig({
+export default defineConfig(async () => ({
   resolve: {
     alias: [{ find: /^zod$/, replacement: "zod/v4" }],
   },
   test: {
+    name: "unittest",
     globals: true,
-    poolOptions: {
-      workers: {
-        wrangler: {
-          configPath: "./wrangler.jsonc",
-        },
-      },
-    },
   },
-});
+}));

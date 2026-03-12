@@ -1,15 +1,10 @@
 import type { MiddlewareHandler } from "hono";
-import type { AppDependencies, AppDependencyFactory, AppEnv } from "../dependencies";
+import type { AppDependencies, AppEnv } from "../dependencies";
 
-export const withDependencies = (
-  dependencies: AppDependencies | AppDependencyFactory,
-): MiddlewareHandler<AppEnv> => {
+export const withDependencies = (dependencies: AppDependencies): MiddlewareHandler<AppEnv> => {
   return async (c, next) => {
-    const resolvedDependencies =
-      typeof dependencies === "function" ? dependencies(c) : dependencies;
-    c.set("actor", resolvedDependencies.actor);
-    c.set("bookmarksService", resolvedDependencies.bookmarksService);
-    c.set("tagsService", resolvedDependencies.tagsService);
+    c.set("bookmarksService", dependencies.bookmarksService);
+    c.set("tagsService", dependencies.tagsService);
     await next();
   };
 };
