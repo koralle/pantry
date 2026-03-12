@@ -5,7 +5,12 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "lib": ["es2024"],
-    "types": ["./worker-configuration.d.ts", "node", "vitest/globals"],
+    "types": [
+      "./worker-configuration.d.ts",
+      "node",
+      "vitest/globals",
+      "@cloudflare/vitest-pool-workers"
+    ],
 
     "noEmit": true
   },

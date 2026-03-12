@@ -6,6 +6,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "lint": "biome check",
     "lint:fix": "biome check",
     "format": "oxfmt",
@@ -17,18 +18,22 @@
   },
   "dependencies": {
     "@hono/zod-validator": "0.7.6",
+    "drizzle-orm": "0.45.1",
     "hono": "4.12.3",
+    "uuid": "13.0.0",
     "zod": "catalog:schema"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:linter",
+    "@cloudflare/vitest-pool-workers": "0.12.20",
     "@tsconfig/strictest": "catalog:typescript",
     "@types/node": "catalog:node",
     "@typescript/native-preview": "catalog:typescript",
-    "@vitest/ui": "catalog:testing",
+    "@vitest/ui": "3.2.4",
+    "drizzle-kit": "0.31.9",
     "orval": "catalog:orval",
     "oxfmt": "catalog:formatter",
-    "vitest": "catalog:testing",
+    "vitest": "3.2.4",
     "wrangler": "catalog:cloudflare"
   }
 }

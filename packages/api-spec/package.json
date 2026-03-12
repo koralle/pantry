@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "test:contract": "tsp compile main.tsp --emit @typespec/openapi3 --warn-as-error",
     "dev": "tsp compile main.tsp",
     "dev:watch": "tsp compile main.tsp --watch",
     "format:check": "tsp format main.tsp --check",
