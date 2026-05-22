@@ -29,8 +29,8 @@
 
 ### 4.1 Contract（TypeSpec/OpenAPI）
 
-- `TEST-CON-001`: `packages/api-spec/main.tsp` が `warning/error なし` でコンパイルできる
-  - `node packages/api-spec/node_modules/.bin/tsp compile packages/api-spec/main.tsp --emit @typespec/openapi3 --warn-as-error`
+- `TEST-CON-001`: `api-spec/main.tsp` が `warning/error なし` でコンパイルできる
+  - `tsp compile api-spec/main.tsp --emit @typespec/openapi3 --warn-as-error`
 - `TEST-CON-002`: OpenAPI出力に `POST/PATCH` の `409` が含まれる
 - `TEST-CON-003`: OpenAPI出力に `securitySchemes`（Cookie/Bearer）が含まれる
 - `TEST-CON-004`: OpenAPI出力で `PATCH` の `note` が `nullable` である
@@ -166,9 +166,9 @@
 ## 8. 実行運用（暫定）
 
 - Contractテスト:
-  - `node packages/api-spec/node_modules/.bin/tsp compile packages/api-spec/main.tsp --emit @typespec/openapi3 --warn-as-error`
+  - `tsp compile api-spec/main.tsp --emit @typespec/openapi3 --warn-as-error`
 - フロントエンド単体テスト:
-  - `bun --bun run test`（`apps/frontend`）
+  - `bun run test`
 - E2E:
   - 導入後は pull request ごとにCI実行
 - 推奨CI順序:

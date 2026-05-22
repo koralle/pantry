@@ -42,7 +42,7 @@
 
 ## 4. API契約方針（TypeSpec）
 
-- TypeSpecファイル: `packages/api-spec/main.tsp`
+- TypeSpecファイル: `api-spec/main.tsp`
 - バージョン: `/v1`
 - 認証スキーム:
   - Cookie セッション（`pantry_session`）
