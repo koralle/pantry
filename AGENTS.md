@@ -6,15 +6,27 @@
 
 ## ディレクトリ構造
 
-- `apps/frontend` - Webフロントエンド
+- `src/` - アプリケーションコード（TanStack Start + Hono）
+- `src/api/` - Hono API ルート
+- `api-spec/` - TypeSpec API 契約定義
+- `public/` - 静的アセット
 
 ## 開発コマンド
 
-T.B.D 
+| コマンド | 説明 |
+|----------|------|
+| `bun run dev` | 開発サーバー起動（Vite + workerd） |
+| `bun run build` | プロダクションビルド |
+| `bun run preview` | ビルド成果物を preview |
+| `bun run deploy` | Cloudflare Workers にデプロイ |
+| `bun run test` | テスト実行（Vitest） |
+| `bun run cf-typegen` | Worker バインディングの型生成 |
+| `bun run spec:build` | TypeSpec をコンパイルして OpenAPI 出力 |
+| `bun run spec:format` | TypeSpec のフォーマット修正 |
 
 ## 設計方針
 
-T.B.D 
+T.B.D
 
 ## 詳細ドキュメント
 

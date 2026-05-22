@@ -1,40 +1,37 @@
-# dependencies (bun install)
 node_modules
-
-# output
-out
+.DS_Store
 dist
-*.tgz
-
-# code coverage
-coverage
-*.lcov
-
-# logs
-logs
-_.log
-report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
-
-# dotenv environment variable files
+dist-ssr
+*.local
 .env
 .env.development.local
 .env.test.local
 .env.production.local
 .env.local
-
-# caches
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json
+.dev.vars*
+!.dev.vars.example
+!.env.example
+out
+*.tgz
+coverage
+*.lcov
+logs
+_.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .eslintcache
 .cache
 *.tsbuildinfo
-
-# IntelliJ based IDEs
 .idea
-
-# Finder (MacOS) folder config
-.DS_Store
-
-# VSCode
 .vscode
-
-# direnv
 .envrc
+
+# TypeSpec output
+api-spec/tsp-output/
+api-spec/dist/

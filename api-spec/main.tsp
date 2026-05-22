@@ -18,7 +18,6 @@ alias SessionCookieAuth = ApiKeyAuth<ApiKeyLocation.cookie, "pantry_session">;
  * - Cookie + Bearer authentication (401 when unauthenticated)
  * - Tags are normalized server-side: trim + lowercase + dedupe
  */
-
 enum BookmarkSort {
   newest: "newest",
   updated: "updated",
@@ -115,15 +114,21 @@ model BookmarkDetail extends BookmarkSummary {}
 
 model ListBookmarksQuery {
   @query q?: string;
+
   // Repeat query key form only: tags=a&tags=b
   // Server additionally trims values; empty after trim is INVALID_INPUT.
   @maxItems(20)
-  @query(#{ name: "tags", explode: true }) tags?: TagInput[];
+  @query(#{ name: "tags", explode: true })
+  tags?: TagInput[];
+
   @query tagMode?: TagFilterMode = TagFilterMode.and;
   @query sort?: BookmarkSort = BookmarkSort.newest;
+
   @minValue(1)
   @maxValue(100)
-  @query limit?: int32 = 20;
+  @query
+  limit?: int32 = 20;
+
   @query cursor?: string;
 }
 
@@ -142,6 +147,7 @@ model CreateBookmarkRequest {
   url: BookmarkUrl;
   title?: BookmarkTitle;
   note?: BookmarkNote;
+
   // Server enforces: <= 20 items, each item trim+lowercase, dedupe
   @maxItems(20)
   tags?: TagInput[];
@@ -155,8 +161,10 @@ model CreateBookmarkCreated {
 model UpdateBookmarkRequest {
   url?: BookmarkUrl;
   title?: BookmarkTitle;
+
   // null means clearing the existing note
   note?: BookmarkNote | null;
+
   // Full replace semantics for tags when provided
   @maxItems(20)
   tags?: TagInput[];
@@ -170,10 +178,13 @@ model UpdateBookmarkOk {
 model SuggestTagsQuery {
   // Server trims q; empty after trim is INVALID_INPUT
   @minLength(1)
-  @query q: string;
+  @query
+  q: string;
+
   @minValue(1)
   @maxValue(20)
-  @query limit?: int32 = 10;
+  @query
+  limit?: int32 = 10;
 }
 
 model TagSuggestion {
@@ -191,35 +202,48 @@ namespace V1 {
   @route("/bookmarks")
   interface BookmarksApi {
     @get
-    op list(
-      ...ListBookmarksQuery,
-    ): ListBookmarksOk | UnauthorizedError | BadRequestError | InvalidCursorError | CursorMismatchError;
+    list(...ListBookmarksQuery):
+      | ListBookmarksOk
+      | UnauthorizedError
+      | BadRequestError
+      | InvalidCursorError
+      | CursorMismatchError;
 
     @post
-    op create(
-      @body body: CreateBookmarkRequest,
-    ): CreateBookmarkCreated | UnauthorizedError | BadRequestError | ConflictError;
+    create(@body body: CreateBookmarkRequest):
+      | CreateBookmarkCreated
+      | UnauthorizedError
+      | BadRequestError
+      | ConflictError;
 
     @get
     @route("/{bookmarkId}")
-    op get(@path bookmarkId: BookmarkId): GetBookmarkOk | UnauthorizedError | NotFoundError;
+    get(
+      @path bookmarkId: BookmarkId,
+    ): GetBookmarkOk | UnauthorizedError | NotFoundError;
 
     @patch(#{ implicitOptionality: false })
     @route("/{bookmarkId}")
-    op update(
-      @path bookmarkId: BookmarkId,
-      @body body: UpdateBookmarkRequest,
-    ): UpdateBookmarkOk | UnauthorizedError | BadRequestError | NotFoundError | ConflictError;
+    update(@path bookmarkId: BookmarkId, @body body: UpdateBookmarkRequest):
+      | UpdateBookmarkOk
+      | UnauthorizedError
+      | BadRequestError
+      | NotFoundError
+      | ConflictError;
 
     @delete
     @route("/{bookmarkId}")
-    op delete(@path bookmarkId: BookmarkId): NoContentResponse | UnauthorizedError | NotFoundError;
+    delete(
+      @path bookmarkId: BookmarkId,
+    ): NoContentResponse | UnauthorizedError | NotFoundError;
   }
 
   @route("/tags")
   interface TagsApi {
     @get
     @route("/suggest")
-    op suggest(...SuggestTagsQuery): SuggestTagsOk | UnauthorizedError | BadRequestError;
+    suggest(
+      ...SuggestTagsQuery,
+    ): SuggestTagsOk | UnauthorizedError | BadRequestError;
   }
 }
