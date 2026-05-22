@@ -26,17 +26,13 @@
 
 ## 3. システム構成
 
-- フロントエンド: `apps/frontend`（TanStack Start + React）
-- バックエンド: `apps/backend`（Hono + Cloudflare Workers）
-- 認証: Better Auth（バックエンドで一元管理）
+- 単一 Cloudflare Worker に統合（workspace 廃止）
+- エントリポイント: `src/server.ts`（Hono 主導、TanStack Start をマウント）
+- Hono: `src/api/` — APIルーティング（認証・認可・永続化）
+- TanStack Start: `src/routes/`, `src/router.tsx` — SSR/UI
+- 認証: Better Auth（Hono ミドルウェアで一元管理）
 - DB: Cloudflare D1
-- API 契約: TypeSpec（`packages/api-spec/main.tsp`）
-
-### 3.1 ランタイム境界
-
-- `frontend` はUIとBFF相当の表示責務に集中
-- `backend` は認証、認可、APIバリデーション、永続化責務に集中
-- 将来のブラウザ拡張は `backend` の同一API契約を利用する
+- API 契約: TypeSpec（`api-spec/main.tsp`）
 
 ### 3.2 環境
 
