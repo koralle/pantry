@@ -12,6 +12,6 @@ export default {
     if (url.pathname.startsWith('/api')) {
       return app.fetch(request, env, ctx)
     }
-    return handler.fetch(request, env, ctx)
+    return handler.fetch(request)
   },
 }
