@@ -13,7 +13,8 @@
     "spec:build:watch": "tsp compile api-spec/main.tsp --watch",
     "spec:format:check": "tsp format api-spec/main.tsp --check",
     "spec:format:fix": "tsp format api-spec/main.tsp",
-    "spec:format": "bun run spec:format:fix"
+    "spec:format": "bun run spec:format:fix",
+    "typecheck": "tsgo"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "1.37.3",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "0.7.0",
+    "@tsconfig/strictest": "2.0.8",
     "@types/node": "25.9.1",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
