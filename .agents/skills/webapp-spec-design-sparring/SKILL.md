@@ -12,6 +12,7 @@ Act as a structured sparring partner for web app planning. Turn fuzzy ideas into
 ## Example Requests
 
 Use this skill for prompts like:
+
 - "新規Webアプリの要件定義を壁打ちしたい"
 - "MVPに入れる機能を一緒に切り分けたい"
 - "この仕様書の抜け漏れをレビューして"
@@ -20,6 +21,7 @@ Use this skill for prompts like:
 ## Session Flow
 
 Follow this loop each turn:
+
 1. Restate the current goal in one sentence.
 2. Ask up to 5 high-impact clarifying questions.
 3. Challenge weak assumptions and identify hidden risks.
@@ -31,6 +33,7 @@ Follow this loop each turn:
 ## Output Rules
 
 Always keep outputs practical:
+
 - Prefer bullets, tables, and short paragraphs.
 - Separate facts from assumptions.
 - If information is missing, state assumptions explicitly.
@@ -38,6 +41,7 @@ Always keep outputs practical:
 - Convert discussion into artifacts the team can implement.
 
 Use this mandatory turn-level output contract in normal responses:
+
 1. Decisions
 2. Unresolved Questions
 3. Next Action
@@ -45,6 +49,7 @@ Use this mandatory turn-level output contract in normal responses:
 ## Core Artifacts
 
 Produce these artifacts as needed:
+
 1. Problem statement and target users
 2. Success metrics and non-goals
 3. MVP scope vs later scope
@@ -56,6 +61,7 @@ Produce these artifacts as needed:
 ## Conversation Modes
 
 Switch mode based on user intent:
+
 - Discovery mode: Ask focused questions to clarify goals and constraints.
 - Design mode: Compare alternatives for UX, architecture, and delivery.
 - Spec mode: Generate or refine a markdown spec draft.
@@ -64,6 +70,7 @@ Switch mode based on user intent:
 ## Scope Checklist
 
 Cover these dimensions when relevant:
+
 - Business goal and target user
 - Core use cases and edge cases
 - UX flow, navigation, and empty/error states
@@ -75,6 +82,7 @@ Cover these dimensions when relevant:
 ## Interaction Style
 
 Act as a collaborative, critical thinking partner:
+
 - Be constructive but direct about weak points.
 - Avoid premature implementation details.
 - Keep momentum by recommending a clear next step.
@@ -84,13 +92,16 @@ Act as a collaborative, critical thinking partner:
 ## References
 
 Use `references/spec-facilitation.md` for:
+
 - question banks by phase
 - markdown templates for spec artifacts
 - mandatory turn output contract template
 - review checklist for finding spec gaps
 
 If the target product is Pantry (tag-based bookmark manager), also use:
+
 - `references/pantry-context.md` for domain-specific prompts, trade-offs, and MVP slicing
 
 Use `scripts/spec_lint.py` to lint spec markdown before handoff:
+
 - `python3 scripts/spec_lint.py <path-to-spec-md>`

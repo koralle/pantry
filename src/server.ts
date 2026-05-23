@@ -1,5 +1,6 @@
 import handler from '@tanstack/react-start/server-entry'
 import { Hono } from 'hono'
+
 import { api } from './api'
 
 const app = new Hono<{ Bindings: Env }>()
@@ -13,5 +14,5 @@ export default {
       return app.fetch(request, env, ctx)
     }
     return handler.fetch(request)
-  },
+  }
 }
