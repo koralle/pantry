@@ -37,7 +37,7 @@ function ChannelComposer({ channelId }: { channelId: string }) {
 // Provider handles all state management details
 function ChannelProvider({
   channelId,
-  children,
+  children
 }: {
   channelId: string
   children: React.ReactNode
@@ -49,8 +49,7 @@ function ChannelProvider({
     <Composer.Provider
       state={state}
       actions={{ update, submit }}
-      meta={{ inputRef }}
-    >
+      meta={{ inputRef }}>
       {children}
     </Composer.Provider>
   )
@@ -90,8 +89,7 @@ function ForwardMessageProvider({ children }) {
   return (
     <Composer.Provider
       state={state}
-      actions={{ update: setState, submit: forwardMessage }}
-    >
+      actions={{ update: setState, submit: forwardMessage }}>
       {children}
     </Composer.Provider>
   )
@@ -102,7 +100,9 @@ function ChannelProvider({ channelId, children }) {
   const { state, update, submit } = useGlobalChannel(channelId)
 
   return (
-    <Composer.Provider state={state} actions={{ update, submit }}>
+    <Composer.Provider
+      state={state}
+      actions={{ update, submit }}>
       {children}
     </Composer.Provider>
   )

@@ -178,31 +178,31 @@
 
 ## 9. 要件トレーサビリティ（REQ -> TEST）
 
-| 要件ID | 要件概要 | 対応テストID |
-| --- | --- | --- |
-| `REQ-AUTH-001` | 未認証拒否 | `TEST-INT-011`, `TEST-E2E-001` |
-| `REQ-AUTH-002` | Cookie + Bearer 契約定義 | `TEST-CON-003` |
-| `REQ-AUTH-003` | Better Authセッション詳細は実装時確定 | `TBD (認証実装時に追加)` |
-| `REQ-BOOK-001` | ブックマークCRUD | `TEST-INT-001`, `TEST-E2E-002`, `TEST-E2E-003` |
-| `REQ-BOOK-002` | タイトル自動取得（失敗時フォールバック含む） | `TEST-INT-010`, `TEST-E2E-002` |
-| `REQ-BOOK-003` | URL重複時 `409` | `TEST-CON-002`, `TEST-INT-003`, `TEST-E2E-005` |
-| `REQ-BOOK-004` | `PATCH note: null` で削除 | `TEST-CON-004`, `TEST-INT-004`, `TEST-E2E-006` |
-| `REQ-BOOK-005` | ソフトデリート | `TEST-INT-023`, `TEST-E2E-010` |
-| `REQ-ID-001` | UUID v7 ID | `TEST-CON-008`, `TEST-INT-018` |
-| `REQ-QUERY-001` | `tags` 繰り返しクエリ形式 | `TEST-CON-012`, `TEST-CON-014`, `TEST-INT-020`, `TEST-INT-029`, `TEST-INT-033`, `TEST-INT-034`, `TEST-INT-035` |
-| `REQ-TAG-001` | タグ正規化（trim + lowercase） | `TEST-UNIT-001`, `TEST-INT-001` |
-| `REQ-TAG-002` | タグ制約（20件/32文字/空文字/重複） | `TEST-UNIT-002`, `TEST-UNIT-003`, `TEST-UNIT-004`, `TEST-UNIT-005` |
-| `REQ-TAG-003` | タグ AND / OR（default and） | `TEST-CON-010`, `TEST-INT-006`, `TEST-INT-007`, `TEST-INT-021`, `TEST-E2E-004` |
-| `REQ-TAG-004` | タグ補完（q/limit/並び順） | `TEST-CON-011`, `TEST-INT-024`, `TEST-INT-025`, `TEST-INT-026`, `TEST-INT-027` |
-| `REQ-SEARCH-001` | キーワード検索対象 | `TEST-INT-005` |
-| `REQ-SORT-001` | 新着順/更新順 | `TEST-UNIT-006`, `TEST-INT-008`, `TEST-INT-009`, `TEST-E2E-003` |
-| `REQ-TIME-001` | UTCタイムスタンプ | `TEST-CON-009`, `TEST-INT-019` |
-| `REQ-TIME-002` | UI表示TZ（Asia/Tokyo） | `TEST-E2E-011` |
-| `REQ-SCREEN-001` | 必須画面提供 | `TEST-E2E-001`, `TEST-E2E-002`, `TEST-E2E-007` |
-| `REQ-DATA-001` | D1永続化・2環境運用 | `TEST-INT-001`, `TEST-INT-002` |
-| `REQ-OPS-001` | TypeSpec SSOT・OpenAPI生成 | `TEST-CON-001` |
-| `REQ-PAGE-001` | cursorページング仕様 | `TEST-CON-005`, `TEST-CON-013`, `TEST-INT-012`, `TEST-INT-014`, `TEST-INT-030`, `TEST-INT-031`, `TEST-INT-032`, `TEST-E2E-008` |
-| `REQ-URL-001` | URL正規化重複判定 | `TEST-UNIT-008`, `TEST-UNIT-009`, `TEST-UNIT-010`, `TEST-INT-003` |
-| `REQ-FETCH-001` | タイトル取得ポリシー | `TEST-INT-017` |
-| `REQ-ERR-001` | `error.code` 標準化 | `TEST-CON-006`, `TEST-INT-013`, `TEST-INT-015`, `TEST-INT-016` |
-| `REQ-ERR-002` | `500` 共通運用 | `TEST-INT-028` |
+| 要件ID           | 要件概要                                     | 対応テストID                                                                                                                   |
+| ---------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `REQ-AUTH-001`   | 未認証拒否                                   | `TEST-INT-011`, `TEST-E2E-001`                                                                                                 |
+| `REQ-AUTH-002`   | Cookie + Bearer 契約定義                     | `TEST-CON-003`                                                                                                                 |
+| `REQ-AUTH-003`   | Better Authセッション詳細は実装時確定        | `TBD (認証実装時に追加)`                                                                                                       |
+| `REQ-BOOK-001`   | ブックマークCRUD                             | `TEST-INT-001`, `TEST-E2E-002`, `TEST-E2E-003`                                                                                 |
+| `REQ-BOOK-002`   | タイトル自動取得（失敗時フォールバック含む） | `TEST-INT-010`, `TEST-E2E-002`                                                                                                 |
+| `REQ-BOOK-003`   | URL重複時 `409`                              | `TEST-CON-002`, `TEST-INT-003`, `TEST-E2E-005`                                                                                 |
+| `REQ-BOOK-004`   | `PATCH note: null` で削除                    | `TEST-CON-004`, `TEST-INT-004`, `TEST-E2E-006`                                                                                 |
+| `REQ-BOOK-005`   | ソフトデリート                               | `TEST-INT-023`, `TEST-E2E-010`                                                                                                 |
+| `REQ-ID-001`     | UUID v7 ID                                   | `TEST-CON-008`, `TEST-INT-018`                                                                                                 |
+| `REQ-QUERY-001`  | `tags` 繰り返しクエリ形式                    | `TEST-CON-012`, `TEST-CON-014`, `TEST-INT-020`, `TEST-INT-029`, `TEST-INT-033`, `TEST-INT-034`, `TEST-INT-035`                 |
+| `REQ-TAG-001`    | タグ正規化（trim + lowercase）               | `TEST-UNIT-001`, `TEST-INT-001`                                                                                                |
+| `REQ-TAG-002`    | タグ制約（20件/32文字/空文字/重複）          | `TEST-UNIT-002`, `TEST-UNIT-003`, `TEST-UNIT-004`, `TEST-UNIT-005`                                                             |
+| `REQ-TAG-003`    | タグ AND / OR（default and）                 | `TEST-CON-010`, `TEST-INT-006`, `TEST-INT-007`, `TEST-INT-021`, `TEST-E2E-004`                                                 |
+| `REQ-TAG-004`    | タグ補完（q/limit/並び順）                   | `TEST-CON-011`, `TEST-INT-024`, `TEST-INT-025`, `TEST-INT-026`, `TEST-INT-027`                                                 |
+| `REQ-SEARCH-001` | キーワード検索対象                           | `TEST-INT-005`                                                                                                                 |
+| `REQ-SORT-001`   | 新着順/更新順                                | `TEST-UNIT-006`, `TEST-INT-008`, `TEST-INT-009`, `TEST-E2E-003`                                                                |
+| `REQ-TIME-001`   | UTCタイムスタンプ                            | `TEST-CON-009`, `TEST-INT-019`                                                                                                 |
+| `REQ-TIME-002`   | UI表示TZ（Asia/Tokyo）                       | `TEST-E2E-011`                                                                                                                 |
+| `REQ-SCREEN-001` | 必須画面提供                                 | `TEST-E2E-001`, `TEST-E2E-002`, `TEST-E2E-007`                                                                                 |
+| `REQ-DATA-001`   | D1永続化・2環境運用                          | `TEST-INT-001`, `TEST-INT-002`                                                                                                 |
+| `REQ-OPS-001`    | TypeSpec SSOT・OpenAPI生成                   | `TEST-CON-001`                                                                                                                 |
+| `REQ-PAGE-001`   | cursorページング仕様                         | `TEST-CON-005`, `TEST-CON-013`, `TEST-INT-012`, `TEST-INT-014`, `TEST-INT-030`, `TEST-INT-031`, `TEST-INT-032`, `TEST-E2E-008` |
+| `REQ-URL-001`    | URL正規化重複判定                            | `TEST-UNIT-008`, `TEST-UNIT-009`, `TEST-UNIT-010`, `TEST-INT-003`                                                              |
+| `REQ-FETCH-001`  | タイトル取得ポリシー                         | `TEST-INT-017`                                                                                                                 |
+| `REQ-ERR-001`    | `error.code` 標準化                          | `TEST-CON-006`, `TEST-INT-013`, `TEST-INT-015`, `TEST-INT-016`                                                                 |
+| `REQ-ERR-002`    | `500` 共通運用                               | `TEST-INT-028`                                                                                                                 |
