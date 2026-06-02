@@ -1,12 +1,20 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import type { TanStackDevtoolsReactInit } from '@tanstack/react-devtools'
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-export const Route = createRootRoute({
-  shellComponent: RootDocument
-})
+const tanstackDevtoolsConfig = {
+  position: 'bottom-right'
+} satisfies TanStackDevtoolsReactInit['config']
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+const tanstackDevtoolsPlugins = [
+  {
+    name: 'Tanstack Router',
+    render: <TanStackRouterDevtoolsPanel />
+  }
+] satisfies TanStackDevtoolsReactInit['plugins']
+
+function RootDocument({ children }: { readonly children: React.ReactNode }) {
   return (
     <html lang='ja'>
       <head>
@@ -15,18 +23,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <TanStackDevtools
-          config={{
-            position: 'bottom-right'
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />
-            }
-          ]}
+          config={tanstackDevtoolsConfig}
+          plugins={tanstackDevtoolsPlugins}
         />
         <Scripts />
       </body>
     </html>
   )
 }
+
+export const Route = createRootRoute({
+  shellComponent: RootDocument
+})

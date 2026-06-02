@@ -218,9 +218,10 @@ namespace V1 {
 
     @get
     @route("/{bookmarkId}")
-    get(
-      @path bookmarkId: BookmarkId,
-    ): GetBookmarkOk | UnauthorizedError | NotFoundError;
+    get(@path bookmarkId: BookmarkId):
+      | GetBookmarkOk
+      | UnauthorizedError
+      | NotFoundError;
 
     @patch(#{ implicitOptionality: false })
     @route("/{bookmarkId}")
@@ -233,17 +234,19 @@ namespace V1 {
 
     @delete
     @route("/{bookmarkId}")
-    delete(
-      @path bookmarkId: BookmarkId,
-    ): NoContentResponse | UnauthorizedError | NotFoundError;
+    delete(@path bookmarkId: BookmarkId):
+      | NoContentResponse
+      | UnauthorizedError
+      | NotFoundError;
   }
 
   @route("/tags")
   interface TagsApi {
     @get
     @route("/suggest")
-    suggest(
-      ...SuggestTagsQuery,
-    ): SuggestTagsOk | UnauthorizedError | BadRequestError;
+    suggest(...SuggestTagsQuery):
+      | SuggestTagsOk
+      | UnauthorizedError
+      | BadRequestError;
   }
 }
