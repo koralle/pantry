@@ -1,0 +1,31 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: Format with Oxfmt (root)
+      glob:
+        - 'vite.config.ts'
+        - 'oxfmt.config.ts'
+        - 'package.json'
+        - 'tsconfig.json'
+        - 'wrangler.jsonc'
+        - 'bunfig.toml'
+        - 'lefthook.yaml'
+      run: |
+        bun oxfmt {staged_files} --write
+      stage_fixed: true
+
+    - name: Format with Oxfmt (src)
+      root: src
+      glob:
+        - '**/*.ts'
+      run: |
+        bun oxfmt {staged_files} --write
+      stage_fixed: true
+
+    - name: Format with Oxfmt (.github)
+      root: .github
+      glob:
+        - '**/*.yaml'
+      run: |
+        bun oxfmt {staged_files} --write
+      stage_fixed: true
