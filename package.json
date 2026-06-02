@@ -19,15 +19,15 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
-    "@cloudflare/vite-plugin": "1.37.3",
+    "@cloudflare/vite-plugin": "1.39.0",
     "@tanstack/react-devtools": "0.10.5",
-    "@tanstack/react-router": "1.170.7",
+    "@tanstack/react-router": "1.170.10",
     "@tanstack/react-router-devtools": "1.167.0",
-    "@tanstack/react-router-ssr-query": "1.167.0",
-    "@tanstack/react-start": "1.168.10",
-    "@tanstack/router-plugin": "1.168.10",
-    "hono": "4.12.22",
-    "lucide-react": "1.16.0",
+    "@tanstack/react-router-ssr-query": "1.167.1",
+    "@tanstack/react-start": "1.168.17",
+    "@tanstack/router-plugin": "1.168.13",
+    "hono": "4.12.23",
+    "lucide-react": "1.17.0",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
@@ -37,18 +37,18 @@
     "@types/node": "25.9.1",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260522.1",
+    "@typescript/native-preview": "7.0.0-dev.20260527.2",
     "@typespec/compiler": "1.12.0",
     "@typespec/http": "1.12.0",
     "@typespec/openapi": "1.12.0",
     "@typespec/openapi3": "1.12.0",
     "@typespec/rest": "0.82.0",
     "@vitejs/plugin-react": "6.0.2",
-    "lefthook": "2.1.8",
-    "oxfmt": "0.51.0",
+    "lefthook": "2.1.9",
+    "oxfmt": "0.52.0",
     "typescript": "6.0.3",
     "vite": "8.0.14",
     "vitest": "4.1.7",
-    "wrangler": "4.93.1"
+    "wrangler": "4.95.0"
   }
 }
