@@ -6,12 +6,5 @@
   "main": "src/server.ts",
   "observability": {
     "enabled": true
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "pantry-db",
-      "database_id": "local"
-    }
-  ]
+  }
 }
