@@ -21,6 +21,7 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
+    "@base-ui/react": "1.5.0",
     "@cloudflare/vite-plugin": "1.39.0",
     "@formisch/react": "0.5.0",
     "@tanstack/react-devtools": "0.10.5",
