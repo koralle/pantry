@@ -1,6 +1,7 @@
-import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { TanStackDevtoolsReactInit } from '@tanstack/react-devtools'
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { TanStackDevtools } from '@tanstack/react-devtools'
+import type { QueryClient } from '@tanstack/react-query'
+import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 const tanstackDevtoolsConfig = {
@@ -32,6 +33,6 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
   )
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ readonly queryClient: QueryClient }>()({
   shellComponent: RootDocument
 })

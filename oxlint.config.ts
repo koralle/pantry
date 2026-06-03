@@ -57,6 +57,12 @@ export default defineConfig({
         'react/no-multi-comp': 'off',
         'typescript/prefer-readonly-parameter-types': 'off'
       }
+    },
+    {
+      files: ['src/routeTree.gen.ts'],
+      rules: {
+        'unicorn/filename-case': 'off'
+      }
     }
   ],
   plugins: [
@@ -74,12 +80,14 @@ export default defineConfig({
   ],
   rules: {
     'eslint/func-style': ['error', 'expression', { allowArrowFunctions: false }],
+    'eslint/no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
     'eslint/sort-imports': 'off',
     'import/exports-last': 'off',
     'import/no-named-export': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-filename-extension': 'off',
     'react/only-export-components': 'off',
-    'react/react-in-jsx-scope': 'off'
+    'react/react-in-jsx-scope': 'off',
+    'typescript/prefer-readonly-parameter-types': 'off'
   }
 })
