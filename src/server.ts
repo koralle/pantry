@@ -7,12 +7,19 @@ const app = new Hono<{ Bindings: Env }>()
 
 app.route('/api', api)
 
-export default {
-  fetch(request: Request, env: Env, ctx: ExecutionContext) {
+const worker = {
+  async fetch(
+    request: Readonly<Request>,
+    env: Readonly<Env>,
+    ctx: Readonly<ExecutionContext>
+  ): Promise<Response> {
     const url = new URL(request.url)
     if (url.pathname.startsWith('/api')) {
-      return app.fetch(request, env, ctx)
+      const response = await app.fetch(request, env, ctx)
+      return response
     }
     return handler.fetch(request)
   }
 }
+
+export default worker

@@ -1,31 +1,45 @@
 pre-commit:
-  parallel: true
+  piped: true
   jobs:
-    - name: Format with Oxfmt (root)
-      glob:
-        - 'vite.config.ts'
-        - 'oxfmt.config.ts'
-        - 'package.json'
-        - 'tsconfig.json'
-        - 'wrangler.jsonc'
-        - 'bunfig.toml'
-        - 'lefthook.yaml'
-      run: |
-        bun oxfmt {staged_files} --write
-      stage_fixed: true
+    - group:
+        parallel: true
+        jobs:
+          - name: Format with Oxfmt (root)
+            glob:
+              - 'vite.config.ts'
+              - 'oxfmt.config.ts'
+              - 'oxlint.config.ts'
+              - 'package.json'
+              - 'tsconfig.json'
+              - 'wrangler.jsonc'
+            run: |
+              bun oxfmt {staged_files} --write
+            stage_fixed: true
 
-    - name: Format with Oxfmt (src)
-      root: src
-      glob:
-        - '**/*.ts'
-      run: |
-        bun oxfmt {staged_files} --write
-      stage_fixed: true
+          - name: Format with Oxfmt (src)
+            root: src
+            glob:
+              - '**/*.{ts,tsx}'
+            run: |
+              bun oxfmt {staged_files} --write
+            stage_fixed: true
 
-    - name: Format with Oxfmt (.github)
-      root: .github
-      glob:
-        - '**/*.yaml'
-      run: |
-        bun oxfmt {staged_files} --write
-      stage_fixed: true
+    - group:
+        parallel: true
+        jobs:
+          - name: Lint with Oxlint (root)
+            glob:
+              - 'vite.config.ts'
+              - 'oxfmt.config.ts'
+              - 'oxlint.config.ts'
+            run: |
+              bun oxlint {staged_files} --fix
+            stage_fixed: true
+
+          - name: Lint with Oxlint (src)
+            root: src
+            glob:
+              - '**/*.{ts,tsx}'
+            run: |
+              bun oxlint {staged_files} --fix
+            stage_fixed: true

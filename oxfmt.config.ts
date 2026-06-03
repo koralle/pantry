@@ -1,8 +1,8 @@
 import { defineConfig } from 'oxfmt'
 
 export default defineConfig({
-  bracketSpacing: true,
   bracketSameLine: true,
+  bracketSpacing: true,
   jsxSingleQuote: true,
   semi: false,
   singleAttributePerLine: true,
