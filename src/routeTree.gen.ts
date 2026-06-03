@@ -9,38 +9,126 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TagsIndexRouteImport } from './routes/tags/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as BookmarksNewRouteImport } from './routes/bookmarks/new'
+import { Route as BookmarksBookmarkIdRouteImport } from './routes/bookmarks/$bookmarkId'
+import { Route as BookmarksBookmarkIdEditRouteImport } from './routes/bookmarks/$bookmarkId.edit'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TagsIndexRoute = TagsIndexRouteImport.update({
+  id: '/tags/',
+  path: '/tags/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksNewRoute = BookmarksNewRouteImport.update({
+  id: '/bookmarks/new',
+  path: '/bookmarks/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksBookmarkIdRoute = BookmarksBookmarkIdRouteImport.update({
+  id: '/bookmarks/$bookmarkId',
+  path: '/bookmarks/$bookmarkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksBookmarkIdEditRoute = BookmarksBookmarkIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => BookmarksBookmarkIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/bookmarks/$bookmarkId': typeof BookmarksBookmarkIdRouteWithChildren
+  '/bookmarks/new': typeof BookmarksNewRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/tags/': typeof TagsIndexRoute
+  '/bookmarks/$bookmarkId/edit': typeof BookmarksBookmarkIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/bookmarks/$bookmarkId': typeof BookmarksBookmarkIdRouteWithChildren
+  '/bookmarks/new': typeof BookmarksNewRoute
+  '/settings': typeof SettingsIndexRoute
+  '/tags': typeof TagsIndexRoute
+  '/bookmarks/$bookmarkId/edit': typeof BookmarksBookmarkIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/bookmarks/$bookmarkId': typeof BookmarksBookmarkIdRouteWithChildren
+  '/bookmarks/new': typeof BookmarksNewRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/tags/': typeof TagsIndexRoute
+  '/bookmarks/$bookmarkId/edit': typeof BookmarksBookmarkIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/bookmarks/$bookmarkId'
+    | '/bookmarks/new'
+    | '/settings/'
+    | '/tags/'
+    | '/bookmarks/$bookmarkId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/bookmarks/$bookmarkId'
+    | '/bookmarks/new'
+    | '/settings'
+    | '/tags'
+    | '/bookmarks/$bookmarkId/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/bookmarks/$bookmarkId'
+    | '/bookmarks/new'
+    | '/settings/'
+    | '/tags/'
+    | '/bookmarks/$bookmarkId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  BookmarksBookmarkIdRoute: typeof BookmarksBookmarkIdRouteWithChildren
+  BookmarksNewRoute: typeof BookmarksNewRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+  TagsIndexRoute: typeof TagsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,19 +136,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tags/': {
+      id: '/tags/'
+      path: '/tags'
+      fullPath: '/tags/'
+      preLoaderRoute: typeof TagsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks/new': {
+      id: '/bookmarks/new'
+      path: '/bookmarks/new'
+      fullPath: '/bookmarks/new'
+      preLoaderRoute: typeof BookmarksNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks/$bookmarkId': {
+      id: '/bookmarks/$bookmarkId'
+      path: '/bookmarks/$bookmarkId'
+      fullPath: '/bookmarks/$bookmarkId'
+      preLoaderRoute: typeof BookmarksBookmarkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks/$bookmarkId/edit': {
+      id: '/bookmarks/$bookmarkId/edit'
+      path: '/edit'
+      fullPath: '/bookmarks/$bookmarkId/edit'
+      preLoaderRoute: typeof BookmarksBookmarkIdEditRouteImport
+      parentRoute: typeof BookmarksBookmarkIdRoute
+    }
   }
 }
 
+interface BookmarksBookmarkIdRouteChildren {
+  BookmarksBookmarkIdEditRoute: typeof BookmarksBookmarkIdEditRoute
+}
+
+const BookmarksBookmarkIdRouteChildren: BookmarksBookmarkIdRouteChildren = {
+  BookmarksBookmarkIdEditRoute: BookmarksBookmarkIdEditRoute,
+}
+
+const BookmarksBookmarkIdRouteWithChildren =
+  BookmarksBookmarkIdRoute._addFileChildren(BookmarksBookmarkIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute
+  IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  BookmarksBookmarkIdRoute: BookmarksBookmarkIdRouteWithChildren,
+  BookmarksNewRoute: BookmarksNewRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+  TagsIndexRoute: TagsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from '@tanstack/react-start'
-
 import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

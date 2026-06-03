@@ -33,6 +33,7 @@ enum ErrorCode {
   UNAUTHORIZED: "UNAUTHORIZED",
   NOT_FOUND: "NOT_FOUND",
   URL_CONFLICT: "URL_CONFLICT",
+  TAG_CONFLICT: "TAG_CONFLICT",
   INVALID_CURSOR: "INVALID_CURSOR",
   CURSOR_MISMATCH: "CURSOR_MISMATCH",
   INTERNAL_ERROR: "INTERNAL_ERROR",
@@ -57,6 +58,10 @@ scalar BookmarkTitle extends string;
 
 @maxLength(4000)
 scalar BookmarkNote extends string;
+
+@format("uuid")
+@pattern("^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
+scalar TagId extends string;
 
 model ErrorBody<Code extends ErrorCode = ErrorCode> {
   code: Code;
@@ -86,6 +91,12 @@ model NotFoundError {
 model ConflictError {
   @statusCode statusCode: 409;
   error: ErrorBody<ErrorCode.URL_CONFLICT>;
+}
+
+@error
+model TagConflictError {
+  @statusCode statusCode: 409;
+  error: ErrorBody<ErrorCode.TAG_CONFLICT>;
 }
 
 @error
@@ -197,6 +208,27 @@ model SuggestTagsOk {
   items: TagSuggestion[];
 }
 
+model Tag {
+  id: TagId;
+  name: string;
+  count: int32;
+  createdAt: utcDateTime;
+}
+
+model ListTagsOk {
+  @statusCode statusCode: 200;
+  items: Tag[];
+}
+
+model RenameTagRequest {
+  name: TagInput;
+}
+
+model RenameTagOk {
+  @statusCode statusCode: 200;
+  tag: Tag;
+}
+
 @route("/v1")
 namespace V1 {
   @route("/bookmarks")
@@ -243,10 +275,29 @@ namespace V1 {
   @route("/tags")
   interface TagsApi {
     @get
+    list(): ListTagsOk | UnauthorizedError;
+
+    @get
     @route("/suggest")
     suggest(...SuggestTagsQuery):
       | SuggestTagsOk
       | UnauthorizedError
       | BadRequestError;
+
+    @patch(#{ implicitOptionality: false })
+    @route("/{tagId}")
+    rename(@path tagId: TagId, @body body: RenameTagRequest):
+      | RenameTagOk
+      | UnauthorizedError
+      | BadRequestError
+      | NotFoundError
+      | TagConflictError;
+
+    @delete
+    @route("/{tagId}")
+    deleteTag(@path tagId: TagId):
+      | NoContentResponse
+      | UnauthorizedError
+      | NotFoundError;
   }
 }
