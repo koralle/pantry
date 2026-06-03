@@ -59,5 +59,8 @@
     "vite": "8.0.14",
     "vitest": "4.1.7",
     "wrangler": "4.95.0"
+  },
+  "overrides": {
+    "@tanstack/query-core": "5.100.11"
   }
 }
