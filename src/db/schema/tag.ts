@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { sqliteTable, integer, text, unique, index } from 'drizzle-orm/sqlite-core'
+import { createInsertSchema, createSelectSchema } from 'drizzle-orm/valibot'
 
 import { user } from './auth-schema'
 
@@ -25,4 +26,7 @@ export const tagsTable = sqliteTable(
   (t) => [unique().on(t.userId, t.name), index('user_id_idx').on(t.userId)]
 )
 
-export type Tag = typeof tagsTable.$inferSelect
+export type TagSelectType = typeof tagsTable.$inferSelect
+
+export const tagSelectSchema = createSelectSchema(tagsTable)
+export const tagInsertSchema = createInsertSchema(tagsTable)

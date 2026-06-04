@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { sqliteTable, integer, text, unique, index } from 'drizzle-orm/sqlite-core'
+import { createInsertSchema, createSelectSchema } from 'drizzle-orm/valibot'
 
 import { user } from './auth-schema'
 
@@ -28,4 +29,7 @@ export const bookmarkTable = sqliteTable(
   ]
 )
 
-export type Bookmark = typeof bookmarkTable.$inferSelect
+export type BookmarkSelectType = typeof bookmarkTable.$inferSelect
+
+export const bookmarkSelectSchema = createSelectSchema(bookmarkTable)
+export const bookmarkInsertSchema = createInsertSchema(bookmarkTable)
