@@ -63,6 +63,13 @@ export default defineConfig({
       rules: {
         'unicorn/filename-case': 'off'
       }
+    },
+    {
+      files: ['src/db/schema/**/*.ts'],
+      rules: {
+        'id-length': 'off',
+        'no-magic-numbers': 'off'
+      }
     }
   ],
   plugins: [

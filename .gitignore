@@ -3,7 +3,8 @@ node_modules
 dist
 dist-ssr
 *.local
-.env
+!.env
+.env.keys
 .env.development.local
 .env.test.local
 .env.production.local
