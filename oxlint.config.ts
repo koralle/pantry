@@ -68,7 +68,10 @@ export default defineConfig({
       files: ['src/db/schema/**/*.ts'],
       rules: {
         'id-length': 'off',
-        'no-magic-numbers': 'off'
+        'import/group-exports': 'off',
+        'no-inline-comments': 'off',
+        'no-magic-numbers': 'off',
+        'sort-keys': 'off'
       }
     }
   ],
@@ -89,8 +92,10 @@ export default defineConfig({
     'eslint/func-style': ['error', 'expression', { allowArrowFunctions: false }],
     'eslint/no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
     'eslint/sort-imports': 'off',
+    'id-length': 'off',
     'import/exports-last': 'off',
     'import/no-named-export': 'off',
+    'import/no-namespace': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-filename-extension': 'off',
     'react/only-export-components': 'off',
