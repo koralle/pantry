@@ -1,0 +1,21 @@
+services:
+  turso:
+    image: ghcr.io/tursodatabase/libsql-server@sha256:817fb6c6865d048a509f5c120905629fb9b5af20ad0c526cdc68a6d8793898ad
+    platform: linux/arm64
+    container_name: pantry-turso
+    ports:
+      - "8080:8080"
+    tmpfs:
+      - /var/lib/sqld
+
+  # db-init:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   platform: linux/arm64
+  #   depends_on:
+  #     turso:
+  #       condition: service_started
+  #   environment:
+  #     - TURSO_URL=http://turso:8080
+  #   volumes: []
