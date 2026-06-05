@@ -1,18 +1,9 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
-interface Users {
-  readonly id: number
-  readonly name: string
-}
-
-const fetchUsers = () => [{ id: 1, name: 'むぎちゃ' }]
+import { tagQueryOptions, useTags } from './-queries/use-tag-query'
 
 function RouteComponent() {
-  const { data } = useSuspenseQuery<Users[]>({
-    queryFn: () => fetchUsers(),
-    queryKey: []
-  })
+  const { data } = useTags()
 
   return (
     <ul>
@@ -29,9 +20,7 @@ export const Route = createFileRoute('/tags/')({
   component: RouteComponent,
   loader: ({ context }) => {
     // oxlint-disable-next-line typescript/no-floating-promises
-    context.queryClient.prefetchQuery({
-      queryFn: () => fetchUsers(),
-      queryKey: []
-    })
-  }
+    context.queryClient.prefetchQuery(tagQueryOptions)
+  },
+  pendingComponent: () => <p>Loading...</p>
 })
