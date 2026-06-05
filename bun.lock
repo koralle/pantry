@@ -31,6 +31,7 @@
         "@t3-oss/env-core": "0.13.11",
         "@tanstack/devtools-vite": "0.7.0",
         "@tsconfig/strictest": "2.0.8",
+        "@tursodatabase/database": "0.6.1",
         "@types/node": "25.9.1",
         "@types/react": "19.2.15",
         "@types/react-dom": "19.2.3",
@@ -588,6 +589,18 @@
     "@tanstack/virtual-file-routes": ["@tanstack/virtual-file-routes@1.162.0", "", {}, "sha512-uhOeFyxLcU41HzvrxsGpiWdcMbScY1EDgbZ5K7DVRMYInbLYWAC0EA/kx9wXAoSM8q82bUG2hRl8+EAjE6XAbA=="],
 
     "@tsconfig/strictest": ["@tsconfig/strictest@2.0.8", "", {}, "sha512-XnQ7vNz5HRN0r88GYf1J9JJjqtZPiHt2woGJOo2dYqyHGGcd6OLGqSlBB6p1j9mpzja6Oe5BoPqWmeDx6X9rLw=="],
+
+    "@tursodatabase/database": ["@tursodatabase/database@0.6.1", "", { "dependencies": { "@tursodatabase/database-common": "^0.6.1" }, "optionalDependencies": { "@tursodatabase/database-darwin-arm64": "0.6.1", "@tursodatabase/database-linux-arm64-gnu": "0.6.1", "@tursodatabase/database-linux-x64-gnu": "0.6.1", "@tursodatabase/database-win32-x64-msvc": "0.6.1" } }, "sha512-qg6LO1XHA9kc2s97crg0/nHiKFk3xTzylRuZPYggO0vA4hx2rp8fk0Je2vFGOkfVv+ZmzsXOIb+DBHmdrG+72A=="],
+
+    "@tursodatabase/database-common": ["@tursodatabase/database-common@0.6.1", "", {}, "sha512-fkmkhgSUDg3MXkcziTG9Ime3AY5+YvvDN7VvUDEMNV7MP+XgwE/i5tU6eQP1EKa/zDkdSYPq8gPcmROmKmKL8Q=="],
+
+    "@tursodatabase/database-darwin-arm64": ["@tursodatabase/database-darwin-arm64@0.6.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-2/nlqulI/kWlrh7vHMwF5fkuavGRWB83SIhzHZmoHSQovq0a28Z4+WAHerjh9yNs7DTj70U9PIsvAtRdh77l7g=="],
+
+    "@tursodatabase/database-linux-arm64-gnu": ["@tursodatabase/database-linux-arm64-gnu@0.6.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-ixooF2xyxV84GYIYPLI5D9VEp+cX3WPBmXRyoCGw7+l9G66eOp8QppGF0dKFYhtp/AJ8YmOp+lemqBoCue9N8Q=="],
+
+    "@tursodatabase/database-linux-x64-gnu": ["@tursodatabase/database-linux-x64-gnu@0.6.1", "", { "os": "linux", "cpu": "x64" }, "sha512-cNZ3FS8XBn4X8zHSzd31nvEeBbR4hCDBGs2P3ViND1Egu5oDZ822a+hWxNxMgMPgUJf/aGBEAk5p+j11fAC/QQ=="],
+
+    "@tursodatabase/database-win32-x64-msvc": ["@tursodatabase/database-win32-x64-msvc@0.6.1", "", { "os": "win32", "cpu": "x64" }, "sha512-3CASiW3BbeNT4qryxPKKZECGxaAtfUeM/Bjx1NWIxShCLLtRpnaEUt7WLOT2hz+sqU322H6fmMuaN9sYrcwBxw=="],
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.2", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg=="],
 

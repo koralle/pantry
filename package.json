@@ -47,6 +47,7 @@
     "@t3-oss/env-core": "0.13.11",
     "@tanstack/devtools-vite": "0.7.0",
     "@tsconfig/strictest": "2.0.8",
+    "@tursodatabase/database": "0.6.1",
     "@types/node": "25.9.1",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
