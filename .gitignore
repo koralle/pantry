@@ -4,6 +4,7 @@ dist
 dist-ssr
 *.local
 .env
+.env.keys
 .env.development.local
 .env.test.local
 .env.production.local
