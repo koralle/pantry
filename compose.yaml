@@ -7,15 +7,3 @@ services:
       - '8080:8080'
     tmpfs:
       - /var/lib/sqld
-
-  # db-init:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   platform: linux/arm64
-  #   depends_on:
-  #     turso:
-  #       condition: service_started
-  #   environment:
-  #     - TURSO_URL=http://turso:8080
-  #   volumes: []
