@@ -1,6 +1,6 @@
+import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/libsql'
 
-import { env } from '../../env'
 import * as authTables from './schema/auth-schema'
 import { bookmarkTable } from './schema/bookmark'
 import { bookmarkTagsTable } from './schema/bookmark-tag'

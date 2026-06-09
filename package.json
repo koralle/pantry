@@ -6,7 +6,7 @@
     "build": "vite build",
     "cf-typegen": "wrangler types",
     "deploy": "bun run build && wrangler deploy",
-    "dev": "vite dev --port 3000",
+    "dev": "bun vite dev --port 3000",
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",
     "lint": "oxlint .",

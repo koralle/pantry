@@ -68,7 +68,6 @@ export default defineConfig({
       files: ['src/db/schema/**/*.ts'],
       rules: {
         'id-length': 'off',
-        'import/group-exports': 'off',
         'no-inline-comments': 'off',
         'no-magic-numbers': 'off',
         'sort-keys': 'off'
@@ -94,12 +93,14 @@ export default defineConfig({
     'eslint/sort-imports': 'off',
     'id-length': 'off',
     'import/exports-last': 'off',
+    'import/group-exports': 'off',
     'import/no-named-export': 'off',
     'import/no-namespace': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-filename-extension': 'off',
     'react/only-export-components': 'off',
     'react/react-in-jsx-scope': 'off',
+    'require-await': 'off',
     'typescript/prefer-readonly-parameter-types': 'off'
   }
 })
