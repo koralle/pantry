@@ -2,9 +2,7 @@
   "version": "7",
   "dialect": "sqlite",
   "id": "a9a758c1-54e8-4b2d-8b25-99102c35193d",
-  "prevIds": [
-    "72517c51-6379-4a6b-8972-6ecaf1a20d7b"
-  ],
+  "prevIds": ["72517c51-6379-4a6b-8972-6ecaf1a20d7b"],
   "ddl": [
     {
       "name": "accounts",
@@ -585,13 +583,9 @@
       "table": "tags"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -600,13 +594,9 @@
       "table": "accounts"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -615,13 +605,9 @@
       "table": "sessions"
     },
     {
-      "columns": [
-        "bookmark_id"
-      ],
+      "columns": ["bookmark_id"],
       "tableTo": "bookmarks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -630,13 +616,9 @@
       "table": "bookmark_tags"
     },
     {
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "tableTo": "tags",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -645,13 +627,9 @@
       "table": "bookmark_tags"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -660,13 +638,9 @@
       "table": "bookmarks"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -675,54 +649,42 @@
       "table": "tags"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "accounts_pk",
       "table": "accounts",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "sessions_pk",
       "table": "sessions",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "users_pk",
       "table": "users",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verifications_pk",
       "table": "verifications",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "bookmarks_pk",
       "table": "bookmarks",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "tags_pk",
       "table": "tags",
@@ -849,48 +811,35 @@
       "table": "tags"
     },
     {
-      "columns": [
-        "bookmark_id",
-        "tag_id"
-      ],
+      "columns": ["bookmark_id", "tag_id"],
       "nameExplicit": false,
       "name": "bookmark_tags_bookmark_id_tag_id_unique",
       "entityType": "uniques",
       "table": "bookmark_tags"
     },
     {
-      "columns": [
-        "user_id",
-        "url"
-      ],
+      "columns": ["user_id", "url"],
       "nameExplicit": false,
       "name": "bookmarks_user_id_url_unique",
       "entityType": "uniques",
       "table": "bookmarks"
     },
     {
-      "columns": [
-        "user_id",
-        "name"
-      ],
+      "columns": ["user_id", "name"],
       "nameExplicit": false,
       "name": "tags_user_id_name_unique",
       "entityType": "uniques",
       "table": "tags"
     },
     {
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nameExplicit": false,
       "name": "sessions_token_unique",
       "entityType": "uniques",
       "table": "sessions"
     },
     {
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nameExplicit": false,
       "name": "users_email_unique",
       "entityType": "uniques",

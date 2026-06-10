@@ -72,6 +72,14 @@ export default defineConfig({
         'no-magic-numbers': 'off',
         'sort-keys': 'off'
       }
+    },
+    {
+      files: ['src/**/*.tsx'],
+      rules: {
+        'max-lines-per-function': 'off',
+        'react-perf/jsx-no-new-array-as-prop': 'off',
+        'react-perf/jsx-no-new-function-as-prop': 'off'
+      }
     }
   ],
   plugins: [
@@ -97,6 +105,7 @@ export default defineConfig({
     'import/no-named-export': 'off',
     'import/no-namespace': 'off',
     'import/prefer-default-export': 'off',
+    'no-magic-numbers': 'off',
     'react/jsx-filename-extension': 'off',
     'react/only-export-components': 'off',
     'react/react-in-jsx-scope': 'off',
