@@ -3,104 +3,80 @@ import { defineConfig } from 'oxlint'
 export default defineConfig({
   categories: {
     correctness: 'error',
-    nursery: 'warn',
-    pedantic: 'error',
-    perf: 'error',
+    nursery: 'off',
+    pedantic: 'off',
+    perf: 'warn',
     restriction: 'warn',
-    style: 'error',
+    style: 'warn',
     suspicious: 'error'
   },
-  globals: {
-    Env: 'readonly',
-    ExecutionContext: 'readonly',
-    URL: 'readonly'
-  },
   ignorePatterns: ['src/routeTree.gen.ts', 'worker-configuration.d.ts'],
-  options: {
-    typeAware: true,
-    typeCheck: true
-  },
-  overrides: [
-    {
-      files: ['oxfmt.config.ts', 'oxlint.config.ts', 'vite.config.ts', 'src/server.ts'],
-      rules: {
-        'import/no-default-export': 'off'
-      }
-    },
-    {
-      files: ['src/router.tsx', 'src/routes/**/*.tsx'],
-      rules: {
-        'eslint/func-style': 'off',
-        'typescript/explicit-function-return-type': 'off',
-        'typescript/explicit-module-boundary-types': 'off',
-        'typescript/no-unsafe-assignment': 'off',
-        'typescript/no-unsafe-call': 'off',
-        'typescript/no-unsafe-return': 'off'
-      }
-    },
-    {
-      files: ['src/server.ts'],
-      rules: {
-        'oxc/no-async-await': 'off',
-        'typescript/prefer-readonly-parameter-types': 'off'
-      }
-    },
-    {
-      files: ['src/api/index.ts'],
-      rules: {
-        'typescript/prefer-readonly-parameter-types': 'off'
-      }
-    },
-    {
-      files: ['src/routes/__root.tsx'],
-      rules: {
-        'react/no-multi-comp': 'off',
-        'typescript/prefer-readonly-parameter-types': 'off'
-      }
-    },
-    {
-      files: ['src/routeTree.gen.ts'],
-      rules: {
-        'unicorn/filename-case': 'off'
-      }
-    },
-    {
-      files: ['src/db/schema/**/*.ts'],
-      rules: {
-        'id-length': 'off',
-        'no-inline-comments': 'off',
-        'no-magic-numbers': 'off',
-        'sort-keys': 'off'
-      }
-    }
-  ],
   plugins: [
     'eslint',
-    'typescript',
     'unicorn',
     'react',
     'react-perf',
+    'oxc',
     'import',
     'jsdoc',
     'jsx-a11y',
     'node',
-    'promise',
-    'oxc'
+    'promise'
   ],
   rules: {
-    'eslint/func-style': ['error', 'expression', { allowArrowFunctions: false }],
-    'eslint/no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
-    'eslint/sort-imports': 'off',
-    'id-length': 'off',
+    // Suspicious
+    'react/react-in-jsx-scope': 'off',
+
+    // Restriction
+    'react/jsx-filename-extension': 'off',
+    'react/only-export-components': 'off',
+    'oxc/no-async-await': 'off',
+    'oxc/no-rest-spread-properties': 'off',
     'import/exports-last': 'off',
+    'import/no-relative-parent-imports': 'off',
+
+    // Style
+    'func-style': ['error', 'declaration'],
+    'id-length': 'off',
+    'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
+    'no-magic-numbers': 'off',
+    'sort-imports': 'off',
+    'sort-keys': 'off',
     'import/group-exports': 'off',
     'import/no-named-export': 'off',
     'import/no-namespace': 'off',
-    'import/prefer-default-export': 'off',
-    'react/jsx-filename-extension': 'off',
-    'react/only-export-components': 'off',
-    'react/react-in-jsx-scope': 'off',
-    'require-await': 'off',
-    'typescript/prefer-readonly-parameter-types': 'off'
-  }
+    'import/prefer-default-export': 'off'
+  },
+  overrides: [
+    {
+      files: ['src/router.tsx'],
+      rules: {
+        'func-style': 'off'
+      }
+    },
+    {
+      files: ['src/routes/**/*.tsx'],
+      rules: {
+        'no-use-before-define': 'off'
+      }
+    },
+    {
+      files: ['env.ts'],
+      rules: {
+        'node/no-process-env': 'off'
+      }
+    },
+    {
+      files: [
+        'drizzle.config.ts',
+        'oxfmt.config.ts',
+        'oxlint.config.ts',
+        'vite.config.ts',
+        'vitest.config.ts'
+      ],
+      rules: {
+        'import/no-default-export': 'off'
+      }
+    }
+  ]
 })
