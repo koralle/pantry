@@ -19,7 +19,7 @@ jobs:
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
-      - name: Lint with Oxlint 
+      - name: Lint with Oxlint
         shell: bash
         run: |
           pnpm oxlint . --format=github
@@ -34,7 +34,7 @@ jobs:
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
-      - name: Format check with Oxfmt 
+      - name: Format check with Oxfmt
         shell: bash
         run: |
           pnpm run fmt:check
@@ -49,7 +49,7 @@ jobs:
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
-      - name: Typecheck 
+      - name: Typecheck
         shell: bash
         run: |
           pnpm run typecheck

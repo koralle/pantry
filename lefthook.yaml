@@ -6,12 +6,12 @@ pre-commit:
         jobs:
           - name: Format with Oxfmt (root)
             glob:
-              - "vite.config.ts"
-              - "oxfmt.config.ts"
-              - "oxlint.config.ts"
-              - "package.json"
-              - "tsconfig.json"
-              - "wrangler.jsonc"
+              - 'vite.config.ts'
+              - 'oxfmt.config.ts'
+              - 'oxlint.config.ts'
+              - 'package.json'
+              - 'tsconfig.json'
+              - 'wrangler.jsonc'
             run: |
               pnpm oxfmt {staged_files} --write
             stage_fixed: true
@@ -19,7 +19,7 @@ pre-commit:
           - name: Format with Oxfmt (src)
             root: src
             glob:
-              - "**/*.{ts,tsx}"
+              - '**/*.{ts,tsx}'
             run: |
               pnpm oxfmt {staged_files} --write
             stage_fixed: true
@@ -29,9 +29,9 @@ pre-commit:
         jobs:
           - name: Lint with Oxlint (root)
             glob:
-              - "vite.config.ts"
-              - "oxfmt.config.ts"
-              - "oxlint.config.ts"
+              - 'vite.config.ts'
+              - 'oxfmt.config.ts'
+              - 'oxlint.config.ts'
             run: |
               pnpm oxlint {staged_files} --fix
             stage_fixed: true
@@ -39,13 +39,13 @@ pre-commit:
           - name: Lint with Oxlint (src)
             root: src
             glob:
-              - "**/*.{ts,tsx}"
+              - '**/*.{ts,tsx}'
             run: |
               pnpm oxlint {staged_files} --fix
             stage_fixed: true
 
           - name: Typecheck
             glob:
-              - "**/*.{ts,tsx}"
+              - '**/*.{ts,tsx}'
             run: |
               pnpm run typecheck
