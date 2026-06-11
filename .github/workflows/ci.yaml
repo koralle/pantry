@@ -37,7 +37,7 @@ jobs:
       - name: Format check with Oxfmt
         shell: bash
         run: |
-          pnpm run fmt:check
+          pnpm run format:check
 
   typecheck:
     runs-on: ubuntu-24.04
