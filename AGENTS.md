@@ -13,16 +13,16 @@
 
 ## 開発コマンド
 
-| コマンド              | 説明                                   |
-| --------------------- | -------------------------------------- |
-| `bun run dev`         | 開発サーバー起動（Vite + workerd）     |
-| `bun run build`       | プロダクションビルド                   |
-| `bun run preview`     | ビルド成果物を preview                 |
-| `bun run deploy`      | Cloudflare Workers にデプロイ          |
-| `bun run test`        | テスト実行（Vitest）                   |
-| `bun run cf-typegen`  | Worker バインディングの型生成          |
-| `bun run spec:build`  | TypeSpec をコンパイルして OpenAPI 出力 |
-| `bun run spec:format` | TypeSpec のフォーマット修正            |
+| コマンド               | 説明                                   |
+| ---------------------- | -------------------------------------- |
+| `pnpm run dev`         | 開発サーバー起動（Vite + workerd）     |
+| `pnpm run build`       | プロダクションビルド                   |
+| `pnpm run preview`     | ビルド成果物を preview                 |
+| `pnpm run deploy`      | Cloudflare Workers にデプロイ          |
+| `pnpm run test`        | テスト実行（Vitest）                   |
+| `pnpm run cf-typegen`  | Worker バインディングの型生成          |
+| `pnpm run spec:build`  | TypeSpec をコンパイルして OpenAPI 出力 |
+| `pnpm run spec:format` | TypeSpec のフォーマット修正            |
 
 ## 設計方針
 
