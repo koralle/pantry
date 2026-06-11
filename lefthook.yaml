@@ -13,7 +13,7 @@ pre-commit:
               - 'tsconfig.json'
               - 'wrangler.jsonc'
             run: |
-              bun oxfmt {staged_files} --write
+              pnpm oxfmt {staged_files} --write
             stage_fixed: true
 
           - name: Format with Oxfmt (src)
@@ -21,7 +21,7 @@ pre-commit:
             glob:
               - '**/*.{ts,tsx}'
             run: |
-              bun oxfmt {staged_files} --write
+              pnpm oxfmt {staged_files} --write
             stage_fixed: true
 
     - group:
@@ -33,7 +33,7 @@ pre-commit:
               - 'oxfmt.config.ts'
               - 'oxlint.config.ts'
             run: |
-              bun oxlint {staged_files} --fix
+              pnpm oxlint {staged_files} --fix
             stage_fixed: true
 
           - name: Lint with Oxlint (src)
@@ -41,5 +41,5 @@ pre-commit:
             glob:
               - '**/*.{ts,tsx}'
             run: |
-              bun oxlint {staged_files} --fix
+              pnpm oxlint {staged_files} --fix
             stage_fixed: true
