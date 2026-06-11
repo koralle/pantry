@@ -39,7 +39,7 @@ jobs:
         run: |
           pnpm run fmt:check
 
-  format-check:
+  typecheck:
     runs-on: ubuntu-24.04
 
     steps:
