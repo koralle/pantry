@@ -43,3 +43,9 @@ pre-commit:
             run: |
               pnpm oxlint {staged_files} --fix
             stage_fixed: true
+
+          - name: Typecheck
+            glob:
+              - '**/*.{ts,tsx}'
+            run: |
+              pnpm run typecheck
