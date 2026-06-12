@@ -38,9 +38,9 @@
 **Solution:** Use D1 Sessions (2024+) to guarantee read-after-write consistency within a session:
 
 ```typescript
-const session = env.DB.withSession();
-await session.prepare('INSERT INTO users (name) VALUES (?)').bind('Alice').run();
-const user = await session.prepare('SELECT * FROM users WHERE name = ?').bind('Alice').first(); // Guaranteed to see Alice
+const session = env.DB.withSession()
+await session.prepare('INSERT INTO users (name) VALUES (?)').bind('Alice').run()
+const user = await session.prepare('SELECT * FROM users WHERE name = ?').bind('Alice').first() // Guaranteed to see Alice
 ```
 
 **When to use sessions:** Write → Read patterns, transactions requiring consistency
@@ -67,20 +67,27 @@ Then import: `import type { Env } from './.wrangler/types/runtime';`
 // ❌ Old fetch pattern
 export class MyDO {
   async fetch(request: Request) {
-    const { method } = await request.json();
-    if (method === 'increment') return new Response(String(await this.increment()));
+    const { method } = await request.json()
+    if (method === 'increment') return new Response(String(await this.increment()))
   }
-  async increment() { return ++this.value; }
+  async increment() {
+    return ++this.value
+  }
 }
-const stub = env.DO.get(id);
-const res = await stub.fetch('http://x', { method: 'POST', body: JSON.stringify({ method: 'increment' }) });
+const stub = env.DO.get(id)
+const res = await stub.fetch('http://x', {
+  method: 'POST',
+  body: JSON.stringify({ method: 'increment' })
+})
 
 // ✅ RPC pattern (type-safe, no serialization overhead)
 export class MyDO {
-  async increment() { return ++this.value; }
+  async increment() {
+    return ++this.value
+  }
 }
-const stub = env.DO.get(id);
-const count = await stub.increment(); // Direct method call
+const stub = env.DO.get(id)
+const count = await stub.increment() // Direct method call
 ```
 
 ### "WebSocket connection closes unexpectedly"
@@ -108,26 +115,28 @@ Hibernation automatically suspends inactive connections, wakes on events
 
 ```typescript
 // ✅ Hono (Workers-native)
-import { Hono } from 'hono';
-const app = new Hono();
-app.use('*', async (c, next) => { /* middleware */ await next(); });
+import { Hono } from 'hono'
+const app = new Hono()
+app.use('*', async (c, next) => {
+  /* middleware */ await next()
+})
 ```
 
 See [frameworks.md](./frameworks.md) for full patterns
 
 ## Limits
 
-| Limit | Value | Notes |
-|-------|-------|-------|
-| Request size | 100 MB | Maximum incoming request size |
-| Response size | Unlimited | Supports streaming |
-| CPU time (Free) | 10ms | Free plan |
-| CPU time (Paid) | 30s default / 5min max | Configurable via `limits.cpu_ms` |
-| Subrequests (Free) | 50 | Per invocation |
-| Subrequests (Paid) | 10,000 | Per invocation |
-| Subrequest operations (KV, R2, Cache API) | 1,000 | Shared across KV reads, R2 ops, Cache API calls per request |
-| KV value size | 25 MiB | Maximum per key |
-| Environment variable size | 5 KB | Per variable |
+| Limit                                     | Value                  | Notes                                                       |
+| ----------------------------------------- | ---------------------- | ----------------------------------------------------------- |
+| Request size                              | 100 MB                 | Maximum incoming request size                               |
+| Response size                             | Unlimited              | Supports streaming                                          |
+| CPU time (Free)                           | 10ms                   | Free plan                                                   |
+| CPU time (Paid)                           | 30s default / 5min max | Configurable via `limits.cpu_ms`                            |
+| Subrequests (Free)                        | 50                     | Per invocation                                              |
+| Subrequests (Paid)                        | 10,000                 | Per invocation                                              |
+| Subrequest operations (KV, R2, Cache API) | 1,000                  | Shared across KV reads, R2 ops, Cache API calls per request |
+| KV value size                             | 25 MiB                 | Maximum per key                                             |
+| Environment variable size                 | 5 KB                   | Per variable                                                |
 
 ## See Also
 

@@ -13,11 +13,13 @@
 **Backend (Workers):** Built-in fetch API, no additional packages required
 
 **Client (PartyTracks):**
+
 ```bash
 npm install partytracks @cloudflare/calls
 ```
 
 **Client (React + PartyTracks):**
+
 ```bash
 npm install partytracks @cloudflare/calls observable-hooks
 # Observable hooks: useObservableAsValue, useValueAsObservable
@@ -61,10 +63,12 @@ wrangler deploy
 ## Environment Variables
 
 **Required:**
+
 - `CALLS_APP_ID`: From dashboard
 - `CALLS_APP_SECRET`: From dashboard (secret)
 
 **Optional:**
+
 - `MAX_WEBCAM_BITRATE` (default: 1200000)
 - `MAX_WEBCAM_FRAMERATE` (default: 24)
 - `MAX_WEBCAM_QUALITY_LEVEL` (default: 1080)
@@ -88,8 +92,8 @@ const pc = new RTCPeerConnection({
     }
   ],
   bundlePolicy: 'max-bundle', // Recommended: reduces overhead
-  iceTransportPolicy: 'all'    // Use 'relay' to force TURN (testing only)
-});
+  iceTransportPolicy: 'all' // Use 'relay' to force TURN (testing only)
+})
 ```
 
 **Ports:** 3478 (UDP/TCP), 53 (UDP), 80 (TCP), 443 (TLS), 5349 (TLS)
@@ -104,24 +108,24 @@ Minimal presence system:
 
 ```typescript
 export class Room {
-  private sessions = new Map<string, {userId: string, tracks: string[]}>();
+  private sessions = new Map<string, { userId: string; tracks: string[] }>()
 
   async fetch(req: Request) {
-    const {pathname} = new URL(req.url);
-    const body = await req.json();
-    
+    const { pathname } = new URL(req.url)
+    const body = await req.json()
+
     if (pathname === '/join') {
-      this.sessions.set(body.sessionId, {userId: body.userId, tracks: []});
-      return Response.json({participants: this.sessions.size});
+      this.sessions.set(body.sessionId, { userId: body.userId, tracks: [] })
+      return Response.json({ participants: this.sessions.size })
     }
-    
+
     if (pathname === '/publish') {
-      this.sessions.get(body.sessionId)?.tracks.push(...body.tracks);
+      this.sessions.get(body.sessionId)?.tracks.push(...body.tracks)
       // Broadcast to others via WebSocket (not shown)
-      return new Response('OK');
+      return new Response('OK')
     }
-    
-    return new Response('Not found', {status: 404});
+
+    return new Response('Not found', { status: 404 })
   }
 }
 ```
@@ -132,6 +136,6 @@ Check credentials before first API call:
 
 ```typescript
 if (!env.CALLS_APP_ID || !env.CALLS_APP_SECRET) {
-  throw new Error('CALLS_APP_ID and CALLS_APP_SECRET required');
+  throw new Error('CALLS_APP_ID and CALLS_APP_SECRET required')
 }
 ```

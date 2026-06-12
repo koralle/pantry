@@ -16,33 +16,31 @@ MANDATORY: You must query the `visibility-state` performance entries to calculat
  */
 function getTotalForegroundTime() {
   // MANDATORY: Query the visibility-state entries from the performance timeline.
-  const entries = performance.getEntriesByType('visibility-state');
+  const entries = performance.getEntriesByType('visibility-state')
 
   // Fallback: If the browser does not support VisibilityStateEntry,
   // the API will gracefully return an empty array.
   if (entries.length === 0) {
     // Return total time since navigation start as a fallback.
-    return performance.now();
+    return performance.now()
   }
 
-  let totalForegroundTime = 0;
+  let totalForegroundTime = 0
 
   for (let i = 0; i < entries.length; i++) {
     // Only calculate duration for periods where the state was 'visible'
     if (entries[i].name === 'visible') {
-      const start = entries[i].startTime;
+      const start = entries[i].startTime
 
       // The end time is the start time of the next state change,
       // or the current time if this is the final entry.
-      const end = i + 1 < entries.length
-          ? entries[i + 1].startTime
-          : performance.now();
+      const end = i + 1 < entries.length ? entries[i + 1].startTime : performance.now()
 
-      totalForegroundTime += (end - start);
+      totalForegroundTime += end - start
     }
   }
 
-  return totalForegroundTime;
+  return totalForegroundTime
 }
 ```
 
@@ -59,11 +57,11 @@ Because `performance.getEntriesByType('visibility-state')` returns an empty arra
 If the API is unsupported, the recommended fallback is to return `performance.now()`. This represents the total time since navigation, which serves as a reasonable upper bound for engagement time when visibility state history is unavailable.
 
 ```javascript
-const entries = performance.getEntriesByType('visibility-state');
+const entries = performance.getEntriesByType('visibility-state')
 
 // If the array is empty, the API is likely unsupported.
 if (entries.length === 0) {
   // Fallback: Return total time since page load.
-  return performance.now();
+  return performance.now()
 }
 ```

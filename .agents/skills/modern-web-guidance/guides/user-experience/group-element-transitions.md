@@ -8,8 +8,16 @@ Each element that needs to be tracked individually during a transition must have
 
 ```html
 <!-- Mandatory: Each element must have a unique view-transition-name -->
-<li style="view-transition-name: item-1" class="item">Item 1</li>
-<li style="view-transition-name: item-2" class="item">Item 2</li>
+<li
+  style="view-transition-name: item-1"
+  class="item">
+  Item 1
+</li>
+<li
+  style="view-transition-name: item-2"
+  class="item">
+  Item 2
+</li>
 ```
 
 To apply shared styles, also assign a `view-transition-class`.
@@ -21,7 +29,7 @@ To apply shared styles, also assign a `view-transition-class`.
 ```
 
 2. **Define the shared transition logic**
-   
+
 Use the `::view-transition-group()` pseudo-element with the class selector to apply styles to all members of that group.
 
 ```css
@@ -80,8 +88,8 @@ Wrap the DOM update in `document.startViewTransition()`. The browser will captur
 function updateList(newData) {
   document.startViewTransition(() => {
     // All DOM changes inside this callback will be transitioned
-    render(newData);
-  });
+    render(newData)
+  })
 }
 ```
 
@@ -96,7 +104,7 @@ View transitions work by overlaying snapshots of the DOM elements, and then tran
 }
 ```
 
-In addition, by default, the `:root` element has a view transition named `root`, which enables default full-page transitions. If there are no changes to the root element, this will be a transition between two identical snapshots, which are not interactive. Because we are only transitioning specific elements, and not the entire screen, we can disable the `root` transition. 
+In addition, by default, the `:root` element has a view transition named `root`, which enables default full-page transitions. If there are no changes to the root element, this will be a transition between two identical snapshots, which are not interactive. Because we are only transitioning specific elements, and not the entire screen, we can disable the `root` transition.
 
 ```css
 :root {
@@ -114,10 +122,10 @@ View Transitions are a progressive enhancement. If the browser does not support 
 
 ```javascript
 if (document.startViewTransition) {
-  document.startViewTransition(() => updateDOM());
+  document.startViewTransition(() => updateDOM())
 } else {
   // Fallback: Perform the update without animation
-  updateDOM();
+  updateDOM()
 }
 ```
 
