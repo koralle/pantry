@@ -41,6 +41,7 @@
     "lucide-react": "catalog:ui",
     "react": "catalog:react",
     "react-dom": "catalog:react",
+    "react-error-boundary": "catalog:errors",
     "valibot": "catalog:validation"
   },
   "devDependencies": {
