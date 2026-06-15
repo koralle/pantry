@@ -11,7 +11,7 @@ catalogs:
     '@better-auth/drizzle-adapter': 1.6.16
     better-auth: 1.6.16
   build:
-    '@cloudflare/vite-plugin': 1.40.0
+    '@cloudflare/vite-plugin': 1.40.2
     '@vitejs/plugin-react': 6.0.2
     'vite': 8.0.16
   database:
@@ -25,12 +25,12 @@ catalogs:
     '@tanstack/react-query-devtools': 5.101.0
     '@tanstack/react-router-devtools': 1.167.0
   envvars:
-    '@dotenvx/dotenvx': 1.71.0
+    '@dotenvx/dotenvx': 1.71.2
     '@t3-oss/env-core': 0.13.11
   form:
     '@formisch/react': 0.5.0
   format:
-    oxfmt: 0.53.0
+    oxfmt: 0.54.0
   framework:
     '@tanstack/react-query': 5.101.0
     '@tanstack/react-router': 1.170.15
@@ -40,7 +40,7 @@ catalogs:
   githooks:
     lefthook: 2.1.9
   lint:
-    oxlint: 1.68.0
+    oxlint: 1.69.0
     oxlint-tsgolint: 0.23.0
   react:
     '@types/react': 19.2.17
@@ -48,21 +48,21 @@ catalogs:
     react: 19.2.7
     react-dom: 19.2.7
   runtime:
-    '@types/node': 25.9.2
-    wrangler: 4.98.0
+    '@types/node': 25.9.3
+    wrangler: 4.100.0
   test:
-    '@cloudflare/vitest-pool-workers': 0.16.13
+    '@cloudflare/vitest-pool-workers': 0.16.15
     vitest: 4.1.8
   typescript:
     '@tsconfig/strictest': 2.0.8
-    '@typescript/native-preview': 7.0.0-dev.20260607.1
+    '@typescript/native-preview': 7.0.0-dev.20260611.2
     typescript: 6.0.3
   typespec:
-    '@typespec/compiler': 1.12.0
-    '@typespec/http': 1.12.0
-    '@typespec/openapi': 1.12.0
-    '@typespec/openapi3': 1.12.0
-    '@typespec/rest': 0.82.0
+    '@typespec/compiler': 1.13.0
+    '@typespec/http': 1.13.0
+    '@typespec/openapi': 1.13.0
+    '@typespec/openapi3': 1.13.0
+    '@typespec/rest': 0.83.0
   ui:
     '@base-ui/react': 1.5.0
     lucide-react: 1.17.0
