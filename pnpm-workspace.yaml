@@ -27,6 +27,9 @@ catalogs:
   envvars:
     '@dotenvx/dotenvx': 1.71.2
     '@t3-oss/env-core': 0.13.11
+  errors:
+    '@praha/error-factory': 1.4.1
+    'react-error-boundary': 6.1.2
   form:
     '@formisch/react': 0.5.0
   format:
@@ -50,6 +53,8 @@ catalogs:
   runtime:
     '@types/node': 25.9.3
     wrangler: 4.100.0
+  script:
+    tsx: 4.22.4
   test:
     '@cloudflare/vitest-pool-workers': 0.16.15
     vitest: 4.1.8
@@ -86,6 +91,7 @@ overrides:
   '@babel/helper-compilation-targets>semver': 7.8.0
   '@tanstack/query-core': 5.100.11
   kysely: 0.28.17
+  esbuild: 0.28.1
 
 saveExact: true
 

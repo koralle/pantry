@@ -27,6 +27,10 @@ export default defineConfig({
     // Suspicious
     'react/react-in-jsx-scope': 'off',
 
+    // Perf
+    'react-perf/jsx-no-new-array-as-prop': 'off',
+    'react-perf/jsx-no-new-function-as-prop': 'off',
+
     // Restriction
     'react/jsx-filename-extension': 'off',
     'react/only-export-components': 'off',
@@ -36,7 +40,7 @@ export default defineConfig({
     'import/no-relative-parent-imports': 'off',
 
     // Style
-    'func-style': ['error', 'declaration'],
+    'func-style': 'off',
     'id-length': 'off',
     'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
     'no-magic-numbers': 'off',
@@ -76,6 +80,13 @@ export default defineConfig({
       ],
       rules: {
         'import/no-default-export': 'off'
+      }
+    },
+    {
+      files: ['scripts/**/*.ts'],
+      rules: {
+        'no-console': 'off',
+        'unicorn/no-process-exit': 'off'
       }
     }
   ]
