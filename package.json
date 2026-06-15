@@ -63,6 +63,7 @@
     "@typespec/rest": "catalog:typespec",
     "@vitejs/plugin-react": "catalog:build",
     "drizzle-kit": "catalog:database",
+    "drizzle-seed": "catalog:database",
     "lefthook": "catalog:githooks",
     "oxfmt": "catalog:format",
     "oxlint": "catalog:lint",
