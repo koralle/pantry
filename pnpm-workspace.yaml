@@ -91,6 +91,7 @@ overrides:
   '@babel/helper-compilation-targets>semver': 7.8.0
   '@tanstack/query-core': 5.100.11
   kysely: 0.28.17
+  esbuild: 0.28.1
 
 saveExact: true
 
