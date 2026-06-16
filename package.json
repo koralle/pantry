@@ -5,6 +5,7 @@
   "scripts": {
     "build": "vite build",
     "cf-typegen": "wrangler types",
+    "db:seed": "pnpm dotenvx run -f .env.development -- pnpm tsx scripts/seed.ts",
     "deploy": "pnpm run build && wrangler deploy",
     "dev": "pnpm vite dev --port 3000",
     "format": "oxfmt . --write",
