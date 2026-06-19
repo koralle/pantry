@@ -1,3 +1,4 @@
+import { createServerOnlyFn } from '@tanstack/react-start'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/libsql'
 
@@ -17,3 +18,17 @@ export const db = drizzle({
     tags: tagsTable
   }
 })
+
+export const getDB = createServerOnlyFn(() =>
+  drizzle({
+    connection: {
+      url: env.DATABASE_URL
+    },
+    schema: {
+      ...authTables,
+      bookmark: bookmarkTable,
+      bookmarkTags: bookmarkTagsTable,
+      tags: tagsTable
+    }
+  })
+)
