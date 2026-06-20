@@ -31,6 +31,9 @@ export default defineConfig({
     'react-perf/jsx-no-new-array-as-prop': 'off',
     'react-perf/jsx-no-new-function-as-prop': 'off',
 
+    // Import
+    'import/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
+
     // Restriction
     'react/jsx-filename-extension': 'off',
     'react/only-export-components': 'off',

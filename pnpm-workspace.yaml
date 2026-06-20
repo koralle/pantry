@@ -71,6 +71,7 @@ catalogs:
     '@typespec/rest': 0.83.0
   ui:
     '@base-ui/react': 1.5.0
+    kiso.css: 1.2.4
     lucide-react: 1.17.0
   validation:
     valibot: 1.4.1

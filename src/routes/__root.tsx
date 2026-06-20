@@ -1,3 +1,4 @@
+import '../app.css'
 import type { TanStackDevtoolsReactInit } from '@tanstack/react-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
