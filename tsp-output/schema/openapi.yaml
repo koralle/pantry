@@ -1,0 +1,570 @@
+openapi: 3.1.0
+info:
+  title: Pantry API
+  version: 0.0.0
+tags: []
+paths:
+  /v1/bookmarks:
+    get:
+      operationId: BookmarksApi_list
+      parameters:
+        - $ref: '#/components/parameters/ListBookmarksQuery.q'
+        - $ref: '#/components/parameters/ListBookmarksQuery.tags'
+        - $ref: '#/components/parameters/ListBookmarksQuery.tagMode'
+        - $ref: '#/components/parameters/ListBookmarksQuery.sort'
+        - $ref: '#/components/parameters/ListBookmarksQuery.limit'
+        - $ref: '#/components/parameters/ListBookmarksQuery.cursor'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBookmarksOk'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/BadRequestError'
+                  - $ref: '#/components/schemas/InvalidCursorError'
+                  - $ref: '#/components/schemas/CursorMismatchError'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+    post:
+      operationId: BookmarksApi_create
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateBookmarkCreated'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookmarkRequest'
+  /v1/bookmarks/{bookmarkId}:
+    get:
+      operationId: BookmarksApi_get
+      parameters:
+        - name: bookmarkId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/BookmarkId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetBookmarkOk'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+    patch:
+      operationId: BookmarksApi_update
+      parameters:
+        - name: bookmarkId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/BookmarkId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateBookmarkOk'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookmarkRequest'
+    delete:
+      operationId: BookmarksApi_delete
+      parameters:
+        - name: bookmarkId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/BookmarkId'
+      responses:
+        '204':
+          description: There is no content to send for this request, but the headers may be useful.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /v1/tags/suggest:
+    get:
+      operationId: TagsApi_suggest
+      parameters:
+        - $ref: '#/components/parameters/SuggestTagsQuery.q'
+        - $ref: '#/components/parameters/SuggestTagsQuery.limit'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestTagsOk'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+components:
+  parameters:
+    ListBookmarksQuery.cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      explode: false
+    ListBookmarksQuery.limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+      explode: false
+    ListBookmarksQuery.q:
+      name: q
+      in: query
+      required: false
+      schema:
+        type: string
+      explode: false
+    ListBookmarksQuery.sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/BookmarkSort'
+        default: newest
+      explode: false
+    ListBookmarksQuery.tagMode:
+      name: tagMode
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/TagFilterMode'
+        default: and
+      explode: false
+    ListBookmarksQuery.tags:
+      name: tags
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/TagInput'
+        maxItems: 20
+    SuggestTagsQuery.limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 20
+        default: 10
+      explode: false
+    SuggestTagsQuery.q:
+      name: q
+      in: query
+      required: true
+      schema:
+        type: string
+        minLength: 1
+      explode: false
+  schemas:
+    BadRequestError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - INVALID_INPUT
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    BookmarkDetail:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BookmarkSummary'
+    BookmarkId:
+      type: string
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+      format: uuid
+    BookmarkNote:
+      type: string
+      maxLength: 4000
+    BookmarkSort:
+      type: string
+      enum:
+        - newest
+        - updated
+      description: |-
+        MVP API contract draft for bookmarks/tags.
+        - REST
+        - Cookie + Bearer authentication (401 when unauthenticated)
+        - Tags are normalized server-side: trim + lowercase + dedupe
+    BookmarkSummary:
+      type: object
+      required:
+        - id
+        - url
+        - title
+        - tags
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          $ref: '#/components/schemas/BookmarkId'
+        url:
+          $ref: '#/components/schemas/BookmarkUrl'
+        title:
+          $ref: '#/components/schemas/BookmarkTitle'
+        note:
+          $ref: '#/components/schemas/BookmarkNote'
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BookmarkTitle:
+      type: string
+      minLength: 1
+      maxLength: 512
+    BookmarkUrl:
+      type: string
+      minLength: 1
+      maxLength: 2048
+      format: uri
+    ConflictError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - URL_CONFLICT
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    CreateBookmarkCreated:
+      type: object
+      required:
+        - bookmark
+      properties:
+        bookmark:
+          $ref: '#/components/schemas/BookmarkDetail'
+    CreateBookmarkRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          $ref: '#/components/schemas/BookmarkUrl'
+        title:
+          $ref: '#/components/schemas/BookmarkTitle'
+        note:
+          $ref: '#/components/schemas/BookmarkNote'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagInput'
+          maxItems: 20
+    CursorMismatchError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - CURSOR_MISMATCH
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    ErrorCode:
+      type: string
+      enum:
+        - INVALID_INPUT
+        - UNAUTHORIZED
+        - NOT_FOUND
+        - URL_CONFLICT
+        - INVALID_CURSOR
+        - CURSOR_MISMATCH
+        - INTERNAL_ERROR
+    GetBookmarkOk:
+      type: object
+      required:
+        - bookmark
+      properties:
+        bookmark:
+          $ref: '#/components/schemas/BookmarkDetail'
+    InvalidCursorError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - INVALID_CURSOR
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    ListBookmarksOk:
+      type: object
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookmarkSummary'
+        nextCursor:
+          anyOf:
+            - type: string
+            - type: 'null'
+    NotFoundError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - NOT_FOUND
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    SuggestTagsOk:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagSuggestion'
+    TagFilterMode:
+      type: string
+      enum:
+        - and
+        - or
+    TagInput:
+      type: string
+      minLength: 1
+      maxLength: 32
+    TagSuggestion:
+      type: object
+      required:
+        - name
+        - count
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+          format: int32
+    UnauthorizedError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - UNAUTHORIZED
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string
+    UpdateBookmarkOk:
+      type: object
+      required:
+        - bookmark
+      properties:
+        bookmark:
+          $ref: '#/components/schemas/BookmarkDetail'
+    UpdateBookmarkRequest:
+      type: object
+      properties:
+        url:
+          $ref: '#/components/schemas/BookmarkUrl'
+        title:
+          $ref: '#/components/schemas/BookmarkTitle'
+        note:
+          anyOf:
+            - $ref: '#/components/schemas/BookmarkNote'
+            - type: 'null'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagInput'
+          maxItems: 20
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: cookie
+      name: pantry_session
+    BearerAuth:
+      type: http
+      scheme: Bearer
+servers:
+  - url: https://api.example.com
+    description: Production
+    variables: {}
