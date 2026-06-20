@@ -40,6 +40,7 @@
     "@tanstack/router-plugin": "catalog:framework",
     "better-auth": "catalog:authentication",
     "drizzle-orm": "catalog:database",
+    "kiso.css": "catalog:ui",
     "lucide-react": "catalog:ui",
     "react": "catalog:react",
     "react-dom": "catalog:react",
