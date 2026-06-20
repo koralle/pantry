@@ -9,41 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as ProtectedRouteImport } from './routes/_protected'
+import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as ProtectedTagsIndexRouteImport } from './routes/_protected/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
-import { Route as SignUpRouteImport } from './routes/sign-up'
 
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
-  getParentRoute: () => rootRouteImport
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedRoute = ProtectedRouteImport.update({
   id: '/_protected',
-  getParentRoute: () => rootRouteImport
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SignInIndexRoute = SignInIndexRouteImport.update({
   id: '/sign-in/',
   path: '/sign-in/',
-  getParentRoute: () => rootRouteImport
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProtectedRoute
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedTagsIndexRoute = ProtectedTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
-  getParentRoute: () => ProtectedRoute
+  getParentRoute: () => ProtectedRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -145,24 +145,25 @@ interface ProtectedRouteChildren {
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedIndexRoute: ProtectedIndexRoute,
-  ProtectedTagsIndexRoute: ProtectedTagsIndexRoute
+  ProtectedTagsIndexRoute: ProtectedTagsIndexRoute,
 }
 
-const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(ProtectedRouteChildren)
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
+  ProtectedRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,
   SignUpRoute: SignUpRoute,
   SignInIndexRoute: SignInIndexRoute,
-  ApiAuthSplatRoute: ApiAuthSplatRoute
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from '@tanstack/react-start'
-
 import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
