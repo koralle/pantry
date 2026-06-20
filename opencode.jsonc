@@ -1,0 +1,28 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "better-auth": {
+      "type": "remote",
+      "url": "https://mcp.better-auth.com/mcp",
+      "enabled": true
+    }
+  },
+  "references": {
+    "formisch": {
+      "repository": "open-circle/formisch",
+      "branch": "main"
+    },
+    "tanstack-query": {
+      "repository": "TanStack/query",
+      "branch": "main"
+    },
+    "tanstack-router": {
+      "repository": "TanStack/router",
+      "branch": "main"
+    },
+    "tanstack-start": {
+      "repository": "TanStack/start",
+      "branch": "main"
+    }
+  }
+}
