@@ -17,7 +17,7 @@ signatures.
 function Composer({
   renderHeader,
   renderFooter,
-  renderActions,
+  renderActions
 }: {
   renderHeader?: () => React.ReactNode
   renderFooter?: () => React.ReactNode
@@ -79,7 +79,12 @@ return (
 // Render props work well when you need to pass data back
 <List
   data={items}
-  renderItem={({ item, index }) => <Item item={item} index={index} />}
+  renderItem={({ item, index }) => (
+    <Item
+      item={item}
+      index={index}
+    />
+  )}
 />
 ```
 
