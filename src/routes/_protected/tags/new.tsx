@@ -8,7 +8,10 @@ function RouteComponent() {
   return (
     <div>
       <h1>タグ新規登録</h1>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+        }}>
         <label>
           タグ名
           <input

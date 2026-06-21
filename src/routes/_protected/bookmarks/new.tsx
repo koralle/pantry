@@ -8,7 +8,10 @@ function RouteComponent() {
   return (
     <div>
       <h1>ブックマーク新規作成</h1>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+        }}>
         <label>
           URL
           <input

@@ -11,7 +11,10 @@ function RouteComponent() {
     <div>
       <h1>ブックマーク編集</h1>
       <p>ID: {id}</p>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+        }}>
         <label>
           タイトル
           <input
