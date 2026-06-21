@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, redirect, Outlet, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { useTransition } from 'react'
 
 import { authClient } from '../features/auth/auth-client'
@@ -45,13 +45,30 @@ function Layout() {
 
   return (
     <div>
-      <button
-        type='button'
-        onClick={handleClick}
-        disabled={isPending}>
-        Sign Out
-      </button>
-      <Outlet />
+      <header>
+        <nav>
+          <Link
+            to='/'
+            search={{ tagMode: 'and', sort: 'newest' }}>
+            Pantry
+          </Link>
+          <Link
+            to='/tags'
+            search={{ limit: 50, offset: 0 }}>
+            タグ
+          </Link>
+          <Link to='/settings'>設定</Link>
+        </nav>
+        <button
+          type='button'
+          onClick={handleClick}
+          disabled={isPending}>
+          Sign Out
+        </button>
+      </header>
+      <main>
+        <Outlet />
+      </main>
     </div>
   )
 }

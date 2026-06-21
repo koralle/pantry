@@ -20,6 +20,8 @@ pre-commit:
             root: src
             glob:
               - '**/*.{ts,tsx}'
+            exclude:
+              - 'src/routeTree.gen.ts'
             run: |
               pnpm oxfmt {staged_files} --write
             stage_fixed: true

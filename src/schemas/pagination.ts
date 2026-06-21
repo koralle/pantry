@@ -8,8 +8,8 @@ const numericQueryParam = v.pipe(
 )
 
 export const offsetPaginationQuerySchema = v.object({
-  limit: v.pipe(v.optional(numericQueryParam, 50), v.brand('limit')),
-  offset: v.pipe(v.optional(numericQueryParam, 0), v.brand('offset'))
+  limit: v.pipe(v.optional(numericQueryParam, 50)),
+  offset: v.pipe(v.optional(numericQueryParam, 0))
 })
 
 export type OffsetPaginationQuery = v.InferOutput<typeof offsetPaginationQuerySchema>

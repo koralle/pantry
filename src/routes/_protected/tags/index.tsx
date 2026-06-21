@@ -14,10 +14,10 @@ const tagsSearchSchema = v.object({
 })
 
 export const Route = createFileRoute('/_protected/tags/')({
-  validateSearch: (search) => v.parseAsync(tagsSearchSchema, search),
+  validateSearch: (search) => v.parse(tagsSearchSchema, search),
   loader: async ({ location }) => {
     const { user } = await ensureSession()
-    const search = await v.parseAsync(tagsSearchSchema, location.search)
+    const search = v.parse(tagsSearchSchema, location.search)
 
     const tagsPromise = fetchTags({ data: { limit: search.limit, offset: search.offset } })
 
