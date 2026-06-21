@@ -14,9 +14,7 @@ When opened in a modal state, a dialog without the `closedby` attribute responds
 
 ```html
 <!-- This is unnecessary as it is the default behavior for modal dialogs -->
-<dialog
-  closedby="closerequest"
-  aria-labelledby="example">
+<dialog closedby="closerequest" aria-labelledby="example">
   <h1 id="example">Example</h1>
   <p>Modal that can be dismissed with close requests.</p>
 </dialog>
@@ -25,9 +23,7 @@ When opened in a modal state, a dialog without the `closedby` attribute responds
 If you also want “light dismiss” behavior, then you must set `closedby` to `any`:
 
 ```html
-<dialog
-  closedby="any"
-  aria-labelledby="example">
+<dialog closedby="any" aria-labelledby="example">
   <h1 id="example">Example</h1>
   <p>Modal that can be dismissed with close requests and light dismiss.</p>
 </dialog>

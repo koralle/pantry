@@ -14,7 +14,6 @@
 ```
 
 **Create commands:**
-
 ```bash
 npx wrangler kv namespace create MY_KV
 npx wrangler r2 bucket create my-bucket
@@ -34,13 +33,11 @@ npx wrangler queues list
 
 ```jsonc
 {
-  "services": [
-    {
-      "binding": "MY_SERVICE",
-      "service": "other-worker",
-      "environment": "production" // Optional: target specific env
-    }
-  ],
+  "services": [{ 
+    "binding": "MY_SERVICE", 
+    "service": "other-worker",
+    "environment": "production"  // Optional: target specific env
+  }],
   "ai": { "binding": "AI" },
   "browser": { "binding": "BROWSER" },
   "workflows": [{ "binding": "MY_WORKFLOW", "name": "my-workflow" }]
@@ -48,7 +45,6 @@ npx wrangler queues list
 ```
 
 **Create workflows:**
-
 ```bash
 npx wrangler workflows create my-workflow
 ```
@@ -81,7 +77,6 @@ npx wrangler workflows create my-workflow
 ```
 
 **Secrets (never in config):**
-
 ```bash
 npx wrangler secret put API_KEY
 ```
@@ -93,7 +88,7 @@ npx wrangler secret put API_KEY
   "name": "my-worker",
   "vars": { "ENV": "production" },
   "kv_namespaces": [{ "binding": "CACHE", "id": "prod-kv-id" }],
-
+  
   "env": {
     "staging": {
       "vars": { "ENV": "staging" },
@@ -104,7 +99,6 @@ npx wrangler secret put API_KEY
 ```
 
 **Deploy:**
-
 ```bash
 npx wrangler deploy              # Production
 npx wrangler deploy --env staging
@@ -114,18 +108,15 @@ npx wrangler deploy --env staging
 
 ```jsonc
 {
-  "kv_namespaces": [
-    {
-      "binding": "MY_KV",
-      "id": "prod-id",
-      "preview_id": "dev-id" // Used in wrangler dev
-    }
-  ]
+  "kv_namespaces": [{
+    "binding": "MY_KV",
+    "id": "prod-id",
+    "preview_id": "dev-id"  // Used in wrangler dev
+  }]
 }
 ```
 
 **Or use remote:**
-
 ```bash
 npx wrangler dev --remote  # Uses production bindings
 ```
@@ -138,7 +129,7 @@ npx wrangler dev --remote  # Uses production bindings
   "name": "my-app",
   "main": "src/index.ts",
   "compatibility_date": "2025-01-01",
-
+  
   "vars": { "API_URL": "https://api.example.com" },
   "kv_namespaces": [{ "binding": "CACHE", "id": "abc123" }],
   "r2_buckets": [{ "binding": "ASSETS", "bucket_name": "my-assets" }],
@@ -155,7 +146,9 @@ npx wrangler dev --remote  # Uses production bindings
 ```jsonc
 {
   "durable_objects": {
-    "bindings": [{ "name": "COUNTER", "class_name": "Counter", "script_name": "my-worker" }]
+    "bindings": [
+      { "name": "COUNTER", "class_name": "Counter", "script_name": "my-worker" }
+    ]
   }
 }
 ```
@@ -163,13 +156,8 @@ npx wrangler dev --remote  # Uses production bindings
 ```typescript
 // In same Worker or script_name Worker
 export class Counter {
-  constructor(
-    private state: DurableObjectState,
-    private env: Env
-  ) {}
-  async fetch(request: Request) {
-    /* ... */
-  }
+  constructor(private state: DurableObjectState, private env: Env) {}
+  async fetch(request: Request) { /* ... */ }
 }
 ```
 

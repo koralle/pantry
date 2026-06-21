@@ -18,9 +18,9 @@
 // src/index.ts
 export default {
   async email(message, env, ctx) {
-    await message.forward('destination@example.com')
+    await message.forward("destination@example.com");
   }
-} satisfies ExportedHandler
+} satisfies ExportedHandler;
 ```
 
 ### With Storage Bindings
@@ -37,10 +37,10 @@ export default {
 
 ```typescript
 interface Env {
-  EMAIL: SendEmail
-  KV: KVNamespace
-  R2: R2Bucket
-  DB: D1Database
+  EMAIL: SendEmail;
+  KV: KVNamespace;
+  R2: R2Bucket;
+  DB: D1Database;
 }
 ```
 
@@ -70,7 +70,6 @@ npx wrangler deploy
 Dashboard: Email > Email Routing > [domain] > Settings > Email Workers > Select worker
 
 API:
-
 ```bash
 curl -X PUT "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/email/routing/settings" \
   -H "Authorization: Bearer $API_TOKEN" \
@@ -99,8 +98,8 @@ npx wrangler secret put API_KEY
 
 ```typescript
 interface Env {
-  API_KEY: string
-  THRESHOLD: string
+  API_KEY: string;
+  THRESHOLD: string;
 }
 ```
 
@@ -125,13 +124,13 @@ npm install --save-dev @cloudflare/workers-types
 ```
 
 ```typescript
-import type { ForwardableEmailMessage } from '@cloudflare/workers-types'
+import type { ForwardableEmailMessage } from "@cloudflare/workers-types";
 
 export default {
   async email(message: ForwardableEmailMessage, env: Env, ctx: ExecutionContext): Promise<void> {
-    await message.forward('dest@example.com')
+    await message.forward("dest@example.com");
   }
-} satisfies ExportedHandler<Env>
+} satisfies ExportedHandler<Env>;
 ```
 
 ## Dependencies
@@ -141,16 +140,16 @@ npm install postal-mime
 ```
 
 ```typescript
-import PostalMime from 'postal-mime'
+import PostalMime from 'postal-mime';
 
 export default {
   async email(message, env, ctx) {
-    const parser = new PostalMime()
-    const email = await parser.parse(await message.raw.arrayBuffer())
-    console.log(email.subject)
-    await message.forward('inbox@corp.com')
+    const parser = new PostalMime();
+    const email = await parser.parse(await message.raw.arrayBuffer());
+    console.log(email.subject);
+    await message.forward("inbox@corp.com");
   }
-} satisfies ExportedHandler
+} satisfies ExportedHandler;
 ```
 
 ## Multi-Environment

@@ -1,5 +1,4 @@
 # Declarative Button Actions
-
 The Invoker Commands API allows buttons to trigger actions on target elements declaratively using HTML attributes. This approach reduces the need for manual event listeners and ensures interactivity as soon as the HTML is parsed.
 
 For custom, application-specific actions, you can define your own command names. Custom commands must be prefixed with a double dash (`--`) to avoid collisions with future built-in browser commands.
@@ -14,29 +13,21 @@ For custom, application-specific actions, you can define your own command names.
 
 ```html
 <!-- The target element that will respond to custom commands -->
-<div
-  id="action-target"
-  class="target">
+<div id="action-target" class="target">
   Action Target
 </div>
 
 <!-- Buttons declaratively linked to the target element -->
 <!-- Each button sends a unique custom command starting with '--' -->
-<button
-  commandfor="action-target"
-  command="--spin">
+<button commandfor="action-target" command="--spin">
   Spin
 </button>
 
-<button
-  commandfor="action-target"
-  command="--grow">
+<button commandfor="action-target" command="--grow">
   Grow
 </button>
 
-<button
-  commandfor="action-target"
-  command="--reset">
+<button commandfor="action-target" command="--reset">
   Reset All
 </button>
 
@@ -45,26 +36,26 @@ For custom, application-specific actions, you can define your own command names.
   // (This is necessary because the native 'command' event does not bubble)
   document.getElementById('action-target').addEventListener('command', (event) => {
     // Robustly handle both native API and manual/polyfill fallbacks
-    const command = event.command || event.detail?.command
-    const target = event.currentTarget
+    const command = event.command || event.detail?.command;
+    const target = event.currentTarget;
 
     // Custom commands are checked to identify the requested action
     if (command === '--spin') {
-      target.classList.toggle('is-spun')
+      target.classList.toggle('is-spun');
     } else if (command === '--grow') {
-      target.classList.toggle('is-grown')
+      target.classList.toggle('is-grown');
     } else if (command === '--reset') {
       // Clear all custom classes to return to initial state
-      target.classList.remove('is-spun', 'is-grown')
+      target.classList.remove('is-spun', 'is-grown');
     }
-  })
+  });
 </script>
 ```
 
 ## Key constraints
 
-- **Prefix custom commands**: MANDATORY: All custom command names must start with `--` (e.g., `command="--my-action"`).
-- **Targeting**: The `commandfor` attribute must match the `id` of an element in the same document tree.
+*   **Prefix custom commands**: MANDATORY: All custom command names must start with `--` (e.g., `command="--my-action"`).
+*   **Targeting**: The `commandfor` attribute must match the `id` of an element in the same document tree.
 
 ## Fallback strategies
 
@@ -81,15 +72,15 @@ For the best performance, you should only load the polyfill if the browser doesn
 
 ```javascript
 // Check for native support first
-const hasNativeSupport = 'commandForElement' in HTMLButtonElement.prototype
+const hasNativeSupport = 'commandForElement' in HTMLButtonElement.prototype;
 
 if (!hasNativeSupport) {
   // Dynamically import the polyfill only when needed
   try {
-    await import('https://cdn.jsdelivr.net/npm/invokers-polyfill@latest/dist/index.min.js')
-    console.log('Invoker Commands polyfill loaded')
+    await import('https://cdn.jsdelivr.net/npm/invokers-polyfill@latest/dist/index.min.js');
+    console.log('Invoker Commands polyfill loaded');
   } catch (err) {
-    console.error('Error loading fallback:', err)
+    console.error('Error loading fallback:', err);
   }
 }
 ```
@@ -103,39 +94,37 @@ If you prefer not to use a polyfill, you can use a combination of **event delega
 const commandRegistry = {
   '--spin': (target) => target.classList.toggle('is-spun'),
   '--grow': (target) => target.classList.toggle('is-grown'),
-  '--reset': (target) => target.classList.remove('is-spun', 'is-grown')
-}
+  '--reset': (target) => target.classList.remove('is-spun', 'is-grown'),
+};
 
-const supportsInvokers = 'commandForElement' in HTMLButtonElement.prototype
+const supportsInvokers = 'commandForElement' in HTMLButtonElement.prototype;
 
 // 2. The fallback: Dispatch events manually if native support is missing
 if (!supportsInvokers) {
   document.addEventListener('click', (event) => {
-    const button = event.target.closest('button[commandfor]')
-    if (!button) return
+    const button = event.target.closest('button[commandfor]');
+    if (!button) return;
 
-    const target = document.getElementById(button.getAttribute('commandfor'))
-    const command = button.getAttribute('command')
+    const target = document.getElementById(button.getAttribute('commandfor'));
+    const command = button.getAttribute('command');
 
     if (target && command) {
-      target.dispatchEvent(
-        new CustomEvent('command', {
-          bubbles: true,
-          detail: { command }
-        })
-      )
+      target.dispatchEvent(new CustomEvent('command', {
+        bubbles: true,
+        detail: { command }
+      }));
     }
-  })
+  });
 }
 
 // 3. The unified listener: Registered directly on the target element
 document.getElementById('action-target').addEventListener('command', (event) => {
-  const command = event.command || event.detail?.command
-  const target = event.currentTarget
-  const action = commandRegistry[command]
+  const command = event.command || event.detail?.command;
+  const target = event.currentTarget;
+  const action = commandRegistry[command];
 
   if (action) {
-    action(target)
+    action(target);
   }
-})
+});
 ```

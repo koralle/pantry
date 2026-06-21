@@ -5,7 +5,6 @@
 **Endpoint**: `https://api.cloudflare.com/client/v4/graphql`
 
 **Query Workers Metrics**:
-
 ```graphql
 query {
   viewer {
@@ -83,14 +82,13 @@ ORDER BY occurrences DESC;
 ### Console Logging API
 
 **Methods**:
-
 ```typescript
 // Standard methods (all appear in Workers Logs)
-console.log('info message')
-console.info('info message')
-console.warn('warning message')
-console.error('error message')
-console.debug('debug message')
+console.log('info message');
+console.info('info message');
+console.warn('warning message');
+console.error('error message');
+console.debug('debug message');
 
 // Structured logging (recommended)
 console.log({
@@ -99,40 +97,38 @@ console.log({
   action: 'checkout',
   amount: 99.99,
   currency: 'USD'
-})
+});
 ```
 
 **Log Levels**: All console methods produce logs; use structured fields for filtering:
-
 ```typescript
-console.log({
-  level: 'error',
-  message: 'Payment failed',
-  error_code: 'CARD_DECLINED'
-})
+console.log({ 
+  level: 'error', 
+  message: 'Payment failed', 
+  error_code: 'CARD_DECLINED' 
+});
 ```
 
 ### Analytics Engine Binding Types
 
 ```typescript
 interface AnalyticsEngineDataset {
-  writeDataPoint(event: AnalyticsEngineDataPoint): void
+  writeDataPoint(event: AnalyticsEngineDataPoint): void;
 }
 
 interface AnalyticsEngineDataPoint {
   // Indexed strings (use for filtering/grouping)
-  indexes?: string[]
-
+  indexes?: string[];
+  
   // Non-indexed strings (metadata, IDs, URLs)
-  blobs?: string[]
-
+  blobs?: string[];
+  
   // Numeric values (counts, durations, amounts)
-  doubles?: number[]
+  doubles?: number[];
 }
 ```
 
 **Field Limits**:
-
 - Max 20 indexes
 - Max 20 blobs
 - Max 20 doubles
@@ -142,27 +138,27 @@ interface AnalyticsEngineDataPoint {
 
 ```typescript
 interface TraceItem {
-  event: TraceEvent
-  logs: TraceLog[]
-  exceptions: TraceException[]
-  scriptName?: string
+  event: TraceEvent;
+  logs: TraceLog[];
+  exceptions: TraceException[];
+  scriptName?: string;
 }
 
 interface TraceEvent {
-  outcome: 'ok' | 'exception' | 'exceededCpu' | 'exceededMemory' | 'unknown'
-  cpuTime: number // microseconds
-  wallTime: number // microseconds
+  outcome: 'ok' | 'exception' | 'exceededCpu' | 'exceededMemory' | 'unknown';
+  cpuTime: number; // microseconds
+  wallTime: number; // microseconds
 }
 
 interface TraceLog {
-  timestamp: number
-  level: 'log' | 'info' | 'debug' | 'warn' | 'error'
-  message: any // string or structured object
+  timestamp: number;
+  level: 'log' | 'info' | 'debug' | 'warn' | 'error';
+  message: any; // string or structured object
 }
 
 interface TraceException {
-  name: string
-  message: string
-  timestamp: number
+  name: string;
+  message: string;
+  timestamp: number;
 }
 ```

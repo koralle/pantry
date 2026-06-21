@@ -18,13 +18,13 @@ Create an endpoint that generates WebAuthn request parameters using a vetted lib
 // Options generation example (discoverable flow)
 const options = {
   challenge: serverGeneratedBase64UrlChallenge, // High-entropy random challenge stored in session
-  rpId: 'example.com',
+  rpId: "example.com",
   allowCredentials: [], // Request discoverable passkeys
-  userVerification: 'preferred'
-}
+  userVerification: "preferred",
+};
 
 // Persist expected UV level to user session
-req.session.expectedUserVerification = 'preferred'
+req.session.expectedUserVerification = "preferred";
 ```
 
 ### Verification Endpoint
@@ -50,11 +50,9 @@ Annotate your username and password inputs to natively leverage Conditional UI. 
     name="username"
     autocomplete="username webauthn"
     autofocus
-    data-testid="username-field" />
-  <input
-    type="password"
-    name="password"
-    autocomplete="current-password" />
+    data-testid="username-field"
+  />
+  <input type="password" name="password" autocomplete="current-password" />
   <button type="submit">Sign in</button>
 </form>
 ```
@@ -81,91 +79,93 @@ Activate form autofill suggestions on page load to offer passkey authentication 
 
 ```javascript
 // optionsFetch and loginVerifyFetch are app-defined HTTP methods
-import { optionsFetch, loginVerifyFetch } from './api.js'
+import { optionsFetch, loginVerifyFetch } from "./api.js";
 
-let autofillAbortController = new AbortController()
+let autofillAbortController = new AbortController();
 
 async function initializeConditionalAutofill() {
   // Feature detect Conditional Get autofill support
-  const capabilities = await PublicKeyCredential.getClientCapabilities()
+  const capabilities = await PublicKeyCredential.getClientCapabilities();
   if (capabilities.conditionalGet === true) {
-    const loginOptionsJSON = await optionsFetch()
-    const publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(loginOptionsJSON)
+    const loginOptionsJSON = await optionsFetch();
+    const publicKey =
+      PublicKeyCredential.parseRequestOptionsFromJSON(loginOptionsJSON);
 
     try {
       // Initiate Conditional UI form autofill suggestions
       const credential = await navigator.credentials.get({
         publicKey,
         signal: autofillAbortController.signal,
-        mediation: 'conditional'
-      })
+        mediation: "conditional",
+      });
 
       // Segregated verification fetch
-      const encoded = credential.toJSON()
-      const response = await loginVerifyFetch(encoded)
+      const encoded = credential.toJSON();
+      const response = await loginVerifyFetch(encoded);
       if (!response.ok && response.status === 404) {
         // Note: this code path runs pre-authentication, satisfying the unauth precondition
         if (PublicKeyCredential.signalUnknownCredential) {
           await PublicKeyCredential.signalUnknownCredential({
             rpId, // RP ID must match the one defined on the server
-            credentialId: encoded.id
-          })
+            credentialId: encoded.id,
+          });
         }
       }
     } catch (err) {
       // Silently swallow expected client WebAuthn exceptions
-      if (['NotAllowedError', 'AbortError'].includes(err.name)) {
-        return
+      if (["NotAllowedError", "AbortError"].includes(err.name)) {
+        return;
       }
-      console.error('Unexpected conditional get error:', err)
+      console.error("Unexpected conditional get error:", err);
     }
   }
 }
 
 async function triggerButtonAuthentication() {
   // Abort any pending Conditional Get call to prevent passkey prompt collisions
-  autofillAbortController.abort()
-  autofillAbortController = new AbortController() // Reset controller for next triggers
+  autofillAbortController.abort();
+  autofillAbortController = new AbortController(); // Reset controller for next triggers
 
-  const loginOptionsJSON = await optionsFetch()
-  const publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(loginOptionsJSON)
+  const loginOptionsJSON = await optionsFetch();
+  const publicKey =
+    PublicKeyCredential.parseRequestOptionsFromJSON(loginOptionsJSON);
 
-  let credential
+  let credential;
   try {
     // Passkey explicit prompt trigger
     credential = await navigator.credentials.get({
       publicKey,
-      signal: autofillAbortController.signal
-    })
+      signal: autofillAbortController.signal,
+    });
   } catch (err) {
-    if (err.name === 'NotAllowedError') {
-      console.log('User cancelled passkey login.')
-    } else if (err.name === 'AbortError') {
-      console.log('The authentication operation was aborted.')
+    if (err.name === "NotAllowedError") {
+      console.log("User cancelled passkey login.");
+    } else if (err.name === "AbortError") {
+      console.log("The authentication operation was aborted.");
     }
     // Re-arm Conditional autofill Suggestions after cancelled explicit button prompts
-    initializeConditionalAutofill()
-    return // Safe exit
+    initializeConditionalAutofill();
+    return; // Safe exit
   }
 
   // Segregated verification try/catch (HTTP 404 trigger)
-  const encoded = credential.toJSON()
+  const encoded = credential.toJSON();
   try {
-    const response = await loginVerifyFetch(encoded)
+    const response = await loginVerifyFetch(encoded);
     if (!response.ok && response.status === 404) {
       // Note: this code path runs pre-authentication, satisfying the unauth precondition
       await PublicKeyCredential.signalUnknownCredential({
         rpId, // RP ID must match the one defined on the server
-        credentialId: encoded.id // Base64URL-encoded credential ID
-      })
+        credentialId: encoded.id, // Base64URL-encoded credential ID
+      });
     }
   } catch (serverErr) {
-    console.error('Verification request error:', serverErr)
+    console.error("Verification request error:", serverErr);
   }
 }
 
 // Trigger Conditional Get on load
-window.addEventListener('DOMContentLoaded', initializeConditionalAutofill)
+window.addEventListener("DOMContentLoaded", initializeConditionalAutofill);
 ```
 
 ## Fallback Strategies
@@ -176,11 +176,11 @@ Baseline status for the api.PublicKeyCredential.getClientCapabilities_static cap
 Supported by: Chrome 133 (Feb 2025), Edge 133 (Feb 2025), Firefox 135 (Feb 2025), and Safari 17.4 (Mar 2024).
 
 Always install 'webauthn-polyfills' and import it in the context.
-Consider as long as `PublicKeyCredential` is supported, `PublicKeyCredential.getClientCapabilities` is also supported.
+Consider as long as  `PublicKeyCredential` is supported, `PublicKeyCredential.getClientCapabilities` is also supported. 
 
-```js
-import 'webauthn-polyfills'
-```
+```js 
+import 'webauthn-polyfills';
+``` 
 
 ### Signal API Synchronization Fallback
 
@@ -198,8 +198,8 @@ Baseline status for the api.PublicKeyCredential.parseRequestOptionsFromJSON_stat
 Supported by: Chrome 129 (Sep 2024), Edge 129 (Sep 2024), Firefox 119 (Oct 2023), and Safari 18.4 (Mar 2025).
 
 Always install 'webauthn-polyfills' and import it in the context.
-Consider as long as `PublicKeyCredential` is supported, `PublicKeyCredential.parseRequestOptionsFromJSON` and `PublicKeyCredential.prototype.toJSON` are also supported.
+Consider as long as  `PublicKeyCredential` is supported, `PublicKeyCredential.parseRequestOptionsFromJSON` and `PublicKeyCredential.prototype.toJSON` are also supported. 
 
-```js
-import 'webauthn-polyfills'
-```
+```js 
+import 'webauthn-polyfills';
+``` 

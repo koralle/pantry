@@ -42,24 +42,17 @@ When handling mutually exclusive content regions, like an exclusive accordion, u
 ```html
 <div class="accordion-group">
   <!-- The name attribute creates an exclusive disclosure group -->
-  <details
-    class="disclosure"
-    name="my-accordion">
+  <details class="disclosure" name="my-accordion">
     <summary>Section 1</summary>
     <p>Section 1 content</p>
   </details>
 
-  <details
-    class="disclosure"
-    name="my-accordion"
-    open>
+  <details class="disclosure" name="my-accordion" open>
     <summary>Section 2</summary>
     <p>Section 2 content</p>
   </details>
 
-  <details
-    class="disclosure"
-    name="my-accordion">
+  <details class="disclosure" name="my-accordion">
     <summary>Section 3</summary>
     <p>Section 3 content</p>
   </details>
@@ -70,9 +63,7 @@ When handling mutually exclusive content regions, like an exclusive accordion, u
 
 ```html
 <!-- The browser automatically removes hidden="until-found" upon a search match -->
-<div
-  class="hidden-container"
-  hidden="until-found">
+<div class="hidden-container" hidden="until-found">
   <p>This content is visually hidden.</p>
 </div>
 ```
@@ -84,50 +75,35 @@ When handling custom mutually exclusive regions controlled by external buttons, 
 ```html
 <div class="custom-accordion">
   <div class="controls">
-    <button
-      aria-expanded="true"
-      aria-controls="panel-1"
-      id="btn-1">
-      Section 1
-    </button>
-    <button
-      aria-expanded="false"
-      aria-controls="panel-2"
-      id="btn-2">
-      Section 2
-    </button>
+    <button aria-expanded="true" aria-controls="panel-1" id="btn-1">Section 1</button>
+    <button aria-expanded="false" aria-controls="panel-2" id="btn-2">Section 2</button>
   </div>
 
-  <div
-    id="panel-1"
-    class="panel">
+  <div id="panel-1" class="panel">
     <p>Section 1 content (visible)</p>
   </div>
 
-  <div
-    id="panel-2"
-    class="panel"
-    hidden="until-found">
+  <div id="panel-2" class="panel" hidden="until-found">
     <p>Section 2 content (hidden)</p>
   </div>
 </div>
 ```
 
 ```javascript
-const accordion = document.querySelector('.custom-accordion')
+const accordion = document.querySelector('.custom-accordion');
 
 accordion.addEventListener('beforematch', (e) => {
   // Hide all panels and synchronize button states before the browser reveals the matched panel
   accordion.querySelectorAll('.panel').forEach((panel) => {
     if (panel !== e.target) {
-      panel.hidden = 'until-found'
+      panel.hidden = 'until-found';
     }
-  })
+  });
   accordion.querySelectorAll('button').forEach((btn) => {
-    const controls = btn.getAttribute('aria-controls')
-    btn.setAttribute('aria-expanded', controls === e.target.id ? 'true' : 'false')
-  })
-})
+    const controls = btn.getAttribute('aria-controls');
+    btn.setAttribute('aria-expanded', controls === e.target.id ? 'true' : 'false');
+  });
+});
 ```
 
 ## Best practices for `hidden="until-found"`
@@ -151,9 +127,9 @@ For standard UI elements like accordions or "Read more" sections, use JavaScript
 if (!('onbeforematch' in HTMLElement.prototype)) {
   // Expand all hidden content for unsupported browsers
   document.querySelectorAll('[hidden="until-found"]').forEach((el) => {
-    el.removeAttribute('hidden')
+    el.removeAttribute('hidden');
     // MANDATORY: also update any aria references to this element.
-  })
+  });
 }
 ```
 

@@ -8,29 +8,28 @@
 // auth-worker
 export default {
   async fetch(request: Request, env: Env) {
-    const token = request.headers.get('Authorization')
-    return new Response(JSON.stringify({ valid: await validateToken(token) }))
+    const token = request.headers.get('Authorization');
+    return new Response(JSON.stringify({ valid: await validateToken(token) }));
   }
 }
 
 // api-worker
 const response = await env.AUTH_SERVICE.fetch(
   new Request('https://fake-host/validate', {
-    headers: { Authorization: token }
+    headers: { 'Authorization': token }
   })
-)
+);
 ```
 
 **Why RPC?** Zero latency (same datacenter), no DNS, free, type-safe.
 
 **HTTP vs Service:**
-
 ```typescript
 // ❌ HTTP (slow, paid, cross-region latency)
-await fetch('https://auth-worker.example.com/validate')
+await fetch('https://auth-worker.example.com/validate');
 
 // ✅ Service binding (fast, free, same isolate)
-await env.AUTH_SERVICE.fetch(new Request('https://fake-host/validate'))
+await env.AUTH_SERVICE.fetch(new Request('https://fake-host/validate'));
 ```
 
 **URL doesn't matter:** Service bindings ignore hostname/protocol, routing happens via binding name.
@@ -39,20 +38,15 @@ await env.AUTH_SERVICE.fetch(new Request('https://fake-host/validate'))
 
 ```typescript
 // shared-types.ts
-export interface AuthRequest {
-  token: string
-}
-export interface AuthResponse {
-  valid: boolean
-  userId?: string
-}
+export interface AuthRequest { token: string; }
+export interface AuthResponse { valid: boolean; userId?: string; }
 
 // auth-worker
 export default {
   async fetch(request: Request): Promise<Response> {
-    const body: AuthRequest = await request.json()
-    const response: AuthResponse = { valid: true, userId: '123' }
-    return Response.json(response)
+    const body: AuthRequest = await request.json();
+    const response: AuthResponse = { valid: true, userId: '123' };
+    return Response.json(response);
   }
 }
 
@@ -62,8 +56,8 @@ const response = await env.AUTH_SERVICE.fetch(
     method: 'POST',
     body: JSON.stringify({ token } satisfies AuthRequest)
   })
-)
-const data: AuthResponse = await response.json()
+);
+const data: AuthResponse = await response.json();
 ```
 
 ## Secrets Management
@@ -78,12 +72,11 @@ npx wrangler secret put API_KEY --env staging
 ```typescript
 // Use secret
 const response = await fetch('https://api.example.com', {
-  headers: { Authorization: `Bearer ${env.API_KEY}` }
-})
+  headers: { 'Authorization': `Bearer ${env.API_KEY}` }
+});
 ```
 
 **Never commit secrets:**
-
 ```jsonc
 // ❌ NEVER
 { "vars": { "API_KEY": "sk_live_abc123" } }
@@ -94,23 +87,27 @@ const response = await fetch('https://api.example.com', {
 ### Vitest Mock
 
 ```typescript
-import { vi } from 'vitest'
+import { vi } from 'vitest';
 
 const mockKV: KVNamespace = {
-  get: vi.fn(async (key) => (key === 'test' ? 'value' : null)),
+  get: vi.fn(async (key) => key === 'test' ? 'value' : null),
   put: vi.fn(async () => {}),
   delete: vi.fn(async () => {}),
   list: vi.fn(async () => ({ keys: [], list_complete: true, cursor: '' })),
-  getWithMetadata: vi.fn()
-} as unknown as KVNamespace
+  getWithMetadata: vi.fn(),
+} as unknown as KVNamespace;
 
-const mockEnv: Env = { MY_KV: mockKV }
+const mockEnv: Env = { MY_KV: mockKV };
 const mockCtx: ExecutionContext = {
   waitUntil: vi.fn(),
-  passThroughOnException: vi.fn()
-}
+  passThroughOnException: vi.fn(),
+};
 
-const response = await worker.fetch(new Request('http://localhost/test'), mockEnv, mockCtx)
+const response = await worker.fetch(
+  new Request('http://localhost/test'),
+  mockEnv,
+  mockCtx
+);
 ```
 
 ## Binding Access Patterns
@@ -120,8 +117,8 @@ const response = await worker.fetch(new Request('http://localhost/test'), mockEn
 ```typescript
 // ✅ Access only when needed
 if (url.pathname === '/cached') {
-  const cached = await env.MY_KV.get('data')
-  if (cached) return new Response(cached)
+  const cached = await env.MY_KV.get('data');
+  if (cached) return new Response(cached);
 }
 ```
 
@@ -133,7 +130,7 @@ const [user, config, cache] = await Promise.all([
   env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first(),
   env.MY_KV.get('config'),
   env.CACHE.get('data')
-])
+]);
 ```
 
 ## Storage Selection
@@ -141,7 +138,7 @@ const [user, config, cache] = await Promise.all([
 ### KV: CDN-Backed Reads
 
 ```typescript
-const config = await env.MY_KV.get('app-config', { type: 'json' })
+const config = await env.MY_KV.get('app-config', { type: 'json' });
 ```
 
 **Use when:** Read-heavy, <25MB, global distribution, eventual consistency OK  
@@ -150,12 +147,10 @@ const config = await env.MY_KV.get('app-config', { type: 'json' })
 ### D1: Relational Queries
 
 ```typescript
-const results = await env.DB.prepare(
-  `
+const results = await env.DB.prepare(`
   SELECT u.name, COUNT(o.id) FROM users u
   LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.id
-`
-).all()
+`).all();
 ```
 
 **Use when:** Relational data, JOINs, ACID transactions  
@@ -164,8 +159,8 @@ const results = await env.DB.prepare(
 ### R2: Large Objects
 
 ```typescript
-const object = await env.MY_BUCKET.get('large-file.zip')
-return new Response(object.body)
+const object = await env.MY_BUCKET.get('large-file.zip');
+return new Response(object.body);
 ```
 
 **Use when:** Files >25MB, S3-compatible API needed  
@@ -174,9 +169,9 @@ return new Response(object.body)
 ### Durable Objects: Coordination
 
 ```typescript
-const id = env.COUNTER.idFromName('global')
-const stub = env.COUNTER.get(id)
-await stub.fetch(new Request('https://fake/increment'))
+const id = env.COUNTER.idFromName('global');
+const stub = env.COUNTER.get(id);
+await stub.fetch(new Request('https://fake/increment'));
 ```
 
 **Use when:** Strong consistency, real-time coordination, WebSocket state  

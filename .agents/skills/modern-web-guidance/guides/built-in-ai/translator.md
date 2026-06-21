@@ -1,5 +1,6 @@
 The **Translator API** allows developers to perform client-side text translation using built-in AI models in Chrome and Edge. This approach eliminates the need for cloud-based translation services for ephemeral content, reducing costs and improving privacy by keeping data on the user's device.
 
+
 ## Prerequisites & Requirements
 
 ### Browser Support
@@ -32,10 +33,10 @@ To run Gemini Nano and associated models, the system needs:
 ```javascript
 const options = {
   sourceLanguage: 'es',
-  targetLanguage: 'fr'
-}
+  targetLanguage: 'fr',
+};
 
-const availability = await Translator.availability(options)
+const availability = await Translator.availability(options);
 
 if (availability === 'available' || availability === 'downloadable') {
   // A user gesture is strictly required to trigger create when downloadable
@@ -44,11 +45,11 @@ if (availability === 'available' || availability === 'downloadable') {
       ...options,
       monitor(m) {
         m.addEventListener('downloadprogress', (e) => {
-          console.log(`Downloaded ${Math.round(e.loaded * 100)}%`)
-        })
-      }
-    })
-  })
+          console.log(`Downloaded ${Math.round(e.loaded * 100)}%`);
+        });
+      },
+    });
+  });
 }
 ```
 
@@ -61,20 +62,22 @@ The API supports both static and streaming responses.
 ```javascript
 const translator = await Translator.create({
   sourceLanguage: 'en',
-  targetLanguage: 'fr'
-})
+  targetLanguage: 'fr',
+});
 
-const result = await translator.translate('Where is the next bus stop, please?')
-console.log(result)
+const result = await translator.translate(
+  'Where is the next bus stop, please?',
+);
+console.log(result);
 // Output: "Où est le prochain arrêt de bus, s'il vous plaît ?"
 ```
 
 **Streaming Translation (for long text):**
 
 ```javascript
-const stream = translator.translateStreaming(longText)
+const stream = translator.translateStreaming(longText);
 for await (const chunk of stream) {
-  console.log(chunk)
+  console.log(chunk);
 }
 ```
 
@@ -126,9 +129,7 @@ The API supports a wide range of BCP 47 language codes: Here are the languages s
 
 - **Permissions Policy:** Cross-origin iframes require explicit permission.
   ```html
-  <iframe
-    src="https://example.com/"
-    allow="translator"></iframe>
+  <iframe src="https://example.com/" allow="translator"></iframe>
   ```
 - **Web Workers:** Currently **not supported** due to Permission Policy
   complexities.
@@ -151,10 +152,9 @@ if ('Translator' in self) {
 }
 ```
 
-If the `Translator` API is unsupported or availability checks return `'unavailable'`, you must gracefully fall back.
+If the `Translator` API is unsupported or availability checks return `'unavailable'`, you must gracefully fall back. 
 
 Recommended options:
-
 1. **Remote API Fallback**: Redirect the translation request to a server endpoint or cloud remote API (such as the Vertex AI Gemini API) to deliver translation functionality.
 2. **Graceful Degradation**: Visually disable translation control elements or buttons while showing an end-user friendly note (e.g., `"Client-side translation is currently unsupported in this browser"`). Do not allow unhandled exceptions.
 3. **Polyfill Fallback**: You can use community-maintained polyfills like `built-in-ai-task-apis-polyfills` or `prompt-api-polyfill` to emulate the API surface using remote services.

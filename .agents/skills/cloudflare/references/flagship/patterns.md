@@ -7,33 +7,34 @@
 ```typescript
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const showNewUI = await env.FLAGS.getBooleanValue('new-ui', false, {
-      userId: 'user-42'
-    })
+    const showNewUI = await env.FLAGS.getBooleanValue("new-ui", false, {
+      userId: "user-42",
+    });
 
     if (showNewUI) {
-      return new Response('New UI')
+      return new Response("New UI");
     }
-    return new Response('Classic UI')
-  }
-}
+    return new Response("Classic UI");
+  },
+};
 ```
 
 ### Multi-Variant String Flag
 
 ```typescript
-const checkoutFlow = await env.FLAGS.getStringValue('checkout-flow', 'original', {
-  userId,
-  country: 'US'
-})
+const checkoutFlow = await env.FLAGS.getStringValue(
+  "checkout-flow",
+  "original",
+  { userId, country: "US" },
+);
 
 switch (checkoutFlow) {
-  case 'streamlined':
-    return handleStreamlined(request)
-  case 'one-click':
-    return handleOneClick(request)
+  case "streamlined":
+    return handleStreamlined(request);
+  case "one-click":
+    return handleOneClick(request);
   default:
-    return handleOriginal(request)
+    return handleOriginal(request);
 }
 ```
 
@@ -41,28 +42,28 @@ switch (checkoutFlow) {
 
 ```typescript
 interface RateLimitConfig {
-  rpm: number
-  burst: number
+  rpm: number;
+  burst: number;
 }
 
 const limits = await env.FLAGS.getObjectValue<RateLimitConfig>(
-  'rate-limits',
+  "rate-limits",
   { rpm: 100, burst: 20 },
-  { plan: userPlan }
-)
+  { plan: userPlan },
+);
 ```
 
 ### Using Details for Observability
 
 ```typescript
-const details = await env.FLAGS.getBooleanDetails('new-checkout', false, {
-  userId: 'user-42'
-})
+const details = await env.FLAGS.getBooleanDetails("new-checkout", false, {
+  userId: "user-42",
+});
 
-console.log(details.value) // true
-console.log(details.variant) // "on"
-console.log(details.reason) // "TARGETING_MATCH"
-console.log(details.errorCode) // undefined (no error)
+console.log(details.value);     // true
+console.log(details.variant);   // "on"
+console.log(details.reason);    // "TARGETING_MATCH"
+console.log(details.errorCode); // undefined (no error)
 ```
 
 ---
@@ -72,23 +73,25 @@ console.log(details.errorCode) // undefined (no error)
 ### Binding Passthrough (Recommended)
 
 ```typescript
-import { OpenFeature } from '@openfeature/server-sdk'
-import { FlagshipServerProvider } from '@cloudflare/flagship'
+import { OpenFeature } from "@openfeature/server-sdk";
+import { FlagshipServerProvider } from "@cloudflare/flagship";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    await OpenFeature.setProviderAndWait(new FlagshipServerProvider({ binding: env.FLAGS }))
-    const client = OpenFeature.getClient()
+    await OpenFeature.setProviderAndWait(
+      new FlagshipServerProvider({ binding: env.FLAGS }),
+    );
+    const client = OpenFeature.getClient();
 
-    const enabled = await client.getBooleanValue('new-checkout', false, {
-      targetingKey: 'user-42',
-      plan: 'enterprise',
-      country: 'US'
-    })
+    const enabled = await client.getBooleanValue("new-checkout", false, {
+      targetingKey: "user-42",
+      plan: "enterprise",
+      country: "US",
+    });
 
-    return new Response(enabled ? 'New checkout' : 'Standard checkout')
-  }
-}
+    return new Response(enabled ? "New checkout" : "Standard checkout");
+  },
+};
 ```
 
 ### Migration from Another Provider
@@ -97,15 +100,19 @@ Only the provider initialization changes — evaluation call sites stay the same
 
 ```typescript
 // ❌ Before (LaunchDarkly)
-await OpenFeature.setProviderAndWait(new LaunchDarklyProvider({ sdkKey: '...' }))
+await OpenFeature.setProviderAndWait(
+  new LaunchDarklyProvider({ sdkKey: "..." }),
+);
 
 // ✅ After (Flagship)
-await OpenFeature.setProviderAndWait(new FlagshipServerProvider({ binding: env.FLAGS }))
+await OpenFeature.setProviderAndWait(
+  new FlagshipServerProvider({ binding: env.FLAGS }),
+);
 
 // Evaluation code is unchanged
-const enabled = await client.getBooleanValue('my-flag', false, {
-  targetingKey: 'user-42'
-})
+const enabled = await client.getBooleanValue("my-flag", false, {
+  targetingKey: "user-42",
+});
 ```
 
 ---
@@ -347,7 +354,9 @@ curl -s -X DELETE \
 ```json
 {
   "priority": 1,
-  "conditions": [{ "attribute": "plan", "operator": "equals", "value": "enterprise" }],
+  "conditions": [
+    { "attribute": "plan", "operator": "equals", "value": "enterprise" }
+  ],
   "serve_variation": "on"
 }
 ```
@@ -385,7 +394,9 @@ Gradually roll out to 10% of users:
 ```json
 {
   "priority": 1,
-  "conditions": [{ "attribute": "targetingKey", "operator": "not_equals", "value": "" }],
+  "conditions": [
+    { "attribute": "targetingKey", "operator": "not_equals", "value": "" }
+  ],
   "serve_variation": "on",
   "rollout": {
     "percentage": 10,
@@ -403,7 +414,7 @@ The example uses `conditions: []` because the rules are intended to match every 
 For example, to split traffic 30% / 40% / 30% across variants A, B, and C:
 
 | Variant | Share | Cumulative threshold |
-| ------- | ----- | -------------------- |
+|---------|-------|----------------------|
 | A       | 30%   | 30                   |
 | B       | 40%   | 70                   |
 | C       | 30%   | 100                  |
@@ -432,7 +443,6 @@ For example, to split traffic 30% / 40% / 30% across variants A, B, and C:
 ```
 
 Key points:
-
 - Rules are evaluated lowest-priority-number first. A user who falls into rule 1's 0-30% bucket gets `variant-a` and is not evaluated further.
 - Rule 2's 70% threshold covers the next 40% of users (31-70%).
 - Rule 3's 100% threshold catches the remaining 30% (71-100%).
