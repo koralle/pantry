@@ -8,43 +8,43 @@ catalogMode: strict
 
 catalogs:
   authentication:
-    '@better-auth/drizzle-adapter': 1.6.16
-    better-auth: 1.6.16
+    '@better-auth/drizzle-adapter': 1.6.19
+    better-auth: 1.6.19
   build:
-    '@cloudflare/vite-plugin': 1.40.2
+    '@cloudflare/vite-plugin': 1.42.0
     '@vitejs/plugin-react': 6.0.2
     'vite': 8.0.16
   database:
-    '@libsql/client': 0.17.3
+    '@libsql/client': 0.17.4
     '@tursodatabase/database': 0.6.1
     drizzle-orm: 1.0.0-rc.4-273829f
     drizzle-kit: 1.0.0-rc.4-273829f
-    drizzle-seed: 1.0.0-rc.4-ca0f029
+    drizzle-seed: 1.0.0-rc.4-273829f
   debug:
     '@tanstack/devtools-vite': 0.7.0
     '@tanstack/react-devtools': 0.10.5
     '@tanstack/react-query-devtools': 5.101.0
     '@tanstack/react-router-devtools': 1.167.0
   envvars:
-    '@dotenvx/dotenvx': 1.71.2
+    '@dotenvx/dotenvx': 1.73.1
     '@t3-oss/env-core': 0.13.11
   errors:
     '@praha/error-factory': 1.4.1
     'react-error-boundary': 6.1.2
   form:
-    '@formisch/react': 0.5.0
+    '@formisch/react': 0.6.0
   format:
-    oxfmt: 0.54.0
+    oxfmt: 0.55.0
   framework:
     '@tanstack/react-query': 5.101.0
-    '@tanstack/react-router': 1.170.15
+    '@tanstack/react-router': 1.170.16
     '@tanstack/react-router-ssr-query': 1.167.1
-    '@tanstack/react-start': 1.168.25
+    '@tanstack/react-start': 1.168.26
     '@tanstack/router-plugin': 1.168.18
   githooks:
     lefthook: 2.1.9
   lint:
-    oxlint: 1.69.0
+    oxlint: 1.70.0
     oxlint-tsgolint: 0.23.0
   react:
     '@types/react': 19.2.17
@@ -53,15 +53,15 @@ catalogs:
     react-dom: 19.2.7
   runtime:
     '@types/node': 25.9.3
-    wrangler: 4.100.0
+    wrangler: 4.102.0
   script:
     tsx: 4.22.4
   test:
-    '@cloudflare/vitest-pool-workers': 0.16.15
-    vitest: 4.1.8
+    '@cloudflare/vitest-pool-workers': 0.16.17
+    vitest: 4.1.9
   typescript:
     '@tsconfig/strictest': 2.0.8
-    '@typescript/native-preview': 7.0.0-dev.20260611.2
+    '@typescript/native-preview': 7.0.0-dev.20260618.1
     typescript: 6.0.3
   typespec:
     '@typespec/compiler': 1.13.0
@@ -70,9 +70,9 @@ catalogs:
     '@typespec/openapi3': 1.13.0
     '@typespec/rest': 0.83.0
   ui:
-    '@base-ui/react': 1.5.0
+    '@base-ui/react': 1.6.0
     kiso.css: 1.2.4
-    lucide-react: 1.17.0
+    lucide-react: 1.21.0
   validation:
     valibot: 1.4.1
 
