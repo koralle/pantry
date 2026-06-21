@@ -41,5 +41,13 @@
       "repository": "TanStack/router",
       "branch": "main"
     }
+  },
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      ".envrc": "deny"
+    }
   }
 }
