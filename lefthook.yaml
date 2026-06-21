@@ -26,6 +26,14 @@ pre-commit:
               pnpm oxfmt {staged_files} --write
             stage_fixed: true
 
+          - name: Format with Oxfmt (scripts)
+            root: scripts
+            glob:
+              - '**/*.ts'
+            run: |
+              pnpm oxfmt {staged_files} --write
+            stage_fixed: true
+
           - name: Format with Oxfmt (.agents)
             root: .agents
             glob:
@@ -59,3 +67,8 @@ pre-commit:
               - '**/*.{ts,tsx}'
             run: |
               pnpm run typecheck
+
+post-checkout:
+  commands:
+    symlink-env-for-worktree:
+      run: pnpm tsx scripts/symlink-env-for-worktree.ts
