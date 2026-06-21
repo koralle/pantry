@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_protected/bookmarks/$id')({
+export const Route = createFileRoute('/_protected/bookmarks/$id/')({
   component: RouteComponent
 })
 
