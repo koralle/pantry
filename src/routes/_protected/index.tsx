@@ -1,28 +1,54 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
+import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import * as v from 'valibot'
 
+import { ErrorFallback } from '../../components/error-fallback'
+import { ensureSession } from '../../features/auth/auth.function'
+import { fetchBookmarks } from '../../features/bookmarks/bookmark.function'
+import { BookmarkTable } from '../../features/bookmarks/components/bookmark-table'
+import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { bookmarkSearchSchema } from './-lib/bookmark-search-schema'
 
 export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
-  component: RouteComponent
+  loader: async ({ location }) => {
+    const { user } = await ensureSession()
+    const search = v.parse(bookmarksSearchSchema, location.search)
+
+    const bookmarksPromise = fetchBookmarks({
+      data: { limit: search.limit, offset: search.offset }
+    })
+
+    return {
+      user,
+      bookmarksPromise
+    }
+  },
+  component: RouteComponent,
+  errorComponent: BookmarkPageFallbackComponent
 })
 
+const bookmarksSearchSchema = v.object({
+  ...offsetPaginationQuerySchema.entries
+})
+
+function BookmarkPageFallbackComponent({ error }: ErrorComponentProps) {
+  return <ErrorComponent error={error} />
+}
+
 function RouteComponent() {
-  const search = Route.useSearch()
+  const { user, bookmarksPromise } = Route.useLoaderData()
 
   return (
-    <div>
-      <h1>ブックマーク一覧</h1>
-      <div>
-        <p>検索: {search.q ?? '（なし）'}</p>
-        <p>タグ: {search.tags?.join(', ') ?? '（なし）'}</p>
-        <p>タグモード: {search.tagMode}</p>
-        <p>並び順: {search.sort}</p>
-      </div>
-      <nav>
-        <Link to='/bookmarks/new'>新規作成</Link>
-      </nav>
-    </div>
+    <>
+      <h1>{user.name}のブックマーク一覧</h1>
+
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Suspense fallback={<p>Loading...</p>}>
+          <BookmarkTable bookmarkPromise={bookmarksPromise} />
+        </Suspense>
+      </ErrorBoundary>
+    </>
   )
 }
