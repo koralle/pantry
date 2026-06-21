@@ -59,3 +59,8 @@ pre-commit:
               - '**/*.{ts,tsx}'
             run: |
               pnpm run typecheck
+
+post-checkout:
+  commands:
+    symlink-env-for-worktree:
+      run: pnpm tsx scripts/symlink-env-for-worktree.ts
