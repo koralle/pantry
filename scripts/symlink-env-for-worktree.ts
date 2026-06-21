@@ -11,8 +11,8 @@ const execAsync = promisify(exec)
 
 async function isGitWorktree(): Promise<boolean> {
   const [gitDir, commonDir] = await Promise.all([
-    execAsync('git rev-parse --git-dir', { encoding: 'utf-8' }).then((r) => r.stdout.trim()),
-    execAsync('git rev-parse --git-common-dir', { encoding: 'utf-8' }).then((r) => r.stdout.trim())
+    execAsync('git rev-parse --git-dir', { encoding: 'utf8' }).then((r) => r.stdout.trim()),
+    execAsync('git rev-parse --git-common-dir', { encoding: 'utf8' }).then((r) => r.stdout.trim())
   ])
   return gitDir !== commonDir
 }
@@ -33,7 +33,7 @@ async function main(): Promise<void> {
   }
 
   const commonDir = (
-    await execAsync('git rev-parse --git-common-dir', { encoding: 'utf-8' })
+    await execAsync('git rev-parse --git-common-dir', { encoding: 'utf8' })
   ).stdout.trim()
   const mainRepoRoot = resolve(commonDir, '..')
 
