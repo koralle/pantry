@@ -25,7 +25,7 @@ function RouteComponent() {
       </form>
       <Link
         to='/tags'
-        search={{ limit: 50 as never, offset: 0 as never }}>
+        search={{ limit: 50, offset: 0 }}>
         一覧へ戻る
       </Link>
     </div>

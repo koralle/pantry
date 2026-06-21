@@ -54,7 +54,7 @@ function Layout() {
           </Link>
           <Link
             to='/tags'
-            search={{ limit: 50 as never, offset: 0 as never }}>
+            search={{ limit: 50, offset: 0 }}>
             タグ
           </Link>
           <Link to='/settings'>設定</Link>
