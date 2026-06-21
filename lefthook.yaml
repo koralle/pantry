@@ -26,6 +26,14 @@ pre-commit:
               pnpm oxfmt {staged_files} --write
             stage_fixed: true
 
+          - name: Format with Oxfmt (scripts)
+            root: scripts
+            glob:
+              - '**/*.ts'
+            run: |
+              pnpm oxfmt {staged_files} --write
+            stage_fixed: true
+
           - name: Format with Oxfmt (.agents)
             root: .agents
             glob:

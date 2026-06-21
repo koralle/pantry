@@ -1,9 +1,9 @@
-import { exec } from "node:child_process"
-import { access, symlink } from "node:fs/promises"
-import { resolve } from "node:path"
-import { promisify } from "node:util"
+import { exec } from 'node:child_process'
+import { access, symlink } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { promisify } from 'node:util'
 
-const ENV_FILES = [".env", ".env.development"] as const
+const ENV_FILES = ['.env', '.env.development'] as const
 
 const EXIT_FAILURE = 1
 
@@ -11,8 +11,8 @@ const execAsync = promisify(exec)
 
 async function isGitWorktree(): Promise<boolean> {
   const [gitDir, commonDir] = await Promise.all([
-    execAsync("git rev-parse --git-dir", { encoding: "utf-8" }).then(r => r.stdout.trim()),
-    execAsync("git rev-parse --git-common-dir", { encoding: "utf-8" }).then(r => r.stdout.trim()),
+    execAsync('git rev-parse --git-dir', { encoding: 'utf-8' }).then((r) => r.stdout.trim()),
+    execAsync('git rev-parse --git-common-dir', { encoding: 'utf-8' }).then((r) => r.stdout.trim())
   ])
   return gitDir !== commonDir
 }
@@ -28,14 +28,14 @@ async function exists(filePath: string): Promise<boolean> {
 
 async function main(): Promise<void> {
   if (!(await isGitWorktree())) {
-    console.log("Not a git worktree. Skipping.")
+    console.log('Not a git worktree. Skipping.')
     return
   }
 
   const commonDir = (
-    await execAsync("git rev-parse --git-common-dir", { encoding: "utf-8" })
+    await execAsync('git rev-parse --git-common-dir', { encoding: 'utf-8' })
   ).stdout.trim()
-  const mainRepoRoot = resolve(commonDir, "..")
+  const mainRepoRoot = resolve(commonDir, '..')
 
   for (const file of ENV_FILES) {
     const source = resolve(mainRepoRoot, file)
@@ -59,6 +59,6 @@ async function main(): Promise<void> {
 try {
   await main()
 } catch (error) {
-  console.error("Failed to symlink env files:", error)
+  console.error('Failed to symlink env files:', error)
   process.exit(EXIT_FAILURE)
 }
