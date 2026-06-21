@@ -24,6 +24,14 @@ pre-commit:
               pnpm oxfmt {staged_files} --write
             stage_fixed: true
 
+          - name: Format with Oxfmt (.agents)
+            root: .agents
+            glob:
+              - '**/*.md'
+            run: |
+              pnpm oxfmt {staged_files} --write
+            stage_fixed: true
+
     - group:
         parallel: true
         jobs:
