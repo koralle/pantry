@@ -167,6 +167,10 @@ catalogs:
     lucide-react:
       specifier: 1.21.0
       version: 1.21.0
+  uuid:
+    uuidv7:
+      specifier: 1.2.1
+      version: 1.2.1
   validation:
     valibot:
       specifier: 1.4.1
@@ -246,6 +250,9 @@ importers:
       react-error-boundary:
         specifier: catalog:errors
         version: 6.1.2(react@19.2.7)
+      uuidv7:
+        specifier: catalog:uuid
+        version: 1.2.1
       valibot:
         specifier: catalog:validation
         version: 1.4.1(typescript@6.0.3)
@@ -3358,6 +3365,10 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  uuidv7@1.2.1:
+    resolution: {integrity: sha512-4kPkK3/XTQW9Hbm4CaqfICn+kY9LJtDVEOfgsRRra/+n2Ofg4NqzRFceAkxvQ/Ud/6BpHOPzj8cirqM7TzTN5Q==}
+    hasBin: true
+
   valibot@1.4.1:
     resolution: {integrity: sha512-klCmFTz2jeDluy9RwX+F884TCiogtdBJ/YaxSx1EOBYXa3NXNWj8kR1jjN8rzluwojJVWWaHJ4r1U5LfICnM3g==}
     peerDependencies:
@@ -6038,6 +6049,8 @@ snapshots:
   use-sync-external-store@1.6.0(react@19.2.7):
     dependencies:
       react: 19.2.7
+
+  uuidv7@1.2.1: {}
 
   valibot@1.4.1(typescript@6.0.3):
     optionalDependencies:
