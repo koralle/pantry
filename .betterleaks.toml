@@ -1,0 +1,14 @@
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''(^|/)\.agents/skills(?:/.*)?$''',
+  '''(^|/)dist(?:/.*)?$''',
+  '''(^|/)\.wrangler(?:/.*)?$''',
+  '''(^|/)\.tanstack(?:/.*)?$''',
+  '''(^|/)\.vinxi(?:/.*)?$''',
+  '''(^|/)\.nitro(?:/.*)?$''',
+  '''(^|/)tsp-output(?:/.*)?$''',
+  '''(^|/)(?:pnpm-lock|package-lock|yarn\.lock)\.json$'''
+]
