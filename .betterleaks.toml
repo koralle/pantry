@@ -10,5 +10,5 @@ paths = [
   '''(^|/)\.vinxi(?:/.*)?$''',
   '''(^|/)\.nitro(?:/.*)?$''',
   '''(^|/)tsp-output(?:/.*)?$''',
-  '''(^|/)(?:pnpm-lock|package-lock|yarn\.lock)\.json$''',
+  '''(^|/)(?:pnpm-lock|package-lock|yarn\.lock)\.json$'''
 ]
