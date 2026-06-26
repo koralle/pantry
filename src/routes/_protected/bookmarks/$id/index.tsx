@@ -13,13 +13,14 @@ export const Route = createFileRoute('/_protected/bookmarks/$id/')({
 function RouteComponent() {
   const { id } = Route.useParams()
 
-  const { newBookmarkCreated } = useRouterState({
+  const { newBookmarkCreated, bookmarkUpdated } = useRouterState({
     select: (s) => s.location.state
   })
 
   return (
     <div>
       {newBookmarkCreated && <div role='alert'>ブックマークを登録しました</div>}
+      {bookmarkUpdated && <div role='alert'>ブックマークを更新しました</div>}
 
       <h1>ブックマーク詳細</h1>
 
