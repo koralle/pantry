@@ -7,15 +7,11 @@ import { getDB } from '../../db/index.server'
 import { bookmarkTable, bookmarkInsertSchema } from '../../db/schema/bookmark'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
+import { updateBookmarkInputSchema } from './bookmark.schema'
+
+export { updateBookmarkInputSchema } from './bookmark.schema'
 
 const addBookmarkInputSchema = v.pick(bookmarkInsertSchema, ['url', 'title', 'note'])
-
-export const updateBookmarkInputSchema = v.object({
-  id: v.string(),
-  url: v.pipe(v.string(), v.url()),
-  title: v.string(),
-  note: v.nullable(v.string())
-})
 
 export const fetchBookmarks = createServerFn({ method: 'GET' })
   .validator(offsetPaginationQuerySchema)
