@@ -45,6 +45,7 @@
     "react": "catalog:react",
     "react-dom": "catalog:react",
     "react-error-boundary": "catalog:errors",
+    "uuidv7": "catalog:uuid",
     "valibot": "catalog:validation"
   },
   "devDependencies": {

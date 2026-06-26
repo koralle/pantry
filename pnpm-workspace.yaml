@@ -73,6 +73,8 @@ catalogs:
     '@base-ui/react': 1.6.0
     kiso.css: 1.2.4
     lucide-react: 1.21.0
+  uuid:
+    uuidv7: 1.2.1
   validation:
     valibot: 1.4.1
 
