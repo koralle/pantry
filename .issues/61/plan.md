@@ -161,10 +161,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useActionState } from 'react'
 import * as v from 'valibot'
 
-import {
-  getBookmark,
-  updateBookmark
-} from '../../../../features/bookmarks/bookmark.function'
+import { getBookmark, updateBookmark } from '../../../../features/bookmarks/bookmark.function'
 import type { BookmarkSelectType } from '../../../../db/schema/bookmark'
 
 export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
@@ -217,11 +214,7 @@ function RouteComponent() {
 
 interface EditBookmarkFormProps {
   bookmark: BookmarkSelectType
-  submitAction: (values: {
-    url: string
-    title: string
-    note: string | null
-  }) => Promise<void>
+  submitAction: (values: { url: string; title: string; note: string | null }) => Promise<void>
 }
 
 function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
