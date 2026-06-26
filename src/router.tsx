@@ -38,6 +38,7 @@ declare module '@tanstack/react-router' {
   }
 
   interface HistoryState {
-    newBookmarkCreated: boolean
+    newBookmarkCreated?: boolean
+    newTagCreated?: boolean
   }
 }

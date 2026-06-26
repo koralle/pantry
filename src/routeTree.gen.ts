@@ -18,6 +18,7 @@ import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/
 import { Route as ProtectedBookmarksIndexRouteImport } from './routes/_protected/bookmarks/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ProtectedTagsNewRouteImport } from './routes/_protected/tags/new'
+import { Route as ProtectedTagsIdIndexRouteImport } from './routes/_protected/tags/$id/index'
 import { Route as ProtectedBookmarksNewIndexRouteImport } from './routes/_protected/bookmarks/new/index'
 import { Route as ProtectedBookmarksIdIndexRouteImport } from './routes/_protected/bookmarks/$id/index'
 import { Route as ProtectedTagsIdEditRouteImport } from './routes/_protected/tags/$id.edit'
@@ -67,6 +68,11 @@ const ProtectedTagsNewRoute = ProtectedTagsNewRouteImport.update({
   path: '/tags/new',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedTagsIdIndexRoute = ProtectedTagsIdIndexRouteImport.update({
+  id: '/tags/$id/',
+  path: '/tags/$id/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedBookmarksNewIndexRoute =
   ProtectedBookmarksNewIndexRouteImport.update({
     id: '/bookmarks/new/',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/tags/$id/edit': typeof ProtectedTagsIdEditRoute
   '/bookmarks/$id/': typeof ProtectedBookmarksIdIndexRoute
   '/bookmarks/new/': typeof ProtectedBookmarksNewIndexRoute
+  '/tags/$id/': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/sign-up': typeof SignUpRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/tags/$id/edit': typeof ProtectedTagsIdEditRoute
   '/bookmarks/$id': typeof ProtectedBookmarksIdIndexRoute
   '/bookmarks/new': typeof ProtectedBookmarksNewIndexRoute
+  '/tags/$id': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/_protected/tags/$id/edit': typeof ProtectedTagsIdEditRoute
   '/_protected/bookmarks/$id/': typeof ProtectedBookmarksIdIndexRoute
   '/_protected/bookmarks/new/': typeof ProtectedBookmarksNewIndexRoute
+  '/_protected/tags/$id/': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/tags/$id/edit'
     | '/bookmarks/$id/'
     | '/bookmarks/new/'
+    | '/tags/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-up'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/tags/$id/edit'
     | '/bookmarks/$id'
     | '/bookmarks/new'
+    | '/tags/$id'
   id:
     | '__root__'
     | '/_protected'
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/_protected/tags/$id/edit'
     | '/_protected/bookmarks/$id/'
     | '/_protected/bookmarks/new/'
+    | '/_protected/tags/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -253,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedTagsNewRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/tags/$id/': {
+      id: '/_protected/tags/$id/'
+      path: '/tags/$id'
+      fullPath: '/tags/$id/'
+      preLoaderRoute: typeof ProtectedTagsIdIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/bookmarks/new/': {
       id: '/_protected/bookmarks/new/'
       path: '/bookmarks/new'
@@ -294,6 +313,7 @@ interface ProtectedRouteChildren {
   ProtectedTagsIdEditRoute: typeof ProtectedTagsIdEditRoute
   ProtectedBookmarksIdIndexRoute: typeof ProtectedBookmarksIdIndexRoute
   ProtectedBookmarksNewIndexRoute: typeof ProtectedBookmarksNewIndexRoute
+  ProtectedTagsIdIndexRoute: typeof ProtectedTagsIdIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
@@ -306,6 +326,7 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedTagsIdEditRoute: ProtectedTagsIdEditRoute,
   ProtectedBookmarksIdIndexRoute: ProtectedBookmarksIdIndexRoute,
   ProtectedBookmarksNewIndexRoute: ProtectedBookmarksNewIndexRoute,
+  ProtectedTagsIdIndexRoute: ProtectedTagsIdIndexRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
