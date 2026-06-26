@@ -1,22 +1,37 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
+import * as v from 'valibot'
+
+const bookmarkDetailSearchSchema = v.object({
+  created: v.optional(v.boolean())
+})
 
 export const Route = createFileRoute('/_protected/bookmarks/$id/')({
+  validateSearch: bookmarkDetailSearchSchema,
   component: RouteComponent
 })
 
 function RouteComponent() {
   const { id } = Route.useParams()
 
+  const { newBookmarkCreated } = useRouterState({
+    select: (s) => s.location.state
+  })
+
   return (
     <div>
+      {newBookmarkCreated && <div role='alert'>ブックマークを登録しました</div>}
+
       <h1>ブックマーク詳細</h1>
+
       <p>ID: {id}</p>
+
       <nav>
         <Link
           to='/bookmarks/$id/edit'
           params={{ id }}>
           編集
         </Link>
+
         <Link
           to='/'
           search={{ tagMode: 'and', sort: 'newest' }}>
