@@ -3,11 +3,14 @@ import { eq } from 'drizzle-orm'
 import * as v from 'valibot'
 
 import { getDB } from '../../db/index.server'
-import { tagsTable, tagInsertSchema } from '../../db/schema/tag'
+import { tagsTable } from '../../db/schema/tag'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
+import { tagNameSchema } from './tag-name.schema'
 
-const addTagInputSchema = v.pick(tagInsertSchema, ['name'])
+const addTagInputSchema = v.object({
+  name: tagNameSchema
+})
 
 export const fetchTags = createServerFn({ method: 'GET' })
   .validator(offsetPaginationQuerySchema)
