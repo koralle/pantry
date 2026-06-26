@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, ne, sql } from 'drizzle-orm'
 import * as v from 'valibot'
 
 import { getDB } from '../../db/index.server'
@@ -14,6 +14,11 @@ const addTagInputSchema = v.object({
 
 const tagIdSchema = v.object({
   id: v.number()
+})
+
+const updateTagInputSchema = v.object({
+  id: v.number(),
+  name: tagNameSchema
 })
 
 export const fetchTags = createServerFn({ method: 'GET' })
@@ -72,4 +77,40 @@ export const getTag = createServerFn({ method: 'GET' })
     }
 
     return tag
+  })
+
+export const updateTag = createServerFn({ method: 'POST' })
+  .validator(updateTagInputSchema)
+  .handler(async (ctx) => {
+    const session = await ensureSession()
+    const db = getDB()
+
+    const { id, name } = ctx.data
+
+    const [duplicate] = await db
+      .select({ id: tagsTable.id })
+      .from(tagsTable)
+      .where(
+        and(eq(tagsTable.name, name), eq(tagsTable.userId, session.user.id), ne(tagsTable.id, id))
+      )
+      .limit(1)
+
+    if (duplicate != null) {
+      throw new Error('Tag name already exists')
+    }
+
+    const [updated] = await db
+      .update(tagsTable)
+      .set({
+        name,
+        updatedAt: sql`(cast(unixepoch('subsecond') * 1000 as integer))`
+      })
+      .where(and(eq(tagsTable.id, id), eq(tagsTable.userId, session.user.id)))
+      .returning({ id: tagsTable.id })
+
+    if (updated == null) {
+      throw new Error('Tag not found')
+    }
+
+    return { id: updated.id }
   })
