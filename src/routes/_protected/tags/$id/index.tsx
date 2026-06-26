@@ -13,13 +13,14 @@ export const Route = createFileRoute('/_protected/tags/$id/')({
 function RouteComponent() {
   const { id } = Route.useParams()
 
-  const { newTagCreated } = useRouterState({
+  const { newTagCreated, tagUpdated } = useRouterState({
     select: (s) => s.location.state
   })
 
   return (
     <div>
       {newTagCreated && <div role='alert'>タグを登録しました</div>}
+      {tagUpdated && <div role='alert'>タグを更新しました</div>}
 
       <h1>タグ詳細</h1>
 
