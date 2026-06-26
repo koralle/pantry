@@ -85,17 +85,20 @@ export const updateBookmark = createServerFn({ method: 'POST' })
       throw new Error('Bookmark not found')
     }
 
-    try {
-      await db
-        .update(bookmarkTable)
-        .set({ url, title, note, updatedAt: new Date() })
-        .where(eq(bookmarkTable.id, id))
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
-        throw new Error('URL already exists', { cause: error })
-      }
-      throw error
+    const [duplicate] = await db
+      .select()
+      .from(bookmarkTable)
+      .where(and(eq(bookmarkTable.userId, session.user.id), eq(bookmarkTable.url, url)))
+      .limit(1)
+
+    if (duplicate != null && duplicate.id !== id) {
+      throw new Error('URL already exists')
     }
+
+    await db
+      .update(bookmarkTable)
+      .set({ url, title, note, updatedAt: new Date() })
+      .where(and(eq(bookmarkTable.id, id), eq(bookmarkTable.userId, session.user.id)))
 
     return { id }
   })
