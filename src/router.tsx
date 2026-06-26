@@ -41,5 +41,6 @@ declare module '@tanstack/react-router' {
     newBookmarkCreated?: boolean
     newTagCreated?: boolean
     tagUpdated?: boolean
+    bookmarkUpdated?: boolean
   }
 }
