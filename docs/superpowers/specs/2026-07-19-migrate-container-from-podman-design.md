@@ -57,10 +57,10 @@ pnpm dotenvx run -f .env.development -- pnpm tsx scripts/seed.ts
 
 ### Files
 
-| 操作 | パス |
-| --- | --- |
-| 追加 | `Dockerfile` |
-| 更新 | `justfile` |
+| 操作 | パス           |
+| ---- | -------------- |
+| 追加 | `Dockerfile`   |
+| 更新 | `justfile`     |
 | 削除 | `compose.yaml` |
 
 ## Data / Runtime Behavior

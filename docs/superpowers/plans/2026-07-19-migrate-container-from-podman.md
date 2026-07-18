@@ -14,17 +14,18 @@
 
 ## File Structure
 
-| 操作 | パス | 責務 |
-| --- | --- | --- |
-| Create | `Dockerfile` | 公式 libsql-server を digest pin した薄いイメージ定義 |
-| Modify | `justfile` | `local-db-build` / `local-db-clean` を container CLI に置換 |
-| Delete | `compose.yaml` | Podman Compose 定義を除去 |
+| 操作   | パス           | 責務                                                        |
+| ------ | -------------- | ----------------------------------------------------------- |
+| Create | `Dockerfile`   | 公式 libsql-server を digest pin した薄いイメージ定義       |
+| Modify | `justfile`     | `local-db-build` / `local-db-clean` を container CLI に置換 |
+| Delete | `compose.yaml` | Podman Compose 定義を除去                                   |
 
 ---
 
 ### Task 1: Dockerfile を追加する
 
 **Files:**
+
 - Create: `Dockerfile`
 
 - [ ] **Step 1: `Dockerfile` を作成する**
@@ -51,6 +52,7 @@ git commit -m "chore: add thin Dockerfile for local libsql-server"
 ### Task 2: justfile を apple/container 向けに書き換える
 
 **Files:**
+
 - Modify: `justfile`
 
 - [ ] **Step 1: `justfile` を次の内容で置き換える**
@@ -74,6 +76,7 @@ local-db-clean:
 ```
 
 Notes:
+
 - `2>/dev/null || true` でコンテナ/イメージが無い場合も失敗しない（idempotent）
 - `container image delete --force` は存在しないイメージを無視できる
 - migrate / seed コマンドは現行 justfile と同じ
@@ -96,6 +99,7 @@ git commit -m "chore: switch local-db just recipes to apple/container"
 ### Task 3: compose.yaml を削除する
 
 **Files:**
+
 - Delete: `compose.yaml`
 
 - [ ] **Step 1: `compose.yaml` を削除する**
@@ -122,9 +126,11 @@ git commit -m "chore: remove podman compose.yaml for local turso"
 ### Task 4: 動作確認する
 
 **Files:**
+
 - None (verification only)
 
 Prerequisites:
+
 - apple/container がインストール済み (`which container`)
 - container system / machine が起動済みであること
 - `.env.development` に `DATABASE_URL=http://127.0.0.1:8080` があること
@@ -148,6 +154,7 @@ just local-db-build
 ```
 
 Expected:
+
 - `container build` が成功する
 - `pantry-turso` コンテナが detached で起動する
 - migrate が成功する
@@ -185,6 +192,7 @@ container image list | rg "pantry-turso" || true
 ```
 
 Expected:
+
 - `pantry-turso` コンテナが存在しない
 - `pantry-turso:local` イメージが表示されない
 
@@ -213,12 +221,12 @@ Expected: エラーなく完了
 
 ## Spec Coverage Checklist
 
-| Spec requirement | Task |
-| --- | --- |
-| 薄い Dockerfile 追加（digest pin） | Task 1 |
-| justfile を container CLI に置換 | Task 2 |
-| compose.yaml 削除 | Task 3 |
-| migrate / seed 維持 | Task 2 |
-| tmpfs / 8080 / pantry-turso / linux/arm64 | Task 2 |
-| idempotent clean / rebuild | Task 2, Task 4 |
-| podman / compose 依存の除去確認 | Task 3, Task 4 |
+| Spec requirement                          | Task           |
+| ----------------------------------------- | -------------- |
+| 薄い Dockerfile 追加（digest pin）        | Task 1         |
+| justfile を container CLI に置換          | Task 2         |
+| compose.yaml 削除                         | Task 3         |
+| migrate / seed 維持                       | Task 2         |
+| tmpfs / 8080 / pantry-turso / linux/arm64 | Task 2         |
+| idempotent clean / rebuild                | Task 2, Task 4 |
+| podman / compose 依存の除去確認           | Task 3, Task 4 |
