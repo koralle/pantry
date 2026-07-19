@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { use } from 'react'
 
 import { TagSelectType } from '../../db/schema/tag'
@@ -17,7 +18,13 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<TagSelec
       <tbody>
         {tags.map((tag) => (
           <tr key={tag.id}>
-            <td>{tag.id}</td>
+            <td>
+              <Link
+                to='/tags/$id'
+                params={{ id: tag.id.toString() }}>
+                {tag.id}
+              </Link>
+            </td>
             <td>{tag.name}</td>
             <td>{tag.updatedAt.toString()}</td>
           </tr>
