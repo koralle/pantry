@@ -126,7 +126,11 @@ describe('fetchPageTitle', () => {
       ['2002:a9fe:a9fe::1', 'AAAA', 28],
       ['2001:0::5601:5601', 'AAAA', 28],
       ['192.0.0.3', 'A', 1],
-      ['192.0.0.8', 'A', 1]
+      ['192.0.0.8', 'A', 1],
+      ['192.31.196.1', 'A', 1],
+      ['192.52.193.1', 'A', 1],
+      ['192.175.48.1', 'A', 1],
+      ['2620:4f:8000::1', 'AAAA', 28]
     ])(
       'rejects the special-use %s address returned by DoH',
       async (address, queryType, recordType) => {
@@ -351,6 +355,9 @@ describe('fetchPageTitle', () => {
       'http://100.100.100.200',
       'http://192.0.0.3',
       'http://192.0.0.8',
+      'http://192.31.196.1',
+      'http://192.52.193.1',
+      'http://192.175.48.1',
       'http://[::1]',
       'http://[2001:db8::1]',
       'http://[3fff::1]',
@@ -364,6 +371,7 @@ describe('fetchPageTitle', () => {
       'http://[fe80::1]',
       'http://[fec0::1]',
       'http://[64:ff9b:1::1]',
+      'http://[2620:4f:8000::1]',
       'http://[::ffff:127.0.0.1]',
       'http://[ff00::1]'
     ])('throws a validation error for %s', async (url) => {

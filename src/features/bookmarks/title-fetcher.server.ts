@@ -8,6 +8,11 @@ const IPV6_PART_BASE = 65_536
 const IPV6_GLOBAL_UNICAST_PREFIX = 2n ** 125n
 
 const metadataIpv4Addresses = new Set(['100.100.100.200'])
+const blockedIpv4DestinationPrefixes = [
+  [3_223_307_264, 24],
+  [3_224_682_752, 24],
+  [3_232_706_560, 24]
+] as const
 const blockedIpv6DestinationPrefixes = [
   [1_048_704n, 23n],
   [35_188_667_187_200n, 48n],
@@ -17,7 +22,8 @@ const blockedIpv6DestinationPrefixes = [
   [122_099_644_659_926_101_980_610_560n, 96n],
   [433_785_077_761n, 48n],
   [8194n, 16n],
-  [536_936_448n, 32n]
+  [536_936_448n, 32n],
+  [41_918_886_019_072n, 48n]
 ] as const
 
 // The title RPC represents an unavailable title as null.
@@ -79,6 +85,12 @@ function formatIpv4(address: number): string {
   return ipv4Octets(address).join('.')
 }
 
+function matchesIpv4Prefix(address: number, prefix: number, length: number): boolean {
+  const divisor = 2 ** (32 - length)
+
+  return Math.floor(address / divisor) === Math.floor(prefix / divisor)
+}
+
 function isPrivateOrLoopbackIpv4(first: number, second: number): boolean {
   return (
     first === 0 ||
@@ -101,12 +113,19 @@ function isSpecialUseIpv4(first: number, second: number, third: number): boolean
   )
 }
 
+function isBlockedIpv4Destination(address: number): boolean {
+  return blockedIpv4DestinationPrefixes.some(([prefix, length]) =>
+    matchesIpv4Prefix(address, prefix, length)
+  )
+}
+
 function isBlockedIpv4(address: number): boolean {
   const [first, second, third] = ipv4Octets(address)
 
   return (
     isPrivateOrLoopbackIpv4(first, second) ||
     isSpecialUseIpv4(first, second, third) ||
+    isBlockedIpv4Destination(address) ||
     metadataIpv4Addresses.has(formatIpv4(address))
   )
 }
