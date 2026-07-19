@@ -1,5 +1,7 @@
 # Seed Script Design
 
+> Superseded by [Turso RPC MVP Design](2026-07-19-turso-rpc-mvp-design.md). This document records the previous development setup.
+
 ## Goal
 
 `scripts/seed.ts` を完成させ、ローカルの SQLite/libsql DB に開発用ダミーデータを流せるようにする。

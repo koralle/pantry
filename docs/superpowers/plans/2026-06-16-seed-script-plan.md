@@ -1,5 +1,7 @@
 # Seed Script Implementation Plan
 
+> Superseded by [Turso RPC MVP Design](../specs/2026-07-19-turso-rpc-mvp-design.md). This document records the previous development setup.
+
 > **For agentic workers:** REQUIRED SUB-LEVEL: Inline execution in this session. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `scripts/seed.ts` を完成させ、ローカル DB に user / tags / bookmarks / bookmark_tags のダミーデータを流せるようにする。
