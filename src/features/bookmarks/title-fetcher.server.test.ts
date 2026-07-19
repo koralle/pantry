@@ -4,6 +4,14 @@ import { fetchPageTitle } from './title-fetcher.server'
 
 const maxBodyBytes = 1_000_000
 
+async function resolvePublicHostname(): Promise<string[]> {
+  return ['93.184.216.34']
+}
+
+function fetchTitle(url: string) {
+  return fetchPageTitle(url, resolvePublicHostname)
+}
+
 function htmlDocumentOfSize(size: number): string {
   const title = '<title>Pantry</title>'
 
@@ -34,8 +42,75 @@ describe('fetchPageTitle', () => {
     )
     vi.stubGlobal('fetch', fetch)
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBe('Pantry')
+    await expect(fetchTitle('https://example.com')).resolves.toBe('Pantry')
     expectFetchRequest(fetch, 0, 'https://example.com/')
+  })
+
+  test('rejects a hostname that resolves to a private address', async () => {
+    const resolveHostname = vi.fn().mockResolvedValue(['127.0.0.1'])
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response('<title>Private</title>', { headers: { 'content-type': 'text/html' } })
+      )
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(fetchPageTitle('https://127.0.0.1.nip.io', resolveHostname)).resolves.toBeNull()
+    expect(resolveHostname).toHaveBeenCalledWith('127.0.0.1.nip.io', expect.anything())
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('returns null when DNS does not establish a public address', async () => {
+    const resolveHostname = vi.fn().mockResolvedValue([])
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response('<title>Unknown</title>', { headers: { 'content-type': 'text/html' } })
+      )
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(fetchPageTitle('https://example.com', resolveHostname)).resolves.toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('rejects a hostname when any resolved address is reserved', async () => {
+    const resolveHostname = vi.fn().mockResolvedValue(['93.184.216.34', '192.0.2.1'])
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response('<title>Reserved</title>', { headers: { 'content-type': 'text/html' } })
+      )
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(fetchPageTitle('https://example.com', resolveHostname)).resolves.toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('resolves A and AAAA records with DNS over HTTPS', async () => {
+    const fetch = vi.fn((input: RequestInfo | URL) => {
+      const url = new URL(String(input))
+
+      if (url.hostname === 'cloudflare-dns.com') {
+        return new Response(
+          JSON.stringify({
+            Answer: url.searchParams.get('type') === 'A' ? [{ data: '93.184.216.34', type: 1 }] : []
+          })
+        )
+      }
+
+      return new Response('<title>Pantry</title>', { headers: { 'content-type': 'text/html' } })
+    })
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(fetchPageTitle('https://example.com')).resolves.toBe('Pantry')
+    expect(
+      fetch.mock.calls
+        .map(([input]) => String(input))
+        .filter((url) => url.startsWith('https://cloudflare-dns.com/dns-query'))
+    ).toStrictEqual([
+      'https://cloudflare-dns.com/dns-query?name=example.com&type=A',
+      'https://cloudflare-dns.com/dns-query?name=example.com&type=AAAA'
+    ])
   })
 
   test('uses a three-second timeout for the complete fetch operation', async () => {
@@ -49,7 +124,7 @@ describe('fetchPageTitle', () => {
         )
     )
 
-    await fetchPageTitle('https://example.com')
+    await fetchTitle('https://example.com')
 
     expect(timeout).toHaveBeenCalledWith(3000)
   })
@@ -70,9 +145,14 @@ describe('fetchPageTitle', () => {
       )
     vi.stubGlobal('fetch', fetch)
 
-    await expect(fetchPageTitle('https://example.com/origin')).resolves.toBe('Destination')
+    const resolveHostname = vi.fn().mockResolvedValue(['93.184.216.34'])
+
+    await expect(fetchPageTitle('https://example.com/origin', resolveHostname)).resolves.toBe(
+      'Destination'
+    )
     expectFetchRequest(fetch, 0, 'https://example.com/origin')
     expectFetchRequest(fetch, 1, 'https://example.com/destination')
+    expect(resolveHostname).toHaveBeenCalledTimes(2)
   })
 
   test('rejects a redirect to an invalid address without fetching it', async () => {
@@ -84,7 +164,7 @@ describe('fetchPageTitle', () => {
     )
     vi.stubGlobal('fetch', fetch)
 
-    await expect(fetchPageTitle('https://example.com')).rejects.toThrow('Invalid URL')
+    await expect(fetchTitle('https://example.com')).rejects.toThrow('Invalid URL')
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
@@ -97,7 +177,7 @@ describe('fetchPageTitle', () => {
       .mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: '/four' } }))
     vi.stubGlobal('fetch', fetch)
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
     expect(fetch).toHaveBeenCalledTimes(4)
   })
 
@@ -111,23 +191,28 @@ describe('fetchPageTitle', () => {
     'http://10.0.0.1',
     'http://172.16.0.1',
     'http://192.168.0.1',
+    'http://192.0.2.1',
     'http://169.254.1.1',
+    'http://198.51.100.1',
+    'http://203.0.113.1',
     'http://100.100.100.200',
     'http://[::1]',
+    'http://[2001:db8::1]',
     'http://[fc00::1]',
-    'http://[fe80::1]'
+    'http://[fe80::1]',
+    'http://[ff00::1]'
   ])('throws a validation error for %s', async (url) => {
     const fetch = vi.fn()
     vi.stubGlobal('fetch', fetch)
 
-    await expect(fetchPageTitle(url)).rejects.toThrow('Invalid URL')
+    await expect(fetchTitle(url)).rejects.toThrow('Invalid URL')
     expect(fetch).not.toHaveBeenCalled()
   })
 
   test('returns null for a network or timeout failure', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('Timed out', 'TimeoutError')))
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
   })
 
   test('returns null without parsing a non-HTML response', async () => {
@@ -140,7 +225,7 @@ describe('fetchPageTitle', () => {
       )
     )
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
   })
 
   test('returns null when an HTML response has no title', async () => {
@@ -153,7 +238,7 @@ describe('fetchPageTitle', () => {
       )
     )
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
   })
 
   test('accepts a response with a known one-million-byte body', async () => {
@@ -169,7 +254,7 @@ describe('fetchPageTitle', () => {
       )
     )
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBe('Pantry')
+    await expect(fetchTitle('https://example.com')).resolves.toBe('Pantry')
   })
 
   test('rejects a response with a known 1,000,001-byte body', async () => {
@@ -185,7 +270,7 @@ describe('fetchPageTitle', () => {
       )
     )
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
   })
 
   test('cancels a streamed HTML response once it exceeds one megabyte', async () => {
@@ -204,7 +289,7 @@ describe('fetchPageTitle', () => {
       vi.fn().mockResolvedValue(new Response(body, { headers: { 'content-type': 'text/html' } }))
     )
 
-    await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
     expect(cancelled).toBe(true)
   })
 })

@@ -51,8 +51,9 @@
 
 - 登録フォームはURL入力後、手動操作でタイトル取得を実行する。
 - URLのホストとアドレスリテラルを検証し、`http`/`https`だけを受け付ける。`localhost`、loopback、private、link-local、metadata宛てを拒否し、リダイレクト先も毎回同じ検証を行う。
-- 標準のWorkerランタイムではDNS解決後のIPアドレスを検査できない。このWorkerはprivate-network routingを受けないことを前提とし、将来private networkへ配置する場合は、制御されたegress allowlistまたはproxyを必須とする。
-- リダイレクトは最大3回、タイムアウトは3秒、応答サイズは1MBまでとする。
+- 各ホップの取得前にDoHでA/AAAAを解決し、非publicまたはspecial-useアドレスを含む回答は拒否する。
+- DNS TOCTOUはアプリケーション層だけで排除できないため、このWorkerにはprivate-network/private-DNSへの到達性を付与しない。将来private networkへ配置する場合は、制御されたegress allowlistまたはproxyを必須とする。
+- リダイレクトは最大3回、タイムアウトは3秒、応答サイズは1MBまで、title抽出対象は先頭64KBまでとする。
 - 取得したtitleは編集可能な初期値として反映する。取得に失敗しても登録フォームを維持し、手入力保存を可能にする。
 
 ## 7. 認証とセキュリティ

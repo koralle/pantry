@@ -1,14 +1,34 @@
 const MAX_BODY_BYTES = 1_000_000
 const MAX_REDIRECTS = 3
 const TIMEOUT_MS = 3000
+const DNS_OVER_HTTPS_ENDPOINT = 'https://cloudflare-dns.com/dns-query'
 
 const metadataIpv4Addresses = new Set(['100.100.100.200'])
 
-export async function fetchPageTitle(value: string): Promise<string | null> {
+type HostnameResolver = (hostname: string, signal: AbortSignal) => Promise<string[] | null>
+
+type DnsResponse = {
+  Answer?: Array<{
+    data?: string
+    type?: number
+  }>
+}
+
+export async function fetchPageTitle(
+  value: string,
+  resolveHostname: HostnameResolver = resolveHostnameWithDnsOverHttps
+): Promise<string | null> {
   let url = validateUrl(value)
   const signal = AbortSignal.timeout(TIMEOUT_MS)
 
   for (let redirects = 0; ; redirects += 1) {
+    if (
+      !isIpAddress(url.hostname) &&
+      !(await resolvesToPublicAddresses(url.hostname, resolveHostname, signal))
+    ) {
+      return null
+    }
+
     let response: Response
 
     try {
@@ -35,6 +55,74 @@ export async function fetchPageTitle(value: string): Promise<string | null> {
     }
 
     return titleFromResponse(response)
+  }
+}
+
+async function resolvesToPublicAddresses(
+  hostname: string,
+  resolveHostname: HostnameResolver,
+  signal: AbortSignal
+): Promise<boolean> {
+  let addresses: string[] | null
+
+  try {
+    addresses = await resolveHostname(hostname.replace(/\.+$/, ''), signal)
+  } catch {
+    return false
+  }
+
+  return addresses != null && addresses.length > 0 && addresses.every(isPublicIpAddress)
+}
+
+async function resolveHostnameWithDnsOverHttps(
+  hostname: string,
+  signal: AbortSignal
+): Promise<string[] | null> {
+  const [ipv4Addresses, ipv6Addresses] = await Promise.all([
+    queryDnsOverHttps(hostname, 'A', 1, signal),
+    queryDnsOverHttps(hostname, 'AAAA', 28, signal)
+  ])
+
+  if (ipv4Addresses == null || ipv6Addresses == null) {
+    return null
+  }
+
+  return [...ipv4Addresses, ...ipv6Addresses]
+}
+
+async function queryDnsOverHttps(
+  hostname: string,
+  queryType: 'A' | 'AAAA',
+  recordType: number,
+  signal: AbortSignal
+): Promise<string[] | null> {
+  const url = new URL(DNS_OVER_HTTPS_ENDPOINT)
+  url.searchParams.set('name', hostname)
+  url.searchParams.set('type', queryType)
+
+  try {
+    const response = await fetch(url, {
+      headers: { accept: 'application/dns-json' },
+      signal
+    })
+
+    if (!response.ok) {
+      await discardResponse(response)
+
+      return null
+    }
+
+    const body: DnsResponse = await response.json()
+
+    if (body.Answer == null) {
+      return []
+    }
+
+    return body.Answer.flatMap((answer) =>
+      answer.type === recordType && typeof answer.data === 'string' ? [answer.data] : []
+    )
+  } catch {
+    return null
   }
 }
 
@@ -73,6 +161,25 @@ function isBlockedIpAddress(hostname: string): boolean {
   return ipv6 != null && isBlockedIpv6(ipv6)
 }
 
+function isIpAddress(hostname: string): boolean {
+  const address = hostname.replace(/^\[|\]$/g, '')
+
+  return parseIpv4(address) != null || parseIpv6(address) != null
+}
+
+function isPublicIpAddress(hostname: string): boolean {
+  const address = hostname.replace(/^\[|\]$/g, '')
+  const ipv4 = parseIpv4(address)
+
+  if (ipv4 != null) {
+    return !isBlockedIpv4(ipv4)
+  }
+
+  const ipv6 = parseIpv6(address)
+
+  return ipv6 != null && !isBlockedIpv6(ipv6)
+}
+
 function parseIpv4(value: string): number | null {
   const octets = value.split('.')
 
@@ -102,6 +209,7 @@ function parseIpv4(value: string): number | null {
 function isBlockedIpv4(address: number): boolean {
   const first = address >>> 24
   const second = (address >>> 16) & 0xFF
+  const third = (address >>> 8) & 0xFF
 
   return (
     first === 0 ||
@@ -111,8 +219,12 @@ function isBlockedIpv4(address: number): boolean {
     (first === 100 && second >= 64 && second <= 127) ||
     (first === 169 && second === 254) ||
     (first === 172 && second >= 16 && second <= 31) ||
-    (first === 192 && second === 168) ||
-    (first === 198 && (second === 18 || second === 19)) ||
+    (first === 192 &&
+      (second === 168 ||
+        (second === 0 && (third === 0 || third === 2)) ||
+        (second === 88 && third === 99))) ||
+    (first === 198 && (second === 18 || second === 19 || (second === 51 && third === 100))) ||
+    (first === 203 && second === 0 && third === 113) ||
     metadataIpv4Addresses.has(formatIpv4(address))
   )
 }
@@ -170,7 +282,9 @@ function isBlockedIpv6(address: bigint): boolean {
     address === 1n ||
     address >> 121n === 0b111_1110n ||
     address >> 118n === 0b11_1111_1010n ||
-    (upper96Bits === 0n && isBlockedIpv4(ipv4)) ||
+    address >> 120n === 0xFFn ||
+    address >> 96n === 0x20010DB8n ||
+    upper96Bits === 0n ||
     (upper96Bits === 0xFFFFn && isBlockedIpv4(ipv4))
   )
 }
