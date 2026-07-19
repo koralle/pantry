@@ -1,35 +1,35 @@
-# New Bookmark Create Flow Entry Points — Implementation Plan
+# 新規ブックマーク作成フロー（導線）— 実装計画
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development（推奨）または superpowers:executing-plans を使って、この計画をタスクごとに実装すること。ステップはチェックボックス（`- [ ]`）記法で進捗を管理する。
 
-**Goal:** Add entry points from the bookmark list to the new-bookmark creation screen (`/bookmarks/new`): a persistent header link, an in-list link, and confirm/neaten the "back to list" link on the creation screen. No changes to the creation form itself.
+**Goal:** ブックマーク一覧画面から新規作成画面（`/bookmarks/new`）へ遷移する導線を追加する。ヘッダーへの常設リンク、一覧画面内のリンク、および作成画面の「一覧へ戻る」リンクの確認・整備。作成フォーム自体は変更しない。
 
-**Architecture:** Pure client-side navigation using the existing TanStack Router `Link` component. No Server Functions, DB schema, or validation changes. Three small edits across three existing files, then a Playwright walkthrough to verify the three navigation paths.
+**Architecture:** 既存の TanStack Router `Link` コンポーネントによる純粋なクライアントサイド遷移。Server Function、DB スキーマ、バリデーションの変更はなし。既存ファイル3箇所への小さな編集ののち、Playwright で3つの遷移経路をウォークスルー検証する。
 
-**Tech Stack:** TanStack Router (`Link`, `createFileRoute`), React, Base UI (`@base-ui/react`) where used, Vitest (existing tests unaffected), Playwright MCP (manual walkthrough verification).
-
----
-
-## File Structure
-
-- `src/routes/_protected.tsx` — Layout with `<header><nav>`. Add a "＋新規ブックマーク" `Link` in the nav, alongside existing タグ/設定 links.
-- `src/routes/_protected/index.tsx` — List page (`/`). Add a "新規作成" `Link` near the heading, above the `BookmarkTable`.
-- `src/routes/_protected/bookmarks/new/index.tsx` — Creation page. Verify the existing "一覧へ戻る" `Link`; tidy placement/labels only, no behavior change.
-
-No new files. No test files (no logic to unit-test; verification is via Playwright walkthrough).
+**Tech Stack:** TanStack Router（`Link`, `createFileRoute`）、React、Base UI（`@base-ui/react`）、Vitest（既存テストは影響なし）、Playwright MCP（手動ウォークスルー検証）。
 
 ---
 
-## Task 1: Add header link to new-bookmark creation
+## ファイル構成
+
+- `src/routes/_protected.tsx` — `<header><nav>` を持つレイアウト。既存のタグ/設定リンクと並べて「＋新規ブックマーク」`Link` を追加。
+- `src/routes/_protected/index.tsx` — 一覧画面（`/`）。見出しのそば、`BookmarkTable` の上に「新規作成」`Link` を追加。
+- `src/routes/_protected/bookmarks/new/index.tsx` — 作成画面。既存の「一覧へ戻る」`Link` を確認し、配置・ラベルのみ整備（動作変更なし）。
+
+新規ファイルなし。テストファイルなし（単体テストすべきロジックがないため。検証は Playwright ウォークスルーで行う）。
+
+---
+
+## Task 1: ヘッダーに新規作成へのリンクを追加
 
 **Files:**
-- Modify: `src/routes/_protected.tsx:48-68` (the `<header><nav>` block)
+- Modify: `src/routes/_protected.tsx:48-68`（`<header><nav>` ブロック）
 
-- [ ] **Step 1: Add the `Link` in the nav**
+- [ ] **Step 1: ナビに `Link` を追加**
 
-In `src/routes/_protected.tsx`, the `Layout` component's `<nav>` currently renders links to `/`, `/tags`, `/settings`. Add a new `Link` to `/bookmarks/new` after the existing nav links (before the Sign Out button). The file already imports `Link` from `@tanstack/react-router`, so no new import is needed.
+`src/routes/_protected.tsx` の `Layout` コンポーネントの `<nav>` は現在 `/`、`/tags`、`/settings` へのリンクを出力している。既存のナビリンクの直後（Sign Out ボタンの前）に `/bookmarks/new` への `Link` を追加する。このファイルはすでに `@tanstack/react-router` から `Link` をインポートしているため、新規インポートは不要。
 
-Replace the nav block:
+nav ブロックを以下のように置き換える：
 
 ```tsx
         <nav>
@@ -48,14 +48,14 @@ Replace the nav block:
         </nav>
 ```
 
-- [ ] **Step 2: Verify the app builds / typechecks**
+- [ ] **Step 2: ビルド／型チェックを確認**
 
 Run: `pnpm run build`
-Expected: build succeeds with no type errors referencing `_protected.tsx`.
+Expected: エラーなくビルドが成功し、`_protected.tsx` に関する型エラーが出ないこと。
 
-(If `build` is slow, `pnpm exec tsc --noEmit` against the project config is an acceptable substitute; confirm no new errors.)
+（`build` が遅い場合は `pnpm exec tsc --noEmit` でも可。新しいエラーが出ないことを確認。）
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: コミット**
 
 ```bash
 git add src/routes/_protected.tsx
@@ -64,16 +64,16 @@ git commit -m "feat: add header link to new bookmark creation screen"
 
 ---
 
-## Task 2: Add in-list link to new-bookmark creation
+## Task 2: 一覧画面内に新規作成へのリンクを追加
 
 **Files:**
-- Modify: `src/routes/_protected/index.tsx:40-53` (the `RouteComponent` return)
+- Modify: `src/routes/_protected/index.tsx:40-53`（`RouteComponent` の return）
 
-- [ ] **Step 1: Add the `Link` near the heading**
+- [ ] **Step 1: 見出しのそばに `Link` を追加**
 
-In `src/routes/_protected/index.tsx`, `RouteComponent` returns a heading followed by the `BookmarkTable`. The file already imports `Link` from `@tanstack/react-router`. Add a "新規作成" `Link` between the `<h1>` and the `<ErrorBoundary>`.
+`src/routes/_protected/index.tsx` の `RouteComponent` は見出しの直後に `BookmarkTable` を出力している。このファイルはすでに `@tanstack/react-router` から `Link` をインポートしている。`<h1>` と `<ErrorBoundary>` の間に「新規作成」`Link` を追加する。
 
-Replace the `RouteComponent` return block:
+`RouteComponent` の return ブロックを以下のように置き換える：
 
 ```tsx
   return (
@@ -91,12 +91,12 @@ Replace the `RouteComponent` return block:
   )
 ```
 
-- [ ] **Step 2: Verify the app builds / typechecks**
+- [ ] **Step 2: ビルド／型チェックを確認**
 
 Run: `pnpm run build`
-Expected: build succeeds with no type errors referencing `index.tsx`.
+Expected: エラーなくビルドが成功し、`index.tsx` に関する型エラーが出ないこと。
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: コミット**
 
 ```bash
 git add src/routes/_protected/index.tsx
@@ -105,14 +105,14 @@ git commit -m "feat: add in-list link to new bookmark creation screen"
 
 ---
 
-## Task 3: Verify and tidy the creation screen's back-to-list link
+## Task 3: 作成画面の「一覧へ戻る」リンクを確認・整備
 
 **Files:**
-- Modify (verify only, tidy if needed): `src/routes/_protected/bookmarks/new/index.tsx:26-39` (the `RouteComponent` return)
+- Modify（確認のみ、必要なら整備）: `src/routes/_protected/bookmarks/new/index.tsx:26-39`（`RouteComponent` の return）
 
-- [ ] **Step 1: Read the existing back link**
+- [ ] **Step 1: 既存の戻るリンクを確認**
 
-Open `src/routes/_protected/bookmarks/new/index.tsx`. Confirm the `RouteComponent` already contains:
+`src/routes/_protected/bookmarks/new/index.tsx` を開き、`RouteComponent` にすでに以下が含まれていることを確認する：
 
 ```tsx
       <Link
@@ -122,69 +122,69 @@ Open `src/routes/_protected/bookmarks/new/index.tsx`. Confirm the `RouteComponen
       </Link>
 ```
 
-- [ ] **Step 2: Tidy placement/labels if needed (no behavior change)**
+- [ ] **Step 2: 必要に応じて配置・ラベルを整備（動作変更なし）**
 
-The link already navigates to `/` with the default search. No change is required unless the label or placement is unclear. If tidying, keep the `to='/'` and `search={{ tagMode: 'and', sort: 'newest' }}` exactly as-is — only adjust surrounding structure (e.g. wrap in a `<nav>` or add an `aria-label`) for clarity. Do NOT change the destination or search params.
+このリンクはデフォルトの検索条件で `/` へ遷移する。ラベルや配置が不明確でなければ変更は不要。整備する場合は `to='/'` と `search={{ tagMode: 'and', sort: 'newest' }}` をそのまま維持し、周囲の構造（`<nav>` での囲みや `aria-label` の追加など）のみ調整すること。遷移先や検索条件は変更してはならない。
 
-If no change is made, skip to Step 4. If a change is made, run:
+変更しない場合は Step 4 へ飛ぶ。変更した場合は以下を実行：
 
 `pnpm run build`
-Expected: build succeeds.
+Expected: ビルドが成功すること。
 
-- [ ] **Step 3: Commit (only if a change was made in Step 2)**
+- [ ] **Step 3: コミット（Step 2 で変更した場合のみ）**
 
 ```bash
 git add src/routes/_protected/bookmarks/new/index.tsx
 git commit -m "chore: tidy back-to-list link on new bookmark screen"
 ```
 
-(If no change was made, do not commit — leave the working tree clean.)
+（変更がなかった場合はコミットせず、作業ツリーをクリーンに保つ。）
 
-- [ ] **Step 4: Confirm no working-tree changes remain from this task**
+- [ ] **Step 4: このタスクによる作業ツリーの変更が残っていないことを確認**
 
 Run: `git status --short`
-Expected: no unintended modifications to `src/routes/_protected/bookmarks/new/index.tsx` (or only the tidy commit if one was made).
+Expected: `src/routes/_protected/bookmarks/new/index.tsx` に意図しない変更が残っていないこと（整備コミットをした場合はそのコミットのみ）。
 
 ---
 
-## Task 4: Playwright walkthrough verification
+## Task 4: Playwright ウォークスルー検証
 
-**Files:** none (verification only)
+**Files:** なし（検証のみ）
 
-- [ ] **Step 1: Start the dev server**
+- [ ] **Step 1: 開発サーバーを起動**
 
-Run (in a separate terminal): `pnpm run dev`
-Wait until it prints a local URL (e.g. `http://localhost:5173` or the workerd local address).
+（別ターミナルで）Run: `pnpm run dev`
+ローカル URL（例: `http://localhost:5173` や workerd のローカルアドレス）が表示されるまで待つ。
 
-- [ ] **Step 2: Sign in**
+- [ ] **Step 2: サインイン**
 
-Using Playwright MCP, navigate to the dev server root, sign in with the dev credentials, and confirm you land on `/` (the list page).
+Playwright MCP を使って開発サーバーのルートへ移動し、開発用認証情報でサインインし、`/`（一覧画面）に到達することを確認する。
 
-- [ ] **Step 3: Verify path 1 — header link**
+- [ ] **Step 3: 経路1 — ヘッダーリンクを検証**
 
-Click the header "＋新規ブックマーク" link. Confirm the URL becomes `/bookmarks/new` and the "ブックマーク新規作成" heading is visible.
+ヘッダーの「＋新規ブックマーク」リンクをクリック。URL が `/bookmarks/new` になり、「ブックマーク新規作成」見出しが表示されることを確認。
 
-- [ ] **Step 4: Verify path 2 — in-list link**
+- [ ] **Step 4: 経路2 — 一覧内リンクを検証**
 
-Navigate back to `/`. Click the in-list "新規作成" link (near the heading). Confirm the URL becomes `/bookmarks/new`.
+`/` へ戻る。一覧内の「新規作成」リンク（見出しのそば）をクリック。URL が `/bookmarks/new` になることを確認。
 
-- [ ] **Step 5: Verify path 3 — back-to-list link**
+- [ ] **Step 5: 経路3 — 一覧へ戻るリンクを検証**
 
-On `/bookmarks/new`, click "一覧へ戻る". Confirm the URL becomes `/` and the list table is visible.
+`/bookmarks/new` で「一覧へ戻る」をクリック。URL が `/` になり、一覧テーブルが表示されることを確認。
 
-- [ ] **Step 6: Accessibility spot-check**
+- [ ] **Step 6: アクセシビリティの簡易確認**
 
-Confirm each of the three links has a clear, readable label and is reachable/activatable via keyboard (Tab to focus, Enter to navigate).
+3つのリンクそれぞれについて、ラベルが明確で読みやすく、キーボード（Tab でフォーカス、Enter で遷移）で到達・操作できることを確認。
 
-- [ ] **Step 7: Stop the dev server**
+- [ ] **Step 7: 開発サーバーを停止**
 
-Stop the `pnpm run dev` process started in Step 1.
+Step 1 で起動した `pnpm run dev` プロセスを停止する。
 
 ---
 
-## Self-Review Notes
+## 自己レビュー記録
 
-- **Spec coverage:** Spec sections a (header link) → Task 1; b (in-list link) → Task 2; c (back link verify/tidy) → Task 3; testing/verification (3 paths) → Task 4. All covered.
-- **Placeholder scan:** No TBD/TODO/"similar to" patterns. All code blocks are complete.
-- **Type consistency:** `Link` import already present in all three files; `to` paths match existing route tree (`/bookmarks/new`, `/`, `/tags`, `/settings`). Search param shape for `/` matches the existing "一覧へ戻る" link and the header "Pantry" link. Consistent.
-- **Out of scope (confirmed excluded):** title auto-fetch, tag selection/creation, note input, form restructuring — not in this plan.
+- **仕様カバレッジ:** 仕様セクション a（ヘッダーリンク）→ Task 1；b（一覧内リンク）→ Task 2；c（戻るリンクの確認・整備）→ Task 3；テスト・検証（3経路）→ Task 4。すべて網羅。
+- **プレースホルダー確認:** TBD/TODO/「上記と同様」などの記述なし。すべてのコードブロックは完結している。
+- **型の一貫性:** 3ファイルとも `Link` のインポートは既存。ルートツリーに合う `to` パス（`/bookmarks/new`、`/`、`/tags`、`/settings`）。`/` の検索条件の形は既存の「一覧へ戻る」リンクやヘッダーの「Pantry」リンクと一致。一貫性あり。
+- **範囲外（明示的に除外）:** タイトル自動取得、タグ選択/新規作成、メモ入力、フォーム構造の変更 — 本計画に含まない。
