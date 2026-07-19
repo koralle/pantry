@@ -68,7 +68,7 @@ export default defineConfig({
       }
     },
     {
-      files: ['env.ts'],
+      files: ['database-env.ts', 'env.ts'],
       rules: {
         'node/no-process-env': 'off'
       }

@@ -6,25 +6,15 @@ import * as authTables from './schema/auth-schema'
 import { bookmarkTable } from './schema/bookmark'
 import { bookmarkTagsTable } from './schema/bookmark-tag'
 import { tagsTable } from './schema/tag'
+import { parseTursoCredentials } from './turso-credentials'
 
-export const db = drizzle({
-  connection: {
-    url: env.TURSO_DATABASE_URL,
-    authToken: env.TURSO_AUTH_TOKEN
-  },
-  schema: {
-    ...authTables,
-    bookmark: bookmarkTable,
-    bookmarkTags: bookmarkTagsTable,
-    tags: tagsTable
-  }
-})
+function createDB() {
+  const credentials = parseTursoCredentials(env)
 
-export const getDB = createServerOnlyFn(() =>
-  drizzle({
+  return drizzle({
     connection: {
-      url: env.TURSO_DATABASE_URL,
-      authToken: env.TURSO_AUTH_TOKEN
+      url: credentials.TURSO_DATABASE_URL,
+      authToken: credentials.TURSO_AUTH_TOKEN
     },
     schema: {
       ...authTables,
@@ -33,4 +23,8 @@ export const getDB = createServerOnlyFn(() =>
       tags: tagsTable
     }
   })
-)
+}
+
+export const db = createDB()
+
+export const getDB = createServerOnlyFn(createDB)

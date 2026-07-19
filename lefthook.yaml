@@ -7,6 +7,7 @@ pre-commit:
           - name: Format with Oxfmt (root)
             glob:
               - 'vite.config.ts'
+              - 'database-env.ts'
               - 'oxfmt.config.ts'
               - 'oxlint.config.ts'
               - 'package.json'
@@ -48,6 +49,7 @@ pre-commit:
           - name: Lint with Oxlint (root)
             glob:
               - 'vite.config.ts'
+              - 'database-env.ts'
               - 'oxfmt.config.ts'
               - 'oxlint.config.ts'
             run: |
