@@ -8,75 +8,75 @@ catalogMode: strict
 
 catalogs:
   authentication:
-    '@better-auth/drizzle-adapter': 1.6.19
-    better-auth: 1.6.19
+    '@better-auth/drizzle-adapter': 1.6.23
+    better-auth: 1.6.23
   build:
-    '@cloudflare/vite-plugin': 1.42.0
-    '@vitejs/plugin-react': 6.0.2
-    'vite': 8.0.16
+    '@cloudflare/vite-plugin': 1.45.0
+    '@vitejs/plugin-react': 6.0.3
+    'vite': 8.1.5
   database:
     '@libsql/client': 0.17.4
-    '@tursodatabase/database': 0.6.1
-    drizzle-orm: 1.0.0-rc.4-273829f
-    drizzle-kit: 1.0.0-rc.4-273829f
-    drizzle-seed: 1.0.0-rc.4-273829f
+    '@tursodatabase/database': 0.7.0
+    drizzle-orm: 1.0.0-rc.4
+    drizzle-kit: 1.0.0-rc.4
+    drizzle-seed: 1.0.0-rc.4
   debug:
-    '@tanstack/devtools-vite': 0.7.0
-    '@tanstack/react-devtools': 0.10.5
-    '@tanstack/react-query-devtools': 5.101.0
+    '@tanstack/devtools-vite': 0.8.1
+    '@tanstack/react-devtools': 0.10.8
+    '@tanstack/react-query-devtools': 5.101.2
     '@tanstack/react-router-devtools': 1.167.0
   envvars:
-    '@dotenvx/dotenvx': 1.73.1
+    '@dotenvx/dotenvx': 1.75.1
     '@t3-oss/env-core': 0.13.11
   errors:
     '@praha/error-factory': 1.4.1
     'react-error-boundary': 6.1.2
   form:
-    '@formisch/react': 0.6.0
+    '@formisch/react': 0.8.0
   format:
-    oxfmt: 0.55.0
+    oxfmt: 0.59.0
   framework:
-    '@tanstack/react-query': 5.101.0
-    '@tanstack/react-router': 1.170.16
+    '@tanstack/react-query': 5.101.2
+    '@tanstack/react-router': 1.170.18
     '@tanstack/react-router-ssr-query': 1.167.1
-    '@tanstack/react-start': 1.168.26
-    '@tanstack/router-plugin': 1.168.18
+    '@tanstack/react-start': 1.168.28
+    '@tanstack/router-plugin': 1.168.20
   githooks:
-    lefthook: 2.1.9
+    lefthook: 2.1.10
   lint:
-    oxlint: 1.70.0
-    oxlint-tsgolint: 0.23.0
+    oxlint: 1.74.0
+    oxlint-tsgolint: 0.24.0
   react:
     '@types/react': 19.2.17
     '@types/react-dom': 19.2.3
     react: 19.2.7
     react-dom: 19.2.7
   runtime:
-    '@types/node': 25.9.3
-    wrangler: 4.102.0
+    '@types/node': 25.9.5
+    wrangler: 4.111.0
   script:
-    tsx: 4.22.4
+    tsx: 4.23.1
   test:
-    '@cloudflare/vitest-pool-workers': 0.16.17
-    vitest: 4.1.9
+    '@cloudflare/vitest-pool-workers': 0.18.5
+    vitest: 4.1.10
   typescript:
     '@tsconfig/strictest': 2.0.8
-    '@typescript/native-preview': 7.0.0-dev.20260618.1
+    '@typescript/native-preview': 7.0.0-dev.20260707.2
     typescript: 6.0.3
   typespec:
-    '@typespec/compiler': 1.13.0
-    '@typespec/http': 1.13.0
-    '@typespec/openapi': 1.13.0
-    '@typespec/openapi3': 1.13.0
-    '@typespec/rest': 0.83.0
+    '@typespec/compiler': 1.14.0
+    '@typespec/http': 1.14.0
+    '@typespec/openapi': 1.14.0
+    '@typespec/openapi3': 1.14.0
+    '@typespec/rest': 0.84.0
   ui:
     '@base-ui/react': 1.6.0
     kiso.css: 1.2.4
-    lucide-react: 1.21.0
+    lucide-react: 1.24.0
   uuid:
     uuidv7: 1.2.1
   validation:
-    valibot: 1.4.1
+    valibot: 1.4.2
 
 engineStrict: true
 
