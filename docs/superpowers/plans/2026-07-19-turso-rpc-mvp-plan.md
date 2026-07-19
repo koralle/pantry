@@ -37,6 +37,7 @@
 **Branch / PR:** `docs/turso-rpc-mvp`
 
 **Files:**
+
 - Create: `docs/superpowers/specs/2026-07-19-turso-rpc-mvp-design.md`
 - Modify: `AGENTS.md`
 - Modify: `docs/architecture.md`
@@ -83,6 +84,7 @@
 **Depends on:** Task 1 for the approved documentation, but can be implemented in parallel.
 
 **Files:**
+
 - Delete: `api-spec/main.tsp`
 - Delete: `api-spec/tspconfig.yaml`
 - Modify: `package.json`
@@ -142,6 +144,7 @@
 **Depends on:** Task 2 must be merged before rebasing and opening this PR, because both tasks edit package metadata.
 
 **Files:**
+
 - Modify: `env.ts`
 - Modify: `drizzle.config.ts`
 - Modify: `auth.ts`
@@ -214,6 +217,7 @@
 **Depends on:** Task 3.
 
 **Files:**
+
 - Modify: `auth.ts`
 - Modify: `src/features/auth/auth-config.ts`
 - Modify: `scripts/create-user.ts`
@@ -231,11 +235,13 @@
   Extract and test a parser that rejects missing values and returns the three required inputs:
 
   ```ts
-  expect(parseCreateUserInput({
-    PANTRY_USER_EMAIL: 'me@example.com',
-    PANTRY_USER_NAME: 'Me',
-    PANTRY_USER_PASSWORD: 'correct-horse-battery-staple'
-  })).toStrictEqual({
+  expect(
+    parseCreateUserInput({
+      PANTRY_USER_EMAIL: 'me@example.com',
+      PANTRY_USER_NAME: 'Me',
+      PANTRY_USER_PASSWORD: 'correct-horse-battery-staple'
+    })
+  ).toStrictEqual({
     email: 'me@example.com',
     name: 'Me',
     password: 'correct-horse-battery-staple'
@@ -311,6 +317,7 @@
 **Depends on:** None. This task can run in parallel with Tasks 2-4.
 
 **Files:**
+
 - Create: `src/features/bookmarks/title-fetcher.server.ts`
 - Create: `src/features/bookmarks/title-fetcher.server.test.ts`
 - Modify: `src/features/bookmarks/bookmark.function.ts`
@@ -371,6 +378,7 @@
 **Depends on:** Task 3. Rebase Task 5 into this branch before opening the PR so the title Server Function is preserved.
 
 **Files:**
+
 - Create: `src/features/bookmarks/bookmark.service.ts`
 - Create: `src/features/bookmarks/bookmark.service.test.ts`
 - Modify: `src/features/bookmarks/bookmark.schema.ts`
@@ -386,8 +394,13 @@
   Cover tag normalization, tag reuse, tag replacement, query filtering, soft deletion, and user isolation:
 
   ```ts
-  expect(normalizeTagNames([' React ', 'react', 'TypeScript'])).toStrictEqual(['react', 'typescript'])
-  expect((await listBookmarks(db, ownerId, { q: 'memo', tags: [], tagMode: 'and', offset: 0 })).items).toHaveLength(1)
+  expect(normalizeTagNames([' React ', 'react', 'TypeScript'])).toStrictEqual([
+    'react',
+    'typescript'
+  ])
+  expect(
+    (await listBookmarks(db, ownerId, { q: 'memo', tags: [], tagMode: 'and', offset: 0 })).items
+  ).toHaveLength(1)
   await expect(getBookmark(db, otherUserId, bookmarkId)).rejects.toThrow('Bookmark not found')
   ```
 
@@ -446,6 +459,7 @@
 **Depends on:** Tasks 4-6.
 
 **Files:**
+
 - Create: `src/features/bookmarks/components/bookmark-form.tsx`
 - Create: `src/features/bookmarks/components/tag-input.tsx`
 - Create: `src/features/bookmarks/components/bookmark-filters.tsx`
@@ -469,9 +483,15 @@
     sort: 'newest',
     tagMode: 'and'
   })
-  expect(v.parse(bookmarkSearchSchema, {
-    q: 'react', tags: ['frontend'], tagMode: 'or', sort: 'updated', offset: 50
-  }).offset).toBe(50)
+  expect(
+    v.parse(bookmarkSearchSchema, {
+      q: 'react',
+      tags: ['frontend'],
+      tagMode: 'or',
+      sort: 'updated',
+      offset: 50
+    }).offset
+  ).toBe(50)
   ```
 
 - [ ] **Step 2: Run the schema test to verify the new pagination expectation fails.**
@@ -487,8 +507,22 @@
   ```tsx
   <fieldset>
     <legend>タグの条件</legend>
-    <label><input type='radio' name='tagMode' value='and' />すべて含む</label>
-    <label><input type='radio' name='tagMode' value='or' />いずれか含む</label>
+    <label>
+      <input
+        type='radio'
+        name='tagMode'
+        value='and'
+      />
+      すべて含む
+    </label>
+    <label>
+      <input
+        type='radio'
+        name='tagMode'
+        value='or'
+      />
+      いずれか含む
+    </label>
   </fieldset>
   ```
 
@@ -526,6 +560,7 @@
 **Depends on:** Tasks 1-7 merged to `main`. This operational task has no application-code PR until its test record is committed.
 
 **Files:**
+
 - Create: `docs/release-verification/2026-07-19-turso-rpc-mvp.md`
 
 - [ ] **Step 1: Prepare a disposable development account and data.**
