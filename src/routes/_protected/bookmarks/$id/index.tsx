@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
 import * as v from 'valibot'
 
+import { defaultBookmarkSearch } from '../../-lib/bookmark-search-schema'
+
 const bookmarkDetailSearchSchema = v.object({
   created: v.optional(v.boolean())
 })
@@ -35,7 +37,7 @@ function RouteComponent() {
 
         <Link
           to='/'
-          search={{ tagMode: 'and', sort: 'newest' }}>
+          search={defaultBookmarkSearch}>
           一覧へ戻る
         </Link>
       </nav>

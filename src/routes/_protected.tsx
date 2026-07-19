@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 
 import { authClient } from '../features/auth/auth-client'
 import { getSession } from '../features/auth/auth.function'
+import { defaultBookmarkSearch } from './_protected/-lib/bookmark-search-schema'
 
 export const Route = createFileRoute('/_protected')({
   beforeLoad: async ({ location }) => {
@@ -49,7 +50,7 @@ function Layout() {
         <nav>
           <Link
             to='/'
-            search={{ tagMode: 'and', sort: 'newest' }}>
+            search={defaultBookmarkSearch}>
             Pantry
           </Link>
           <Link

@@ -1,10 +1,12 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
+import { defaultBookmarkSearch } from '../-lib/bookmark-search-schema'
+
 export const Route = createFileRoute('/_protected/bookmarks/')({
   beforeLoad: () => {
     throw redirect({
       to: '/',
-      search: { tagMode: 'and', sort: 'newest' },
+      search: defaultBookmarkSearch,
       statusCode: 301
     })
   }

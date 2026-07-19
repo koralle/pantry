@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
+import { defaultBookmarkSearch } from '../../-lib/bookmark-search-schema'
 import type { TagSelectType } from '../../../../db/schema/tag'
 import { addBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { TagSelector } from '../../../../features/bookmarks/components/tag-selector'
@@ -45,7 +46,7 @@ function RouteComponent() {
 
       <Link
         to='/'
-        search={{ tagMode: 'and', sort: 'newest' }}>
+        search={defaultBookmarkSearch}>
         一覧へ戻る
       </Link>
     </div>

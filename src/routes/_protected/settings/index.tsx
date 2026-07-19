@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 
+import { defaultBookmarkSearch } from '../-lib/bookmark-search-schema'
+
 export const Route = createFileRoute('/_protected/settings/')({
   component: RouteComponent
 })
@@ -18,7 +20,7 @@ function RouteComponent() {
       </section>
       <Link
         to='/'
-        search={{ tagMode: 'and', sort: 'newest' }}>
+        search={defaultBookmarkSearch}>
         一覧へ戻る
       </Link>
     </div>
