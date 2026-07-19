@@ -159,7 +159,7 @@ function isBlockedIpAddress(hostname: string): boolean {
 
   const ipv6 = parseIpv6(address)
 
-  return ipv6 != null && isBlockedIpv6(ipv6)
+  return ipv6 != null && !isGlobalUnicastIpv6(ipv6)
 }
 
 function isIpAddress(hostname: string): boolean {
@@ -178,7 +178,7 @@ function isPublicIpAddress(hostname: string): boolean {
 
   const ipv6 = parseIpv6(address)
 
-  return ipv6 != null && !isBlockedIpv6(ipv6)
+  return ipv6 != null && isGlobalUnicastIpv6(ipv6)
 }
 
 function parseIpv4(value: string): number | null {
@@ -274,20 +274,8 @@ function parseIpv6(value: string): bigint | null {
   return parts.reduce((address, part) => (address << 16n) | BigInt(`0x${part}`), 0n)
 }
 
-function isBlockedIpv6(address: bigint): boolean {
-  const ipv4 = Number(address & 4_294_967_295n)
-  const upper96Bits = address >> 32n
-
-  return (
-    address === 0n ||
-    address === 1n ||
-    address >> 121n === 0b111_1110n ||
-    address >> 118n === 0b11_1111_1010n ||
-    address >> 120n === 255n ||
-    address >> 96n === 536_939_960n ||
-    upper96Bits === 0n ||
-    (upper96Bits === 65_535n && isBlockedIpv4(ipv4))
-  )
+function isGlobalUnicastIpv6(address: bigint): boolean {
+  return address >> 125n === 1n
 }
 
 function isRedirect(status: number): boolean {

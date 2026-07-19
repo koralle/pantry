@@ -61,6 +61,35 @@ describe('fetchPageTitle', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
+  test.each(['fec0::1', '64:ff9b:1::1'])(
+    'rejects a hostname that resolves to the non-global IPv6 address %s',
+    async (address) => {
+      const resolveHostname = vi.fn().mockResolvedValue([address])
+      const fetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response('<title>Private</title>', { headers: { 'content-type': 'text/html' } })
+        )
+      vi.stubGlobal('fetch', fetch)
+
+      await expect(fetchPageTitle('https://example.com', resolveHostname)).resolves.toBeNull()
+      expect(fetch).not.toHaveBeenCalled()
+    }
+  )
+
+  test('accepts a hostname that resolves to a global-unicast IPv6 address', async () => {
+    const resolveHostname = vi.fn().mockResolvedValue(['2606:4700:4700::1111'])
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response('<title>Public</title>', { headers: { 'content-type': 'text/html' } })
+      )
+    vi.stubGlobal('fetch', fetch)
+
+    await expect(fetchPageTitle('https://example.com', resolveHostname)).resolves.toBe('Public')
+    expect(fetch).toHaveBeenCalledOnce()
+  })
+
   test('returns null when DNS does not establish a public address', async () => {
     const resolveHostname = vi.fn().mockResolvedValue([])
     const fetch = vi
@@ -198,9 +227,11 @@ describe('fetchPageTitle', () => {
     'http://203.0.113.1',
     'http://100.100.100.200',
     'http://[::1]',
-    'http://[2001:db8::1]',
     'http://[fc00::1]',
     'http://[fe80::1]',
+    'http://[fec0::1]',
+    'http://[64:ff9b:1::1]',
+    'http://[::ffff:127.0.0.1]',
     'http://[ff00::1]'
   ])('throws a validation error for %s', async (url) => {
     const fetch = vi.fn()
