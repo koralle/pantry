@@ -6,6 +6,7 @@ import { getDB } from '../../db/index.server'
 import { tagsTable } from '../../db/schema/tag'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
+import { TagNameAlreadyExistsError } from './tag-errors'
 import { tagNameSchema } from './tag-name.schema'
 
 const addTagInputSchema = v.object({
@@ -45,6 +46,16 @@ export const addTag = createServerFn({ method: 'POST' })
     const db = getDB()
 
     const { name } = ctx.data
+
+    const [duplicate] = await db
+      .select({ id: tagsTable.id })
+      .from(tagsTable)
+      .where(and(eq(tagsTable.name, name), eq(tagsTable.userId, session.user.id)))
+      .limit(1)
+
+    if (duplicate != null) {
+      throw new TagNameAlreadyExistsError()
+    }
 
     const result = await db
       .insert(tagsTable)
