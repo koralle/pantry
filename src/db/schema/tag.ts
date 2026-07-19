@@ -15,6 +15,10 @@ export const tagsTable = sqliteTable(
       })
       .notNull(),
     name: text().notNull(),
+    pinned: integer('pinned', { mode: 'boolean' }).notNull().default(false),
+    sortOrder: integer('sort_order', { mode: 'number' }).notNull().default(0),
+    color: text('color'),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp_ms' }),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .notNull()
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
@@ -23,7 +27,12 @@ export const tagsTable = sqliteTable(
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
     version: integer({ mode: 'number' }).notNull().default(1)
   },
-  (t) => [unique().on(t.userId, t.name), index('user_id_idx').on(t.userId)]
+  (t) => [
+    unique().on(t.userId, t.name),
+    index('user_id_idx').on(t.userId),
+    index('tags_user_id_pinned_sort_order_idx').on(t.userId, t.pinned, t.sortOrder),
+    index('tags_user_id_last_used_at_idx').on(t.userId, t.lastUsedAt)
+  ]
 )
 
 export type TagSelectType = typeof tagsTable.$inferSelect
