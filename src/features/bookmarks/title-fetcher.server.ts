@@ -8,11 +8,11 @@ const metadataIpv4Addresses = new Set(['100.100.100.200'])
 const blockedIpv6DestinationPrefixes = [
   [0x10_00_80n, 23n],
   [0x20_01_00_02_00_00n, 48n],
-  [0x20_01_0D_B8n, 32n],
-  [0x3_FF_F0n, 20n],
-  [0x5F00n, 16n],
-  [0x00_64_FF_9B_00_00_00_00_00_00_00_00n, 96n],
-  [0x00_64_FF_9B_00_01n, 48n],
+  [0x20_01_0d_b8n, 32n],
+  [0x3_ff_f0n, 20n],
+  [0x5f00n, 16n],
+  [0x00_64_ff_9b_00_00_00_00_00_00_00_00n, 96n],
+  [0x00_64_ff_9b_00_01n, 48n],
   [0x20_02n, 16n],
   [0x20_01_00_00n, 32n]
 ] as const
