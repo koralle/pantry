@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { use } from 'react'
 
 import { BookmarkSelectType } from '../../../db/schema/bookmark'
@@ -23,7 +24,13 @@ export function BookmarkTable({ bookmarkPromise }: BookmarkTableProps) {
       <tbody>
         {tags.map((tag) => (
           <tr key={tag.id}>
-            <td>{tag.id}</td>
+            <td>
+              <Link
+                to='/bookmarks/$id'
+                params={{ id: tag.id }}>
+                {tag.id}
+              </Link>
+            </td>
             <td>{tag.title}</td>
             <td>{tag.url}</td>
             <td>{tag.note}</td>
