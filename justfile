@@ -14,3 +14,4 @@ local-db-clean:
   @container stop {{container_name}} 2>/dev/null || true
   @container delete {{container_name}} 2>/dev/null || true
   @container image delete --force {{image_tag}} 2>/dev/null || true
+  
