@@ -31,7 +31,7 @@
 ## 4. ドメインモデル
 
 - `bookmarks`: UUID v7のID、`user_id`、URL、タイトル、メモ、UTCの作成/更新/削除日時を持つ。
-- `tags`: 既存の整数ID、`user_id`、正規化済み名称、UTCの作成/更新日時を持つ。
+- `tags`: 既存の整数ID、`user_id`、正規化済み名称、UTCの作成/更新日時を持つ。物置UI向けに `pinned`（棚固定）、`sort_order`（同一グループ内の並び）、`color`（任意の識別色）、`last_used_at`（よく使う箱の並び用）を持つ。
 - `bookmark_tags`: ブックマークとタグの多対多を表す。`bookmark_id`と`tag_id`の組み合わせを一意にする。
 - 同一ユーザー内でタグ名は一意にする。ブックマークURL重複は登録・更新時に拒否する。
 
