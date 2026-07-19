@@ -13,6 +13,7 @@
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
     "migrate:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit migrate",
+    "migrate:prod": "drizzle-kit migrate",
     "preview": "pnpm run build && vite preview",
     "studio:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit studio",
     "test": "vitest run",

@@ -11,7 +11,8 @@ import { tagsTable } from './src/db/schema/tag'
 
 export const db = drizzle({
   connection: {
-    url: env.DATABASE_URL
+    url: env.TURSO_DATABASE_URL,
+    authToken: env.TURSO_AUTH_TOKEN
   },
   schema: {
     ...schema,

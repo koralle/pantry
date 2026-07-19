@@ -4,6 +4,9 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  "secrets": {
+    "required": ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "BETTER_AUTH_SECRET", "BETTER_AUTH_URL"]
+  },
   "observability": {
     "enabled": true
   }
