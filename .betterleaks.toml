@@ -9,6 +9,5 @@ paths = [
   '''(^|/)\.tanstack(?:/.*)?$''',
   '''(^|/)\.vinxi(?:/.*)?$''',
   '''(^|/)\.nitro(?:/.*)?$''',
-  '''(^|/)tsp-output(?:/.*)?$''',
   '''(^|/)(?:pnpm-lock|package-lock|yarn\.lock)\.json$'''
 ]

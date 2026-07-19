@@ -63,12 +63,6 @@ catalogs:
     '@tsconfig/strictest': 2.0.8
     '@typescript/native-preview': 7.0.0-dev.20260618.1
     typescript: 6.0.3
-  typespec:
-    '@typespec/compiler': 1.13.0
-    '@typespec/http': 1.13.0
-    '@typespec/openapi': 1.13.0
-    '@typespec/openapi3': 1.13.0
-    '@typespec/rest': 0.83.0
   ui:
     '@base-ui/react': 1.6.0
     kiso.css: 1.2.4
