@@ -1,5 +1,4 @@
 import { Input } from '@base-ui/react'
-import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import * as v from 'valibot'
 
@@ -14,7 +13,6 @@ interface TagSelectorProps {
 }
 
 export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorProps) {
-  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
@@ -46,7 +44,6 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
       const { id } = await addTag({ data: { name: parsedName } })
       onChange([...selectedTagIds, id])
       setQuery('')
-      await navigate({ to: '/bookmarks/new', search: { tagMode: 'and', sort: 'newest' } })
     } catch (error) {
       if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
         const existing = allTags.find((tag) => tag.name === parsedName)
@@ -79,15 +76,18 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
             </label>
           ))}
         </div>
-        <Input
-          id='tag-selector-query'
-          value={query}
-          type='text'
-          placeholder='タグを絞り込む / 新規作成'
-          onValueChange={(newValue) => {
-            setQuery(newValue)
-          }}
-        />
+        <label htmlFor='tag-selector-query'>
+          タグを絞り込む / 新規作成
+          <Input
+            id='tag-selector-query'
+            value={query}
+            type='text'
+            placeholder='タグを絞り込む / 新規作成'
+            onValueChange={(newValue) => {
+              setQuery(newValue)
+            }}
+          />
+        </label>
         <button
           type='button'
           onClick={handleCreate}
