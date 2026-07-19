@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { use } from 'react'
 
 import { TagSelectType } from '../../db/schema/tag'
+import { formatDateTime } from '../../lib/format-date'
 
 export function TagTable({ tagPromise }: { readonly tagPromise: Promise<TagSelectType[]> }) {
   const tags = use(tagPromise)
@@ -26,7 +27,7 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<TagSelec
               </Link>
             </td>
             <td>{tag.name}</td>
-            <td>{tag.updatedAt.toString()}</td>
+            <td>{formatDateTime(tag.updatedAt)}</td>
           </tr>
         ))}
       </tbody>
