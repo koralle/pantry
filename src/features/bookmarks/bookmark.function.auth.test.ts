@@ -1,3 +1,4 @@
+import * as v from 'valibot'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const { ensureSession, fetchPageTitle } = vi.hoisted(() => ({
@@ -5,16 +6,18 @@ const { ensureSession, fetchPageTitle } = vi.hoisted(() => ({
   fetchPageTitle: vi.fn()
 }))
 
-vi.mock('@tanstack/react-start', () => ({
-  createServerFn: () => {
-    const builder = {
-      validator: () => builder,
-      handler: <T>(handler: T) => handler
-    }
+vi.mock('@tanstack/react-start', async () => {
+  const valibot = await import('valibot')
 
-    return builder
+  return {
+    createServerFn: () => ({
+      validator: (schema: Parameters<typeof valibot.parseAsync>[0]) => ({
+        handler: (handler: (ctx: { data: unknown }) => unknown) => async (ctx: { data: unknown }) =>
+          handler({ data: await valibot.parseAsync(schema, ctx.data) })
+      })
+    })
   }
-}))
+})
 
 vi.mock('../auth/auth.function', () => ({ ensureSession }))
 vi.mock('./title-fetcher.server', () => ({ fetchPageTitle }))
@@ -36,4 +39,13 @@ describe('fetchBookmarkTitle', () => {
     )
     expect(fetchPageTitle).not.toHaveBeenCalled()
   })
+
+  test.each(['ftp://example.com', 'file:///etc/passwd'])(
+    'rejects %s at the Server Function validation boundary',
+    async (url) => {
+      await expect(fetchBookmarkTitle({ data: { url } })).rejects.toBeInstanceOf(v.ValiError)
+      expect(ensureSession).not.toHaveBeenCalled()
+      expect(fetchPageTitle).not.toHaveBeenCalled()
+    }
+  )
 })
