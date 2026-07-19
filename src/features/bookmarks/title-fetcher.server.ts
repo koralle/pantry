@@ -6,6 +6,7 @@ const DNS_OVER_HTTPS_ENDPOINT = 'https://cloudflare-dns.com/dns-query'
 
 const metadataIpv4Addresses = new Set(['100.100.100.200'])
 const blockedIpv6DestinationPrefixes = [
+  [0x10_00_80n, 23n],
   [0x20_01_00_02_00_00n, 48n],
   [0x20_01_0D_B8n, 32n],
   [0x3_FF_F0n, 20n],

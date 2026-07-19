@@ -7,7 +7,7 @@ export const httpUrlSchema = v.pipe(
     let protocol: string
 
     try {
-      ({ protocol } = new URL(value))
+      ;({ protocol } = new URL(value))
     } catch {
       return false
     }
