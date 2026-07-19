@@ -1,5 +1,7 @@
 # アーキテクチャ方針
 
+> **状態: 承認済みの目標MVP。** この文書は実装後の目標を示すもので、現在の`main`の挙動ではない。対応する実装PRがすべて`main`にマージされるまで、この文書の変更を`main`にマージしてはならない。
+
 ## 1. 目的とスコープ（MVP）
 
 - 対象ユーザー: 自分専用。アカウントはCLIで事前作成する。
@@ -48,7 +50,8 @@
 ## 6. タイトル取得
 
 - 登録フォームはURL入力後、手動操作でタイトル取得を実行する。
-- サーバー側で`http`/`https`だけを受け付け、`localhost`、loopback、private、link-local、metadata宛てを拒否する。
+- URLのホストとアドレスリテラルを検証し、`http`/`https`だけを受け付ける。`localhost`、loopback、private、link-local、metadata宛てを拒否し、リダイレクト先も毎回同じ検証を行う。
+- 標準のWorkerランタイムではDNS解決後のIPアドレスを検査できない。このWorkerはprivate-network routingを受けないことを前提とし、将来private networkへ配置する場合は、制御されたegress allowlistまたはproxyを必須とする。
 - リダイレクトは最大3回、タイムアウトは3秒、応答サイズは1MBまでとする。
 - 取得したtitleは編集可能な初期値として反映する。取得に失敗しても登録フォームを維持し、手入力保存を可能にする。
 

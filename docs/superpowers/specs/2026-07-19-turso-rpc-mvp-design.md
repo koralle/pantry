@@ -1,5 +1,7 @@
 # Turso RPC MVP Design
 
+> **Status: Approved target MVP.** This document describes target behavior, not current `main`. Do not merge this document to `main` until all corresponding implementation PRs have merged.
+
 ## Goal
 
 Cloudflare Workers上で動作する自分専用ブックマークマネージャを、日常利用できる最小機能まで完成させる。利用者は事前作成した1アカウントでサインインし、URLを保存、タグ付け、検索、編集、削除できる。
@@ -33,7 +35,8 @@ Cloudflare Workers上で動作する自分専用ブックマークマネージ�
 - タグ名は`trim + 小文字化`し、空文字、33文字以上、21件以上を拒否する。タグ変更は全置換する。
 - 一覧は削除済みを除き、`title`、`url`、`note`を部分一致検索する。
 - 複数タグはAND/ORで絞り込む。日時はUTCで保存し、日本時間で表示する。
-- タイトル取得は`http`/`https`だけを受け付け、危険な宛先を拒否する。3秒、3リダイレクト、1MBを上限とする。
+- タイトル取得はURLのホストとアドレスリテラルを検証し、`http`/`https`だけを受け付ける。`localhost`、loopback、private、link-local、metadata宛てを拒否し、リダイレクト先も毎回同じ検証を行う。3秒、3リダイレクト、1MBを上限とする。
+- 標準のWorkerランタイムではDNS解決後のIPアドレスを検査できない。このWorkerはprivate-network routingを受けないことを前提とし、将来private networkへ配置する場合は、制御されたegress allowlistまたはproxyを必須とする。
 
 ## Verification
 
