@@ -116,13 +116,18 @@ MVP スコープでは既存タグ選択 UI からのみ渡される前提とし
 既存テスト（`tag-name.schema.test.ts`、`bookmark.function.test.ts`）のパターンに倣う。
 
 - 新規 `src/features/tags/tag.function.test.ts`：
-  - `addTag` で同名タグを作成しようとすると `TagNameAlreadyExistsError` が投げられる
-  - 異なる名前なら作成でき、id が返る
-- `src/features/bookmarks/bookmark.function.test.ts` 拡張：
+  - `TagNameAlreadyExistsError` が `ErrorFactory` 由来のエラーであり、`name` が `TagNameAlreadyExistsError`、メッセージが `タグ名が既に存在します` であることを確認（DB 不要の単体テスト）
+  - `addTag` の重複チェックロジックは、現状のテスト環境に server function の DB 統合テストの前例がないため、**手動確認**とする（後述）
+- `src/features/bookmarks/bookmark.function.test.ts` 拡張（スキーマ単体テスト）：
+  - `addBookmark` 入力スキーマに `tags: v.array(v.number())` を追加したことを `v.parseAsync` で確認
+  - `updateBookmark` 入力スキーマに `tags` を追加したことを確認
+- ブックマーク server function の DB 統合テスト（中間テーブルへの紐付け）は、既存に前例がないため**手動確認**とする
+- `tag-name.schema.test.ts` は変更なし（正規化ロジックは変更しない）
+- 手動確認：
+  - `addTag` で同名タグを作成しようとすると `TagNameAlreadyExistsError` が投げられ、異なる名前なら作成できる
   - `addBookmark` に tagId 配列を渡すと `bookmarkTagsTable` に紐付け行ができる
   - `updateBookmark` でタグ配列を変更すると紐付けが置換される
-- `tag-name.schema.test.ts` は変更なし（正規化ロジックは変更しない）
-- 手動確認：一覧画面インライン入力で作成→即反映、重複時エラー表示
+  - 一覧画面インライン入力で作成→即反映、重複時エラー表示
 
 ## スコープ外（YAGNI）
 
