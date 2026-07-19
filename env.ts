@@ -4,9 +4,9 @@ import * as v from 'valibot'
 export const env = createEnv({
   runtimeEnv: process.env,
   server: {
-    TURSO_DATABASE_URL: v.string(),
+    TURSO_DATABASE_URL: v.pipe(v.string(), v.url()),
     TURSO_AUTH_TOKEN: v.string(),
     BETTER_AUTH_SECRET: v.string(),
-    BETTER_AUTH_URL: v.string()
+    BETTER_AUTH_URL: v.pipe(v.string(), v.url())
   }
 })

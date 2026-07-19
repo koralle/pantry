@@ -27,6 +27,8 @@
 
 > **注意:** `pnpm run db:seed`は設定済みの開発データをすべて破棄して再投入する。使い捨ての開発DBに対してのみ実行すること。
 
+> **注意:** `pnpm run migrate:prod`はシェルで`TURSO_DATABASE_URL`と`TURSO_AUTH_TOKEN`を設定して実行する。これらの認証情報をソース管理に含めないこと。
+
 ## 設計方針
 
 T.B.D
