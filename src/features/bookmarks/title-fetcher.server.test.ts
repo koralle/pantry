@@ -2,7 +2,13 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { fetchPageTitle } from './title-fetcher.server'
 
-const maxBodyBytes = 1024 * 1024
+const maxBodyBytes = 1_000_000
+
+function htmlDocumentOfSize(size: number): string {
+  const title = '<title>Pantry</title>'
+
+  return title + ' '.repeat(size - title.length)
+}
 
 function expectFetchRequest(fetch: ReturnType<typeof vi.fn>, index: number, url: string) {
   const call = fetch.mock.calls[index]
@@ -127,13 +133,11 @@ describe('fetchPageTitle', () => {
   test('returns null without parsing a non-HTML response', async () => {
     vi.stubGlobal(
       'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response('<title>Not HTML</title>', {
-            headers: { 'content-type': 'application/json' }
-          })
-        )
+      vi.fn().mockResolvedValue(
+        new Response('<title>Not HTML</title>', {
+          headers: { 'content-type': 'application/json' }
+        })
+      )
     )
 
     await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
@@ -152,17 +156,27 @@ describe('fetchPageTitle', () => {
     await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
   })
 
-  test('rejects a response with a known body larger than one megabyte', async () => {
-    let cancelled = false
-    const body = new ReadableStream<Uint8Array>({
-      cancel() {
-        cancelled = true
-      }
-    })
+  test('accepts a response with a known one-million-byte body', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        new Response(body, {
+        new Response(htmlDocumentOfSize(maxBodyBytes), {
+          headers: {
+            'content-length': String(maxBodyBytes),
+            'content-type': 'text/html'
+          }
+        })
+      )
+    )
+
+    await expect(fetchPageTitle('https://example.com')).resolves.toBe('Pantry')
+  })
+
+  test('rejects a response with a known 1,000,001-byte body', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(htmlDocumentOfSize(maxBodyBytes + 1), {
           headers: {
             'content-length': String(maxBodyBytes + 1),
             'content-type': 'text/html'
@@ -172,7 +186,6 @@ describe('fetchPageTitle', () => {
     )
 
     await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
-    expect(cancelled).toBe(true)
   })
 
   test('cancels a streamed HTML response once it exceeds one megabyte', async () => {

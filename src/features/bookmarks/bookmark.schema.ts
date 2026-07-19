@@ -1,5 +1,9 @@
 import * as v from 'valibot'
 
+export const fetchBookmarkTitleInputSchema = v.object({
+  url: v.pipe(v.string(), v.url())
+})
+
 export const updateBookmarkInputSchema = v.object({
   id: v.string(),
   url: v.pipe(v.string(), v.url()),

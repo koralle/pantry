@@ -7,13 +7,12 @@ import { getDB } from '../../db/index.server'
 import { bookmarkTable, bookmarkInsertSchema } from '../../db/schema/bookmark'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
-import { updateBookmarkInputSchema } from './bookmark.schema'
+import { fetchBookmarkTitleInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
 import { fetchPageTitle } from './title-fetcher.server'
 
 export { updateBookmarkInputSchema } from './bookmark.schema'
 
 const addBookmarkInputSchema = v.pick(bookmarkInsertSchema, ['url', 'title', 'note'])
-const fetchBookmarkTitleInputSchema = v.object({ url: v.string() })
 
 export const fetchBookmarks = createServerFn({ method: 'GET' })
   .validator(offsetPaginationQuerySchema)
@@ -32,7 +31,7 @@ export const fetchBookmarks = createServerFn({ method: 'GET' })
       .offset(offset)
   })
 
-export const fetchBookmarkTitle = createServerFn({ method: 'GET' })
+export const fetchBookmarkTitle = createServerFn({ method: 'POST' })
   .validator(fetchBookmarkTitleInputSchema)
   .handler(async (ctx) => fetchPageTitle(ctx.data.url))
 

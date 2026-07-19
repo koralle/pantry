@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 
+import * as bookmarkSchemas from './bookmark.schema'
 import { updateBookmarkInputSchema } from './bookmark.schema'
 
 describe('updateBookmarkInputSchema', () => {
@@ -51,5 +52,19 @@ describe('updateBookmarkInputSchema', () => {
     })
 
     expect(result.title).toBe('')
+  })
+})
+
+describe('fetchBookmarkTitleInputSchema', () => {
+  test('rejects a malformed URL during input validation', async () => {
+    expect(bookmarkSchemas.fetchBookmarkTitleInputSchema).toBeDefined()
+
+    if (bookmarkSchemas.fetchBookmarkTitleInputSchema == null) {
+      return
+    }
+
+    await expect(
+      v.parseAsync(bookmarkSchemas.fetchBookmarkTitleInputSchema, { url: 'not-a-url' })
+    ).rejects.toBeInstanceOf(v.ValiError)
   })
 })

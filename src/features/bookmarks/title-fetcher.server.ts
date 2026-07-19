@@ -1,4 +1,4 @@
-const MAX_BODY_BYTES = 1024 * 1024
+const MAX_BODY_BYTES = 1_000_000
 const MAX_REDIRECTS = 3
 const TIMEOUT_MS = 3000
 
@@ -287,7 +287,7 @@ async function parseTitle(html: string): Promise<string | null> {
       }
     }
   })
-  const {body} = rewriter.transform(new Response(html))
+  const { body } = rewriter.transform(new Response(html))
 
   if (body == null) {
     return null
