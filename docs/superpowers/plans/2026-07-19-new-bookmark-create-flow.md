@@ -23,6 +23,7 @@
 ## Task 1: ヘッダーに新規作成へのリンクを追加
 
 **Files:**
+
 - Modify: `src/routes/_protected.tsx:48-68`（`<header><nav>` ブロック）
 
 - [ ] **Step 1: ナビに `Link` を追加**
@@ -32,20 +33,20 @@
 nav ブロックを以下のように置き換える：
 
 ```tsx
-        <nav>
-          <Link
-            to='/'
-            search={{ tagMode: 'and', sort: 'newest' }}>
-            Pantry
-          </Link>
-          <Link
-            to='/tags'
-            search={{ limit: 50, offset: 0 }}>
-            タグ
-          </Link>
-          <Link to='/settings'>設定</Link>
-          <Link to='/bookmarks/new'>＋新規ブックマーク</Link>
-        </nav>
+<nav>
+  <Link
+    to='/'
+    search={{ tagMode: 'and', sort: 'newest' }}>
+    Pantry
+  </Link>
+  <Link
+    to='/tags'
+    search={{ limit: 50, offset: 0 }}>
+    タグ
+  </Link>
+  <Link to='/settings'>設定</Link>
+  <Link to='/bookmarks/new'>＋新規ブックマーク</Link>
+</nav>
 ```
 
 - [ ] **Step 2: ビルド／型チェックを確認**
@@ -67,6 +68,7 @@ git commit -m "feat: add header link to new bookmark creation screen"
 ## Task 2: 一覧画面内に新規作成へのリンクを追加
 
 **Files:**
+
 - Modify: `src/routes/_protected/index.tsx:40-53`（`RouteComponent` の return）
 
 - [ ] **Step 1: 見出しのそばに `Link` を追加**
@@ -76,19 +78,19 @@ git commit -m "feat: add header link to new bookmark creation screen"
 `RouteComponent` の return ブロックを以下のように置き換える：
 
 ```tsx
-  return (
-    <>
-      <h1>{user.name}のブックマーク一覧</h1>
+return (
+  <>
+    <h1>{user.name}のブックマーク一覧</h1>
 
-      <Link to='/bookmarks/new'>新規作成</Link>
+    <Link to='/bookmarks/new'>新規作成</Link>
 
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Suspense fallback={<p>Loading...</p>}>
-          <BookmarkTable bookmarkPromise={bookmarksPromise} />
-        </Suspense>
-      </ErrorBoundary>
-    </>
-  )
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <Suspense fallback={<p>Loading...</p>}>
+        <BookmarkTable bookmarkPromise={bookmarksPromise} />
+      </Suspense>
+    </ErrorBoundary>
+  </>
+)
 ```
 
 - [ ] **Step 2: ビルド／型チェックを確認**
@@ -108,6 +110,7 @@ git commit -m "feat: add in-list link to new bookmark creation screen"
 ## Task 3: 作成画面の「一覧へ戻る」リンクを確認・整備
 
 **Files:**
+
 - Modify（確認のみ、必要なら整備）: `src/routes/_protected/bookmarks/new/index.tsx:26-39`（`RouteComponent` の return）
 
 - [ ] **Step 1: 既存の戻るリンクを確認**
@@ -115,11 +118,11 @@ git commit -m "feat: add in-list link to new bookmark creation screen"
 `src/routes/_protected/bookmarks/new/index.tsx` を開き、`RouteComponent` にすでに以下が含まれていることを確認する：
 
 ```tsx
-      <Link
-        to='/'
-        search={{ tagMode: 'and', sort: 'newest' }}>
-        一覧へ戻る
-      </Link>
+<Link
+  to='/'
+  search={{ tagMode: 'and', sort: 'newest' }}>
+  一覧へ戻る
+</Link>
 ```
 
 - [ ] **Step 2: 必要に応じて配置・ラベルを整備（動作変更なし）**
