@@ -1,4 +1,4 @@
-import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
+import { createFileRoute, ErrorComponent, ErrorComponentProps, Link } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import * as v from 'valibot'
@@ -43,6 +43,8 @@ function RouteComponent() {
   return (
     <>
       <h1>{user.name}のブックマーク一覧</h1>
+
+      <Link to='/bookmarks/new'>新規作成</Link>
 
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Suspense fallback={<p>Loading...</p>}>
