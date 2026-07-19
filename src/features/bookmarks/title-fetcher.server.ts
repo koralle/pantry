@@ -1,4 +1,5 @@
 const MAX_BODY_BYTES = 1_000_000
+const MAX_TITLE_BYTES = 65_536
 const MAX_REDIRECTS = 3
 const TIMEOUT_MS = 3000
 const DNS_OVER_HTTPS_ENDPOINT = 'https://cloudflare-dns.com/dns-query'
@@ -336,6 +337,7 @@ async function readBody(body: ReadableStream<Uint8Array> | null): Promise<string
   const reader = body.getReader()
   const chunks: Uint8Array[] = []
   let totalBytes = 0
+  let titleBytes = 0
 
   try {
     for (;;) {
@@ -353,7 +355,12 @@ async function readBody(body: ReadableStream<Uint8Array> | null): Promise<string
         return null
       }
 
-      chunks.push(value)
+      if (titleBytes < MAX_TITLE_BYTES) {
+        const titleChunk = value.subarray(0, MAX_TITLE_BYTES - titleBytes)
+
+        chunks.push(titleChunk)
+        titleBytes += titleChunk.byteLength
+      }
     }
   } catch {
     await cancelReader(reader)
@@ -363,7 +370,7 @@ async function readBody(body: ReadableStream<Uint8Array> | null): Promise<string
     reader.releaseLock()
   }
 
-  const bytes = new Uint8Array(totalBytes)
+  const bytes = new Uint8Array(titleBytes)
   let offset = 0
 
   for (const chunk of chunks) {

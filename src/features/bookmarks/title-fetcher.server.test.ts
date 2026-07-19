@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { fetchPageTitle } from './title-fetcher.server'
 
 const maxBodyBytes = 1_000_000
+const maxTitleBytes = 65_536
 
 async function resolvePublicHostname(): Promise<string[]> {
   return ['93.184.216.34']
@@ -236,6 +237,17 @@ describe('fetchPageTitle', () => {
           headers: { 'content-type': 'text/html' }
         })
       )
+    )
+
+    await expect(fetchTitle('https://example.com')).resolves.toBeNull()
+  })
+
+  test('does not parse a title that starts after 65,536 bytes', async () => {
+    const prefix = '<html><head>'
+    const html = `${prefix}${' '.repeat(maxTitleBytes - prefix.length + 1)}<title>Late</title>`
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(html, { headers: { 'content-type': 'text/html' } }))
     )
 
     await expect(fetchTitle('https://example.com')).resolves.toBeNull()
