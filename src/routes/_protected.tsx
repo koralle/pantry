@@ -58,6 +58,7 @@ function Layout() {
             タグ
           </Link>
           <Link to='/settings'>設定</Link>
+          <Link to='/bookmarks/new'>＋新規ブックマーク</Link>
         </nav>
         <button
           type='button'
