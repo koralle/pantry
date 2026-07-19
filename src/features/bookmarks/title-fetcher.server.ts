@@ -5,6 +5,12 @@ const TIMEOUT_MS = 3000
 const DNS_OVER_HTTPS_ENDPOINT = 'https://cloudflare-dns.com/dns-query'
 
 const metadataIpv4Addresses = new Set(['100.100.100.200'])
+const nonGlobalIpv6SpecialUsePrefixes = [
+  [0x20_01_00_02_00_00n, 48n],
+  [0x20_01_0d_b8n, 32n],
+  [0x3_ff_f0n, 20n],
+  [0x5F00n, 16n]
+] as const
 
 type HostnameResolver = (hostname: string, signal: AbortSignal) => Promise<string[] | null>
 
@@ -220,10 +226,7 @@ function isBlockedIpv4(address: number): boolean {
     (first === 100 && second >= 64 && second <= 127) ||
     (first === 169 && second === 254) ||
     (first === 172 && second >= 16 && second <= 31) ||
-    (first === 192 &&
-      (second === 168 ||
-        (second === 0 && (third === 0 || third === 2)) ||
-        (second === 88 && third === 99))) ||
+    (first === 192 && (second === 0 || second === 168 || (second === 88 && third === 99))) ||
     (first === 198 && (second === 18 || second === 19 || (second === 51 && third === 100))) ||
     (first === 203 && second === 0 && third === 113) ||
     metadataIpv4Addresses.has(formatIpv4(address))
@@ -275,7 +278,12 @@ function parseIpv6(value: string): bigint | null {
 }
 
 function isGlobalUnicastIpv6(address: bigint): boolean {
-  return address >> 125n === 1n
+  return (
+    address >> 125n === 1n &&
+    !nonGlobalIpv6SpecialUsePrefixes.some(
+      ([prefix, length]) => address >> (128n - length) === prefix
+    )
+  )
 }
 
 function isRedirect(status: number): boolean {

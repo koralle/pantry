@@ -77,6 +77,41 @@ describe('fetchPageTitle', () => {
     }
   )
 
+  test.each([
+    ['2001:db8::1', 'AAAA', 28],
+    ['3fff::1', 'AAAA', 28],
+    ['2001:2::1', 'AAAA', 28],
+    ['5f00::1', 'AAAA', 28],
+    ['192.0.0.3', 'A', 1],
+    ['192.0.0.8', 'A', 1]
+  ])(
+    'rejects the special-use %s address returned by DoH',
+    async (address, queryType, recordType) => {
+      const fetch = vi.fn((input: RequestInfo | URL) => {
+        const url = new URL(String(input))
+
+        if (url.hostname === 'cloudflare-dns.com') {
+          return new Response(
+            JSON.stringify({
+              Answer:
+                url.searchParams.get('type') === queryType
+                  ? [{ data: address, type: recordType }]
+                  : []
+            })
+          )
+        }
+
+        return new Response('<title>Special-use</title>', {
+          headers: { 'content-type': 'text/html' }
+        })
+      })
+      vi.stubGlobal('fetch', fetch)
+
+      await expect(fetchPageTitle('https://example.com')).resolves.toBeNull()
+      expect(fetch.mock.calls.map(([input]) => String(input))).not.toContain('https://example.com/')
+    }
+  )
+
   test('accepts a hostname that resolves to a global-unicast IPv6 address', async () => {
     const resolveHostname = vi.fn().mockResolvedValue(['2606:4700:4700::1111'])
     const fetch = vi
@@ -226,7 +261,13 @@ describe('fetchPageTitle', () => {
     'http://198.51.100.1',
     'http://203.0.113.1',
     'http://100.100.100.200',
+    'http://192.0.0.3',
+    'http://192.0.0.8',
     'http://[::1]',
+    'http://[2001:db8::1]',
+    'http://[3fff::1]',
+    'http://[2001:2::1]',
+    'http://[5f00::1]',
     'http://[fc00::1]',
     'http://[fe80::1]',
     'http://[fec0::1]',
