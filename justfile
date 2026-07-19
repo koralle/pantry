@@ -1,7 +1,7 @@
 local-db-build:
-  @podman compose up -d
+  @container compose up -d
   @pnpm dotenvx run -f .env.development -- pnpm run migrate:dev
   @pnpm dotenvx run -f .env.development -- pnpm tsx scripts/seed.ts
 
 local-db-clean:
-  @podman compose down --rmi all --volumes --remove-orphans
+  @container compose down --rmi all --volumes --remove-orphans
