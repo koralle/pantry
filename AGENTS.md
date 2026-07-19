@@ -23,7 +23,6 @@
 | `pnpm run cf-typegen`  | Worker バインディングの型生成            |
 | `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用 |
 | `pnpm run db:seed`     | Turso開発DBへテスト／開発データを投入    |
-
 > **注意:** `pnpm run db:seed`は設定済みの開発データをすべて破棄して再投入する。使い捨ての開発DBに対してのみ実行すること。
 
 ## 設計方針
