@@ -33,7 +33,11 @@ export const fetchBookmarks = createServerFn({ method: 'GET' })
 
 export const fetchBookmarkTitle = createServerFn({ method: 'POST' })
   .validator(fetchBookmarkTitleInputSchema)
-  .handler(async (ctx) => fetchPageTitle(ctx.data.url))
+  .handler(async (ctx) => {
+    await ensureSession()
+
+    return fetchPageTitle(ctx.data.url)
+  })
 
 export const addBookmark = createServerFn({ method: 'POST' })
   .validator(addBookmarkInputSchema)
