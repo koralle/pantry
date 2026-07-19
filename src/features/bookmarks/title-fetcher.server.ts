@@ -208,8 +208,8 @@ function parseIpv4(value: string): number | null {
 
 function isBlockedIpv4(address: number): boolean {
   const first = address >>> 24
-  const second = (address >>> 16) & 0xFF
-  const third = (address >>> 8) & 0xFF
+  const second = (address >>> 16) & 255
+  const third = (address >>> 8) & 255
 
   return (
     first === 0 ||
@@ -230,7 +230,7 @@ function isBlockedIpv4(address: number): boolean {
 }
 
 function formatIpv4(address: number): string {
-  return [address >>> 24, (address >>> 16) & 0xFF, (address >>> 8) & 0xFF, address & 0xFF].join('.')
+  return [address >>> 24, (address >>> 16) & 255, (address >>> 8) & 255, address & 255].join('.')
 }
 
 function parseIpv6(value: string): bigint | null {
@@ -244,7 +244,7 @@ function parseIpv6(value: string): bigint | null {
   const normalized =
     ipv4 == null
       ? value
-      : `${value.slice(0, ipv4Index)}${(ipv4 >>> 16).toString(16)}:${(ipv4 & 0xFFFF).toString(16)}`
+      : `${value.slice(0, ipv4Index)}${(ipv4 >>> 16).toString(16)}:${(ipv4 & 65_535).toString(16)}`
   const doubleColonIndex = normalized.indexOf('::')
 
   if (doubleColonIndex !== normalized.lastIndexOf('::')) {
@@ -274,7 +274,7 @@ function parseIpv6(value: string): bigint | null {
 }
 
 function isBlockedIpv6(address: bigint): boolean {
-  const ipv4 = Number(address & 0xFFFFFFFFn)
+  const ipv4 = Number(address & 4_294_967_295n)
   const upper96Bits = address >> 32n
 
   return (
@@ -282,10 +282,10 @@ function isBlockedIpv6(address: bigint): boolean {
     address === 1n ||
     address >> 121n === 0b111_1110n ||
     address >> 118n === 0b11_1111_1010n ||
-    address >> 120n === 0xFFn ||
-    address >> 96n === 0x20010DB8n ||
+    address >> 120n === 255n ||
+    address >> 96n === 536_939_960n ||
     upper96Bits === 0n ||
-    (upper96Bits === 0xFFFFn && isBlockedIpv4(ipv4))
+    (upper96Bits === 65_535n && isBlockedIpv4(ipv4))
   )
 }
 
