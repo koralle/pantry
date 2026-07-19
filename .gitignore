@@ -37,3 +37,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # TypeSpec output
 api-spec/tsp-output/
 api-spec/dist/
+
+# git worktrees
+.worktrees/
