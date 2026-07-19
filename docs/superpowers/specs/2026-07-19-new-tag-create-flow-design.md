@@ -47,7 +47,7 @@ import { ErrorFactory } from '@praha/error-factory'
 
 export class TagNameAlreadyExistsError extends ErrorFactory({
   name: 'TagNameAlreadyExistsError',
-  message: 'タグ名が既に存在します',
+  message: 'タグ名が既に存在します'
 }) {}
 ```
 
@@ -73,6 +73,7 @@ if (duplicate != null) {
 `src/routes/_protected/tags/index.tsx` の一覧エリアに配置する。
 
 挙動：
+
 - テキスト入力（常設）＋「追加」ボタン（または Enter で送信）
 - クライアント側で `tagNameSchema` により検証（空・32文字超は入力段階で弾く）
 - `addTag` を呼び、成功時は `router.invalidate()`（または該当クエリの再取得）で一覧を即反映し、入力欄をクリア
