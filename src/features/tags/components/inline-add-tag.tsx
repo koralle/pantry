@@ -3,25 +3,24 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import * as v from 'valibot'
 
-import { TagNameAlreadyExistsError } from '../tag-errors'
 import { tagNameSchema } from '../tag-name.schema'
 import { addTag } from '../tag.function'
 
 export function InlineAddTag() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [tagError, setTagError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    setError(null)
+    setTagError(null)
 
     let parsedName: string
     try {
       parsedName = v.parse(tagNameSchema, name)
     } catch {
-      setError('タグ名を入力してください（32文字以内）')
+      setTagError('タグ名を入力してください（32文字以内）')
       return
     }
 
@@ -30,12 +29,11 @@ export function InlineAddTag() {
       await addTag({ data: { name: parsedName } })
       setName('')
       await navigate({ to: '/tags', search: { limit: 50, offset: 0 } })
-      await navigate({ to: '/tags', search: { limit: 50, offset: 0 } })
     } catch (error) {
-      if (error instanceof TagNameAlreadyExistsError) {
-        setError('そのタグ名は既に存在します')
+      if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
+        setTagError('そのタグ名は既に存在します')
       } else {
-        setError('タグの作成に失敗しました')
+        setTagError('タグの作成に失敗しました')
       }
     } finally {
       setIsPending(false)
@@ -60,7 +58,7 @@ export function InlineAddTag() {
         disabled={isPending}>
         {isPending ? '追加中...' : '追加'}
       </button>
-      {error != null && <p role='alert'>{error}</p>}
+      {tagError != null && <p role='alert'>{tagError}</p>}
     </form>
   )
 }
