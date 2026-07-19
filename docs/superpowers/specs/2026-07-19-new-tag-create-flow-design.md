@@ -37,16 +37,18 @@
 `src/features/tags/tag.function.ts` の `addTag` ハンドラーに、insert 前の重複チェックを追加する。
 `updateTag` と同じ `tagsTable` クエリパターンを使い、自身の ID 除外（`ne`）は不要。
 
-新たに専用エラークラス `TagNameAlreadyExistsError` を `tag.function.ts` に定義し、
+カスタムエラーは `@praha/error-factory` の `ErrorFactory` を使って定義する
+（本パッケージは `package.json` の `catalog:errors` で既に導入済み）。
+専用エラー `TagNameAlreadyExistsError` を `tag.function.ts`（または `src/features/errors/` 等の共有場所）に定義し、
 重複検出時に投げる。これによりクライアント側で `instanceof` 判定しやすくなる。
 
 ```ts
-export class TagNameAlreadyExistsError extends Error {
-  constructor() {
-    super('タグ名が既に存在します')
-    this.name = 'TagNameAlreadyExistsError'
-  }
-}
+import { ErrorFactory } from '@praha/error-factory'
+
+export class TagNameAlreadyExistsError extends ErrorFactory({
+  name: 'TagNameAlreadyExistsError',
+  message: 'タグ名が既に存在します',
+}) {}
 ```
 
 `addTag` ハンドラー内の挿入前：
