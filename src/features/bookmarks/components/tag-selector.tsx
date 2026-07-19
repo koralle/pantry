@@ -44,8 +44,8 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
       const { id } = await addTag({ data: { name: parsedName } })
       onChange([...selectedTagIds, id])
       setQuery('')
-    } catch (error) {
-      if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
+    } catch (err) {
+      if (err instanceof Error && err.name === 'TagNameAlreadyExistsError') {
         const existing = allTags.find((tag) => tag.name === parsedName)
         if (existing != null && !selectedTagIds.includes(existing.id)) {
           onChange([...selectedTagIds, existing.id])
