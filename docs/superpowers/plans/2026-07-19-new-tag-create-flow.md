@@ -12,24 +12,25 @@
 
 ## ファイル構成
 
-| ファイル | 責務 |
-|----------|------|
-| `src/features/tags/tag-errors.ts`（新規） | `TagNameAlreadyExistsError` を `ErrorFactory` で定義 |
-| `src/features/tags/tag.function.ts`（修正） | `addTag` に重複チェックを追加 |
-| `src/features/tags/components/inline-add-tag.tsx`（新規） | 一覧画面の常設インライン入力 |
-| `src/features/tags/tag.function.test.ts`（新規） | `TagNameAlreadyExistsError` の単体テスト |
-| `src/features/bookmarks/bookmark.schema.ts`（修正） | `addBookmark`/`updateBookmark` 入力に `tags` を追加 |
-| `src/features/bookmarks/bookmark.function.ts`（修正） | タグ紐付けの保存・置換ロジック |
-| `src/features/bookmarks/components/tag-selector.tsx`（新規） | タグ選択＋インライン作成 UI |
-| `src/routes/_protected/tags/index.tsx`（修正） | 一覧にインライン入力を配置 |
-| `src/routes/_protected/bookmarks/new/index.tsx`（修正） | 新規フォームにタグ選択を組み込み |
-| `src/routes/_protected/bookmarks/$id/edit.tsx`（修正） | 編集フォームにタグ選択を組み込み |
+| ファイル                                                     | 責務                                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------- |
+| `src/features/tags/tag-errors.ts`（新規）                    | `TagNameAlreadyExistsError` を `ErrorFactory` で定義 |
+| `src/features/tags/tag.function.ts`（修正）                  | `addTag` に重複チェックを追加                        |
+| `src/features/tags/components/inline-add-tag.tsx`（新規）    | 一覧画面の常設インライン入力                         |
+| `src/features/tags/tag.function.test.ts`（新規）             | `TagNameAlreadyExistsError` の単体テスト             |
+| `src/features/bookmarks/bookmark.schema.ts`（修正）          | `addBookmark`/`updateBookmark` 入力に `tags` を追加  |
+| `src/features/bookmarks/bookmark.function.ts`（修正）        | タグ紐付けの保存・置換ロジック                       |
+| `src/features/bookmarks/components/tag-selector.tsx`（新規） | タグ選択＋インライン作成 UI                          |
+| `src/routes/_protected/tags/index.tsx`（修正）               | 一覧にインライン入力を配置                           |
+| `src/routes/_protected/bookmarks/new/index.tsx`（修正）      | 新規フォームにタグ選択を組み込み                     |
+| `src/routes/_protected/bookmarks/$id/edit.tsx`（修正）       | 編集フォームにタグ選択を組み込み                     |
 
 ---
 
 ### Task 1: `TagNameAlreadyExistsError` を ErrorFactory で定義
 
 **Files:**
+
 - Create: `src/features/tags/tag-errors.ts`
 - Test: `src/features/tags/tag.function.test.ts`
 
@@ -41,7 +42,7 @@ import { ErrorFactory } from '@praha/error-factory'
 
 export class TagNameAlreadyExistsError extends ErrorFactory({
   name: 'TagNameAlreadyExistsError',
-  message: 'タグ名が既に存在します',
+  message: 'タグ名が既に存在します'
 }) {}
 ```
 
@@ -92,6 +93,7 @@ git commit -m "feat(tags): TagNameAlreadyExistsError を ErrorFactory で定義"
 ### Task 2: `addTag` に重複チェックを追加
 
 **Files:**
+
 - Modify: `src/features/tags/tag.function.ts:41-61`
 
 - [ ] **Step 1: `addTag` ハンドラーに重複チェックを追加**
@@ -162,6 +164,7 @@ git commit -m "feat(tags): addTag に重複チェックを追加"
 ### Task 3: 一覧画面の常設インライン入力コンポーネント
 
 **Files:**
+
 - Create: `src/features/tags/components/inline-add-tag.tsx`
 - Modify: `src/routes/_protected/tags/index.tsx`
 
@@ -226,7 +229,9 @@ export function InlineAddTag() {
           }}
         />
       </label>
-      <button type='submit' disabled={isPending}>
+      <button
+        type='submit'
+        disabled={isPending}>
         {isPending ? '追加中...' : '追加'}
       </button>
       {error != null && <p role='alert'>{error}</p>}
@@ -290,6 +295,7 @@ git commit -m "feat(tags): 一覧画面に常設インライン入力を追加"
 ### Task 4: ブックマーク入力スキーマに `tags` を追加
 
 **Files:**
+
 - Modify: `src/features/bookmarks/bookmark.schema.ts`
 - Test: `src/features/bookmarks/bookmark.function.test.ts`
 
@@ -395,6 +401,7 @@ git commit -m "feat(bookmarks): 入力スキーマに tags 配列を追加"
 ### Task 5: `addBookmark`/`updateBookmark` でタグを紐付け保存
 
 **Files:**
+
 - Modify: `src/features/bookmarks/bookmark.function.ts`
 
 - [ ] **Step 1: `bookmarkTagsTable` を import**
@@ -427,9 +434,7 @@ export const addBookmark = createServerFn({ method: 'POST' })
     await db.insert(bookmarkTable).values({ id, url, title, note, userId: session.user.id })
 
     if (tags.length > 0) {
-      await db
-        .insert(bookmarkTagsTable)
-        .values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+      await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
     }
 
     return { id }
@@ -441,20 +446,18 @@ export const addBookmark = createServerFn({ method: 'POST' })
 `updateBookmark` ハンドラーの `db.update(...)` の直後に、既存紐付けを削除してから新しい tags を一括 insert する:
 
 ```ts
-    await db
-      .update(bookmarkTable)
-      .set({ url, title, note, updatedAt: new Date() })
-      .where(and(eq(bookmarkTable.id, id), eq(bookmarkTable.userId, session.user.id)))
+await db
+  .update(bookmarkTable)
+  .set({ url, title, note, updatedAt: new Date() })
+  .where(and(eq(bookmarkTable.id, id), eq(bookmarkTable.userId, session.user.id)))
 
-    await db.delete(bookmarkTagsTable).where(eq(bookmarkTagsTable.bookmarkId, id))
+await db.delete(bookmarkTagsTable).where(eq(bookmarkTagsTable.bookmarkId, id))
 
-    if (tags.length > 0) {
-      await db
-        .insert(bookmarkTagsTable)
-        .values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
-    }
+if (tags.length > 0) {
+  await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+}
 
-    return { id }
+return { id }
 ```
 
 `updateBookmark` の先頭で `const { id, url, title, note } = ctx.data` を `const { id, url, title, note, tags } = ctx.data` に変更すること。
@@ -476,6 +479,7 @@ git commit -m "feat(bookmarks): addBookmark/updateBookmark でタグを中間テ
 ### Task 6: ブックマーク用タグ選択＋インライン作成コンポーネント
 
 **Files:**
+
 - Create: `src/features/bookmarks/components/tag-selector.tsx`
 
 - [ ] **Step 1: タグ選択コンポーネントを作成**
@@ -573,7 +577,10 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
             setQuery(newValue)
           }}
         />
-        <button type='button' onClick={handleCreate} disabled={isPending}>
+        <button
+          type='button'
+          onClick={handleCreate}
+          disabled={isPending}>
           {isPending ? '作成中...' : 'この名前で作成'}
         </button>
         {error != null && <p role='alert'>{error}</p>}
@@ -593,18 +600,18 @@ Expected: エラーなし（この時点では未使用の `filteredTags` は li
 修正例:
 
 ```tsx
-        <div>
-          {filteredTags.map((tag) => (
-            <label key={tag.id}>
-              <input
-                type='checkbox'
-                checked={selectedTagIds.includes(tag.id)}
-                onChange={() => toggleTag(tag.id)}
-              />
-              {tag.name}
-            </label>
-          ))}
-        </div>
+<div>
+  {filteredTags.map((tag) => (
+    <label key={tag.id}>
+      <input
+        type='checkbox'
+        checked={selectedTagIds.includes(tag.id)}
+        onChange={() => toggleTag(tag.id)}
+      />
+      {tag.name}
+    </label>
+  ))}
+</div>
 ```
 
 - [ ] **Step 3: コミット**
@@ -619,6 +626,7 @@ git commit -m "feat(bookmarks): タグ選択＋インライン作成コンポー
 ### Task 7: ブックマーク新規フォームにタグ選択を組み込み
 
 **Files:**
+
 - Modify: `src/routes/_protected/bookmarks/new/index.tsx`
 
 - [ ] **Step 1: 新規フォームに TagSelector を組み込む**
@@ -670,7 +678,10 @@ function RouteComponent() {
     <div>
       <h1>ブックマーク新規作成</h1>
 
-      <RegisterNewBookmarkForm allTags={allTags} submitAction={submitAction} />
+      <RegisterNewBookmarkForm
+        allTags={allTags}
+        submitAction={submitAction}
+      />
 
       <Link
         to='/'
@@ -720,7 +731,9 @@ function RegisterNewBookmarkForm({ allTags, submitAction }: RegisterNewBookmarkF
       <fieldset>
         <legend>ブックマーク新規登録</legend>
 
-        <Field of={registerNewBookmarkForm} path={['url']}>
+        <Field
+          of={registerNewBookmarkForm}
+          path={['url']}>
           {(field) => (
             <label htmlFor={field.props.name}>
               URL
@@ -735,7 +748,9 @@ function RegisterNewBookmarkForm({ allTags, submitAction }: RegisterNewBookmarkF
           )}
         </Field>
 
-        <Field of={registerNewBookmarkForm} path={['title']}>
+        <Field
+          of={registerNewBookmarkForm}
+          path={['title']}>
           {(field) => (
             <label htmlFor={field.props.name}>
               タイトル
@@ -757,7 +772,9 @@ function RegisterNewBookmarkForm({ allTags, submitAction }: RegisterNewBookmarkF
         onChange={setSelectedTagIds}
       />
 
-      <button type='submit' disabled={isPending}>
+      <button
+        type='submit'
+        disabled={isPending}>
         {isPending ? '登録中...' : '登録'}
       </button>
     </form>
@@ -782,6 +799,7 @@ git commit -m "feat(bookmarks): 新規フォームにタグ選択を組み込み
 ### Task 8: ブックマーク編集フォームにタグ選択を組み込み
 
 **Files:**
+
 - Modify: `src/routes/_protected/bookmarks/$id/edit.tsx`
 
 - [ ] **Step 1: 編集フォームに TagSelector を組み込む**
@@ -840,7 +858,9 @@ function RouteComponent() {
         submitAction={submitAction}
       />
 
-      <Link to='/bookmarks/$id' params={{ id: bookmark.id }}>
+      <Link
+        to='/bookmarks/$id'
+        params={{ id: bookmark.id }}>
         詳細へ戻る
       </Link>
     </div>
@@ -894,7 +914,9 @@ function EditBookmarkForm({ bookmark, allTags, submitAction }: EditBookmarkFormP
       <fieldset>
         <legend>ブックマーク編集</legend>
 
-        <Field of={editBookmarkForm} path={['url']}>
+        <Field
+          of={editBookmarkForm}
+          path={['url']}>
           {(field) => (
             <label htmlFor={field.props.name}>
               URL
@@ -909,7 +931,9 @@ function EditBookmarkForm({ bookmark, allTags, submitAction }: EditBookmarkFormP
           )}
         </Field>
 
-        <Field of={editBookmarkForm} path={['title']}>
+        <Field
+          of={editBookmarkForm}
+          path={['title']}>
           {(field) => (
             <label htmlFor={field.props.name}>
               タイトル
@@ -924,7 +948,9 @@ function EditBookmarkForm({ bookmark, allTags, submitAction }: EditBookmarkFormP
           )}
         </Field>
 
-        <Field of={editBookmarkForm} path={['note']}>
+        <Field
+          of={editBookmarkForm}
+          path={['note']}>
           {(field) => (
             <label htmlFor={field.props.name}>
               メモ
@@ -945,7 +971,9 @@ function EditBookmarkForm({ bookmark, allTags, submitAction }: EditBookmarkFormP
         onChange={setSelectedTagIds}
       />
 
-      <button type='submit' disabled={isPending}>
+      <button
+        type='submit'
+        disabled={isPending}>
         {isPending ? '更新中...' : '更新'}
       </button>
     </form>
@@ -970,6 +998,7 @@ git commit -m "feat(bookmarks): 編集フォームにタグ選択を組み込み
 ### Task 9: 手動確認と全体テスト
 
 **Files:**
+
 - なし（確認のみ）
 
 - [ ] **Step 1: 全テストを実行**
@@ -986,6 +1015,7 @@ Expected: エラーなし
 
 Run: `pnpm run dev`
 ブラウザで以下を確認:
+
 1. `/tags` でインライン入力に同名タグを入力 → 「そのタグ名は既に存在します」と表示される
 2. 異なる名前を入力 → 一覧に即反映される
 3. ブックマーク新規作成でタグを選択／その場で作成 → 保存後 `bookmark_tags` に紐付け行がある（DB または詳細画面で確認）
@@ -996,4 +1026,5 @@ Run: `pnpm run dev`
 ```bash
 git status --short
 ```
+
 変更があれば修正してコミット。なければそのまま完了。
