@@ -5,6 +5,7 @@ import * as v from 'valibot'
 
 import { ErrorFallback } from '../../../components/error-fallback'
 import { ensureSession } from '../../../features/auth/auth.function'
+import { InlineAddTag } from '../../../features/tags/components/inline-add-tag'
 import { TagTable } from '../../../features/tags/tag-table'
 import { fetchTags } from '../../../features/tags/tag.function'
 import { offsetPaginationQuerySchema } from '../../../schemas/pagination'
@@ -40,6 +41,7 @@ function RouteComponent() {
   return (
     <>
       <h1>{user.name}のタグ一覧</h1>
+      <InlineAddTag />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Suspense fallback={<p>Loading...</p>}>
           <TagTable tagPromise={tagsPromise} />

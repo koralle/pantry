@@ -4,14 +4,13 @@ import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
 import { getDB } from '../../db/index.server'
-import { bookmarkTable, bookmarkInsertSchema } from '../../db/schema/bookmark'
+import { bookmarkTable } from '../../db/schema/bookmark'
+import { bookmarkTagsTable } from '../../db/schema/bookmark-tag'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
-import { updateBookmarkInputSchema } from './bookmark.schema'
+import { addBookmarkInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
 
 export { updateBookmarkInputSchema } from './bookmark.schema'
-
-const addBookmarkInputSchema = v.pick(bookmarkInsertSchema, ['url', 'title', 'note'])
 
 export const fetchBookmarks = createServerFn({ method: 'GET' })
   .validator(offsetPaginationQuerySchema)
@@ -37,9 +36,13 @@ export const addBookmark = createServerFn({ method: 'POST' })
     const db = getDB()
 
     const id = uuidv7()
-    const { url, title, note } = ctx.data
+    const { url, title, note, tags } = ctx.data
 
     await db.insert(bookmarkTable).values({ id, url, title, note, userId: session.user.id })
+
+    if (tags.length > 0) {
+      await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+    }
 
     return { id }
   })
@@ -60,7 +63,12 @@ export const getBookmark = createServerFn({ method: 'GET' })
       throw new Error('Bookmark not found')
     }
 
-    return bookmark
+    const tagRows = await db
+      .select({ tagId: bookmarkTagsTable.tagId })
+      .from(bookmarkTagsTable)
+      .where(eq(bookmarkTagsTable.bookmarkId, bookmark.id))
+
+    return { ...bookmark, tagIds: tagRows.map((row) => row.tagId) }
   })
 
 export const updateBookmark = createServerFn({ method: 'POST' })
@@ -69,7 +77,7 @@ export const updateBookmark = createServerFn({ method: 'POST' })
     const session = await ensureSession()
     const db = getDB()
 
-    const { id, url, title, note } = ctx.data
+    const { id, url, title, note, tags } = ctx.data
 
     const [existing] = await db
       .select()
@@ -95,6 +103,12 @@ export const updateBookmark = createServerFn({ method: 'POST' })
       .update(bookmarkTable)
       .set({ url, title, note, updatedAt: new Date() })
       .where(and(eq(bookmarkTable.id, id), eq(bookmarkTable.userId, session.user.id)))
+
+    await db.delete(bookmarkTagsTable).where(eq(bookmarkTagsTable.bookmarkId, id))
+
+    if (tags.length > 0) {
+      await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+    }
 
     return { id }
   })

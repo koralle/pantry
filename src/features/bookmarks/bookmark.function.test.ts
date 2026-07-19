@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 
-import { updateBookmarkInputSchema } from './bookmark.schema'
+import { addBookmarkInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
 
 describe('updateBookmarkInputSchema', () => {
   test('accepts valid input', async () => {
@@ -9,14 +9,16 @@ describe('updateBookmarkInputSchema', () => {
       id: 'test-bookmark-id',
       url: 'https://example.com',
       title: 'Example Site',
-      note: 'memo'
+      note: 'memo',
+      tags: []
     })
 
     expect(result).toStrictEqual({
       id: 'test-bookmark-id',
       url: 'https://example.com',
       title: 'Example Site',
-      note: 'memo'
+      note: 'memo',
+      tags: []
     })
   })
 
@@ -25,7 +27,8 @@ describe('updateBookmarkInputSchema', () => {
       id: 'test-bookmark-id',
       url: 'https://example.com',
       title: 'Example Site',
-      note: null
+      note: null,
+      tags: []
     })
 
     expect(result.note).toBeNull()
@@ -37,7 +40,8 @@ describe('updateBookmarkInputSchema', () => {
         id: 'test-bookmark-id',
         url: 'not-a-url',
         title: 'Example Site',
-        note: null
+        note: null,
+        tags: []
       })
     ).rejects.toThrow()
   })
@@ -47,9 +51,47 @@ describe('updateBookmarkInputSchema', () => {
       id: 'test-bookmark-id',
       url: 'https://example.com',
       title: '',
-      note: null
+      note: null,
+      tags: []
     })
 
     expect(result.title).toBe('')
+  })
+})
+
+describe('addBookmarkInputSchema', () => {
+  test('tags 配列を受け付ける', async () => {
+    const result = await v.parseAsync(addBookmarkInputSchema, {
+      url: 'https://example.com',
+      title: 'Example Site',
+      note: null,
+      tags: [1, 2, 3]
+    })
+
+    expect(result.tags).toEqual([1, 2, 3])
+  })
+
+  test('tags がないと失敗', async () => {
+    await expect(
+      v.parseAsync(addBookmarkInputSchema, {
+        url: 'https://example.com',
+        title: 'Example Site',
+        note: null
+      })
+    ).rejects.toThrow()
+  })
+})
+
+describe('updateBookmarkInputSchema', () => {
+  test('tags 配列を受け付ける', async () => {
+    const result = await v.parseAsync(updateBookmarkInputSchema, {
+      id: 'test-bookmark-id',
+      url: 'https://example.com',
+      title: 'Example Site',
+      note: null,
+      tags: [1]
+    })
+
+    expect(result.tags).toEqual([1])
   })
 })
