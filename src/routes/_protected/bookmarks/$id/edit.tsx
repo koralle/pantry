@@ -22,7 +22,7 @@ export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
 function RouteComponent() {
   const { bookmark, tags } = Route.useLoaderData()
   const navigate = useNavigate()
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>(bookmark.tagIds)
 
   async function submitAction({
     url,

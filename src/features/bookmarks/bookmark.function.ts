@@ -63,7 +63,12 @@ export const getBookmark = createServerFn({ method: 'GET' })
       throw new Error('Bookmark not found')
     }
 
-    return bookmark
+    const tagRows = await db
+      .select({ tagId: bookmarkTagsTable.tagId })
+      .from(bookmarkTagsTable)
+      .where(eq(bookmarkTagsTable.bookmarkId, bookmark.id))
+
+    return { ...bookmark, tagIds: tagRows.map((row) => row.tagId) }
   })
 
 export const updateBookmark = createServerFn({ method: 'POST' })
