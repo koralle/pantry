@@ -7,17 +7,23 @@ import { ErrorFallback } from '../../components/error-fallback'
 import { ensureSession } from '../../features/auth/auth.function'
 import { fetchBookmarks } from '../../features/bookmarks/bookmark.function'
 import { BookmarkTable } from '../../features/bookmarks/components/bookmark-table'
-import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { bookmarkSearchSchema } from './-lib/bookmark-search-schema'
 
 export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
   loader: async ({ location }) => {
     const { user } = await ensureSession()
-    const search = v.parse(bookmarksSearchSchema, location.search)
+    const search = v.parse(bookmarkSearchSchema, location.search)
 
     const bookmarksPromise = fetchBookmarks({
-      data: { limit: search.limit, offset: search.offset }
+      data: {
+        tagMode: search.tagMode,
+        sort: search.sort,
+        limit: search.limit,
+        offset: search.offset,
+        ...(search.q !== undefined ? { q: search.q } : {}),
+        ...(search.tags !== undefined ? { tagNames: search.tags } : {})
+      }
     })
 
     return {
@@ -27,10 +33,6 @@ export const Route = createFileRoute('/_protected/')({
   },
   component: RouteComponent,
   errorComponent: BookmarkPageFallbackComponent
-})
-
-const bookmarksSearchSchema = v.object({
-  ...offsetPaginationQuerySchema.entries
 })
 
 function BookmarkPageFallbackComponent({ error }: ErrorComponentProps) {
