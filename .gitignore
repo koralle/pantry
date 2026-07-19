@@ -33,7 +33,3 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .idea
 .vscode
 .envrc
-
-# TypeSpec output
-api-spec/tsp-output/
-api-spec/dist/
