@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { use } from 'react'
 
 import { BookmarkSelectType } from '../../../db/schema/bookmark'
+import { formatDateTime } from '../../../lib/format-date'
 
 interface BookmarkTableProps {
   readonly bookmarkPromise: Promise<BookmarkSelectType[]>
@@ -34,7 +35,7 @@ export function BookmarkTable({ bookmarkPromise }: BookmarkTableProps) {
             <td>{tag.title}</td>
             <td>{tag.url}</td>
             <td>{tag.note}</td>
-            <td>{tag.updatedAt.toString()}</td>
+            <td>{formatDateTime(tag.updatedAt)}</td>
           </tr>
         ))}
       </tbody>
