@@ -28,7 +28,7 @@ function RouteComponent() {
     title: string
     note: string | null
   }) {
-    await updateBookmark({ data: { id: bookmark.id, url, title, note } })
+    await updateBookmark({ data: { id: bookmark.id, url, title, note, tags: [] } })
 
     await navigate({
       to: '/bookmarks/$id',

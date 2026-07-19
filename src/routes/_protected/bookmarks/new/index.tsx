@@ -14,7 +14,7 @@ function RouteComponent() {
   const navigate = useNavigate()
 
   async function submitAction({ url, title }: { url: string; title: string }) {
-    const { id } = await addBookmark({ data: { url, title } })
+    const { id } = await addBookmark({ data: { url, title, note: null, tags: [] } })
 
     await navigate({
       to: '/bookmarks/$id',

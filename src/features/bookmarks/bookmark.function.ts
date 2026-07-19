@@ -4,14 +4,12 @@ import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
 import { getDB } from '../../db/index.server'
-import { bookmarkTable, bookmarkInsertSchema } from '../../db/schema/bookmark'
+import { bookmarkTable } from '../../db/schema/bookmark'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
-import { updateBookmarkInputSchema } from './bookmark.schema'
+import { addBookmarkInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
 
 export { updateBookmarkInputSchema } from './bookmark.schema'
-
-const addBookmarkInputSchema = v.pick(bookmarkInsertSchema, ['url', 'title', 'note'])
 
 export const fetchBookmarks = createServerFn({ method: 'GET' })
   .validator(offsetPaginationQuerySchema)
