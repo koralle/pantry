@@ -1,23 +1,28 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import type { BookmarkSelectType } from '../../../../db/schema/bookmark'
+import type { TagSelectType } from '../../../../db/schema/tag'
 import { getBookmark, updateBookmark } from '../../../../features/bookmarks/bookmark.function'
+import { TagSelector } from '../../../../features/bookmarks/components/tag-selector'
+import { fetchTags } from '../../../../features/tags/tag.function'
 
 export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
   loader: async ({ params }) => {
     const bookmark = await getBookmark({ data: { id: params.id } })
-    return { bookmark }
+    const tags = await fetchTags({ data: { limit: 1000, offset: 0 } })
+    return { bookmark, tags }
   },
   component: RouteComponent
 })
 
 function RouteComponent() {
-  const { bookmark } = Route.useLoaderData()
+  const { bookmark, tags } = Route.useLoaderData()
   const navigate = useNavigate()
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
 
   async function submitAction({
     url,
@@ -28,7 +33,7 @@ function RouteComponent() {
     title: string
     note: string | null
   }) {
-    await updateBookmark({ data: { id: bookmark.id, url, title, note, tags: [] } })
+    await updateBookmark({ data: { id: bookmark.id, url, title, note, tags: selectedTagIds } })
 
     await navigate({
       to: '/bookmarks/$id',
@@ -43,6 +48,9 @@ function RouteComponent() {
 
       <EditBookmarkForm
         bookmark={bookmark}
+        allTags={tags}
+        selectedTagIds={selectedTagIds}
+        onTagChange={setSelectedTagIds}
         submitAction={submitAction}
       />
 
@@ -57,10 +65,19 @@ function RouteComponent() {
 
 interface EditBookmarkFormProps {
   bookmark: BookmarkSelectType
+  allTags: TagSelectType[]
+  selectedTagIds: number[]
+  onTagChange: (ids: number[]) => void
   submitAction: (values: { url: string; title: string; note: string | null }) => Promise<void>
 }
 
-function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
+function EditBookmarkForm({
+  bookmark,
+  allTags,
+  selectedTagIds,
+  onTagChange,
+  submitAction
+}: EditBookmarkFormProps) {
   const editBookmarkFormSchema = v.object({
     url: v.pipe(v.string(), v.url()),
     title: v.string(),
@@ -146,6 +163,12 @@ function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
           )}
         </Field>
       </fieldset>
+
+      <TagSelector
+        allTags={allTags}
+        selectedTagIds={selectedTagIds}
+        onChange={onTagChange}
+      />
 
       <button
         type='submit'
