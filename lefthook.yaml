@@ -23,7 +23,7 @@ pre-commit:
             exclude:
               - 'src/routeTree.gen.ts'
             run: |
-              pnpm oxfmt {staged_files} --write --config ../oxfmt.config.ts
+              pnpm oxfmt {staged_files} --write
             stage_fixed: true
 
           - name: Format with Oxfmt (scripts)
@@ -67,19 +67,6 @@ pre-commit:
               - '**/*.{ts,tsx}'
             run: |
               pnpm run typecheck
-
-    - group:
-        parallel: true
-        jobs:
-          - name: Format with Oxfmt after lint (src)
-            root: src
-            glob:
-              - '**/*.{ts,tsx}'
-            exclude:
-              - 'src/routeTree.gen.ts'
-            run: |
-              pnpm oxfmt {staged_files} --write --config ../oxfmt.config.ts
-            stage_fixed: true
 
 pre-push:
   commands:
