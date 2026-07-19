@@ -1,6 +1,8 @@
 import * as v from 'valibot'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
+import { fetchBookmarkTitle } from './bookmark.function'
+
 const { ensureSession, fetchPageTitle } = vi.hoisted(() => ({
   ensureSession: vi.fn(),
   fetchPageTitle: vi.fn()
@@ -22,8 +24,6 @@ vi.mock('@tanstack/react-start', async () => {
 vi.mock('../auth/auth.function', () => ({ ensureSession }))
 vi.mock('./title-fetcher.server', () => ({ fetchPageTitle }))
 vi.mock('../../db/index.server', () => ({ getDB: vi.fn() }))
-
-import { fetchBookmarkTitle } from './bookmark.function'
 
 describe('fetchBookmarkTitle', () => {
   beforeEach(() => {

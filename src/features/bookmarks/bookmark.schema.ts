@@ -4,15 +4,13 @@ export const httpUrlSchema = v.pipe(
   v.string(),
   v.url(),
   v.check((value) => {
-    let protocol: string
-
     try {
-      ;({ protocol } = new URL(value))
+      const { protocol } = new URL(value)
+
+      return protocol === 'http:' || protocol === 'https:'
     } catch {
       return false
     }
-
-    return protocol === 'http:' || protocol === 'https:'
   })
 )
 

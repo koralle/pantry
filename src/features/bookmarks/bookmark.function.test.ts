@@ -57,14 +57,10 @@ describe('updateBookmarkInputSchema', () => {
 
 describe('fetchBookmarkTitleInputSchema', () => {
   test('rejects a malformed URL during input validation', async () => {
-    expect(bookmarkSchemas.fetchBookmarkTitleInputSchema).toBeDefined()
+    const schema = bookmarkSchemas.fetchBookmarkTitleInputSchema
 
-    if (bookmarkSchemas.fetchBookmarkTitleInputSchema == null) {
-      return
-    }
+    expect(schema).toBeDefined()
 
-    await expect(
-      v.parseAsync(bookmarkSchemas.fetchBookmarkTitleInputSchema, { url: 'not-a-url' })
-    ).rejects.toBeInstanceOf(v.ValiError)
+    await expect(v.parseAsync(schema, { url: 'not-a-url' })).rejects.toBeInstanceOf(v.ValiError)
   })
 })
