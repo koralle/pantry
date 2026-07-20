@@ -4,7 +4,8 @@ import { env } from './env'
 
 export default defineConfig({
   dbCredentials: {
-    url: env.DATABASE_URL
+    authToken: env.TURSO_AUTH_TOKEN,
+    url: env.TURSO_CONNECTION_URL
   },
   dialect: 'turso',
   out: './drizzle',
