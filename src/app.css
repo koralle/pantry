@@ -1113,7 +1113,11 @@ body {
   place-items: center;
   padding: 1.5rem 1rem;
   background:
-    radial-gradient(ellipse at 20% 0%, color-mix(in oklab, var(--pantry-accent) 10%, transparent), transparent 55%),
+    radial-gradient(
+      ellipse at 20% 0%,
+      color-mix(in oklab, var(--pantry-accent) 10%, transparent),
+      transparent 55%
+    ),
     var(--pantry-bg);
 }
 
@@ -1152,6 +1156,37 @@ body {
   color: var(--pantry-accent);
 }
 
+/* Motion recipes (CSS-only; React ViewTransition not in catalog:react 19.2.7) */
+@keyframes pantry-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pantry-crossfade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.pantry-motion-fade-up {
+  animation: pantry-fade-up 200ms ease-out both;
+}
+
+.pantry-motion-crossfade {
+  animation: pantry-crossfade 160ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1159,5 +1194,10 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .pantry-motion-fade-up,
+  .pantry-motion-crossfade {
+    animation: none !important;
   }
 }

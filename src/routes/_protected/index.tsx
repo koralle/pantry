@@ -1,6 +1,7 @@
 import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
 import * as v from 'valibot'
 
+import { PantryMotion } from '../../components/pantry-motion'
 import { ensureSession } from '../../features/auth/auth.function'
 import { fetchBookmarks } from '../../features/bookmarks/bookmark.function'
 import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
@@ -48,8 +49,16 @@ function RouteComponent() {
   const search = Route.useSearch()
 
   if (search.view === 'entrance') {
-    return <EntranceBoxes />
+    return (
+      <PantryMotion kind='fade-up'>
+        <EntranceBoxes />
+      </PantryMotion>
+    )
   }
 
-  return <BookmarkList />
+  return (
+    <PantryMotion kind='fade-up'>
+      <BookmarkList />
+    </PantryMotion>
+  )
 }

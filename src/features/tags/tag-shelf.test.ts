@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
-import { sortTagsForEntrance, sortTagsForNav } from './tag-shelf';
-import type { ShelfTag } from './tag-shelf';
+import { sortTagsForEntrance, sortTagsForNav } from './tag-shelf'
+import type { ShelfTag } from './tag-shelf'
 
 const base = (partial: Partial<ShelfTag> & Pick<ShelfTag, 'id' | 'name'>): ShelfTag => ({
   pinned: false,

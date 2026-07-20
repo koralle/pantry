@@ -2,8 +2,8 @@ import { Link } from '@tanstack/react-router'
 import { use } from 'react'
 
 import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
-import { sortTagsForNav } from '../tag-shelf';
-import type { ShelfTag } from '../tag-shelf';
+import { sortTagsForNav } from '../tag-shelf'
+import type { ShelfTag } from '../tag-shelf'
 
 const listDefaults = {
   limit: 50,

@@ -33,8 +33,12 @@ export function sortTagsForEntrance(tags: ShelfTag[]): ShelfTag[] {
     const aUsed = a.lastUsedAt?.getTime() ?? null
     const bUsed = b.lastUsedAt?.getTime() ?? null
     if (aUsed !== bUsed) {
-      if (aUsed == null) {return 1}
-      if (bUsed == null) {return -1}
+      if (aUsed == null) {
+        return 1
+      }
+      if (bUsed == null) {
+        return -1
+      }
       return bUsed - aUsed
     }
 

@@ -3,6 +3,7 @@ import { Suspense, use, useEffect, useId, useState } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
 
+import { PantryMotion } from '../../../components/pantry-motion'
 import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
 import type { BookmarkSelectType } from '../../../db/schema/bookmark'
 import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
@@ -390,17 +391,21 @@ function BookmarkListResults({
 
   return (
     <div className='pantry-bookmark-list__results'>
-      {layout === 'card' ? (
-        <BookmarkCards
-          bookmarks={items}
-          detailSearch={detailSearch}
-        />
-      ) : (
-        <BookmarkTable
-          bookmarks={items}
-          detailSearch={detailSearch}
-        />
-      )}
+      <PantryMotion
+        key={layout}
+        kind='crossfade'>
+        {layout === 'card' ? (
+          <BookmarkCards
+            bookmarks={items}
+            detailSearch={detailSearch}
+          />
+        ) : (
+          <BookmarkTable
+            bookmarks={items}
+            detailSearch={detailSearch}
+          />
+        )}
+      </PantryMotion>
 
       {hasMore ? (
         <div className='pantry-bookmark-list__partial'>
@@ -504,13 +509,16 @@ function BookmarkListFrame({
           void router.invalidate()
         }}>
         <Suspense fallback={<ListLoading layout={layout} />}>
-          <BookmarkListResults
+          <PantryMotion
             key={listKey}
-            bookmarkPromise={bookmarksPromise}
-            layout={layout}
-            search={search}
-            pageLimit={search.limit}
-          />
+            kind='crossfade'>
+            <BookmarkListResults
+              bookmarkPromise={bookmarksPromise}
+              layout={layout}
+              search={search}
+              pageLimit={search.limit}
+            />
+          </PantryMotion>
         </Suspense>
       </ErrorBoundary>
     </>
