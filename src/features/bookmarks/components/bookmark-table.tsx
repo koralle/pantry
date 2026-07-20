@@ -6,9 +6,10 @@ import { shortenUrl } from '../shorten-url'
 
 interface BookmarkTableProps {
   readonly bookmarks: BookmarkSelectType[]
+  readonly detailSearch?: { tags?: string[] }
 }
 
-export function BookmarkTable({ bookmarks }: BookmarkTableProps) {
+export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTableProps) {
   return (
     <table className='pantry-bookmark-table'>
       <thead>
@@ -25,6 +26,7 @@ export function BookmarkTable({ bookmarks }: BookmarkTableProps) {
               <Link
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
+                search={detailSearch}
                 className='pantry-bookmark-row-link'>
                 {bookmark.title}
               </Link>
@@ -33,6 +35,7 @@ export function BookmarkTable({ bookmarks }: BookmarkTableProps) {
               <Link
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
+                search={detailSearch}
                 className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
                 {shortenUrl(bookmark.url, 48)}
               </Link>
@@ -41,6 +44,7 @@ export function BookmarkTable({ bookmarks }: BookmarkTableProps) {
               <Link
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
+                search={detailSearch}
                 className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
                 {formatDateTime(bookmark.updatedAt)}
               </Link>

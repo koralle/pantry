@@ -50,7 +50,20 @@ function ListLoading({ layout }: { readonly layout: ListLayout }) {
   )
 }
 
-function BookmarkCards({ bookmarks }: { readonly bookmarks: BookmarkSelectType[] }) {
+function detailSearchFromList(search: BookmarkSearchSchema): { tags?: string[] } {
+  if (search.tags !== undefined && search.tags.length > 0) {
+    return { tags: search.tags }
+  }
+  return {}
+}
+
+function BookmarkCards({
+  bookmarks,
+  detailSearch
+}: {
+  readonly bookmarks: BookmarkSelectType[]
+  readonly detailSearch: { tags?: string[] }
+}) {
   return (
     <ul className='pantry-bookmark-cards'>
       {bookmarks.map((bookmark) => (
@@ -58,6 +71,7 @@ function BookmarkCards({ bookmarks }: { readonly bookmarks: BookmarkSelectType[]
           <Link
             to='/bookmarks/$id'
             params={{ id: bookmark.id }}
+            search={detailSearch}
             className='pantry-box pantry-bookmark-card'>
             <span className='pantry-bookmark-card__title'>{bookmark.title}</span>
             <span className='pantry-bookmark-card__url'>{shortenUrl(bookmark.url)}</span>
@@ -149,6 +163,7 @@ function ListToolbar({
         <h1 className='pantry-list-toolbar__title'>{shelfTitle(search)}</h1>
         <Link
           to='/bookmarks/new'
+          search={detailSearchFromList(search)}
           className='pantry-list-toolbar__new'>
           新規
         </Link>
@@ -332,10 +347,18 @@ function BookmarkListResults({
     return (
       <UiEmpty
         title='この棚はまだ空です'
-        action={<Link to='/bookmarks/new'>新規ブックマーク</Link>}
+        action={
+          <Link
+            to='/bookmarks/new'
+            search={detailSearchFromList(search)}>
+            新規ブックマーク
+          </Link>
+        }
       />
     )
   }
+
+  const detailSearch = detailSearchFromList(search)
 
   const loadMore = () => {
     if (isLoadingMore) {
@@ -368,9 +391,15 @@ function BookmarkListResults({
   return (
     <div className='pantry-bookmark-list__results'>
       {layout === 'card' ? (
-        <BookmarkCards bookmarks={items} />
+        <BookmarkCards
+          bookmarks={items}
+          detailSearch={detailSearch}
+        />
       ) : (
-        <BookmarkTable bookmarks={items} />
+        <BookmarkTable
+          bookmarks={items}
+          detailSearch={detailSearch}
+        />
       )}
 
       {hasMore ? (

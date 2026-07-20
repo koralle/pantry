@@ -9,8 +9,8 @@ import {
   useSearch
 } from '@tanstack/react-router'
 import { Suspense, useState, useTransition } from 'react'
-import { ErrorBoundary, getErrorMessage } from 'react-error-boundary';
-import type { FallbackProps } from 'react-error-boundary';
+import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 
 import { UiError, UiLoading } from '../components/ui-state'
 import { authClient } from '../features/auth/auth-client'
@@ -147,7 +147,15 @@ function Layout() {
           </div>
 
           <div className='pantry-shell-header__actions'>
-            <Link to='/bookmarks/new'>＋新規</Link>
+            <Link
+              to='/bookmarks/new'
+              search={
+                indexSearch?.tags !== undefined && indexSearch.tags.length > 0
+                  ? { tags: indexSearch.tags }
+                  : {}
+              }>
+              ＋新規
+            </Link>
             <Link to='/settings'>設定</Link>
             <button
               type='button'

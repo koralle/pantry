@@ -11,6 +11,7 @@ import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
 import { normalizeListQuery } from './bookmark-list-query'
 import { addBookmarkInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
+import { fetchPageTitle } from './title-fetcher.server'
 
 export { updateBookmarkInputSchema } from './bookmark.schema'
 export type { FetchBookmarksInput } from './bookmark-list-query'
@@ -106,7 +107,13 @@ export const getBookmark = createServerFn({ method: 'GET' })
     const [bookmark] = await db
       .select()
       .from(bookmarkTable)
-      .where(and(eq(bookmarkTable.id, ctx.data.id), eq(bookmarkTable.userId, session.user.id)))
+      .where(
+        and(
+          eq(bookmarkTable.id, ctx.data.id),
+          eq(bookmarkTable.userId, session.user.id),
+          isNull(bookmarkTable.deletedAt)
+        )
+      )
       .limit(1)
 
     if (bookmark == null) {
@@ -166,3 +173,38 @@ export const updateBookmark = createServerFn({ method: 'POST' })
 
     return { id }
   })
+
+export const deleteBookmark = createServerFn({ method: 'POST' })
+  .validator(v.object({ id: v.string() }))
+  .handler(async (ctx) => {
+    const session = await ensureSession()
+    const db = getDB()
+
+    const [existing] = await db
+      .select({ id: bookmarkTable.id })
+      .from(bookmarkTable)
+      .where(
+        and(
+          eq(bookmarkTable.id, ctx.data.id),
+          eq(bookmarkTable.userId, session.user.id),
+          isNull(bookmarkTable.deletedAt)
+        )
+      )
+      .limit(1)
+
+    if (existing == null) {
+      throw new Error('Bookmark not found')
+    }
+
+    const now = new Date()
+    await db
+      .update(bookmarkTable)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(and(eq(bookmarkTable.id, ctx.data.id), eq(bookmarkTable.userId, session.user.id)))
+
+    return { id: ctx.data.id }
+  })
+
+export const fetchBookmarkTitle = createServerFn({ method: 'POST' })
+  .validator(v.object({ url: v.pipe(v.string(), v.url()) }))
+  .handler(async (ctx) => fetchPageTitle(ctx.data.url))

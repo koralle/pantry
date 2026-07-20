@@ -1,5 +1,5 @@
 const dateTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
-  timeZone: 'UTC',
+  timeZone: 'Asia/Tokyo',
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',

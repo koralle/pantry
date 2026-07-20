@@ -566,6 +566,264 @@ body {
   }
 }
 
+.pantry-detail {
+  max-inline-size: 42rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pantry-detail__nav,
+.pantry-workbench__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.pantry-detail__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-block: 0.5rem 0.25rem;
+}
+
+.pantry-detail__title,
+.pantry-workbench__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.pantry-detail__url {
+  color: var(--pantry-accent);
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.pantry-detail__note {
+  margin: 0;
+  color: var(--pantry-ink);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.pantry-detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pantry-tag-chip--link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pantry-detail__meta,
+.pantry-workbench__lead {
+  margin: 0;
+  color: var(--pantry-muted);
+}
+
+.pantry-detail__dates {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.pantry-detail__dates div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.pantry-detail__dates dt {
+  color: var(--pantry-muted);
+  font-size: 0.8125rem;
+}
+
+.pantry-detail__dates dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.pantry-detail__actions,
+.pantry-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.pantry-detail__skeleton-block {
+  min-block-size: 4rem;
+}
+
+.pantry-workbench {
+  max-inline-size: 36rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pantry-workbench-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pantry-workbench-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.pantry-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.pantry-field label {
+  font-weight: 600;
+}
+
+.pantry-field input,
+.pantry-field__url-row input {
+  min-block-size: 44px;
+  border: 1px solid var(--pantry-line);
+  border-radius: var(--pantry-radius-box);
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pantry-field__url-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pantry-field__url-row > :first-child {
+  flex: 1;
+  min-inline-size: 12rem;
+}
+
+.pantry-field__error {
+  margin: 0;
+  color: #8a2f2f;
+  font-size: 0.875rem;
+}
+
+.pantry-form-summary {
+  border: 1px solid color-mix(in oklab, #8a2f2f 35%, var(--pantry-line));
+  border-radius: var(--pantry-radius-box);
+  background: color-mix(in oklab, #8a2f2f 8%, white);
+  padding: 0.875rem 1rem;
+}
+
+.pantry-form-summary p {
+  margin: 0 0 0.375rem;
+  font-weight: 600;
+}
+
+.pantry-form-summary ul {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+.pantry-button {
+  min-block-size: 44px;
+  border-radius: var(--pantry-radius-box);
+  border: 1px solid var(--pantry-line);
+  background: #fff;
+  color: var(--pantry-ink);
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pantry-button--accent {
+  border-color: var(--pantry-accent);
+  background: var(--pantry-accent);
+  color: #fff;
+}
+
+.pantry-button--secondary {
+  background: #fff;
+  color: var(--pantry-ink);
+}
+
+.pantry-button--danger {
+  border-color: color-mix(in oklab, #8a2f2f 55%, var(--pantry-line));
+  color: #8a2f2f;
+  background: #fff;
+}
+
+.pantry-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.pantry-text-link {
+  color: var(--pantry-accent);
+  text-decoration: none;
+  min-block-size: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pantry-flash {
+  border: 1px solid color-mix(in oklab, var(--pantry-accent) 35%, var(--pantry-line));
+  border-radius: var(--pantry-radius-box);
+  background: var(--pantry-accent-soft);
+  color: var(--pantry-ink);
+  padding: 0.75rem 1rem;
+}
+
+.pantry-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, var(--pantry-ink) 35%, transparent);
+}
+
+.pantry-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-inline-size: 24rem;
+  width: calc(100% - 2rem);
+  height: fit-content;
+  border: 1px solid var(--pantry-line);
+  border-radius: var(--pantry-radius-box);
+  background: #fff;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pantry-dialog h2,
+.pantry-dialog [data-slot='title'] {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
