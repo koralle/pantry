@@ -88,6 +88,10 @@ export const addBookmark = createServerFn({ method: 'POST' })
 
     if (tags.length > 0) {
       await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+      await db
+        .update(tagsTable)
+        .set({ lastUsedAt: new Date() })
+        .where(and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.id, tags)))
     }
 
     return { id }
@@ -154,6 +158,10 @@ export const updateBookmark = createServerFn({ method: 'POST' })
 
     if (tags.length > 0) {
       await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+      await db
+        .update(tagsTable)
+        .set({ lastUsedAt: new Date() })
+        .where(and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.id, tags)))
     }
 
     return { id }
