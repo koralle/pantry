@@ -1,32 +1,105 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, eq } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm'
 import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
 import { getDB } from '../../db/index.server'
 import { bookmarkTable } from '../../db/schema/bookmark'
 import { bookmarkTagsTable } from '../../db/schema/bookmark-tag'
+import { tagsTable } from '../../db/schema/tag'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
+import { attachTagsToBookmarks } from './attach-bookmark-tags'
+import type { BookmarkListItem } from './attach-bookmark-tags'
+import { normalizeListQuery } from './bookmark-list-query'
 import { addBookmarkInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
+import { fetchPageTitle } from './title-fetcher.server'
 
 export { updateBookmarkInputSchema } from './bookmark.schema'
+export type { FetchBookmarksInput } from './bookmark-list-query'
+export type { BookmarkListItem, BookmarkListTag } from './attach-bookmark-tags'
+
+const fetchBookmarksInputSchema = v.object({
+  ...offsetPaginationQuerySchema.entries,
+  q: v.optional(v.string()),
+  tagNames: v.optional(v.array(v.string())),
+  tagMode: v.picklist(['and', 'or']),
+  sort: v.picklist(['newest', 'updated'])
+})
 
 export const fetchBookmarks = createServerFn({ method: 'GET' })
-  .validator(offsetPaginationQuerySchema)
-  .handler(async (ctx) => {
+  .validator(fetchBookmarksInputSchema)
+  .handler(async (ctx): Promise<BookmarkListItem[]> => {
     const session = await ensureSession()
-
-    const { limit, offset } = ctx.data
-
+    const { q, tagNames, tagMode, sort, limit, offset } = normalizeListQuery({
+      tagMode: ctx.data.tagMode,
+      sort: ctx.data.sort,
+      limit: ctx.data.limit,
+      offset: ctx.data.offset,
+      ...(ctx.data.q !== undefined ? { q: ctx.data.q } : {}),
+      ...(ctx.data.tagNames !== undefined ? { tagNames: ctx.data.tagNames } : {})
+    })
     const db = getDB()
 
-    return db
+    const conditions = [eq(bookmarkTable.userId, session.user.id), isNull(bookmarkTable.deletedAt)]
+
+    if (q != null) {
+      const pattern = `%${q}%`
+      conditions.push(
+        or(
+          like(bookmarkTable.title, pattern),
+          like(bookmarkTable.url, pattern),
+          like(bookmarkTable.note, pattern)
+        )!
+      )
+    }
+
+    if (tagNames != null) {
+      const taggedBookmarks = db
+        .select({ bookmarkId: bookmarkTagsTable.bookmarkId })
+        .from(bookmarkTagsTable)
+        .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+        .where(and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.name, tagNames)))
+        .groupBy(bookmarkTagsTable.bookmarkId)
+
+      const matchingIds =
+        tagMode === 'and'
+          ? taggedBookmarks.having(sql`count(distinct ${tagsTable.name}) = ${tagNames.length}`)
+          : taggedBookmarks
+
+      conditions.push(inArray(bookmarkTable.id, matchingIds))
+    }
+
+    const bookmarks = await db
       .select()
       .from(bookmarkTable)
-      .where(eq(bookmarkTable.userId, session.user.id))
+      .where(and(...conditions))
+      .orderBy(sort === 'newest' ? desc(bookmarkTable.createdAt) : desc(bookmarkTable.updatedAt))
       .limit(limit)
       .offset(offset)
+
+    if (bookmarks.length === 0) {
+      return []
+    }
+
+    const bookmarkIds = bookmarks.map((bookmark) => bookmark.id)
+    const tagRows = await db
+      .select({
+        bookmarkId: bookmarkTagsTable.bookmarkId,
+        id: tagsTable.id,
+        name: tagsTable.name
+      })
+      .from(bookmarkTagsTable)
+      .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+      .where(
+        and(
+          eq(tagsTable.userId, session.user.id),
+          inArray(bookmarkTagsTable.bookmarkId, bookmarkIds)
+        )
+      )
+      .orderBy(tagsTable.name)
+
+    return attachTagsToBookmarks(bookmarks, tagRows)
   })
 
 export const addBookmark = createServerFn({ method: 'POST' })
@@ -42,6 +115,10 @@ export const addBookmark = createServerFn({ method: 'POST' })
 
     if (tags.length > 0) {
       await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+      await db
+        .update(tagsTable)
+        .set({ lastUsedAt: new Date() })
+        .where(and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.id, tags)))
     }
 
     return { id }
@@ -56,7 +133,13 @@ export const getBookmark = createServerFn({ method: 'GET' })
     const [bookmark] = await db
       .select()
       .from(bookmarkTable)
-      .where(and(eq(bookmarkTable.id, ctx.data.id), eq(bookmarkTable.userId, session.user.id)))
+      .where(
+        and(
+          eq(bookmarkTable.id, ctx.data.id),
+          eq(bookmarkTable.userId, session.user.id),
+          isNull(bookmarkTable.deletedAt)
+        )
+      )
       .limit(1)
 
     if (bookmark == null) {
@@ -108,7 +191,46 @@ export const updateBookmark = createServerFn({ method: 'POST' })
 
     if (tags.length > 0) {
       await db.insert(bookmarkTagsTable).values(tags.map((tagId) => ({ bookmarkId: id, tagId })))
+      await db
+        .update(tagsTable)
+        .set({ lastUsedAt: new Date() })
+        .where(and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.id, tags)))
     }
 
     return { id }
   })
+
+export const deleteBookmark = createServerFn({ method: 'POST' })
+  .validator(v.object({ id: v.string() }))
+  .handler(async (ctx) => {
+    const session = await ensureSession()
+    const db = getDB()
+
+    const [existing] = await db
+      .select({ id: bookmarkTable.id })
+      .from(bookmarkTable)
+      .where(
+        and(
+          eq(bookmarkTable.id, ctx.data.id),
+          eq(bookmarkTable.userId, session.user.id),
+          isNull(bookmarkTable.deletedAt)
+        )
+      )
+      .limit(1)
+
+    if (existing == null) {
+      throw new Error('Bookmark not found')
+    }
+
+    const now = new Date()
+    await db
+      .update(bookmarkTable)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(and(eq(bookmarkTable.id, ctx.data.id), eq(bookmarkTable.userId, session.user.id)))
+
+    return { id: ctx.data.id }
+  })
+
+export const fetchBookmarkTitle = createServerFn({ method: 'POST' })
+  .validator(v.object({ url: v.pipe(v.string(), v.url()) }))
+  .handler(async (ctx) => fetchPageTitle(ctx.data.url))

@@ -1,41 +1,68 @@
 import { Link } from '@tanstack/react-router'
-import { use } from 'react'
 
-import { BookmarkSelectType } from '../../../db/schema/bookmark'
 import { formatDateTime } from '../../../lib/format-date'
+import type { BookmarkListItem } from '../attach-bookmark-tags'
+import { shortenUrl } from '../shorten-url'
 
 interface BookmarkTableProps {
-  readonly bookmarkPromise: Promise<BookmarkSelectType[]>
+  readonly bookmarks: BookmarkListItem[]
+  readonly detailSearch?: { tags?: string[] }
 }
 
-export function BookmarkTable({ bookmarkPromise }: BookmarkTableProps) {
-  const tags = use(bookmarkPromise)
-
+export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTableProps) {
   return (
-    <table>
+    <table className='pantry-bookmark-table'>
       <thead>
         <tr>
-          <th>id</th>
           <th>タイトル</th>
           <th>URL</th>
-          <th>説明</th>
-          <th>最終更新日</th>
+          <th>タグ</th>
+          <th>最終更新</th>
         </tr>
       </thead>
       <tbody>
-        {tags.map((tag) => (
-          <tr key={tag.id}>
+        {bookmarks.map((bookmark) => (
+          <tr key={bookmark.id}>
             <td>
               <Link
                 to='/bookmarks/$id'
-                params={{ id: tag.id }}>
-                {tag.id}
+                params={{ id: bookmark.id }}
+                search={detailSearch}
+                className='pantry-bookmark-row-link'>
+                {bookmark.title}
               </Link>
             </td>
-            <td>{tag.title}</td>
-            <td>{tag.url}</td>
-            <td>{tag.note}</td>
-            <td>{formatDateTime(tag.updatedAt)}</td>
+            <td>
+              <Link
+                to='/bookmarks/$id'
+                params={{ id: bookmark.id }}
+                search={detailSearch}
+                className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
+                {shortenUrl(bookmark.url, 48)}
+              </Link>
+            </td>
+            <td>
+              {bookmark.tags.length > 0 ? (
+                <ul className='pantry-bookmark-tags'>
+                  {bookmark.tags.map((tag) => (
+                    <li key={tag.id}>
+                      <span className='pantry-tag-chip pantry-tag-chip--label'>{tag.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className='pantry-bookmark-tags__empty'>—</span>
+              )}
+            </td>
+            <td>
+              <Link
+                to='/bookmarks/$id'
+                params={{ id: bookmark.id }}
+                search={detailSearch}
+                className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
+                {formatDateTime(bookmark.updatedAt)}
+              </Link>
+            </td>
           </tr>
         ))}
       </tbody>

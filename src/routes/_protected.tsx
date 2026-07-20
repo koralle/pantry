@@ -1,9 +1,23 @@
+import { Dialog } from '@base-ui/react/dialog'
 import { useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router'
-import { useTransition } from 'react'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useRouter,
+  useSearch
+} from '@tanstack/react-router'
+import { Suspense, useState, useTransition } from 'react'
+import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 
+import { UiError, UiLoading } from '../components/ui-state'
 import { authClient } from '../features/auth/auth-client'
 import { getSession } from '../features/auth/auth.function'
+import { ShelfNavAsync } from '../features/tags/components/shelf-nav'
+import { fetchShelfTags } from '../features/tags/tag.function'
+import { defaultBookmarkSearch } from './_protected/-lib/bookmark-search-schema'
 
 export const Route = createFileRoute('/_protected')({
   beforeLoad: async ({ location }) => {
@@ -18,16 +32,36 @@ export const Route = createFileRoute('/_protected')({
 
     return { user: session.user }
   },
+  loader: async () => {
+    const shelfTagsPromise = fetchShelfTags()
+    return { shelfTagsPromise }
+  },
   component: () => <Layout />
 })
 
+function ShelfNavError({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <UiError
+      message={getErrorMessage(error) ?? '棚の読み込みに失敗しました'}
+      onRetry={resetErrorBoundary}
+    />
+  )
+}
+
 function Layout() {
+  const { shelfTagsPromise } = Route.useLoaderData()
   const queryClient = useQueryClient()
   const router = useRouter()
-
+  const indexSearch = useSearch({ from: '/_protected/', shouldThrow: false })
+  const [shelfOpen, setShelfOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const handleClick = async () => {
+  const selection = {
+    view: indexSearch?.view,
+    tags: indexSearch?.tags
+  }
+
+  const handleSignOut = () => {
     startTransition(async () => {
       await authClient.signOut({
         fetchOptions: {
@@ -43,33 +77,100 @@ function Layout() {
     })
   }
 
+  const closeShelf = () => {
+    setShelfOpen(false)
+  }
+
+  const renderShelfNav = (onNavigate?: () => void) => (
+    <ErrorBoundary
+      FallbackComponent={ShelfNavError}
+      onReset={() => {
+        void router.invalidate()
+      }}>
+      <Suspense fallback={<UiLoading label='棚を読み込み中' />}>
+        <ShelfNavAsync
+          shelfTagsPromise={shelfTagsPromise}
+          selection={selection}
+          onNavigate={onNavigate}
+        />
+      </Suspense>
+    </ErrorBoundary>
+  )
+
   return (
-    <div>
-      <header>
-        <nav>
+    <div className='pantry-shell'>
+      <aside className='pantry-shelf-rail'>
+        <div className='pantry-shelf-rail__brand'>
           <Link
             to='/'
-            search={{ tagMode: 'and', sort: 'newest' }}>
+            search={defaultBookmarkSearch}
+            className='pantry-brand'>
             Pantry
           </Link>
+        </div>
+        <div className='pantry-shelf-rail__nav'>{renderShelfNav()}</div>
+        <div className='pantry-shelf-rail__meta'>
           <Link
             to='/tags'
             search={{ limit: 50, offset: 0 }}>
-            タグ
+            タグ管理
           </Link>
           <Link to='/settings'>設定</Link>
-          <Link to='/bookmarks/new'>＋新規ブックマーク</Link>
-        </nav>
-        <button
-          type='button'
-          onClick={handleClick}
-          disabled={isPending}>
-          Sign Out
-        </button>
-      </header>
-      <main>
-        <Outlet />
-      </main>
+        </div>
+      </aside>
+
+      <div className='pantry-shell-content'>
+        <header className='pantry-shell-header'>
+          <div className='pantry-shell-header__start'>
+            <Link
+              to='/'
+              search={defaultBookmarkSearch}
+              className='pantry-brand pantry-brand--mobile'>
+              Pantry
+            </Link>
+
+            <Dialog.Root
+              open={shelfOpen}
+              onOpenChange={setShelfOpen}>
+              <Dialog.Trigger className='pantry-shelf-changer'>棚を変える</Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Backdrop className='pantry-shelf-sheet__backdrop' />
+                <Dialog.Popup className='pantry-shelf-sheet'>
+                  <div className='pantry-shelf-sheet__header'>
+                    <Dialog.Title className='pantry-shelf-sheet__title'>棚を選ぶ</Dialog.Title>
+                    <Dialog.Close className='pantry-shelf-sheet__close'>閉じる</Dialog.Close>
+                  </div>
+                  {renderShelfNav(closeShelf)}
+                </Dialog.Popup>
+              </Dialog.Portal>
+            </Dialog.Root>
+          </div>
+
+          <div className='pantry-shell-header__actions'>
+            <Link
+              to='/bookmarks/new'
+              search={
+                indexSearch?.tags !== undefined && indexSearch.tags.length > 0
+                  ? { tags: indexSearch.tags }
+                  : {}
+              }>
+              ＋新規
+            </Link>
+            <Link to='/settings'>設定</Link>
+            <button
+              type='button'
+              className='pantry-sign-out'
+              onClick={handleSignOut}
+              disabled={isPending}>
+              退出
+            </button>
+          </div>
+        </header>
+
+        <main className='pantry-shell-main'>
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

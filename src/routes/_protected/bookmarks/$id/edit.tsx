@@ -1,180 +1,136 @@
-import { Input } from '@base-ui/react'
-import { Field, getInput, useForm } from '@formisch/react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useActionState, useState } from 'react'
+import { useState } from 'react'
 import * as v from 'valibot'
 
-import type { BookmarkSelectType } from '../../../../db/schema/bookmark'
-import type { TagSelectType } from '../../../../db/schema/tag'
+import { BookmarkWorkbenchForm } from '../-components/bookmark-workbench-form'
+import { buildListBackSearch } from '../-lib/list-back-search'
+import { UiEmpty } from '../../../../components/ui-state'
 import { getBookmark, updateBookmark } from '../../../../features/bookmarks/bookmark.function'
-import { TagSelector } from '../../../../features/bookmarks/components/tag-selector'
 import { fetchTags } from '../../../../features/tags/tag.function'
 
+const bookmarkEditSearchSchema = v.object({
+  tags: v.optional(v.array(v.string()))
+})
+
+type BookmarkRecord = Awaited<ReturnType<typeof getBookmark>>
+type TagRecord = Awaited<ReturnType<typeof fetchTags>>[number]
+
 export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
+  validateSearch: bookmarkEditSearchSchema,
   loader: async ({ params }) => {
-    const bookmark = await getBookmark({ data: { id: params.id } })
-    const tags = await fetchTags({ data: { limit: 1000, offset: 0 } })
-    return { bookmark, tags }
+    try {
+      const bookmark = await getBookmark({ data: { id: params.id } })
+      const tags = await fetchTags({ data: { limit: 1000, offset: 0 } })
+      return { kind: 'ok' as const, bookmark, tags }
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Bookmark not found') {
+        return { kind: 'not-found' as const }
+      }
+      throw error
+    }
   },
   component: RouteComponent
 })
 
 function RouteComponent() {
-  const { bookmark, tags } = Route.useLoaderData()
+  const data = Route.useLoaderData()
   const navigate = useNavigate()
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>(bookmark.tagIds)
+  const search = Route.useSearch()
+  const listSearch = buildListBackSearch(search.tags)
 
-  async function submitAction({
-    url,
-    title,
-    note
-  }: {
-    url: string
-    title: string
-    note: string | null
-  }) {
-    await updateBookmark({ data: { id: bookmark.id, url, title, note, tags: selectedTagIds } })
-
-    await navigate({
-      to: '/bookmarks/$id',
-      params: { id: bookmark.id },
-      state: { bookmarkUpdated: true }
-    })
+  if (data.kind === 'not-found') {
+    return (
+      <section
+        className='pantry-workbench'
+        aria-label='ブックマーク編集'>
+        <UiEmpty
+          title='このブックマークは見つかりません'
+          action={
+            <Link
+              to='/'
+              search={listSearch}
+              className='pantry-text-link'>
+              一覧へ戻る
+            </Link>
+          }
+        />
+      </section>
+    )
   }
 
   return (
-    <div>
-      <h1>ブックマーク編集</h1>
-
-      <EditBookmarkForm
-        bookmark={bookmark}
-        allTags={tags}
-        selectedTagIds={selectedTagIds}
-        onTagChange={setSelectedTagIds}
-        submitAction={submitAction}
-      />
-
-      <Link
-        to='/bookmarks/$id'
-        params={{ id: bookmark.id }}>
-        詳細へ戻る
-      </Link>
-    </div>
+    <EditWorkbench
+      bookmark={data.bookmark}
+      tags={data.tags}
+      listSearch={listSearch}
+      searchTags={search.tags}
+      navigate={navigate}
+    />
   )
 }
 
-interface EditBookmarkFormProps {
-  bookmark: BookmarkSelectType
-  allTags: TagSelectType[]
-  selectedTagIds: number[]
-  onTagChange: (ids: number[]) => void
-  submitAction: (values: { url: string; title: string; note: string | null }) => Promise<void>
-}
-
-function EditBookmarkForm({
+function EditWorkbench({
   bookmark,
-  allTags,
-  selectedTagIds,
-  onTagChange,
-  submitAction
-}: EditBookmarkFormProps) {
-  const editBookmarkFormSchema = v.object({
-    url: v.pipe(v.string(), v.url()),
-    title: v.string(),
-    note: v.nullable(v.string())
-  })
-
-  const editBookmarkForm = useForm({
-    initialInput: {
-      url: bookmark.url,
-      title: bookmark.title,
-      note: bookmark.note ?? ''
-    },
-    schema: editBookmarkFormSchema
-  })
-
-  const [_, throwError, isPending] = useActionState(async () => {
-    const currentRawUrl = getInput(editBookmarkForm, { path: ['url'] }) ?? ''
-    const currentRawTitle = getInput(editBookmarkForm, { path: ['title'] }) ?? ''
-    const currentRawNote = getInput(editBookmarkForm, { path: ['note'] }) ?? ''
-    const note = currentRawNote === '' ? null : currentRawNote
-
-    await submitAction({ url: currentRawUrl, title: currentRawTitle, note })
-  }, null)
+  tags,
+  listSearch,
+  searchTags,
+  navigate
+}: {
+  readonly bookmark: BookmarkRecord
+  readonly tags: TagRecord[]
+  readonly listSearch: ReturnType<typeof buildListBackSearch>
+  readonly searchTags: string[] | undefined
+  readonly navigate: ReturnType<typeof useNavigate>
+}) {
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>(bookmark.tagIds)
 
   return (
-    <form action={throwError}>
-      <fieldset>
-        <legend>ブックマーク編集</legend>
+    <section
+      className='pantry-workbench'
+      aria-label='ブックマーク編集'>
+      <nav className='pantry-workbench__nav'>
+        <Link
+          to='/bookmarks/$id'
+          params={{ id: bookmark.id }}
+          search={searchTags !== undefined ? { tags: searchTags } : {}}
+          className='pantry-text-link'>
+          詳細へ戻る
+        </Link>
+        <Link
+          to='/'
+          search={listSearch}
+          className='pantry-text-link'>
+          一覧へ戻る
+        </Link>
+      </nav>
 
-        <Field
-          of={editBookmarkForm}
-          path={['url']}>
-          {(field) => (
-            <label htmlFor={field.props.name}>
-              URL
-              <Input
-                id={field.props.name}
-                value={field.input}
-                type='url'
-                onValueChange={(newValue) => {
-                  field.onChange(newValue)
-                }}
-                required
-              />
-            </label>
-          )}
-        </Field>
+      <h1 className='pantry-workbench__title'>ブックマークを並べ替える</h1>
+      <p className='pantry-workbench__lead'>内容を直し、主ボタンで保存します。</p>
 
-        <Field
-          of={editBookmarkForm}
-          path={['title']}>
-          {(field) => (
-            <label htmlFor={field.props.name}>
-              タイトル
-              <Input
-                id={field.props.name}
-                value={field.input}
-                type='text'
-                onValueChange={(newValue) => {
-                  field.onChange(newValue)
-                }}
-                required
-              />
-            </label>
-          )}
-        </Field>
-
-        <Field
-          of={editBookmarkForm}
-          path={['note']}>
-          {(field) => (
-            <label htmlFor={field.props.name}>
-              メモ
-              <Input
-                id={field.props.name}
-                value={field.input ?? ''}
-                type='text'
-                onValueChange={(newValue) => {
-                  field.onChange(newValue)
-                }}
-              />
-            </label>
-          )}
-        </Field>
-      </fieldset>
-
-      <TagSelector
-        allTags={allTags}
+      <BookmarkWorkbenchForm
+        mode='edit'
+        initialValues={{
+          url: bookmark.url,
+          title: bookmark.title,
+          note: bookmark.note
+        }}
+        allTags={tags}
         selectedTagIds={selectedTagIds}
-        onChange={onTagChange}
+        onTagChange={setSelectedTagIds}
+        submitLabel='更新'
+        pendingLabel='更新中…'
+        onSubmit={async ({ url, title, note }) => {
+          await updateBookmark({
+            data: { id: bookmark.id, url, title, note, tags: selectedTagIds }
+          })
+          await navigate({
+            to: '/bookmarks/$id',
+            params: { id: bookmark.id },
+            search: searchTags !== undefined ? { tags: searchTags } : {},
+            state: { bookmarkUpdated: true }
+          })
+        }}
       />
-
-      <button
-        type='submit'
-        disabled={isPending}>
-        {isPending ? '更新中...' : '更新'}
-      </button>
-    </form>
+    </section>
   )
 }

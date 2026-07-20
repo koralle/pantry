@@ -1,23 +1,36 @@
-import { createFileRoute, ErrorComponent, ErrorComponentProps, Link } from '@tanstack/react-router'
-import { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
 import * as v from 'valibot'
 
-import { ErrorFallback } from '../../components/error-fallback'
+import { PantryMotion } from '../../components/pantry-motion'
 import { ensureSession } from '../../features/auth/auth.function'
 import { fetchBookmarks } from '../../features/bookmarks/bookmark.function'
-import { BookmarkTable } from '../../features/bookmarks/components/bookmark-table'
-import { offsetPaginationQuerySchema } from '../../schemas/pagination'
+import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
+import { EntranceBoxes } from '../../features/tags/components/entrance-boxes'
+import { bookmarkListLoaderDeps } from './-lib/bookmark-list-loader-deps'
 import { bookmarkSearchSchema } from './-lib/bookmark-search-schema'
 
 export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
-  loader: async ({ location }) => {
+  loaderDeps: ({ search }) => bookmarkListLoaderDeps(search),
+  loader: async ({ deps }) => {
     const { user } = await ensureSession()
-    const search = v.parse(bookmarksSearchSchema, location.search)
+
+    if (deps.view === 'entrance') {
+      return {
+        user,
+        bookmarksPromise: undefined
+      }
+    }
 
     const bookmarksPromise = fetchBookmarks({
-      data: { limit: search.limit, offset: search.offset }
+      data: {
+        tagMode: deps.tagMode,
+        sort: deps.sort,
+        limit: deps.limit,
+        offset: deps.offset,
+        ...(deps.q !== undefined ? { q: deps.q } : {}),
+        ...(deps.tags !== undefined ? { tagNames: deps.tags } : {})
+      }
     })
 
     return {
@@ -29,28 +42,24 @@ export const Route = createFileRoute('/_protected/')({
   errorComponent: BookmarkPageFallbackComponent
 })
 
-const bookmarksSearchSchema = v.object({
-  ...offsetPaginationQuerySchema.entries
-})
-
 function BookmarkPageFallbackComponent({ error }: ErrorComponentProps) {
   return <ErrorComponent error={error} />
 }
 
 function RouteComponent() {
-  const { user, bookmarksPromise } = Route.useLoaderData()
+  const search = Route.useSearch()
+
+  if (search.view === 'entrance') {
+    return (
+      <PantryMotion kind='fade-up'>
+        <EntranceBoxes />
+      </PantryMotion>
+    )
+  }
 
   return (
-    <>
-      <h1>{user.name}のブックマーク一覧</h1>
-
-      <Link to='/bookmarks/new'>新規作成</Link>
-
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Suspense fallback={<p>Loading...</p>}>
-          <BookmarkTable bookmarkPromise={bookmarksPromise} />
-        </Suspense>
-      </ErrorBoundary>
-    </>
+    <PantryMotion kind='fade-up'>
+      <BookmarkList />
+    </PantryMotion>
   )
 }

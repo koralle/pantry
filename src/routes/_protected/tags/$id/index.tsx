@@ -1,5 +1,15 @@
-import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter, useRouterState } from '@tanstack/react-router'
+import { Suspense, use } from 'react'
+import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 import * as v from 'valibot'
+
+import { UiError, UiLoading } from '../../../../components/ui-state'
+import type { TagSelectType } from '../../../../db/schema/tag'
+import { tagShelfSearch } from '../../../../features/tags/components/shelf-nav'
+import { getTag } from '../../../../features/tags/tag.function'
+
+const tagIdParamSchema = v.pipe(v.string(), v.transform(Number), v.integer('Invalid tag id'))
 
 const tagDetailSearchSchema = v.object({
   created: v.optional(v.boolean())
@@ -7,38 +17,107 @@ const tagDetailSearchSchema = v.object({
 
 export const Route = createFileRoute('/_protected/tags/$id/')({
   validateSearch: tagDetailSearchSchema,
+  loader: async ({ params }) => {
+    const id = v.parse(tagIdParamSchema, params.id)
+    const tagPromise = getTag({ data: { id } })
+    return { tagPromise }
+  },
   component: RouteComponent
 })
 
+function DetailError({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <UiError
+      message={getErrorMessage(error) ?? 'タグの読み込みに失敗しました'}
+      onRetry={resetErrorBoundary}
+    />
+  )
+}
+
 function RouteComponent() {
   const { id } = Route.useParams()
+  const { tagPromise } = Route.useLoaderData()
+  const router = useRouter()
 
   const { newTagCreated, tagUpdated } = useRouterState({
     select: (s) => s.location.state
   })
 
   return (
-    <div>
-      {newTagCreated && <div role='alert'>タグを登録しました</div>}
-      {tagUpdated && <div role='alert'>タグを更新しました</div>}
+    <div className='pantry-workbench'>
+      {newTagCreated ? <output className='pantry-flash'>タグを登録しました</output> : null}
+      {tagUpdated ? <output className='pantry-flash'>タグを更新しました</output> : null}
 
-      <h1>タグ詳細</h1>
-
-      <p>ID: {id}</p>
-
-      <nav>
-        <Link
-          to='/tags/$id/edit'
-          params={{ id }}>
-          編集
-        </Link>
-
+      <nav className='pantry-workbench__nav'>
         <Link
           to='/tags'
-          search={{ limit: 50, offset: 0 }}>
+          search={{ limit: 50, offset: 0 }}
+          className='pantry-text-link'>
           一覧へ戻る
         </Link>
       </nav>
+
+      <ErrorBoundary
+        FallbackComponent={DetailError}
+        onReset={() => {
+          void router.invalidate()
+        }}>
+        <Suspense fallback={<UiLoading label='タグを読み込み中' />}>
+          <TagDetail
+            id={id}
+            tagPromise={tagPromise}
+          />
+        </Suspense>
+      </ErrorBoundary>
     </div>
+  )
+}
+
+function TagDetail({
+  id,
+  tagPromise
+}: {
+  readonly id: string
+  readonly tagPromise: Promise<TagSelectType>
+}) {
+  const tag = use(tagPromise)
+
+  return (
+    <>
+      <header className='pantry-tag-detail__header'>
+        <span
+          className='pantry-shelf-dot pantry-tag-detail__dot'
+          style={tag.color != null ? { backgroundColor: tag.color } : undefined}
+          aria-hidden='true'
+        />
+        <h1 className='pantry-workbench__title'>{tag.name}</h1>
+      </header>
+
+      <dl className='pantry-tag-detail__meta'>
+        <div>
+          <dt>ピン</dt>
+          <dd>{tag.pinned ? '留めている' : 'なし'}</dd>
+        </div>
+        <div>
+          <dt>並び順</dt>
+          <dd>{tag.sortOrder}</dd>
+        </div>
+      </dl>
+
+      <div className='pantry-detail__actions'>
+        <Link
+          to='/'
+          search={tagShelfSearch(tag.name)}
+          className='pantry-button pantry-button--accent'>
+          この棚のブックマークを見る
+        </Link>
+        <Link
+          to='/tags/$id/edit'
+          params={{ id }}
+          className='pantry-button pantry-button--secondary'>
+          編集
+        </Link>
+      </div>
+    </>
   )
 }
