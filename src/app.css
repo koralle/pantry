@@ -929,6 +929,39 @@ body {
   color: var(--pantry-muted);
 }
 
+.pantry-tag-table-skeleton .pantry-skeleton {
+  display: block;
+  border: 0;
+  padding: 0;
+}
+
+.pantry-tag-table-skeleton__dot {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 999px;
+  min-block-size: 0;
+}
+
+.pantry-tag-table-skeleton__name {
+  inline-size: min(100%, 10rem);
+  min-block-size: 1rem;
+}
+
+.pantry-tag-table-skeleton__count {
+  inline-size: 2rem;
+  min-block-size: 1rem;
+}
+
+.pantry-tag-table-skeleton__pin {
+  inline-size: 2.5rem;
+  min-block-size: 1rem;
+}
+
+.pantry-tag-table-skeleton__action {
+  inline-size: 2.5rem;
+  min-block-size: 1rem;
+}
+
 .pantry-color-palette {
   display: flex;
   flex-wrap: wrap;

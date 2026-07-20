@@ -41,6 +41,11 @@ export const SignInWithEmailAndPasswordForm = ({
     return error
   }, null)
 
+  const fieldError =
+    signInError?.code === 'INVALID_EMAIL_OR_PASSWORD'
+      ? 'メールまたはパスワードを確認してください'
+      : null
+
   return (
     <form
       className='pantry-workbench-form pantry-sign-in__form'
@@ -65,7 +70,7 @@ export const SignInWithEmailAndPasswordForm = ({
           path={['email']}>
           {(field) => (
             <div className='pantry-field'>
-              <label htmlFor={field.props.name}>Email</label>
+              <label htmlFor={field.props.name}>メール</label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -75,7 +80,9 @@ export const SignInWithEmailAndPasswordForm = ({
                 }}
                 autoComplete='email webauthn'
                 required
+                aria-invalid={fieldError != null}
               />
+              {fieldError != null ? <p className='pantry-field__error'>{fieldError}</p> : null}
             </div>
           )}
         </Field>
@@ -85,7 +92,7 @@ export const SignInWithEmailAndPasswordForm = ({
           path={['password']}>
           {(field) => (
             <div className='pantry-field'>
-              <label htmlFor={field.props.name}>Password</label>
+              <label htmlFor={field.props.name}>パスワード</label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -95,7 +102,9 @@ export const SignInWithEmailAndPasswordForm = ({
                 }}
                 autoComplete='current-password webauthn'
                 required
+                aria-invalid={fieldError != null}
               />
+              {fieldError != null ? <p className='pantry-field__error'>{fieldError}</p> : null}
             </div>
           )}
         </Field>
@@ -105,7 +114,7 @@ export const SignInWithEmailAndPasswordForm = ({
         type='submit'
         className='pantry-button pantry-button--accent'
         disabled={isPending}>
-        {isPending ? 'サインイン中...' : 'Sign In'}
+        {isPending ? 'サインイン中...' : 'サインイン'}
       </button>
     </form>
   )

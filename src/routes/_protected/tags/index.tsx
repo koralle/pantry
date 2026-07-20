@@ -4,7 +4,7 @@ import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
 import * as v from 'valibot'
 
-import { UiError, UiLoading } from '../../../components/ui-state'
+import { UiError } from '../../../components/ui-state'
 import { ensureSession } from '../../../features/auth/auth.function'
 import { InlineAddTag } from '../../../features/tags/components/inline-add-tag'
 import { TagTable } from '../../../features/tags/tag-table'
@@ -61,10 +61,46 @@ function RouteComponent() {
       <InlineAddTag />
 
       <ErrorBoundary FallbackComponent={TagsError}>
-        <Suspense fallback={<UiLoading label='タグを読み込み中' />}>
+        <Suspense fallback={<TagTableSkeleton />}>
           <TagTable tagPromise={tagsPromise} />
         </Suspense>
       </ErrorBoundary>
+    </div>
+  )
+}
+
+function TagTableSkeleton() {
+  return (
+    <div
+      className='pantry-tag-table-skeleton'
+      aria-busy='true'>
+      <span className='pantry-sr-only'>タグを読み込み中</span>
+      <table
+        className='pantry-tag-table'
+        aria-hidden='true'>
+        <thead>
+          <tr>
+            <th scope='col'>色</th>
+            <th scope='col'>名前</th>
+            <th scope='col'>件数</th>
+            <th scope='col'>ピン</th>
+            <th scope='col'>
+              <span className='pantry-sr-only'>操作</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {['a', 'b', 'c', 'd', 'e'].map((row) => (
+            <tr key={row}>
+              <td className='pantry-skeleton pantry-tag-table-skeleton__dot'>{'\u00a0'}</td>
+              <td className='pantry-skeleton pantry-tag-table-skeleton__name'>{'\u00a0'}</td>
+              <td className='pantry-skeleton pantry-tag-table-skeleton__count'>{'\u00a0'}</td>
+              <td className='pantry-skeleton pantry-tag-table-skeleton__pin'>{'\u00a0'}</td>
+              <td className='pantry-skeleton pantry-tag-table-skeleton__action'>{'\u00a0'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

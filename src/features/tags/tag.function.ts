@@ -13,7 +13,10 @@ import { tagNameSchema } from './tag-name.schema'
 import type { ShelfTag } from './tag-shelf'
 
 const addTagInputSchema = v.object({
-  name: tagNameSchema
+  name: tagNameSchema,
+  pinned: v.optional(v.boolean()),
+  sortOrder: v.optional(v.number()),
+  color: v.optional(v.nullable(v.string()))
 })
 
 const tagIdSchema = v.object({
@@ -89,7 +92,7 @@ export const addTag = createServerFn({ method: 'POST' })
     const session = await ensureSession()
     const db = getDB()
 
-    const { name } = ctx.data
+    const { name, pinned, sortOrder, color } = ctx.data
 
     const [duplicate] = await db
       .select({ id: tagsTable.id })
@@ -103,7 +106,13 @@ export const addTag = createServerFn({ method: 'POST' })
 
     const result = await db
       .insert(tagsTable)
-      .values({ name, userId: session.user.id })
+      .values({
+        name,
+        userId: session.user.id,
+        ...(pinned !== undefined ? { pinned } : {}),
+        ...(sortOrder !== undefined ? { sortOrder } : {}),
+        ...(color !== undefined ? { color } : {})
+      })
       .returning({ id: tagsTable.id })
 
     const [first] = result

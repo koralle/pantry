@@ -5,7 +5,7 @@ import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
-import { addTag, updateTag } from '../../../features/tags/tag.function'
+import { addTag } from '../../../features/tags/tag.function'
 
 export const Route = createFileRoute('/_protected/tags/new')({
   component: RouteComponent
@@ -20,20 +20,14 @@ function RouteComponent() {
     color: string | null
     sortOrder: number
   }) {
-    const { id } = await addTag({ data: { name: input.name } })
-
-    const needsMeta = input.pinned || input.color != null || input.sortOrder !== 0
-
-    if (needsMeta) {
-      await updateTag({
-        data: {
-          id,
-          pinned: input.pinned,
-          color: input.color,
-          sortOrder: input.sortOrder
-        }
-      })
-    }
+    const { id } = await addTag({
+      data: {
+        name: input.name,
+        pinned: input.pinned,
+        color: input.color,
+        sortOrder: input.sortOrder
+      }
+    })
 
     await navigate({
       to: '/tags/$id',
