@@ -12,7 +12,7 @@ import type { FallbackProps } from 'react-error-boundary'
 import * as v from 'valibot'
 
 import { buildListBackSearch } from '../-lib/list-back-search'
-import { UiEmpty, UiError, UiLoading } from '../../../../components/ui-state'
+import { UiEmpty, UiError } from '../../../../components/ui-state'
 import { deleteBookmark, getBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
 import { formatDateTime } from '../../../../lib/format-date'
@@ -58,12 +58,44 @@ function DetailSkeleton() {
     <div
       className='pantry-detail'
       aria-busy='true'>
-      <UiLoading label='詳細を読み込み中' />
-      <div className='pantry-detail__skeleton-block'>
-        <UiLoading label='詳細を読み込み中' />
+      <span className='pantry-sr-only'>詳細を読み込み中</span>
+      <div className='pantry-detail__nav'>
+        <div
+          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--nav'
+          aria-hidden='true'
+        />
       </div>
-      <div className='pantry-detail__skeleton-block'>
-        <UiLoading label='詳細を読み込み中' />
+      <header className='pantry-detail__header'>
+        <div
+          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--title'
+          aria-hidden='true'
+        />
+        <div
+          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--url'
+          aria-hidden='true'
+        />
+      </header>
+      <div
+        className='pantry-skeleton pantry-detail__skeleton-block pantry-detail__skeleton-block--note'
+        aria-hidden='true'
+      />
+      <div
+        className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--tags'
+        aria-hidden='true'
+      />
+      <div
+        className='pantry-skeleton pantry-detail__skeleton-block pantry-detail__skeleton-block--dates'
+        aria-hidden='true'
+      />
+      <div className='pantry-detail__actions'>
+        <div
+          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--action'
+          aria-hidden='true'
+        />
+        <div
+          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--action'
+          aria-hidden='true'
+        />
       </div>
     </div>
   )

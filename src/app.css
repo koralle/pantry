@@ -660,6 +660,47 @@ body {
 
 .pantry-detail__skeleton-block {
   min-block-size: 4rem;
+  padding: 0;
+  border: 0;
+}
+
+.pantry-detail__skeleton-block--note {
+  min-block-size: 5.5rem;
+}
+
+.pantry-detail__skeleton-block--dates {
+  min-block-size: 4.5rem;
+}
+
+.pantry-detail__skeleton-line {
+  padding: 0;
+  border: 0;
+  min-block-size: 0.875rem;
+}
+
+.pantry-detail__skeleton-line--nav {
+  inline-size: 5.5rem;
+  min-block-size: 1rem;
+}
+
+.pantry-detail__skeleton-line--title {
+  inline-size: min(100%, 22rem);
+  min-block-size: 2rem;
+}
+
+.pantry-detail__skeleton-line--url {
+  inline-size: min(100%, 18rem);
+  min-block-size: 1rem;
+}
+
+.pantry-detail__skeleton-line--tags {
+  inline-size: min(100%, 12rem);
+  min-block-size: 1.75rem;
+}
+
+.pantry-detail__skeleton-line--action {
+  inline-size: 5.5rem;
+  min-block-size: 2.75rem;
 }
 
 .pantry-workbench {
