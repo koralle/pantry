@@ -338,6 +338,234 @@ body {
   }
 }
 
+.pantry-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pantry-list-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-block-end: 1.25rem;
+}
+
+.pantry-list-toolbar__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pantry-list-toolbar__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.pantry-list-toolbar__new {
+  color: var(--pantry-accent);
+  text-decoration: none;
+  min-block-size: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.pantry-list-toolbar__search {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pantry-list-toolbar__search input {
+  flex: 1;
+  min-inline-size: 12rem;
+  min-block-size: 44px;
+  border: 1px solid var(--pantry-line);
+  border-radius: var(--pantry-radius-box);
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  font: inherit;
+}
+
+.pantry-list-toolbar__search button,
+.pantry-list-toolbar__group button,
+.pantry-load-more,
+.pantry-tag-chip {
+  min-block-size: 44px;
+  border: 1px solid var(--pantry-line);
+  border-radius: var(--pantry-radius-box);
+  background: #fff;
+  color: var(--pantry-ink);
+  cursor: pointer;
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+}
+
+.pantry-list-toolbar__group button[aria-pressed='true'] {
+  border-color: var(--pantry-accent);
+  background: var(--pantry-accent-soft);
+  color: var(--pantry-accent);
+  font-weight: 600;
+}
+
+.pantry-list-toolbar__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+}
+
+.pantry-list-toolbar__group {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.pantry-list-toolbar__sort,
+.pantry-list-toolbar__add-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--pantry-muted);
+  font-size: 0.875rem;
+}
+
+.pantry-list-toolbar__sort select,
+.pantry-list-toolbar__add-tag select {
+  min-block-size: 44px;
+  border: 1px solid var(--pantry-line);
+  border-radius: var(--pantry-radius-box);
+  background: #fff;
+  font: inherit;
+  padding: 0.375rem 0.5rem;
+  color: var(--pantry-ink);
+}
+
+.pantry-list-toolbar__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pantry-tag-chip {
+  border-color: color-mix(in oklab, var(--pantry-accent) 35%, var(--pantry-line));
+  background: color-mix(in oklab, var(--pantry-accent) 8%, white);
+}
+
+.pantry-bookmark-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pantry-bookmark-table th,
+.pantry-bookmark-table td {
+  border-block-end: 1px solid var(--pantry-line);
+  padding: 0.75rem 0.5rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+.pantry-bookmark-table th {
+  color: var(--pantry-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.pantry-bookmark-row-link {
+  color: var(--pantry-ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+}
+
+.pantry-bookmark-row-link--muted {
+  color: var(--pantry-muted);
+  font-size: 0.875rem;
+}
+
+.pantry-bookmark-table-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pantry-bookmark-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pantry-bookmark-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  text-decoration: none;
+  color: var(--pantry-ink);
+  min-block-size: 5.5rem;
+}
+
+.pantry-bookmark-card__title {
+  font-weight: 700;
+}
+
+.pantry-bookmark-card__url {
+  color: var(--pantry-muted);
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pantry-bookmark-card__note {
+  color: var(--pantry-muted);
+  font-size: 0.875rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pantry-bookmark-list__partial {
+  margin-block-start: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pantry-load-more {
+  border-color: var(--pantry-accent);
+  color: var(--pantry-accent);
+  font-weight: 600;
+  min-inline-size: 12rem;
+}
+
+.pantry-load-more:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (min-width: 40rem) {
+  .pantry-bookmark-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
