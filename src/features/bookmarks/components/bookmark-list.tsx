@@ -11,6 +11,7 @@ import { touchTagLastUsed } from '../../tags/tag.function'
 import { fetchBookmarks } from '../bookmark.function'
 import { readListLayout, writeListLayout } from '../list-layout-preference'
 import type { ListLayout } from '../list-layout-preference'
+import { shortenUrl } from '../shorten-url'
 import { BookmarkTable } from './bookmark-table'
 
 const indexRouteApi = getRouteApi('/_protected/')
@@ -49,17 +50,6 @@ function ListLoading({ layout }: { readonly layout: ListLayout }) {
   )
 }
 
-function shortenUrl(url: string): string {
-  try {
-    const parsed = new URL(url)
-    const path = parsed.pathname === '/' ? '' : parsed.pathname
-    const display = `${parsed.host}${path}`
-    return display.length > 56 ? `${display.slice(0, 55)}…` : display
-  } catch {
-    return url.length > 56 ? `${url.slice(0, 55)}…` : url
-  }
-}
-
 function BookmarkCards({ bookmarks }: { readonly bookmarks: BookmarkSelectType[] }) {
   return (
     <ul className='pantry-bookmark-cards'>
@@ -88,8 +78,8 @@ function shelfTitle(search: BookmarkSearchSchema): string {
   return 'すべて'
 }
 
-function hasSearchQuery(search: BookmarkSearchSchema): boolean {
-  return Boolean(search.q?.trim())
+function hasActiveConditions(search: BookmarkSearchSchema): boolean {
+  return Boolean(search.q?.trim()) || (search.tags !== undefined && search.tags.length > 0)
 }
 
 function buildListSearch(
@@ -319,15 +309,20 @@ function BookmarkListResults({
   }, [initial, pageLimit])
 
   if (items.length === 0) {
-    if (hasSearchQuery(search)) {
+    if (hasActiveConditions(search)) {
+      const hasQ = Boolean(search.q?.trim())
+      const hasTags = search.tags !== undefined && search.tags.length > 0
       return (
         <UiEmpty
           title='条件に合うブックマークがありません'
           action={
             <Link
               to='/'
-              search={buildListSearch(search, { clearQ: true })}>
-              検索をクリア
+              search={buildListSearch(search, {
+                clearQ: hasQ,
+                clearTags: hasTags
+              })}>
+              条件をクリア
             </Link>
           }
         />
@@ -401,11 +396,7 @@ function BookmarkListResults({
 }
 
 function useListLayout() {
-  const [layout, setLayout] = useState<ListLayout>('table')
-
-  useEffect(() => {
-    setLayout(readListLayout())
-  }, [])
+  const [layout, setLayout] = useState<ListLayout>(() => readListLayout())
 
   const changeLayout = (next: ListLayout) => {
     setLayout(next)

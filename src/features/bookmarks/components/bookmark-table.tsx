@@ -2,20 +2,10 @@ import { Link } from '@tanstack/react-router'
 
 import { BookmarkSelectType } from '../../../db/schema/bookmark'
 import { formatDateTime } from '../../../lib/format-date'
+import { shortenUrl } from '../shorten-url'
 
 interface BookmarkTableProps {
   readonly bookmarks: BookmarkSelectType[]
-}
-
-function shortenUrl(url: string): string {
-  try {
-    const parsed = new URL(url)
-    const path = parsed.pathname === '/' ? '' : parsed.pathname
-    const display = `${parsed.host}${path}`
-    return display.length > 48 ? `${display.slice(0, 47)}…` : display
-  } catch {
-    return url.length > 48 ? `${url.slice(0, 47)}…` : url
-  }
 }
 
 export function BookmarkTable({ bookmarks }: BookmarkTableProps) {
@@ -44,7 +34,7 @@ export function BookmarkTable({ bookmarks }: BookmarkTableProps) {
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
                 className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
-                {shortenUrl(bookmark.url)}
+                {shortenUrl(bookmark.url, 48)}
               </Link>
             </td>
             <td>
