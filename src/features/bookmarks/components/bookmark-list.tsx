@@ -97,6 +97,20 @@ function hasActiveConditions(search: BookmarkSearchSchema): boolean {
   return Boolean(search.q?.trim()) || (search.tags !== undefined && search.tags.length > 0)
 }
 
+function resolveSearchPatch<T>(
+  clear: boolean | undefined,
+  patchValue: T | undefined,
+  currentValue: T | undefined
+): T | undefined {
+  if (clear) {
+    return undefined
+  }
+  if (patchValue !== undefined) {
+    return patchValue
+  }
+  return currentValue
+}
+
 function buildListSearch(
   current: BookmarkSearchSchema,
   patch: {
@@ -116,19 +130,8 @@ function buildListSearch(
     sort: patch.sort ?? current.sort
   }
 
-  let {q} = current
-  if (patch.clearQ) {
-    q = undefined
-  } else if (patch.q !== undefined) {
-    ({ q } = patch)
-  }
-
-  let {tags} = current
-  if (patch.clearTags) {
-    tags = undefined
-  } else if (patch.tags !== undefined) {
-    ({ tags } = patch)
-  }
+  const q = resolveSearchPatch(patch.clearQ, patch.q, current.q)
+  const tags = resolveSearchPatch(patch.clearTags, patch.tags, current.tags)
 
   if (q !== undefined && q !== '') {
     next.q = q
