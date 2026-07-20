@@ -6,15 +6,16 @@ import { ensureSession } from '../../features/auth/auth.function'
 import { fetchBookmarks } from '../../features/bookmarks/bookmark.function'
 import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
 import { EntranceBoxes } from '../../features/tags/components/entrance-boxes'
+import { bookmarkListLoaderDeps } from './-lib/bookmark-list-loader-deps'
 import { bookmarkSearchSchema } from './-lib/bookmark-search-schema'
 
 export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
-  loader: async ({ location }) => {
+  loaderDeps: ({ search }) => bookmarkListLoaderDeps(search),
+  loader: async ({ deps }) => {
     const { user } = await ensureSession()
-    const search = v.parse(bookmarkSearchSchema, location.search)
 
-    if (search.view === 'entrance') {
+    if (deps.view === 'entrance') {
       return {
         user,
         bookmarksPromise: undefined
@@ -23,12 +24,12 @@ export const Route = createFileRoute('/_protected/')({
 
     const bookmarksPromise = fetchBookmarks({
       data: {
-        tagMode: search.tagMode,
-        sort: search.sort,
-        limit: search.limit,
-        offset: search.offset,
-        ...(search.q !== undefined ? { q: search.q } : {}),
-        ...(search.tags !== undefined ? { tagNames: search.tags } : {})
+        tagMode: deps.tagMode,
+        sort: deps.sort,
+        limit: deps.limit,
+        offset: deps.offset,
+        ...(deps.q !== undefined ? { q: deps.q } : {}),
+        ...(deps.tags !== undefined ? { tagNames: deps.tags } : {})
       }
     })
 
