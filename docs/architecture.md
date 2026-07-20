@@ -25,7 +25,7 @@
 - アプリケーション境界: TanStack Start Server Function（`src/features/`）
 - 認証: Better AuthのCookieセッション
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。
-- Worker環境変数: `TURSO_DATABASE_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
+- Worker環境変数: `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
 - DBマイグレーション: Drizzleの生成物をTursoへ適用する。D1 bindingは使わない。
 
 ## 4. ドメインモデル

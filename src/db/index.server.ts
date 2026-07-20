@@ -9,7 +9,8 @@ import { tagsTable } from './schema/tag'
 
 export const db = drizzle({
   connection: {
-    url: env.DATABASE_URL
+    authToken: env.TURSO_AUTH_TOKEN,
+    url: env.TURSO_CONNECTION_URL
   },
   schema: {
     ...authTables,
@@ -22,7 +23,8 @@ export const db = drizzle({
 export const getDB = createServerOnlyFn(() =>
   drizzle({
     connection: {
-      url: env.DATABASE_URL
+      authToken: env.TURSO_AUTH_TOKEN,
+      url: env.TURSO_CONNECTION_URL
     },
     schema: {
       ...authTables,
