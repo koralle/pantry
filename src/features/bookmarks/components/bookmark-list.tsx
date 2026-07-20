@@ -116,8 +116,19 @@ function buildListSearch(
     sort: patch.sort ?? current.sort
   }
 
-  const q = patch.clearQ ? undefined : (patch.q !== undefined ? patch.q : current.q)
-  const tags = patch.clearTags ? undefined : (patch.tags !== undefined ? patch.tags : current.tags)
+  let {q} = current
+  if (patch.clearQ) {
+    q = undefined
+  } else if (patch.q !== undefined) {
+    ({ q } = patch)
+  }
+
+  let {tags} = current
+  if (patch.clearTags) {
+    tags = undefined
+  } else if (patch.tags !== undefined) {
+    ({ tags } = patch)
+  }
 
   if (q !== undefined && q !== '') {
     next.q = q
