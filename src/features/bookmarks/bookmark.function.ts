@@ -9,12 +9,15 @@ import { bookmarkTagsTable } from '../../db/schema/bookmark-tag'
 import { tagsTable } from '../../db/schema/tag'
 import { offsetPaginationQuerySchema } from '../../schemas/pagination'
 import { ensureSession } from '../auth/auth.function'
+import { attachTagsToBookmarks } from './attach-bookmark-tags'
+import type { BookmarkListItem } from './attach-bookmark-tags'
 import { normalizeListQuery } from './bookmark-list-query'
 import { addBookmarkInputSchema, updateBookmarkInputSchema } from './bookmark.schema'
 import { fetchPageTitle } from './title-fetcher.server'
 
 export { updateBookmarkInputSchema } from './bookmark.schema'
 export type { FetchBookmarksInput } from './bookmark-list-query'
+export type { BookmarkListItem, BookmarkListTag } from './attach-bookmark-tags'
 
 const fetchBookmarksInputSchema = v.object({
   ...offsetPaginationQuerySchema.entries,
@@ -26,7 +29,7 @@ const fetchBookmarksInputSchema = v.object({
 
 export const fetchBookmarks = createServerFn({ method: 'GET' })
   .validator(fetchBookmarksInputSchema)
-  .handler(async (ctx) => {
+  .handler(async (ctx): Promise<BookmarkListItem[]> => {
     const session = await ensureSession()
     const { q, tagNames, tagMode, sort, limit, offset } = normalizeListQuery({
       tagMode: ctx.data.tagMode,
@@ -67,13 +70,36 @@ export const fetchBookmarks = createServerFn({ method: 'GET' })
       conditions.push(inArray(bookmarkTable.id, matchingIds))
     }
 
-    return db
+    const bookmarks = await db
       .select()
       .from(bookmarkTable)
       .where(and(...conditions))
       .orderBy(sort === 'newest' ? desc(bookmarkTable.createdAt) : desc(bookmarkTable.updatedAt))
       .limit(limit)
       .offset(offset)
+
+    if (bookmarks.length === 0) {
+      return []
+    }
+
+    const bookmarkIds = bookmarks.map((bookmark) => bookmark.id)
+    const tagRows = await db
+      .select({
+        bookmarkId: bookmarkTagsTable.bookmarkId,
+        id: tagsTable.id,
+        name: tagsTable.name
+      })
+      .from(bookmarkTagsTable)
+      .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+      .where(
+        and(
+          eq(tagsTable.userId, session.user.id),
+          inArray(bookmarkTagsTable.bookmarkId, bookmarkIds)
+        )
+      )
+      .orderBy(tagsTable.name)
+
+    return attachTagsToBookmarks(bookmarks, tagRows)
   })
 
 export const addBookmark = createServerFn({ method: 'POST' })

@@ -5,10 +5,10 @@ import type { FallbackProps } from 'react-error-boundary'
 
 import { PantryMotion } from '../../../components/pantry-motion'
 import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
-import type { BookmarkSelectType } from '../../../db/schema/bookmark'
 import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
 import type { ShelfTag } from '../../tags/tag-shelf'
 import { touchTagLastUsed } from '../../tags/tag.function'
+import type { BookmarkListItem } from '../attach-bookmark-tags'
 import { fetchBookmarks } from '../bookmark.function'
 import { readListLayout, writeListLayout } from '../list-layout-preference'
 import type { ListLayout } from '../list-layout-preference'
@@ -62,7 +62,7 @@ function BookmarkCards({
   bookmarks,
   detailSearch
 }: {
-  readonly bookmarks: BookmarkSelectType[]
+  readonly bookmarks: BookmarkListItem[]
   readonly detailSearch: { tags?: string[] }
 }) {
   return (
@@ -78,6 +78,15 @@ function BookmarkCards({
             <span className='pantry-bookmark-card__url'>{shortenUrl(bookmark.url)}</span>
             {bookmark.note ? (
               <span className='pantry-bookmark-card__note'>{bookmark.note}</span>
+            ) : null}
+            {bookmark.tags.length > 0 ? (
+              <ul className='pantry-bookmark-tags'>
+                {bookmark.tags.map((tag) => (
+                  <li key={tag.id}>
+                    <span className='pantry-tag-chip pantry-tag-chip--label'>{tag.name}</span>
+                  </li>
+                ))}
+              </ul>
             ) : null}
           </Link>
         </li>
@@ -321,7 +330,7 @@ function BookmarkListResults({
   search,
   pageLimit
 }: {
-  readonly bookmarkPromise: Promise<BookmarkSelectType[]>
+  readonly bookmarkPromise: Promise<BookmarkListItem[]>
   readonly layout: ListLayout
   readonly search: BookmarkSearchSchema
   readonly pageLimit: number
@@ -496,7 +505,7 @@ function BookmarkListFrame({
   readonly layout: ListLayout
   readonly changeLayout: (layout: ListLayout) => void
   readonly shelfTagsPromise: Promise<ShelfTag[]>
-  readonly bookmarksPromise: Promise<BookmarkSelectType[]>
+  readonly bookmarksPromise: Promise<BookmarkListItem[]>
 }) {
   const shelfTags = use(shelfTagsPromise)
   const router = useRouter()

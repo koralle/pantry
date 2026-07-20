@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router'
 
-import { BookmarkSelectType } from '../../../db/schema/bookmark'
 import { formatDateTime } from '../../../lib/format-date'
+import type { BookmarkListItem } from '../attach-bookmark-tags'
 import { shortenUrl } from '../shorten-url'
 
 interface BookmarkTableProps {
-  readonly bookmarks: BookmarkSelectType[]
+  readonly bookmarks: BookmarkListItem[]
   readonly detailSearch?: { tags?: string[] }
 }
 
@@ -16,6 +16,7 @@ export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTablePro
         <tr>
           <th>タイトル</th>
           <th>URL</th>
+          <th>タグ</th>
           <th>最終更新</th>
         </tr>
       </thead>
@@ -39,6 +40,19 @@ export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTablePro
                 className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
                 {shortenUrl(bookmark.url, 48)}
               </Link>
+            </td>
+            <td>
+              {bookmark.tags.length > 0 ? (
+                <ul className='pantry-bookmark-tags'>
+                  {bookmark.tags.map((tag) => (
+                    <li key={tag.id}>
+                      <span className='pantry-tag-chip pantry-tag-chip--label'>{tag.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className='pantry-bookmark-tags__empty'>—</span>
+              )}
             </td>
             <td>
               <Link
