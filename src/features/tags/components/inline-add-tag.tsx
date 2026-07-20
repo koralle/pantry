@@ -41,24 +41,36 @@ export function InlineAddTag() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor='inline-add-tag-name'>
-        新しいタグ
-        <Input
-          id='inline-add-tag-name'
-          value={name}
-          type='text'
-          onValueChange={(newValue) => {
-            setName(newValue)
-          }}
-        />
-      </label>
-      <button
-        type='submit'
-        disabled={isPending}>
-        {isPending ? '追加中...' : '追加'}
-      </button>
-      {tagError != null && <p role='alert'>{tagError}</p>}
+    <form
+      className='pantry-inline-add-tag'
+      onSubmit={handleSubmit}>
+      <div className='pantry-field'>
+        <label htmlFor='inline-add-tag-name'>クイック追加</label>
+        <div className='pantry-field__url-row'>
+          <Input
+            id='inline-add-tag-name'
+            value={name}
+            type='text'
+            onValueChange={(newValue) => {
+              setName(newValue)
+            }}
+            disabled={isPending}
+          />
+          <button
+            type='submit'
+            className='pantry-button pantry-button--secondary'
+            disabled={isPending}>
+            {isPending ? '追加中...' : '追加'}
+          </button>
+        </div>
+      </div>
+      {tagError != null ? (
+        <p
+          className='pantry-field__error'
+          role='alert'>
+          {tagError}
+        </p>
+      ) : null}
     </form>
   )
 }

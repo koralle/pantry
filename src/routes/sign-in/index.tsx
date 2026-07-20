@@ -38,9 +38,12 @@ function RouteComponent() {
   }
 
   return (
-    <>
-      <h1>Sign In</h1>
-      <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
-    </>
+    <div className='pantry-sign-in'>
+      <div className='pantry-sign-in__panel'>
+        <p className='pantry-sign-in__brand'>Pantry</p>
+        <p className='pantry-sign-in__tagline'>自分の棚に入る</p>
+        <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
+      </div>
+    </div>
   )
 }

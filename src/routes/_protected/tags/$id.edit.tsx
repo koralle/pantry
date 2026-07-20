@@ -1,9 +1,14 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { use, useActionState } from 'react'
+import { createFileRoute, Link, useNavigate, useRouter } from '@tanstack/react-router'
+import { Suspense, use, useActionState, useState } from 'react'
+import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 import * as v from 'valibot'
 
+import { UiError, UiLoading } from '../../../components/ui-state'
+import type { TagSelectType } from '../../../db/schema/tag'
+import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { getTag, updateTag } from '../../../features/tags/tag.function'
 
 const tagIdParamSchema = v.pipe(v.string(), v.transform(Number), v.integer('Invalid tag id'))
@@ -20,13 +25,38 @@ export const Route = createFileRoute('/_protected/tags/$id/edit')({
   component: RouteComponent
 })
 
+function EditError({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <UiError
+      message={getErrorMessage(error) ?? 'タグの読み込みに失敗しました'}
+      onRetry={resetErrorBoundary}
+    />
+  )
+}
+
 function RouteComponent() {
   const { tagPromise } = Route.useLoaderData()
   const navigate = useNavigate()
+  const router = useRouter()
 
-  async function submitAction({ id, name }: { id: number; name: string }) {
-    const { id: updatedId } = await updateTag({ data: { id, name } })
+  async function submitAction(input: {
+    id: number
+    name: string
+    pinned: boolean
+    color: string | null
+    sortOrder: number
+  }) {
+    const { id: updatedId } = await updateTag({
+      data: {
+        id: input.id,
+        name: input.name,
+        pinned: input.pinned,
+        color: input.color,
+        sortOrder: input.sortOrder
+      }
+    })
 
+    await router.invalidate()
     await navigate({
       to: '/tags/$id',
       params: { id: String(updatedId) },
@@ -35,30 +65,48 @@ function RouteComponent() {
   }
 
   return (
-    <div>
-      <h1>タグ編集</h1>
+    <div className='pantry-workbench'>
+      <nav className='pantry-workbench__nav'>
+        <Link
+          to='/tags'
+          search={{ limit: 50, offset: 0 }}
+          className='pantry-text-link'>
+          一覧へ戻る
+        </Link>
+      </nav>
 
-      <EditTagForm
-        tagPromise={tagPromise}
-        submitAction={submitAction}
-      />
+      <h1 className='pantry-workbench__title'>タグ編集</h1>
+      <p className='pantry-workbench__lead'>名前・ピン・色・並び順を更新します</p>
 
-      <Link
-        to='/tags'
-        search={{ limit: 50, offset: 0 }}>
-        一覧へ戻る
-      </Link>
+      <ErrorBoundary FallbackComponent={EditError}>
+        <Suspense fallback={<UiLoading label='タグを読み込み中' />}>
+          <EditTagForm
+            tagPromise={tagPromise}
+            submitAction={submitAction}
+          />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   )
 }
 
 interface EditTagFormProps {
-  readonly tagPromise: Promise<{ id: number; name: string }>
-  readonly submitAction: (input: { id: number; name: string }) => Promise<void>
+  readonly tagPromise: Promise<TagSelectType>
+  readonly submitAction: (input: {
+    id: number
+    name: string
+    pinned: boolean
+    color: string | null
+    sortOrder: number
+  }) => Promise<void>
 }
 
 function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
   const tag = use(tagPromise)
+  const [pinned, setPinned] = useState(tag.pinned)
+  const [color, setColor] = useState<string | null>(tag.color)
+  const [sortOrder, setSortOrder] = useState(tag.sortOrder)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const editTagFormSchema = v.object({
     name: v.string()
@@ -71,23 +119,47 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
     schema: editTagFormSchema
   })
 
-  const [_, throwError, isPending] = useActionState(async () => {
+  const [, throwError, isPending] = useActionState(async () => {
+    setFormError(null)
     const currentRawName = getInput(editTagForm, { path: ['name'] }) ?? ''
 
-    await submitAction({ id: tag.id, name: currentRawName })
+    try {
+      await submitAction({
+        id: tag.id,
+        name: currentRawName,
+        pinned,
+        color,
+        sortOrder
+      })
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'タグの更新に失敗しました')
+    }
   }, null)
 
   return (
-    <form action={throwError}>
-      <fieldset>
-        <legend>タグ編集</legend>
+    <form
+      className='pantry-workbench-form'
+      action={throwError}>
+      {formError != null ? (
+        <div
+          className='pantry-form-summary'
+          role='alert'
+          aria-live='polite'>
+          <p>{formError}</p>
+        </div>
+      ) : null}
+
+      <fieldset
+        className='pantry-workbench-form__fields'
+        disabled={isPending}>
+        <legend className='pantry-sr-only'>タグ編集</legend>
 
         <Field
           of={editTagForm}
           path={['name']}>
           {(field) => (
-            <label htmlFor={field.props.name}>
-              タグ名
+            <div className='pantry-field'>
+              <label htmlFor={field.props.name}>タグ名</label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -97,13 +169,24 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
                 }}
                 required
               />
-            </label>
+            </div>
           )}
         </Field>
+
+        <TagEditFields
+          pinned={pinned}
+          color={color}
+          sortOrder={sortOrder}
+          onPinnedChange={setPinned}
+          onColorChange={setColor}
+          onSortOrderChange={setSortOrder}
+          disabled={isPending}
+        />
       </fieldset>
 
       <button
         type='submit'
+        className='pantry-button pantry-button--accent'
         disabled={isPending}>
         {isPending ? '更新中...' : '更新'}
       </button>

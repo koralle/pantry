@@ -11,6 +11,13 @@ interface SignInWithEmailAndPasswordFormProps {
   readonly onSignIn: ({ email, password }: SignInSchema) => Promise<SignInError | null>
 }
 
+function signInErrorMessage(error: SignInError): string {
+  if (error.code === 'INVALID_EMAIL_OR_PASSWORD') {
+    return 'メールまたはパスワードが正しくありません'
+  }
+  return 'サインインに失敗しました。入力内容を確認してください'
+}
+
 export const SignInWithEmailAndPasswordForm = ({
   onSignIn
 }: SignInWithEmailAndPasswordFormProps) => {
@@ -22,7 +29,7 @@ export const SignInWithEmailAndPasswordForm = ({
     schema: signInSchema
   })
 
-  const [_, throwError, isPending] = useActionState(async () => {
+  const [signInError, throwError, isPending] = useActionState(async () => {
     const currentRawEmail = getInput(signInForm, { path: ['email'] }) ?? ''
     const currentRawPassword = getInput(signInForm, { path: ['password'] }) ?? ''
 
@@ -35,16 +42,30 @@ export const SignInWithEmailAndPasswordForm = ({
   }, null)
 
   return (
-    <form action={throwError}>
-      <fieldset>
-        <legend>ログイン</legend>
+    <form
+      className='pantry-workbench-form pantry-sign-in__form'
+      action={throwError}
+      noValidate>
+      {signInError != null ? (
+        <div
+          className='pantry-form-summary'
+          role='alert'
+          aria-live='polite'>
+          <p>{signInErrorMessage(signInError)}</p>
+        </div>
+      ) : null}
+
+      <fieldset
+        className='pantry-workbench-form__fields'
+        disabled={isPending}>
+        <legend className='pantry-sr-only'>ログイン</legend>
 
         <Field
           of={signInForm}
           path={['email']}>
           {(field) => (
-            <label htmlFor={field.props.name}>
-              Email
+            <div className='pantry-field'>
+              <label htmlFor={field.props.name}>Email</label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -55,7 +76,7 @@ export const SignInWithEmailAndPasswordForm = ({
                 autoComplete='email webauthn'
                 required
               />
-            </label>
+            </div>
           )}
         </Field>
 
@@ -63,8 +84,8 @@ export const SignInWithEmailAndPasswordForm = ({
           of={signInForm}
           path={['password']}>
           {(field) => (
-            <label htmlFor={field.props.name}>
-              Password
+            <div className='pantry-field'>
+              <label htmlFor={field.props.name}>Password</label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -75,15 +96,16 @@ export const SignInWithEmailAndPasswordForm = ({
                 autoComplete='current-password webauthn'
                 required
               />
-            </label>
+            </div>
           )}
         </Field>
       </fieldset>
 
       <button
         type='submit'
+        className='pantry-button pantry-button--accent'
         disabled={isPending}>
-        Sign In
+        {isPending ? 'サインイン中...' : 'Sign In'}
       </button>
     </form>
   )

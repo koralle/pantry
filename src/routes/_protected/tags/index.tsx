@@ -1,13 +1,14 @@
-import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
+import { createFileRoute, ErrorComponent, ErrorComponentProps, Link } from '@tanstack/react-router'
 import { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 import * as v from 'valibot'
 
-import { ErrorFallback } from '../../../components/error-fallback'
+import { UiError, UiLoading } from '../../../components/ui-state'
 import { ensureSession } from '../../../features/auth/auth.function'
 import { InlineAddTag } from '../../../features/tags/components/inline-add-tag'
 import { TagTable } from '../../../features/tags/tag-table'
-import { fetchTags } from '../../../features/tags/tag.function'
+import { fetchShelfTags } from '../../../features/tags/tag.function'
 import { offsetPaginationQuerySchema } from '../../../schemas/pagination'
 
 const tagsSearchSchema = v.object({
@@ -16,11 +17,9 @@ const tagsSearchSchema = v.object({
 
 export const Route = createFileRoute('/_protected/tags/')({
   validateSearch: (search) => v.parse(tagsSearchSchema, search),
-  loader: async ({ location }) => {
+  loader: async () => {
     const { user } = await ensureSession()
-    const search = v.parse(tagsSearchSchema, location.search)
-
-    const tagsPromise = fetchTags({ data: { limit: search.limit, offset: search.offset } })
+    const tagsPromise = fetchShelfTags()
 
     return {
       user,
@@ -35,18 +34,37 @@ function TagPageFallbackComponent({ error }: ErrorComponentProps) {
   return <ErrorComponent error={error} />
 }
 
+function TagsError({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <UiError
+      message={getErrorMessage(error) ?? 'タグの読み込みに失敗しました'}
+      onRetry={resetErrorBoundary}
+    />
+  )
+}
+
 function RouteComponent() {
-  const { user, tagsPromise } = Route.useLoaderData()
+  const { tagsPromise } = Route.useLoaderData()
 
   return (
-    <>
-      <h1>{user.name}のタグ一覧</h1>
+    <div className='pantry-tag-admin'>
+      <header className='pantry-tag-admin__header'>
+        <h1 className='pantry-tag-admin__title'>タグ管理</h1>
+        <p className='pantry-tag-admin__lead'>箱のラベル・ピン・色を整える裏方です</p>
+        <Link
+          to='/tags/new'
+          className='pantry-button pantry-button--accent'>
+          新規タグ
+        </Link>
+      </header>
+
       <InlineAddTag />
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Suspense fallback={<p>Loading...</p>}>
+
+      <ErrorBoundary FallbackComponent={TagsError}>
+        <Suspense fallback={<UiLoading label='タグを読み込み中' />}>
           <TagTable tagPromise={tagsPromise} />
         </Suspense>
       </ErrorBoundary>
-    </>
+    </div>
   )
 }
