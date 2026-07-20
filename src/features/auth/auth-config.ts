@@ -1,22 +1,36 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
+import { createServerOnlyFn } from '@tanstack/react-start'
 import { betterAuth } from 'better-auth'
 import { admin } from 'better-auth/plugins'
 import { env } from 'cloudflare:workers'
 
-import { db } from '../../db/index.server'
+import { getDB } from '../../db/index.server'
 import * as schema from '../../db/schema/auth-schema'
 
-export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
-  secret: env.BETTER_AUTH_SECRET,
-  database: drizzleAdapter(db, {
-    provider: 'sqlite',
-    schema: {
-      ...schema
-    }
-  }),
-  emailAndPassword: {
-    enabled: true
-  },
-  plugins: [admin()]
+type Auth = ReturnType<typeof createAuth>
+
+function createAuth() {
+  return betterAuth({
+    baseURL: env.BETTER_AUTH_URL,
+    secret: env.BETTER_AUTH_SECRET,
+    database: drizzleAdapter(getDB(), {
+      provider: 'sqlite',
+      schema: {
+        ...schema
+      }
+    }),
+    emailAndPassword: {
+      enabled: true
+    },
+    plugins: [admin()]
+  })
+}
+
+let cachedAuth: Auth | undefined
+
+export const getAuth = createServerOnlyFn(() => {
+  if (cachedAuth === undefined) {
+    cachedAuth = createAuth()
+  }
+  return cachedAuth
 })
