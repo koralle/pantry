@@ -1,4 +1,5 @@
 import { createFileRoute, ErrorComponent, ErrorComponentProps, Link } from '@tanstack/react-router'
+import { Plus } from 'lucide-react'
 import { Suspense } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -54,6 +55,10 @@ function RouteComponent() {
         <Link
           to='/tags/new'
           className='pantry-button pantry-button--accent'>
+          <Plus
+            size={16}
+            aria-hidden
+          />{' '}
           新規タグ
         </Link>
       </header>

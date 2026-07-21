@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { Pencil, Pin } from 'lucide-react'
 import { use } from 'react'
 
 import { UiEmpty } from '../../components/ui-state'
@@ -59,7 +60,13 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
             <td className='pantry-tag-table__count'>{tag.bookmarkCount}</td>
             <td>
               {tag.pinned ? (
-                <span aria-label='ピン留め中'>ピン</span>
+                <span>
+                  <Pin
+                    size={16}
+                    aria-hidden
+                  />
+                  <span className='pantry-sr-only'>ピン留め中</span>
+                </span>
               ) : (
                 <span className='pantry-tag-table__muted'>—</span>
               )}
@@ -69,6 +76,10 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
                 to='/tags/$id/edit'
                 params={{ id: String(tag.id) }}
                 className='pantry-text-link'>
+                <Pencil
+                  size={16}
+                  aria-hidden
+                />{' '}
                 編集
               </Link>
             </td>
