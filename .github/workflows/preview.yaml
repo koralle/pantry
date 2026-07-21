@@ -1,0 +1,65 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Cloudflare Workers preview
+    runs-on: ubuntu-24.04
+    if: ${{ !github.event.pull_request.draft }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/composite-actions/cache-and-install
+
+      - name: Build
+        shell: bash
+        run: |
+          pnpm run build
+
+      - name: Deploy preview
+        id: deploy-preview
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name pantry-preview-pr-${{ github.event.pull_request.number }}
+
+      - name: Create preview comment
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy-preview.outputs.deployment-url }}
+        shell: bash
+        run: |
+          cat <<EOF_COMMENT > comment.md
+          ## Cloudflare Workers Preview
+
+          | Item | URL |
+          | --- | --- |
+          | Preview deployment | <$DEPLOYMENT_URL> |
+          EOF_COMMENT
+
+      - name: Comment on pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
