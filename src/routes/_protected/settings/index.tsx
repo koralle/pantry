@@ -62,7 +62,7 @@ function RouteComponent() {
           className='pantry-button pantry-button--accent'
           onClick={handleSignOut}
           disabled={isPending}>
-          {isPending ? '退出中...' : 'Sign out'}
+          {isPending ? 'ログアウト中...' : 'ログアウト'}
         </button>
       </section>
 

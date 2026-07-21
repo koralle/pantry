@@ -162,7 +162,7 @@ function Layout() {
               className='pantry-sign-out'
               onClick={handleSignOut}
               disabled={isPending}>
-              退出
+              ログアウト
             </button>
           </div>
         </header>
