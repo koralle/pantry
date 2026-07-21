@@ -13,8 +13,8 @@ jobs:
       contains(github.event.comment.body, '/opencode')
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
       id-token: write
+      contents: write
       pull-requests: write
       issues: write
     steps:
