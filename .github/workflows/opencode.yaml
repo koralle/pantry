@@ -13,6 +13,7 @@ jobs:
       contains(github.event.comment.body, '/opencode')
     runs-on: ubuntu-24.04
     permissions:
+      contents: read
       id-token: write
       pull-requests: write
       issues: write
@@ -28,4 +29,4 @@ jobs:
         env:
           QWEN_API_KEY: ${{ secrets.QWEN_API_KEY }}
         with:
-          model: alibaba-token-plan/qwen3.8-max-preview
+          model: balian-token-plan-personal/qwen3.8-max-preview
