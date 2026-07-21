@@ -1,4 +1,4 @@
-name: OpenCode 
+name: OpenCode
 
 on:
   issue_comment:
@@ -14,17 +14,18 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
+      pull-requests: write
+      issues: write
     steps:
-       - name: Checkout repository
-         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-         with:
-           fetch-depth: 1
-           persist-credentials: false
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
-       - name: Run OpenCode
+      - name: Run OpenCode
         uses: anomalyco/opencode/github@latest
         env:
           QWEN_API_KEY: ${{ secrets.QWEN_API_KEY }}
         with:
           model: alibaba-token-plan/qwen3.8-max-preview
-
