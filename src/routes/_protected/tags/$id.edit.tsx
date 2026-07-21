@@ -1,6 +1,7 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { createFileRoute, Link, useNavigate, useRouter } from '@tanstack/react-router'
+import { ArrowLeft, CircleAlert } from 'lucide-react'
 import { Suspense, use, useActionState, useState } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -71,6 +72,10 @@ function RouteComponent() {
           to='/tags'
           search={{ limit: 50, offset: 0 }}
           className='pantry-text-link'>
+          <ArrowLeft
+            size={16}
+            aria-hidden
+          />{' '}
           一覧へ戻る
         </Link>
       </nav>
@@ -145,7 +150,13 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
           className='pantry-form-summary'
           role='alert'
           aria-live='polite'>
-          <p>{formError}</p>
+          <p>
+            <CircleAlert
+              size={16}
+              aria-hidden
+            />{' '}
+            {formError}
+          </p>
         </div>
       ) : null}
 

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter, useRouterState } from '@tanstack/react-router'
+import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 import { Suspense, use } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -45,14 +46,34 @@ function RouteComponent() {
 
   return (
     <div className='pantry-workbench'>
-      {newTagCreated ? <output className='pantry-flash'>タグを登録しました</output> : null}
-      {tagUpdated ? <output className='pantry-flash'>タグを更新しました</output> : null}
+      {newTagCreated ? (
+        <output className='pantry-flash'>
+          <CircleCheck
+            size={16}
+            aria-hidden
+          />{' '}
+          タグを登録しました
+        </output>
+      ) : null}
+      {tagUpdated ? (
+        <output className='pantry-flash'>
+          <CircleCheck
+            size={16}
+            aria-hidden
+          />{' '}
+          タグを更新しました
+        </output>
+      ) : null}
 
       <nav className='pantry-workbench__nav'>
         <Link
           to='/tags'
           search={{ limit: 50, offset: 0 }}
           className='pantry-text-link'>
+          <ArrowLeft
+            size={16}
+            aria-hidden
+          />{' '}
           一覧へ戻る
         </Link>
       </nav>
@@ -96,7 +117,19 @@ function TagDetail({
       <dl className='pantry-tag-detail__meta'>
         <div>
           <dt>ピン</dt>
-          <dd>{tag.pinned ? '留めている' : 'なし'}</dd>
+          <dd>
+            {tag.pinned ? (
+              <>
+                <Pin
+                  size={16}
+                  aria-hidden
+                />{' '}
+                留めている
+              </>
+            ) : (
+              'なし'
+            )}
+          </dd>
         </div>
         <div>
           <dt>並び順</dt>
@@ -109,12 +142,20 @@ function TagDetail({
           to='/'
           search={tagShelfSearch(tag.name)}
           className='pantry-button pantry-button--accent'>
+          <Bookmark
+            size={16}
+            aria-hidden
+          />{' '}
           この棚のブックマークを見る
         </Link>
         <Link
           to='/tags/$id/edit'
           params={{ id }}
           className='pantry-button pantry-button--secondary'>
+          <Pencil
+            size={16}
+            aria-hidden
+          />{' '}
           編集
         </Link>
       </div>

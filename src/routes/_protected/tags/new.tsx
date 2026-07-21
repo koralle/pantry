@@ -1,6 +1,7 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { ArrowLeft, CircleAlert } from 'lucide-react'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
@@ -43,6 +44,10 @@ function RouteComponent() {
           to='/tags'
           search={{ limit: 50, offset: 0 }}
           className='pantry-text-link'>
+          <ArrowLeft
+            size={16}
+            aria-hidden
+          />{' '}
           一覧へ戻る
         </Link>
       </nav>
@@ -110,7 +115,13 @@ function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
           className='pantry-form-summary'
           role='alert'
           aria-live='polite'>
-          <p>{formError}</p>
+          <p>
+            <CircleAlert
+              size={16}
+              aria-hidden
+            />{' '}
+            {formError}
+          </p>
         </div>
       ) : null}
 
