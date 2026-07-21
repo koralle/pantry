@@ -1,0 +1,48 @@
+name: UIUX
+description: 既存機能の見た目・操作感・モーションを改善する
+labels: [uiux]
+body:
+  - type: textarea
+    id: friction
+    attributes:
+      label: 今の摩擦
+      description: いまどこが使いにくい・違和感があるか
+    validations:
+      required: true
+  - type: textarea
+    id: desired-feel
+    attributes:
+      label: 目指す感触
+      description: どう感じられるようにしたいか
+    validations:
+      required: true
+  - type: textarea
+    id: screens
+    attributes:
+      label: 対象画面・ルート
+      description: 影響する画面やルート
+      placeholder: 例: /bookmarks、一覧のタグ棚
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: スクショ / 参考
+      description: 任意。現状のスクショや参考リンク
+    validations:
+      required: false
+  - type: textarea
+    id: motion-a11y
+    attributes:
+      label: Motion / a11y メモ
+      description: 任意。アニメーション、reduced motion、キーボード操作など
+    validations:
+      required: false
+  - type: input
+    id: design-doc
+    attributes:
+      label: Design doc
+      description: 任意。docs/superpowers/specs/ へのパス
+      placeholder: docs/superpowers/specs/YYYY-MM-DD-topic-design.md
+    validations:
+      required: false

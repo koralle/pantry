@@ -1,0 +1,47 @@
+name: Bug
+description: 壊れている、または意図と違う挙動を報告する
+labels: [bug]
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する振る舞い
+      description: 本来どうなるべきか
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の振る舞い
+      description: いま何が起きているか
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 再現に必要な操作を順番に
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 環境
+      description: 任意。分かれば選択
+      options:
+        - local
+        - preview
+        - production
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: 関連メモ
+      description: 任意。ログ、スクショ、関連 Issue など
+    validations:
+      required: false
