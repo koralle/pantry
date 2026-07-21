@@ -1,73 +1,17 @@
 pre-commit:
   piped: true
   jobs:
-    - group:
-        parallel: true
-        jobs:
-          - name: Format with Oxfmt (root)
-            glob:
-              - 'vite.config.ts'
-              - 'oxfmt.config.ts'
-              - 'oxlint.config.ts'
-              - 'package.json'
-              - 'tsconfig.json'
-              - 'wrangler.jsonc'
-            run: |
-              pnpm oxfmt {staged_files} --write
-            stage_fixed: true
-
-          - name: Format with Oxfmt (src)
-            root: src
-            glob:
-              - '**/*.{ts,tsx}'
-            exclude:
-              - 'src/routeTree.gen.ts'
-            run: |
-              pnpm oxfmt {staged_files} --write
-            stage_fixed: true
-
-          - name: Format with Oxfmt (scripts)
-            root: scripts
-            glob:
-              - '**/*.ts'
-            run: |
-              pnpm oxfmt {staged_files} --write
-            stage_fixed: true
-
-          - name: Format with Oxfmt (.agents)
-            root: .agents
-            glob:
-              - '**/*.md'
-            run: |
-              pnpm oxfmt {staged_files} --write
-            stage_fixed: true
-
-          - name: Format with Oxfmt (docs)
-            root: docs
-            glob:
-              - '**/*.md'
-            run: |
-              pnpm oxfmt {staged_files} --write
-            stage_fixed: true
+    - name: Format with Oxfmt
+      run: |
+        pnpm oxfmt {staged_files} --write --no-error-on-unmatched-pattern
+      stage_fixed: true
 
     - group:
         parallel: true
         jobs:
-          - name: Lint with Oxlint (root)
-            glob:
-              - 'vite.config.ts'
-              - 'oxfmt.config.ts'
-              - 'oxlint.config.ts'
+          - name: Lint with Oxlint
             run: |
-              pnpm oxlint {staged_files} --fix
-            stage_fixed: true
-
-          - name: Lint with Oxlint (src)
-            root: src
-            glob:
-              - '**/*.{ts,tsx}'
-            run: |
-              pnpm oxlint {staged_files} --fix
+              pnpm oxlint {staged_files} --fix --no-error-on-unmatched-pattern
             stage_fixed: true
 
           - name: Typecheck
