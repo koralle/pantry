@@ -8,6 +8,7 @@ import {
   useRouter,
   useSearch
 } from '@tanstack/react-router'
+import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 import { Suspense, useState, useTransition } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -113,9 +114,19 @@ function Layout() {
           <Link
             to='/tags'
             search={{ limit: 50, offset: 0 }}>
+            <Tags
+              size={16}
+              aria-hidden
+            />{' '}
             タグ管理
           </Link>
-          <Link to='/settings'>設定</Link>
+          <Link to='/settings'>
+            <Settings
+              size={16}
+              aria-hidden
+            />{' '}
+            設定
+          </Link>
         </div>
       </aside>
 
@@ -132,13 +143,25 @@ function Layout() {
             <Dialog.Root
               open={shelfOpen}
               onOpenChange={setShelfOpen}>
-              <Dialog.Trigger className='pantry-shelf-changer'>棚を変える</Dialog.Trigger>
+              <Dialog.Trigger className='pantry-shelf-changer'>
+                <Menu
+                  size={16}
+                  aria-hidden
+                />{' '}
+                棚を変える
+              </Dialog.Trigger>
               <Dialog.Portal>
                 <Dialog.Backdrop className='pantry-shelf-sheet__backdrop' />
                 <Dialog.Popup className='pantry-shelf-sheet'>
                   <div className='pantry-shelf-sheet__header'>
                     <Dialog.Title className='pantry-shelf-sheet__title'>棚を選ぶ</Dialog.Title>
-                    <Dialog.Close className='pantry-shelf-sheet__close'>閉じる</Dialog.Close>
+                    <Dialog.Close className='pantry-shelf-sheet__close'>
+                      <X
+                        size={16}
+                        aria-hidden
+                      />{' '}
+                      閉じる
+                    </Dialog.Close>
                   </div>
                   {renderShelfNav(closeShelf)}
                 </Dialog.Popup>
@@ -154,14 +177,28 @@ function Layout() {
                   ? { tags: indexSearch.tags }
                   : {}
               }>
-              ＋新規
+              <Plus
+                size={16}
+                aria-hidden
+              />{' '}
+              新規
             </Link>
-            <Link to='/settings'>設定</Link>
+            <Link to='/settings'>
+              <Settings
+                size={16}
+                aria-hidden
+              />{' '}
+              設定
+            </Link>
             <button
               type='button'
               className='pantry-sign-out'
               onClick={handleSignOut}
               disabled={isPending}>
+              <LogOut
+                size={16}
+                aria-hidden
+              />{' '}
               ログアウト
             </button>
           </div>
