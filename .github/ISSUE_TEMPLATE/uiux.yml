@@ -21,7 +21,7 @@ body:
     attributes:
       label: 対象画面・ルート
       description: 影響する画面やルート
-      placeholder: 例: /bookmarks、一覧のタグ棚
+      placeholder: '例: /bookmarks、一覧のタグ棚'
     validations:
       required: true
   - type: textarea
