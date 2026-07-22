@@ -40,3 +40,6 @@ api-spec/dist/
 
 # git worktrees
 .worktrees/
+
+## Panda
+styled-system
