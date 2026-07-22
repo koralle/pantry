@@ -11,6 +11,10 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
 
+    "paths": {
+      "styled-system/*": ["./styled-system/*"]
+    },
+
     "noEmit": true
   }
 }

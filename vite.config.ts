@@ -10,7 +10,12 @@ const config = defineConfig({
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     tanstackStart(),
     viteReact()
-  ]
+  ],
+  resolve: {
+    alias: {
+      'styled-system': `${import.meta.dirname}/styled-system`
+    }
+  }
 })
 
 export default config
