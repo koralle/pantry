@@ -10,7 +10,7 @@ export default defineConfig({
     style: 'warn',
     suspicious: 'error'
   },
-  ignorePatterns: ['src/routeTree.gen.ts', 'worker-configuration.d.ts'],
+  ignorePatterns: ['src/routeTree.gen.ts', 'worker-configuration.d.ts', 'postcss.config.cjs'],
   plugins: [
     'eslint',
     'unicorn',
@@ -78,6 +78,7 @@ export default defineConfig({
         'drizzle.config.ts',
         'oxfmt.config.ts',
         'oxlint.config.ts',
+        'panda.config.ts',
         'vite.config.ts',
         'vitest.config.ts'
       ],
