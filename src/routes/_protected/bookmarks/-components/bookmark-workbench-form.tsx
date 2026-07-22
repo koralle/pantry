@@ -1,5 +1,6 @@
 import { Input } from '@base-ui/react'
 import { Field, getAllErrors, getInput, setInput, useForm, validate } from '@formisch/react'
+import { CircleAlert, Download } from 'lucide-react'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
@@ -120,7 +121,13 @@ export function BookmarkWorkbenchForm({
           className='pantry-form-summary'
           role='alert'
           aria-live='polite'>
-          <p>次を確認してください</p>
+          <p>
+            <CircleAlert
+              size={16}
+              aria-hidden
+            />{' '}
+            次を確認してください
+          </p>
           <ul>
             {allSummary.map((message) => (
               <li key={message}>{message}</li>
@@ -158,6 +165,10 @@ export function BookmarkWorkbenchForm({
                     void handleFetchTitle()
                   }}
                   disabled={busy}>
+                  <Download
+                    size={16}
+                    aria-hidden
+                  />{' '}
                   {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
                 </button>
               </div>

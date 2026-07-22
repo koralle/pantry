@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { Globe } from 'lucide-react'
 
 import { formatDateTime } from '../../../lib/format-date'
 import type { BookmarkListItem } from '../attach-bookmark-tags'
@@ -38,6 +39,10 @@ export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTablePro
                 params={{ id: bookmark.id }}
                 search={detailSearch}
                 className='pantry-bookmark-row-link pantry-bookmark-row-link--muted'>
+                <Globe
+                  size={14}
+                  aria-hidden
+                />{' '}
                 {shortenUrl(bookmark.url, 48)}
               </Link>
             </td>

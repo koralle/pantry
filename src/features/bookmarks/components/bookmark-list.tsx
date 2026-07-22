@@ -1,4 +1,5 @@
 import { getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
+import { ChevronDown, LayoutGrid, List, Plus, Search, X } from 'lucide-react'
 import { Suspense, use, useEffect, useId, useState } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -189,6 +190,10 @@ function ListToolbar({
           to='/bookmarks/new'
           search={detailSearchFromList(search)}
           className='pantry-list-toolbar__new'>
+          <Plus
+            size={16}
+            aria-hidden
+          />{' '}
           新規
         </Link>
       </div>
@@ -218,7 +223,13 @@ function ListToolbar({
           }}
           placeholder='タイトル・URL・メモ'
         />
-        <button type='submit'>検索</button>
+        <button type='submit'>
+          <Search
+            size={16}
+            aria-hidden
+          />{' '}
+          検索
+        </button>
       </form>
 
       <div className='pantry-list-toolbar__controls'>
@@ -263,6 +274,10 @@ function ListToolbar({
             onClick={() => {
               onLayoutChange('table')
             }}>
+            <List
+              size={16}
+              aria-hidden
+            />{' '}
             テーブル
           </button>
           <button
@@ -271,6 +286,10 @@ function ListToolbar({
             onClick={() => {
               onLayoutChange('card')
             }}>
+            <LayoutGrid
+              size={16}
+              aria-hidden
+            />{' '}
             カード
           </button>
         </fieldset>
@@ -291,7 +310,10 @@ function ListToolbar({
               patchSearch({ tags: next })
             }}>
             {tagName}
-            <span aria-hidden='true'> ×</span>
+            <X
+              size={14}
+              aria-hidden
+            />
             <span className='pantry-sr-only'>を外す</span>
           </button>
         ))}
@@ -443,6 +465,10 @@ function BookmarkListResults({
               className='pantry-load-more'
               disabled={isLoadingMore}
               onClick={loadMore}>
+              <ChevronDown
+                size={16}
+                aria-hidden
+              />{' '}
               {isLoadingMore ? '読み込み中…' : 'さらに読み込む'}
             </button>
           )}

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { ArrowLeft, LogOut } from 'lucide-react'
 import { useTransition } from 'react'
 
 import { defaultBookmarkSearch } from '../-lib/bookmark-search-schema'
@@ -62,6 +63,10 @@ function RouteComponent() {
           className='pantry-button pantry-button--accent'
           onClick={handleSignOut}
           disabled={isPending}>
+          <LogOut
+            size={16}
+            aria-hidden
+          />{' '}
           {isPending ? 'ログアウト中...' : 'ログアウト'}
         </button>
       </section>
@@ -70,6 +75,10 @@ function RouteComponent() {
         to='/'
         search={defaultBookmarkSearch}
         className='pantry-text-link'>
+        <ArrowLeft
+          size={16}
+          aria-hidden
+        />{' '}
         玄関へ戻る
       </Link>
     </div>

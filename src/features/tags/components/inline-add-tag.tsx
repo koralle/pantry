@@ -1,5 +1,6 @@
 import { Input } from '@base-ui/react'
 import { useNavigate } from '@tanstack/react-router'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import * as v from 'valibot'
 
@@ -60,6 +61,10 @@ export function InlineAddTag() {
             type='submit'
             className='pantry-button pantry-button--secondary'
             disabled={isPending}>
+            <Plus
+              size={16}
+              aria-hidden
+            />{' '}
             {isPending ? '追加中...' : '追加'}
           </button>
         </div>

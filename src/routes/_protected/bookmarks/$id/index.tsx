@@ -6,6 +6,7 @@ import {
   useRouter,
   useRouterState
 } from '@tanstack/react-router'
+import { ArrowLeft, CircleCheck, ExternalLink, Pencil, Trash2, X } from 'lucide-react'
 import { Suspense, use, useState, useTransition } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -119,6 +120,10 @@ function RouteComponent() {
         <div
           className='pantry-flash'
           role='alert'>
+          <CircleCheck
+            size={16}
+            aria-hidden
+          />{' '}
           ブックマークを登録しました
         </div>
       ) : null}
@@ -126,6 +131,10 @@ function RouteComponent() {
         <div
           className='pantry-flash'
           role='alert'>
+          <CircleCheck
+            size={16}
+            aria-hidden
+          />{' '}
           ブックマークを更新しました
         </div>
       ) : null}
@@ -200,6 +209,10 @@ function DetailBody({
           to='/'
           search={listSearch}
           className='pantry-text-link'>
+          <ArrowLeft
+            size={16}
+            aria-hidden
+          />{' '}
           一覧へ戻る
         </Link>
       </nav>
@@ -211,7 +224,11 @@ function DetailBody({
           target='_blank'
           rel='noreferrer'
           className='pantry-detail__url'>
-          {bookmark.url}
+          {bookmark.url}{' '}
+          <ExternalLink
+            size={14}
+            aria-hidden
+          />
         </a>
       </header>
 
@@ -251,6 +268,10 @@ function DetailBody({
           params={{ id: bookmark.id }}
           search={listSearch.tags !== undefined ? { tags: listSearch.tags } : {}}
           className='pantry-button pantry-button--accent'>
+          <Pencil
+            size={16}
+            aria-hidden
+          />{' '}
           編集
         </Link>
 
@@ -265,6 +286,10 @@ function DetailBody({
           <Dialog.Trigger
             className='pantry-button pantry-button--danger'
             disabled={isDeleting}>
+            <Trash2
+              size={16}
+              aria-hidden
+            />{' '}
             削除
           </Dialog.Trigger>
           <Dialog.Portal>
@@ -285,6 +310,10 @@ function DetailBody({
                 <Dialog.Close
                   className='pantry-button pantry-button--secondary'
                   disabled={isDeleting}>
+                  <X
+                    size={16}
+                    aria-hidden
+                  />{' '}
                   キャンセル
                 </Dialog.Close>
                 <button
@@ -292,6 +321,10 @@ function DetailBody({
                   className='pantry-button pantry-button--danger'
                   onClick={handleDelete}
                   disabled={isDeleting}>
+                  <Trash2
+                    size={16}
+                    aria-hidden
+                  />{' '}
                   {isDeleting ? '削除中…' : '削除を確認'}
                 </button>
               </div>

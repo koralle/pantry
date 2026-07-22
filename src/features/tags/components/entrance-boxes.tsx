@@ -1,4 +1,5 @@
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
+import { Package, Plus } from 'lucide-react'
 import { Suspense, use } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
@@ -42,8 +43,20 @@ function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
         title='まだ箱がありません'
         action={
           <div className='pantry-entrance-empty-actions'>
-            <Link to='/tags/new'>タグを作成</Link>
-            <Link to='/bookmarks/new'>新規ブックマーク</Link>
+            <Link to='/tags/new'>
+              <Plus
+                size={16}
+                aria-hidden
+              />{' '}
+              タグを作成
+            </Link>
+            <Link to='/bookmarks/new'>
+              <Plus
+                size={16}
+                aria-hidden
+              />{' '}
+              新規ブックマーク
+            </Link>
           </div>
         }
       />
@@ -66,7 +79,13 @@ function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
               style={tag.color != null ? { backgroundColor: tag.color } : undefined}
               aria-hidden='true'
             />
-            <span className='pantry-entrance-box__name'>{tag.name}</span>
+            <span className='pantry-entrance-box__name'>
+              <Package
+                size={16}
+                aria-hidden
+              />{' '}
+              {tag.name}
+            </span>
             <span className='pantry-entrance-box__count'>{tag.bookmarkCount}件</span>
           </Link>
         </li>

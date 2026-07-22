@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import * as v from 'valibot'
 
@@ -41,6 +42,10 @@ function RouteComponent() {
           to='/'
           search={listSearch}
           className='pantry-text-link'>
+          <ArrowLeft
+            size={16}
+            aria-hidden
+          />{' '}
           一覧へ戻る
         </Link>
       </nav>

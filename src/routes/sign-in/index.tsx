@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router'
+import { Package } from 'lucide-react'
 import * as v from 'valibot'
 
 import { authClient } from '../../features/auth/auth-client'
@@ -40,7 +41,13 @@ function RouteComponent() {
   return (
     <div className='pantry-sign-in'>
       <div className='pantry-sign-in__panel'>
-        <p className='pantry-sign-in__brand'>Pantry</p>
+        <p className='pantry-sign-in__brand'>
+          <Package
+            size={28}
+            aria-hidden
+          />
+          Pantry
+        </p>
         <p className='pantry-sign-in__tagline'>自分の棚に入る</p>
         <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
       </div>

@@ -1,4 +1,5 @@
 import { Input } from '@base-ui/react'
+import { Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import * as v from 'valibot'
 
@@ -77,6 +78,10 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
           ))}
         </div>
         <label htmlFor='tag-selector-query'>
+          <Search
+            size={16}
+            aria-hidden
+          />{' '}
           タグを絞り込む / 新規作成
           <Input
             id='tag-selector-query'
@@ -92,6 +97,10 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
           type='button'
           onClick={handleCreate}
           disabled={isPending}>
+          <Plus
+            size={16}
+            aria-hidden
+          />{' '}
           {isPending ? '作成中...' : 'この名前で作成'}
         </button>
         {error != null && <p role='alert'>{error}</p>}

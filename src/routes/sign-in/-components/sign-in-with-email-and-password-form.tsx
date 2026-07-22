@@ -1,5 +1,6 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
+import { CircleAlert, Lock, LogIn, Mail } from 'lucide-react'
 import { useActionState } from 'react'
 import { parseAsync } from 'valibot'
 
@@ -56,7 +57,13 @@ export const SignInWithEmailAndPasswordForm = ({
           className='pantry-form-summary'
           role='alert'
           aria-live='polite'>
-          <p>{signInErrorMessage(signInError)}</p>
+          <p>
+            <CircleAlert
+              size={16}
+              aria-hidden
+            />{' '}
+            {signInErrorMessage(signInError)}
+          </p>
         </div>
       ) : null}
 
@@ -70,7 +77,13 @@ export const SignInWithEmailAndPasswordForm = ({
           path={['email']}>
           {(field) => (
             <div className='pantry-field'>
-              <label htmlFor={field.props.name}>メール</label>
+              <label htmlFor={field.props.name}>
+                <Mail
+                  size={16}
+                  aria-hidden
+                />{' '}
+                メール
+              </label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -92,7 +105,13 @@ export const SignInWithEmailAndPasswordForm = ({
           path={['password']}>
           {(field) => (
             <div className='pantry-field'>
-              <label htmlFor={field.props.name}>パスワード</label>
+              <label htmlFor={field.props.name}>
+                <Lock
+                  size={16}
+                  aria-hidden
+                />{' '}
+                パスワード
+              </label>
               <Input
                 id={field.props.name}
                 value={field.input}
@@ -114,6 +133,10 @@ export const SignInWithEmailAndPasswordForm = ({
         type='submit'
         className='pantry-button pantry-button--accent'
         disabled={isPending}>
+        <LogIn
+          size={16}
+          aria-hidden
+        />{' '}
         {isPending ? 'サインイン中...' : 'サインイン'}
       </button>
     </form>

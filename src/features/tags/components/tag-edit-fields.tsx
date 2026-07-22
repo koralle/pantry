@@ -1,3 +1,5 @@
+import { Check, Minus, Pin, PinOff, Plus } from 'lucide-react'
+
 import { TAG_COLOR_PALETTE } from '../tag-color-palette'
 
 type TagEditFieldsProps = {
@@ -41,6 +43,17 @@ export function TagEditFields({
           onClick={() => {
             onPinnedChange(!pinned)
           }}>
+          {pinned ? (
+            <PinOff
+              size={16}
+              aria-hidden
+            />
+          ) : (
+            <Pin
+              size={16}
+              aria-hidden
+            />
+          )}{' '}
           {pinLabel(pinned)}
         </button>
       </div>
@@ -71,8 +84,15 @@ export function TagEditFields({
                 aria-label={`色 ${swatch}`}
                 onClick={() => {
                   onColorChange(swatch)
-                }}
-              />
+                }}>
+                {selected ? (
+                  <Check
+                    size={16}
+                    color='#fff'
+                    aria-hidden
+                  />
+                ) : null}
+              </button>
             )
           })}
         </div>
@@ -89,7 +109,10 @@ export function TagEditFields({
             onClick={() => {
               onSortOrderChange(sortOrder - 1)
             }}>
-            −
+            <Minus
+              size={16}
+              aria-hidden
+            />
           </button>
           <input
             id='tag-sort-order'
@@ -113,7 +136,10 @@ export function TagEditFields({
             onClick={() => {
               onSortOrderChange(sortOrder + 1)
             }}>
-            ＋
+            <Plus
+              size={16}
+              aria-hidden
+            />
           </button>
         </div>
       </div>
