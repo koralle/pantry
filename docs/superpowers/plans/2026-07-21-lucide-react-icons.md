@@ -1486,7 +1486,7 @@ import { ArrowLeft, CircleAlert } from 'lucide-react'
 `src/routes/_protected/tags/$id/index.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft, Bookmarks, CircleCheck, Pencil, Pin } from 'lucide-react'
+import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 ```
 
 - [ ] **Step 6: タグ登録フラッシュに CircleCheck**
@@ -1593,7 +1593,9 @@ import { ArrowLeft, Bookmarks, CircleCheck, Pencil, Pin } from 'lucide-react'
           </dd>
 ```
 
-- [ ] **Step 10: 「この棚のブックマークを見る」に Bookmarks**
+- [ ] **Step 10: 「この棚のブックマークを見る」に Bookmark**
+
+> Note: `Bookmarks`（複数形）は lucide-react@1.21.0 に存在しないため `Bookmark`（単数形）を使用する。
 
 次を探す:
 
@@ -1607,7 +1609,7 @@ import { ArrowLeft, Bookmarks, CircleCheck, Pencil, Pin } from 'lucide-react'
 
 ```tsx
           className='pantry-button pantry-button--accent'>
-          <Bookmarks
+          <Bookmark
             size={16}
             aria-hidden
           />{' '}
