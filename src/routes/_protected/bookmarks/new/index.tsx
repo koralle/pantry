@@ -7,6 +7,13 @@ import { BookmarkWorkbenchForm } from '../-components/bookmark-workbench-form'
 import { buildListBackSearch } from '../-lib/list-back-search'
 import { addBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
+import {
+  textLink,
+  workbench,
+  workbenchLead,
+  workbenchNav,
+  workbenchTitle
+} from '../../../../styles/ui'
 
 const bookmarkNewSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
@@ -35,13 +42,13 @@ function RouteComponent() {
 
   return (
     <section
-      className='pantry-workbench'
+      className={workbench}
       aria-label='ブックマーク新規作成'>
-      <nav className='pantry-workbench__nav'>
+      <nav className={workbenchNav}>
         <Link
           to='/'
           search={listSearch}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -50,10 +57,8 @@ function RouteComponent() {
         </Link>
       </nav>
 
-      <h1 className='pantry-workbench__title'>ブックマークをしまう</h1>
-      <p className='pantry-workbench__lead'>
-        URLを入れて、必要ならタイトルを取得してから保存します。
-      </p>
+      <h1 className={workbenchTitle}>ブックマークをしまう</h1>
+      <p className={workbenchLead}>URLを入れて、必要ならタイトルを取得してから保存します。</p>
 
       <BookmarkWorkbenchForm
         mode='new'

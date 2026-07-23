@@ -12,13 +12,202 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 import { Suspense, useState, useTransition } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
+import { css, cx } from 'styled-system/css'
 
 import { UiError, UiLoading } from '../components/ui-state'
 import { authClient } from '../features/auth/auth-client'
 import { getSession } from '../features/auth/auth.function'
 import { ShelfNavAsync } from '../features/tags/components/shelf-nav'
 import { fetchShelfTags } from '../features/tags/tag.function'
+import { button } from '../styles/ui'
 import { defaultBookmarkSearch } from './_protected/-lib/bookmark-search-schema'
+
+const shell = css({
+  display: 'grid',
+  minBlockSize: '100dvh',
+  gridTemplateColumns: '1fr',
+  md: {
+    gridTemplateColumns: '16rem minmax(0, 1fr)'
+  }
+})
+
+const shelfRail = css({
+  display: 'none',
+  md: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4',
+    paddingBlock: '4',
+    paddingInline: '3',
+    borderInlineEndWidth: 'thin',
+    borderInlineEndStyle: 'solid',
+    borderInlineEndColor: 'border.default',
+    background: 'surface.rail'
+  }
+})
+
+const shelfRailNav = css({
+  flex: '1',
+  minBlockSize: '0',
+  overflow: 'auto'
+})
+
+const shelfRailMeta = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+  borderBlockStartWidth: 'thin',
+  borderBlockStartStyle: 'solid',
+  borderBlockStartColor: 'border.default',
+  paddingBlockStart: '3'
+})
+
+const shellContent = css({
+  display: 'flex',
+  flexDirection: 'column',
+  minBlockSize: '100dvh',
+  minInlineSize: '0'
+})
+
+const shellHeader = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  paddingBlock: '3',
+  paddingInline: '4',
+  borderBlockEndWidth: 'thin',
+  borderBlockEndStyle: 'solid',
+  borderBlockEndColor: 'border.default',
+  background: 'surface.header'
+})
+
+const headerRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  flexWrap: 'wrap'
+})
+
+const headerAction = css({
+  color: 'fg.default',
+  textDecoration: 'none',
+  minBlockSize: 'touch',
+  display: 'inline-flex',
+  alignItems: 'center',
+  paddingBlock: '1.5',
+  paddingInline: '2',
+  borderWidth: 'none',
+  background: 'transparent',
+  cursor: 'pointer'
+})
+
+const brand = css({
+  fontWeight: 'bold',
+  letterSpacing: 'wide',
+  color: 'fg.default',
+  textDecoration: 'none',
+  minBlockSize: 'touch',
+  display: 'inline-flex',
+  alignItems: 'center'
+})
+
+const brandMobile = css({
+  md: {
+    display: 'none'
+  }
+})
+
+const shelfChanger = css({
+  color: 'fg.default',
+  textDecoration: 'none',
+  minBlockSize: 'touch',
+  display: 'inline-flex',
+  alignItems: 'center',
+  paddingBlock: '1.5',
+  paddingInline: '2',
+  borderWidth: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  md: {
+    display: 'none'
+  }
+})
+
+const shellMain = css({
+  flex: '1',
+  paddingBlockStart: '5',
+  paddingInline: '4',
+  paddingBlockEnd: '8',
+  md: {
+    paddingBlockStart: '6',
+    paddingInline: '6',
+    paddingBlockEnd: '10'
+  }
+})
+
+const shelfSheetBackdrop = css({
+  position: 'fixed',
+  inset: '0',
+  background: 'overlay.backdrop'
+})
+
+const shelfSheet = css({
+  position: 'fixed',
+  insetInline: '0',
+  insetBlockEnd: '0',
+  maxBlockSize: '85dvh',
+  overflow: 'auto',
+  margin: '0',
+  paddingBlockStart: '4',
+  paddingInline: '3',
+  paddingBlockEnd: '5',
+  borderWidth: 'none',
+  borderBlockStartWidth: 'thin',
+  borderBlockStartStyle: 'solid',
+  borderBlockStartColor: 'border.default',
+  borderTopLeftRadius: 'sheet',
+  borderTopRightRadius: 'sheet',
+  background: 'bg.canvas',
+  boxSizing: 'border-box',
+  width: 'full'
+})
+
+const shelfSheetHeader = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  marginBlockEnd: '3',
+  paddingInline: '1'
+})
+
+const shelfSheetTitle = css({
+  margin: '0',
+  fontSize: 'md2',
+  fontWeight: 'bold'
+})
+
+const shelfSheetClose = css({
+  color: 'fg.default',
+  textDecoration: 'none',
+  minBlockSize: 'touch',
+  display: 'inline-flex',
+  alignItems: 'center',
+  paddingBlock: '1.5',
+  paddingInline: '2',
+  borderWidth: 'none',
+  background: 'transparent',
+  cursor: 'pointer'
+})
+
+const signOut = css(button.raw(), {
+  color: 'fg.default',
+  borderColor: 'transparent',
+  background: 'transparent',
+  paddingBlock: '1.5',
+  paddingInline: '2'
+})
 
 export const Route = createFileRoute('/_protected')({
   beforeLoad: async ({ location }) => {
@@ -99,28 +288,31 @@ function Layout() {
   )
 
   return (
-    <div className='pantry-shell'>
-      <aside className='pantry-shelf-rail'>
-        <div className='pantry-shelf-rail__brand'>
+    <div className={shell}>
+      <aside className={shelfRail}>
+        <div>
           <Link
             to='/'
             search={defaultBookmarkSearch}
-            className='pantry-brand'>
+            className={brand}>
             Pantry
           </Link>
         </div>
-        <div className='pantry-shelf-rail__nav'>{renderShelfNav()}</div>
-        <div className='pantry-shelf-rail__meta'>
+        <div className={shelfRailNav}>{renderShelfNav()}</div>
+        <div className={shelfRailMeta}>
           <Link
             to='/tags'
-            search={{ limit: 50, offset: 0 }}>
+            search={{ limit: 50, offset: 0 }}
+            className={headerAction}>
             <Tags
               size={16}
               aria-hidden
             />{' '}
             タグ管理
           </Link>
-          <Link to='/settings'>
+          <Link
+            to='/settings'
+            className={headerAction}>
             <Settings
               size={16}
               aria-hidden
@@ -130,20 +322,20 @@ function Layout() {
         </div>
       </aside>
 
-      <div className='pantry-shell-content'>
-        <header className='pantry-shell-header'>
-          <div className='pantry-shell-header__start'>
+      <div className={shellContent}>
+        <header className={shellHeader}>
+          <div className={headerRow}>
             <Link
               to='/'
               search={defaultBookmarkSearch}
-              className='pantry-brand pantry-brand--mobile'>
+              className={cx(brand, brandMobile)}>
               Pantry
             </Link>
 
             <Dialog.Root
               open={shelfOpen}
               onOpenChange={setShelfOpen}>
-              <Dialog.Trigger className='pantry-shelf-changer'>
+              <Dialog.Trigger className={shelfChanger}>
                 <Menu
                   size={16}
                   aria-hidden
@@ -151,11 +343,11 @@ function Layout() {
                 棚を変える
               </Dialog.Trigger>
               <Dialog.Portal>
-                <Dialog.Backdrop className='pantry-shelf-sheet__backdrop' />
-                <Dialog.Popup className='pantry-shelf-sheet'>
-                  <div className='pantry-shelf-sheet__header'>
-                    <Dialog.Title className='pantry-shelf-sheet__title'>棚を選ぶ</Dialog.Title>
-                    <Dialog.Close className='pantry-shelf-sheet__close'>
+                <Dialog.Backdrop className={shelfSheetBackdrop} />
+                <Dialog.Popup className={shelfSheet}>
+                  <div className={shelfSheetHeader}>
+                    <Dialog.Title className={shelfSheetTitle}>棚を選ぶ</Dialog.Title>
+                    <Dialog.Close className={shelfSheetClose}>
                       <X
                         size={16}
                         aria-hidden
@@ -169,9 +361,10 @@ function Layout() {
             </Dialog.Root>
           </div>
 
-          <div className='pantry-shell-header__actions'>
+          <div className={headerRow}>
             <Link
               to='/bookmarks/new'
+              className={headerAction}
               search={
                 indexSearch?.tags !== undefined && indexSearch.tags.length > 0
                   ? { tags: indexSearch.tags }
@@ -183,7 +376,9 @@ function Layout() {
               />{' '}
               新規
             </Link>
-            <Link to='/settings'>
+            <Link
+              to='/settings'
+              className={headerAction}>
               <Settings
                 size={16}
                 aria-hidden
@@ -192,7 +387,7 @@ function Layout() {
             </Link>
             <button
               type='button'
-              className='pantry-sign-out'
+              className={signOut}
               onClick={handleSignOut}
               disabled={isPending}>
               <LogOut
@@ -204,7 +399,7 @@ function Layout() {
           </div>
         </header>
 
-        <main className='pantry-shell-main'>
+        <main className={shellMain}>
           <Outlet />
         </main>
       </div>

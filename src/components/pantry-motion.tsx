@@ -1,17 +1,13 @@
 import type { ReactNode } from 'react'
+import { css, cx } from 'styled-system/css'
 
 type PantryMotionKind = 'fade-up' | 'crossfade'
 
-const kindClassName: Record<PantryMotionKind, string> = {
-  'fade-up': 'pantry-motion-fade-up',
-  crossfade: 'pantry-motion-crossfade'
+const kindClass: Record<PantryMotionKind, string> = {
+  'fade-up': css({ animationStyle: 'fadeUp' }),
+  crossfade: css({ animationStyle: 'crossfade' })
 }
 
-/**
- * Lightweight enter animation wrapper.
- * React 19.2.x does not export `<ViewTransition>` in this catalog build,
- * so motion is CSS-class based and SSR-safe (no browser APIs at render).
- */
 export function PantryMotion({
   kind,
   children,
@@ -21,6 +17,5 @@ export function PantryMotion({
   readonly children: ReactNode
   readonly className?: string
 }) {
-  const classes = [kindClassName[kind], className].filter(Boolean).join(' ')
-  return <div className={classes}>{children}</div>
+  return <div className={cx(kindClass[kind], className)}>{children}</div>
 }

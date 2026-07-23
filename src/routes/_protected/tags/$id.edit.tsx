@@ -11,6 +11,21 @@ import { UiError, UiLoading } from '../../../components/ui-state'
 import type { TagSelectType } from '../../../db/schema/tag'
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { getTag, updateTag } from '../../../features/tags/tag.function'
+import {
+  button,
+  field,
+  fieldInput,
+  fieldLabel,
+  formSummary,
+  srOnly,
+  textLink,
+  workbench,
+  workbenchFields,
+  workbenchForm,
+  workbenchLead,
+  workbenchNav,
+  workbenchTitle
+} from '../../../styles/ui'
 
 const tagIdParamSchema = v.pipe(v.string(), v.transform(Number), v.integer('Invalid tag id'))
 
@@ -66,12 +81,12 @@ function RouteComponent() {
   }
 
   return (
-    <div className='pantry-workbench'>
-      <nav className='pantry-workbench__nav'>
+    <div className={workbench}>
+      <nav className={workbenchNav}>
         <Link
           to='/tags'
           search={{ limit: 50, offset: 0 }}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -80,8 +95,8 @@ function RouteComponent() {
         </Link>
       </nav>
 
-      <h1 className='pantry-workbench__title'>タグ編集</h1>
-      <p className='pantry-workbench__lead'>名前・ピン・色・並び順を更新します</p>
+      <h1 className={workbenchTitle}>タグ編集</h1>
+      <p className={workbenchLead}>名前・ピン・色・並び順を更新します</p>
 
       <ErrorBoundary FallbackComponent={EditError}>
         <Suspense fallback={<UiLoading label='タグを読み込み中' />}>
@@ -143,11 +158,11 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
 
   return (
     <form
-      className='pantry-workbench-form'
+      className={workbenchForm}
       action={throwError}>
       {formError != null ? (
         <div
-          className='pantry-form-summary'
+          className={formSummary}
           role='alert'
           aria-live='polite'>
           <p>
@@ -161,22 +176,27 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
       ) : null}
 
       <fieldset
-        className='pantry-workbench-form__fields'
+        className={workbenchFields}
         disabled={isPending}>
-        <legend className='pantry-sr-only'>タグ編集</legend>
+        <legend className={srOnly}>タグ編集</legend>
 
         <Field
           of={editTagForm}
           path={['name']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>タグ名</label>
+          {(fieldProps) => (
+            <div className={field}>
+              <label
+                className={fieldLabel}
+                htmlFor={fieldProps.props.name}>
+                タグ名
+              </label>
               <Input
-                id={field.props.name}
-                value={field.input}
+                className={fieldInput}
+                id={fieldProps.props.name}
+                value={fieldProps.input}
                 type='text'
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  fieldProps.onChange(newValue)
                 }}
                 required
               />
@@ -197,7 +217,7 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
 
       <button
         type='submit'
-        className='pantry-button pantry-button--accent'
+        className={button({ visual: 'accent' })}
         disabled={isPending}>
         {isPending ? '更新中...' : '更新'}
       </button>

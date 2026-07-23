@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import { cloudflare } from '@cloudflare/vite-plugin'
 import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
@@ -10,7 +12,12 @@ const config = defineConfig({
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
     tanstackStart(),
     viteReact()
-  ]
+  ],
+  resolve: {
+    alias: {
+      'styled-system': path.resolve(import.meta.dirname, 'styled-system')
+    }
+  }
 })
 
 export default config

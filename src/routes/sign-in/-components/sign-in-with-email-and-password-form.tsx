@@ -2,11 +2,27 @@ import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { CircleAlert, Lock, LogIn, Mail } from 'lucide-react'
 import { useActionState } from 'react'
+import { css, cx } from 'styled-system/css'
 import { parseAsync } from 'valibot'
 
 import { SignInError } from '../-lib/error'
 import { emailSchema, passwordSchema, signInSchema } from '../-lib/schema'
 import type { SignInSchema } from '../-lib/schema'
+import {
+  button,
+  field,
+  fieldError,
+  fieldInput,
+  fieldLabel,
+  formSummary,
+  srOnly,
+  workbenchFields,
+  workbenchForm
+} from '../../../styles/ui'
+
+const signInForm = css({
+  marginBlockStart: '2'
+})
 
 interface SignInWithEmailAndPasswordFormProps {
   readonly onSignIn: ({ email, password }: SignInSchema) => Promise<SignInError | null>
@@ -22,7 +38,7 @@ function signInErrorMessage(error: SignInError): string {
 export const SignInWithEmailAndPasswordForm = ({
   onSignIn
 }: SignInWithEmailAndPasswordFormProps) => {
-  const signInForm = useForm({
+  const signInFormInstance = useForm({
     initialInput: {
       email: '',
       password: ''
@@ -31,8 +47,8 @@ export const SignInWithEmailAndPasswordForm = ({
   })
 
   const [signInError, throwError, isPending] = useActionState(async () => {
-    const currentRawEmail = getInput(signInForm, { path: ['email'] }) ?? ''
-    const currentRawPassword = getInput(signInForm, { path: ['password'] }) ?? ''
+    const currentRawEmail = getInput(signInFormInstance, { path: ['email'] }) ?? ''
+    const currentRawPassword = getInput(signInFormInstance, { path: ['password'] }) ?? ''
 
     const verifiedCurrentEmail = await parseAsync(emailSchema, currentRawEmail)
     const verifiedCurrentPassword = await parseAsync(passwordSchema, currentRawPassword)
@@ -42,19 +58,19 @@ export const SignInWithEmailAndPasswordForm = ({
     return error
   }, null)
 
-  const fieldError =
+  const fieldErrorText =
     signInError?.code === 'INVALID_EMAIL_OR_PASSWORD'
       ? 'メールまたはパスワードを確認してください'
       : null
 
   return (
     <form
-      className='pantry-workbench-form pantry-sign-in__form'
+      className={cx(workbenchForm, signInForm)}
       action={throwError}
       noValidate>
       {signInError != null ? (
         <div
-          className='pantry-form-summary'
+          className={formSummary}
           role='alert'
           aria-live='polite'>
           <p>
@@ -68,16 +84,18 @@ export const SignInWithEmailAndPasswordForm = ({
       ) : null}
 
       <fieldset
-        className='pantry-workbench-form__fields'
+        className={workbenchFields}
         disabled={isPending}>
-        <legend className='pantry-sr-only'>ログイン</legend>
+        <legend className={srOnly}>ログイン</legend>
 
         <Field
-          of={signInForm}
+          of={signInFormInstance}
           path={['email']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>
+          {(fieldProps) => (
+            <div className={field}>
+              <label
+                className={fieldLabel}
+                htmlFor={fieldProps.props.name}>
                 <Mail
                   size={16}
                   aria-hidden
@@ -85,27 +103,30 @@ export const SignInWithEmailAndPasswordForm = ({
                 メール
               </label>
               <Input
-                id={field.props.name}
-                value={field.input}
+                className={fieldInput}
+                id={fieldProps.props.name}
+                value={fieldProps.input}
                 type='email'
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  fieldProps.onChange(newValue)
                 }}
                 autoComplete='email webauthn'
                 required
-                aria-invalid={fieldError != null}
+                aria-invalid={fieldErrorText != null}
               />
-              {fieldError != null ? <p className='pantry-field__error'>{fieldError}</p> : null}
+              {fieldErrorText != null ? <p className={fieldError}>{fieldErrorText}</p> : null}
             </div>
           )}
         </Field>
 
         <Field
-          of={signInForm}
+          of={signInFormInstance}
           path={['password']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>
+          {(fieldProps) => (
+            <div className={field}>
+              <label
+                className={fieldLabel}
+                htmlFor={fieldProps.props.name}>
                 <Lock
                   size={16}
                   aria-hidden
@@ -113,17 +134,18 @@ export const SignInWithEmailAndPasswordForm = ({
                 パスワード
               </label>
               <Input
-                id={field.props.name}
-                value={field.input}
+                className={fieldInput}
+                id={fieldProps.props.name}
+                value={fieldProps.input}
                 type='password'
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  fieldProps.onChange(newValue)
                 }}
                 autoComplete='current-password webauthn'
                 required
-                aria-invalid={fieldError != null}
+                aria-invalid={fieldErrorText != null}
               />
-              {fieldError != null ? <p className='pantry-field__error'>{fieldError}</p> : null}
+              {fieldErrorText != null ? <p className={fieldError}>{fieldErrorText}</p> : null}
             </div>
           )}
         </Field>
@@ -131,7 +153,7 @@ export const SignInWithEmailAndPasswordForm = ({
 
       <button
         type='submit'
-        className='pantry-button pantry-button--accent'
+        className={button({ visual: 'accent' })}
         disabled={isPending}>
         <LogIn
           size={16}

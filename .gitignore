@@ -43,3 +43,5 @@ api-spec/dist/
 
 ## Panda
 styled-system
+.playwright-mcp/
+screenshots/
