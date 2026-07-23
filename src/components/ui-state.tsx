@@ -1,14 +1,16 @@
 import { LoaderCircle, PackageOpen, RefreshCw, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { button, skeleton, spinner, stateBox, stateErrorMessage, stateMessage } from '../styles/ui'
+
 export function UiLoading({ label = '読み込み中' }: { label?: string }) {
   return (
     <output
-      className='pantry-skeleton'
+      className={skeleton}
       aria-live='polite'>
       <LoaderCircle
         size={16}
-        className='pantry-spinner'
+        className={spinner}
         aria-hidden
       />{' '}
       {label}
@@ -18,12 +20,12 @@ export function UiLoading({ label = '読み込み中' }: { label?: string }) {
 
 export function UiEmpty({ title, action }: { title: string; action?: ReactNode }) {
   return (
-    <div className='pantry-empty'>
+    <div className={stateBox}>
       <PackageOpen
         size={20}
         aria-hidden
       />
-      <p>{title}</p>
+      <p className={stateMessage}>{title}</p>
       {action}
     </div>
   )
@@ -32,16 +34,17 @@ export function UiEmpty({ title, action }: { title: string; action?: ReactNode }
 export function UiError({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div
-      className='pantry-error'
+      className={stateBox}
       role='alert'>
       <TriangleAlert
         size={20}
         aria-hidden
       />
-      <p>{message}</p>
+      <p className={stateErrorMessage}>{message}</p>
       {onRetry ? (
         <button
           type='button'
+          className={button({ visual: 'accent' })}
           onClick={onRetry}>
           <RefreshCw
             size={16}

@@ -7,6 +7,18 @@ import * as v from 'valibot'
 import type { TagSelectType } from '../../../../db/schema/tag'
 import { fetchBookmarkTitle } from '../../../../features/bookmarks/bookmark.function'
 import { TagSelector } from '../../../../features/bookmarks/components/tag-selector'
+import {
+  button,
+  field,
+  fieldError,
+  fieldInput,
+  fieldLabel,
+  fieldUrlRow,
+  formSummary,
+  srOnly,
+  workbenchFields,
+  workbenchForm
+} from '../../../../styles/ui'
 
 const workbenchSchema = v.object({
   url: v.pipe(v.string(), v.url('有効なURLを入力してください')),
@@ -113,12 +125,12 @@ export function BookmarkWorkbenchForm({
 
   return (
     <form
-      className='pantry-workbench-form'
+      className={workbenchForm}
       action={submitAction}
       noValidate>
       {allSummary.length > 0 ? (
         <div
-          className='pantry-form-summary'
+          className={formSummary}
           role='alert'
           aria-live='polite'>
           <p>
@@ -136,31 +148,36 @@ export function BookmarkWorkbenchForm({
         </div>
       ) : null}
 
-      <fieldset className='pantry-workbench-form__fields'>
-        <legend className='pantry-sr-only'>
+      <fieldset className={workbenchFields}>
+        <legend className={srOnly}>
           {mode === 'new' ? 'ブックマーク新規登録' : 'ブックマーク編集'}
         </legend>
 
         <Field
           of={form}
           path={['url']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>URL</label>
-              <div className='pantry-field__url-row'>
+          {(f) => (
+            <div className={field}>
+              <label
+                htmlFor={f.props.name}
+                className={fieldLabel}>
+                URL
+              </label>
+              <div className={fieldUrlRow}>
                 <Input
-                  id={field.props.name}
-                  value={field.input}
+                  id={f.props.name}
+                  className={fieldInput}
+                  value={f.input}
                   type='url'
                   onValueChange={(newValue) => {
-                    field.onChange(newValue)
+                    f.onChange(newValue)
                   }}
                   required
                   disabled={busy}
                 />
                 <button
                   type='button'
-                  className='pantry-button pantry-button--secondary'
+                  className={button()}
                   onClick={() => {
                     void handleFetchTitle()
                   }}
@@ -172,7 +189,7 @@ export function BookmarkWorkbenchForm({
                   {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
                 </button>
               </div>
-              {field.errors ? <p className='pantry-field__error'>{field.errors[0]}</p> : null}
+              {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
             </div>
           )}
         </Field>
@@ -180,20 +197,25 @@ export function BookmarkWorkbenchForm({
         <Field
           of={form}
           path={['title']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>タイトル</label>
+          {(f) => (
+            <div className={field}>
+              <label
+                htmlFor={f.props.name}
+                className={fieldLabel}>
+                タイトル
+              </label>
               <Input
-                id={field.props.name}
-                value={field.input}
+                id={f.props.name}
+                className={fieldInput}
+                value={f.input}
                 type='text'
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  f.onChange(newValue)
                 }}
                 required
                 disabled={busy}
               />
-              {field.errors ? <p className='pantry-field__error'>{field.errors[0]}</p> : null}
+              {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
             </div>
           )}
         </Field>
@@ -201,25 +223,30 @@ export function BookmarkWorkbenchForm({
         <Field
           of={form}
           path={['note']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>メモ</label>
+          {(f) => (
+            <div className={field}>
+              <label
+                htmlFor={f.props.name}
+                className={fieldLabel}>
+                メモ
+              </label>
               <Input
-                id={field.props.name}
-                value={field.input ?? ''}
+                id={f.props.name}
+                className={fieldInput}
+                value={f.input ?? ''}
                 type='text'
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  f.onChange(newValue)
                 }}
                 disabled={busy}
               />
-              {field.errors ? <p className='pantry-field__error'>{field.errors[0]}</p> : null}
+              {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
             </div>
           )}
         </Field>
       </fieldset>
 
-      <div className='pantry-workbench-form__tags'>
+      <div>
         <TagSelector
           allTags={allTags}
           selectedTagIds={selectedTagIds}
@@ -229,7 +256,7 @@ export function BookmarkWorkbenchForm({
 
       <button
         type='submit'
-        className='pantry-button pantry-button--accent'
+        className={button({ visual: 'accent' })}
         disabled={busy}>
         {isPending ? pendingLabel : submitLabel}
       </button>

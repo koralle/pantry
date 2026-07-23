@@ -8,6 +8,13 @@ import { buildListBackSearch } from '../-lib/list-back-search'
 import { UiEmpty } from '../../../../components/ui-state'
 import { getBookmark, updateBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
+import {
+  textLink,
+  workbench,
+  workbenchLead,
+  workbenchNav,
+  workbenchTitle
+} from '../../../../styles/ui'
 
 const bookmarkEditSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
@@ -42,7 +49,7 @@ function RouteComponent() {
   if (data.kind === 'not-found') {
     return (
       <section
-        className='pantry-workbench'
+        className={workbench}
         aria-label='ブックマーク編集'>
         <UiEmpty
           title='このブックマークは見つかりません'
@@ -50,7 +57,7 @@ function RouteComponent() {
             <Link
               to='/'
               search={listSearch}
-              className='pantry-text-link'>
+              className={textLink}>
               一覧へ戻る
             </Link>
           }
@@ -87,14 +94,14 @@ function EditWorkbench({
 
   return (
     <section
-      className='pantry-workbench'
+      className={workbench}
       aria-label='ブックマーク編集'>
-      <nav className='pantry-workbench__nav'>
+      <nav className={workbenchNav}>
         <Link
           to='/bookmarks/$id'
           params={{ id: bookmark.id }}
           search={searchTags !== undefined ? { tags: searchTags } : {}}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -104,7 +111,7 @@ function EditWorkbench({
         <Link
           to='/'
           search={listSearch}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -113,8 +120,8 @@ function EditWorkbench({
         </Link>
       </nav>
 
-      <h1 className='pantry-workbench__title'>ブックマークを並べ替える</h1>
-      <p className='pantry-workbench__lead'>内容を直し、主ボタンで保存します。</p>
+      <h1 className={workbenchTitle}>ブックマークを並べ替える</h1>
+      <p className={workbenchLead}>内容を直し、主ボタンで保存します。</p>
 
       <BookmarkWorkbenchForm
         mode='edit'

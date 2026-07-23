@@ -2,10 +2,18 @@ import { Input } from '@base-ui/react'
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
+import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
+import { button, field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../styles/ui'
 import { tagNameSchema } from '../tag-name.schema'
 import { addTag } from '../tag.function'
+
+const inlineAddTag = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2'
+})
 
 export function InlineAddTag() {
   const navigate = useNavigate()
@@ -43,12 +51,17 @@ export function InlineAddTag() {
 
   return (
     <form
-      className='pantry-inline-add-tag'
+      className={inlineAddTag}
       onSubmit={handleSubmit}>
-      <div className='pantry-field'>
-        <label htmlFor='inline-add-tag-name'>クイック追加</label>
-        <div className='pantry-field__url-row'>
+      <div className={field}>
+        <label
+          className={fieldLabel}
+          htmlFor='inline-add-tag-name'>
+          クイック追加
+        </label>
+        <div className={fieldUrlRow}>
           <Input
+            className={fieldInput}
             id='inline-add-tag-name'
             value={name}
             type='text'
@@ -59,7 +72,7 @@ export function InlineAddTag() {
           />
           <button
             type='submit'
-            className='pantry-button pantry-button--secondary'
+            className={button()}
             disabled={isPending}>
             <Plus
               size={16}
@@ -71,7 +84,7 @@ export function InlineAddTag() {
       </div>
       {tagError != null ? (
         <p
-          className='pantry-field__error'
+          className={fieldError}
           role='alert'>
           {tagError}
         </p>

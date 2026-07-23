@@ -7,6 +7,21 @@ import * as v from 'valibot'
 
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { addTag } from '../../../features/tags/tag.function'
+import {
+  button,
+  field,
+  fieldInput,
+  fieldLabel,
+  formSummary,
+  srOnly,
+  textLink,
+  workbench,
+  workbenchFields,
+  workbenchForm,
+  workbenchLead,
+  workbenchNav,
+  workbenchTitle
+} from '../../../styles/ui'
 
 export const Route = createFileRoute('/_protected/tags/new')({
   component: RouteComponent
@@ -38,12 +53,12 @@ function RouteComponent() {
   }
 
   return (
-    <div className='pantry-workbench'>
-      <nav className='pantry-workbench__nav'>
+    <div className={workbench}>
+      <nav className={workbenchNav}>
         <Link
           to='/tags'
           search={{ limit: 50, offset: 0 }}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -52,8 +67,8 @@ function RouteComponent() {
         </Link>
       </nav>
 
-      <h1 className='pantry-workbench__title'>タグ新規作成</h1>
-      <p className='pantry-workbench__lead'>箱の名前を付け、必要ならピンと色も決めます</p>
+      <h1 className={workbenchTitle}>タグ新規作成</h1>
+      <p className={workbenchLead}>箱の名前を付け、必要ならピンと色も決めます</p>
 
       <RegisterNewTagForm submitAction={submitAction} />
     </div>
@@ -108,11 +123,11 @@ function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
 
   return (
     <form
-      className='pantry-workbench-form'
+      className={workbenchForm}
       action={throwError}>
       {formError != null ? (
         <div
-          className='pantry-form-summary'
+          className={formSummary}
           role='alert'
           aria-live='polite'>
           <p>
@@ -126,22 +141,27 @@ function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
       ) : null}
 
       <fieldset
-        className='pantry-workbench-form__fields'
+        className={workbenchFields}
         disabled={isPending}>
-        <legend className='pantry-sr-only'>タグ新規登録</legend>
+        <legend className={srOnly}>タグ新規登録</legend>
 
         <Field
           of={registerNewTagForm}
           path={['name']}>
-          {(field) => (
-            <div className='pantry-field'>
-              <label htmlFor={field.props.name}>タグ名</label>
+          {(fieldProps) => (
+            <div className={field}>
+              <label
+                className={fieldLabel}
+                htmlFor={fieldProps.props.name}>
+                タグ名
+              </label>
               <Input
-                id={field.props.name}
-                value={field.input}
+                className={fieldInput}
+                id={fieldProps.props.name}
+                value={fieldProps.input}
                 type='text'
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  fieldProps.onChange(newValue)
                 }}
                 required
               />
@@ -162,7 +182,7 @@ function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
 
       <button
         type='submit'
-        className='pantry-button pantry-button--accent'
+        className={button({ visual: 'accent' })}
         disabled={isPending}>
         {isPending ? '登録中...' : '登録'}
       </button>

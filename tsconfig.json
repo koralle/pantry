@@ -11,6 +11,9 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
 
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "styled-system/*": ["./styled-system/*"]
+    }
   }
 }

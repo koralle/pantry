@@ -2,10 +2,66 @@ import { useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, LogOut } from 'lucide-react'
 import { useTransition } from 'react'
+import { css } from 'styled-system/css'
 
 import { defaultBookmarkSearch } from '../-lib/bookmark-search-schema'
 import { authClient } from '../../../features/auth/auth-client'
 import { ensureSession } from '../../../features/auth/auth.function'
+import { button, textLink } from '../../../styles/ui'
+
+const settings = css({
+  maxInlineSize: '28rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6'
+})
+
+const settingsTitle = css({
+  margin: '0',
+  fontSize: 'lg',
+  fontWeight: 'bold'
+})
+
+const settingsLead = css({
+  margin: '0',
+  color: 'fg.muted'
+})
+
+const settingsHeading = css({
+  margin: '0',
+  color: 'fg.muted',
+  fontSize: 'xs',
+  fontWeight: 'semibold',
+  marginBlockEnd: '3'
+})
+
+const settingsSection = css({
+  borderBlockStartWidth: 'thin',
+  borderBlockStartStyle: 'solid',
+  borderBlockStartColor: 'border.default',
+  paddingBlockStart: '5'
+})
+
+const settingsAccount = css({
+  display: 'grid',
+  gap: '3.5',
+  margin: '0'
+})
+
+const settingsAccountRow = css({
+  display: 'grid',
+  gap: '1'
+})
+
+const settingsAccountDt = css({
+  color: 'fg.muted',
+  fontSize: 'xs2'
+})
+
+const settingsAccountDd = css({
+  margin: '0',
+  wordBreak: 'break-word'
+})
 
 export const Route = createFileRoute('/_protected/settings/')({
   loader: async () => {
@@ -38,29 +94,29 @@ function RouteComponent() {
   }
 
   return (
-    <div className='pantry-settings'>
-      <h1 className='pantry-settings__title'>設定</h1>
-      <p className='pantry-settings__lead'>アカウントと出口</p>
+    <div className={settings}>
+      <h1 className={settingsTitle}>設定</h1>
+      <p className={settingsLead}>アカウントと出口</p>
 
-      <section className='pantry-settings__section'>
-        <h2 className='pantry-settings__heading'>アカウント</h2>
-        <dl className='pantry-settings__account'>
-          <div>
-            <dt>名前</dt>
-            <dd>{user.name}</dd>
+      <section className={settingsSection}>
+        <h2 className={settingsHeading}>アカウント</h2>
+        <dl className={settingsAccount}>
+          <div className={settingsAccountRow}>
+            <dt className={settingsAccountDt}>名前</dt>
+            <dd className={settingsAccountDd}>{user.name}</dd>
           </div>
-          <div>
-            <dt>メール</dt>
-            <dd>{user.email}</dd>
+          <div className={settingsAccountRow}>
+            <dt className={settingsAccountDt}>メール</dt>
+            <dd className={settingsAccountDd}>{user.email}</dd>
           </div>
         </dl>
       </section>
 
-      <section className='pantry-settings__section'>
-        <h2 className='pantry-settings__heading'>セッション</h2>
+      <section className={settingsSection}>
+        <h2 className={settingsHeading}>セッション</h2>
         <button
           type='button'
-          className='pantry-button pantry-button--accent'
+          className={button({ visual: 'accent' })}
           onClick={handleSignOut}
           disabled={isPending}>
           <LogOut
@@ -74,7 +130,7 @@ function RouteComponent() {
       <Link
         to='/'
         search={defaultBookmarkSearch}
-        className='pantry-text-link'>
+        className={textLink}>
         <ArrowLeft
           size={16}
           aria-hidden

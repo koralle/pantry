@@ -3,10 +3,12 @@ import { ChevronDown, LayoutGrid, List, Plus, Search, X } from 'lucide-react'
 import { Suspense, use, useEffect, useId, useState } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
+import { css } from 'styled-system/css'
 
 import { PantryMotion } from '../../../components/pantry-motion'
 import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
 import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
+import { button, cx, formControl, srOnly, surface, tagChip } from '../../../styles/ui'
 import type { ShelfTag } from '../../tags/tag-shelf'
 import { touchTagLastUsed } from '../../tags/tag.function'
 import type { BookmarkListItem } from '../attach-bookmark-tags'
@@ -18,6 +20,136 @@ import { BookmarkTable } from './bookmark-table'
 
 const indexRouteApi = getRouteApi('/_protected/')
 const protectedRouteApi = getRouteApi('/_protected')
+
+const toolbar = css({ display: 'flex', flexDirection: 'column', gap: '3.5', marginBlockEnd: '5' })
+const titleRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3'
+})
+const title = css({ margin: '0', fontSize: 'lg', fontWeight: 'bold' })
+const newLink = css({
+  color: 'accent.solid',
+  textDecoration: 'none',
+  minBlockSize: 'touch',
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontWeight: 'semibold'
+})
+const searchForm = css({ display: 'flex', gap: '2', flexWrap: 'wrap' })
+const searchInput = cx(formControl, css({ flex: '1', minInlineSize: '12rem' }))
+const controls = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  rowGap: '3',
+  columnGap: '4',
+  alignItems: 'center'
+})
+const groupFieldset = css({
+  display: 'inline-flex',
+  gap: '1',
+  margin: '0',
+  padding: '0',
+  borderWidth: 'none',
+  minInlineSize: '0'
+})
+const toggleButton = css({
+  minBlockSize: 'touch',
+  borderWidth: 'thin',
+  borderStyle: 'solid',
+  borderColor: 'border.default',
+  borderRadius: 'box',
+  background: 'bg.surface',
+  color: 'fg.default',
+  cursor: 'pointer',
+  paddingBlock: '2',
+  paddingInline: '3',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'semibold',
+  _pressed: { borderColor: 'accent.solid', background: 'accent.subtle', color: 'accent.solid' }
+})
+const sortLabel = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  color: 'fg.muted',
+  fontSize: 'xs'
+})
+const sortSelect = cx(
+  formControl,
+  css({ paddingBlock: '1.5', paddingInline: '2', color: 'fg.default' })
+)
+const tagsRow = css({ display: 'flex', flexWrap: 'wrap', gap: '2', alignItems: 'center' })
+const addTagLabel = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  color: 'fg.muted',
+  fontSize: 'xs'
+})
+const addTagSelect = cx(
+  formControl,
+  css({ paddingBlock: '1.5', paddingInline: '2', color: 'fg.default' })
+)
+const bookmarkCards = css({
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '3',
+  margin: '0',
+  padding: '0',
+  listStyle: 'none',
+  sm: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }
+})
+const bookmarkCard = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5',
+  textDecoration: 'none',
+  color: 'fg.default',
+  minBlockSize: '5.5rem',
+  paddingBlock: '4',
+  paddingInline: '4.5'
+})
+const cardTitle = css({ fontWeight: 'bold' })
+const cardUrl = css({
+  color: 'fg.muted',
+  fontSize: 'xs',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+})
+const cardNote = css({
+  color: 'fg.muted',
+  fontSize: 'xs',
+  display: '-webkit-box',
+  WebkitLineClamp: '2',
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden'
+} as never)
+const bookmarkTags = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '1',
+  margin: '0',
+  padding: '0',
+  listStyle: 'none'
+})
+const cardTags = cx(bookmarkTags, css({ marginBlockStart: '0.5' }))
+const tableSkeleton = css({ display: 'flex', flexDirection: 'column', gap: '2' })
+const partialSection = css({ marginBlockStart: '5', display: 'flex', justifyContent: 'center' })
+const loadMoreButton = cx(
+  button(),
+  css({
+    borderColor: 'accent.solid',
+    color: 'accent.solid',
+    fontWeight: 'semibold',
+    minInlineSize: '12rem',
+    _disabled: { opacity: '0.6', cursor: 'wait' }
+  })
+)
 
 function ListError({ error, resetErrorBoundary }: FallbackProps) {
   return (
@@ -32,7 +164,7 @@ function ListLoading({ layout }: { readonly layout: ListLayout }) {
   if (layout === 'card') {
     return (
       <div
-        className='pantry-bookmark-cards'
+        className={bookmarkCards}
         aria-busy='true'>
         <UiLoading label='一覧を読み込み中' />
         <UiLoading label='一覧を読み込み中' />
@@ -43,7 +175,7 @@ function ListLoading({ layout }: { readonly layout: ListLayout }) {
 
   return (
     <div
-      className='pantry-bookmark-table-skeleton'
+      className={tableSkeleton}
       aria-busy='true'>
       <UiLoading label='一覧を読み込み中' />
       <UiLoading label='一覧を読み込み中' />
@@ -67,24 +199,22 @@ function BookmarkCards({
   readonly detailSearch: { tags?: string[] }
 }) {
   return (
-    <ul className='pantry-bookmark-cards'>
+    <ul className={bookmarkCards}>
       {bookmarks.map((bookmark) => (
         <li key={bookmark.id}>
           <Link
             to='/bookmarks/$id'
             params={{ id: bookmark.id }}
             search={detailSearch}
-            className='pantry-box pantry-bookmark-card'>
-            <span className='pantry-bookmark-card__title'>{bookmark.title}</span>
-            <span className='pantry-bookmark-card__url'>{shortenUrl(bookmark.url)}</span>
-            {bookmark.note ? (
-              <span className='pantry-bookmark-card__note'>{bookmark.note}</span>
-            ) : null}
+            className={cx(surface, bookmarkCard)}>
+            <span className={cardTitle}>{bookmark.title}</span>
+            <span className={cardUrl}>{shortenUrl(bookmark.url)}</span>
+            {bookmark.note ? <span className={cardNote}>{bookmark.note}</span> : null}
             {bookmark.tags.length > 0 ? (
-              <ul className='pantry-bookmark-tags'>
+              <ul className={cardTags}>
                 {bookmark.tags.map((tag) => (
                   <li key={tag.id}>
-                    <span className='pantry-tag-chip pantry-tag-chip--label'>{tag.name}</span>
+                    <span className={tagChip({ visual: 'label' })}>{tag.name}</span>
                   </li>
                 ))}
               </ul>
@@ -183,13 +313,13 @@ function ListToolbar({
   }
 
   return (
-    <div className='pantry-list-toolbar'>
-      <div className='pantry-list-toolbar__title-row'>
-        <h1 className='pantry-list-toolbar__title'>{shelfTitle(search)}</h1>
+    <div className={toolbar}>
+      <div className={titleRow}>
+        <h1 className={title}>{shelfTitle(search)}</h1>
         <Link
           to='/bookmarks/new'
           search={detailSearchFromList(search)}
-          className='pantry-list-toolbar__new'>
+          className={newLink}>
           <Plus
             size={16}
             aria-hidden
@@ -199,7 +329,7 @@ function ListToolbar({
       </div>
 
       <form
-        className='pantry-list-toolbar__search'
+        className={searchForm}
         onSubmit={(event) => {
           event.preventDefault()
           const nextQ = draftQ.trim()
@@ -211,19 +341,22 @@ function ListToolbar({
         }}>
         <label
           htmlFor={qInputId}
-          className='pantry-sr-only'>
+          className={srOnly}>
           検索
         </label>
         <input
           id={qInputId}
           type='search'
+          className={searchInput}
           value={draftQ}
           onChange={(event) => {
             setDraftQ(event.target.value)
           }}
           placeholder='タイトル・URL・メモ'
         />
-        <button type='submit'>
+        <button
+          type='submit'
+          className={button()}>
           <Search
             size={16}
             aria-hidden
@@ -232,11 +365,12 @@ function ListToolbar({
         </button>
       </form>
 
-      <div className='pantry-list-toolbar__controls'>
-        <fieldset className='pantry-list-toolbar__group'>
-          <legend className='pantry-sr-only'>タグ条件</legend>
+      <div className={controls}>
+        <fieldset className={groupFieldset}>
+          <legend className={srOnly}>タグ条件</legend>
           <button
             type='button'
+            className={toggleButton}
             aria-pressed={search.tagMode === 'and'}
             onClick={() => {
               patchSearch({ tagMode: 'and' })
@@ -245,6 +379,7 @@ function ListToolbar({
           </button>
           <button
             type='button'
+            className={toggleButton}
             aria-pressed={search.tagMode === 'or'}
             onClick={() => {
               patchSearch({ tagMode: 'or' })
@@ -253,9 +388,10 @@ function ListToolbar({
           </button>
         </fieldset>
 
-        <label className='pantry-list-toolbar__sort'>
+        <label className={sortLabel}>
           並び
           <select
+            className={sortSelect}
             value={search.sort}
             onChange={(event) => {
               const sort = event.target.value === 'updated' ? 'updated' : 'newest'
@@ -266,10 +402,11 @@ function ListToolbar({
           </select>
         </label>
 
-        <fieldset className='pantry-list-toolbar__group'>
-          <legend className='pantry-sr-only'>表示切替</legend>
+        <fieldset className={groupFieldset}>
+          <legend className={srOnly}>表示切替</legend>
           <button
             type='button'
+            className={toggleButton}
             aria-pressed={layout === 'table'}
             onClick={() => {
               onLayoutChange('table')
@@ -282,6 +419,7 @@ function ListToolbar({
           </button>
           <button
             type='button'
+            className={toggleButton}
             aria-pressed={layout === 'card'}
             onClick={() => {
               onLayoutChange('card')
@@ -295,12 +433,12 @@ function ListToolbar({
         </fieldset>
       </div>
 
-      <div className='pantry-list-toolbar__tags'>
+      <div className={tagsRow}>
         {selectedTags.map((tagName) => (
           <button
             key={tagName}
             type='button'
-            className='pantry-tag-chip'
+            className={tagChip({ visual: 'interactive' })}
             onClick={() => {
               const next = selectedTags.filter((name) => name !== tagName)
               if (next.length === 0) {
@@ -314,14 +452,15 @@ function ListToolbar({
               size={14}
               aria-hidden
             />
-            <span className='pantry-sr-only'>を外す</span>
+            <span className={srOnly}>を外す</span>
           </button>
         ))}
 
         {addableTags.length > 0 ? (
-          <label className='pantry-list-toolbar__add-tag'>
+          <label className={addTagLabel}>
             タグを追加
             <select
+              className={addTagSelect}
               value=''
               onChange={(event) => {
                 const name = event.target.value
@@ -435,7 +574,7 @@ function BookmarkListResults({
   }
 
   return (
-    <div className='pantry-bookmark-list__results'>
+    <div>
       <PantryMotion
         key={layout}
         kind='crossfade'>
@@ -453,7 +592,7 @@ function BookmarkListResults({
       </PantryMotion>
 
       {hasMore ? (
-        <div className='pantry-bookmark-list__partial'>
+        <div className={partialSection}>
           {loadMoreError != null ? (
             <UiError
               message={loadMoreError}
@@ -462,7 +601,7 @@ function BookmarkListResults({
           ) : (
             <button
               type='button'
-              className='pantry-load-more'
+              className={loadMoreButton}
               disabled={isLoadingMore}
               onClick={loadMore}>
               <ChevronDown
@@ -587,9 +726,7 @@ export function BookmarkList() {
   }
 
   return (
-    <section
-      className='pantry-bookmark-list'
-      aria-label='ブックマーク一覧'>
+    <section aria-label='ブックマーク一覧'>
       <Suspense
         fallback={
           <>

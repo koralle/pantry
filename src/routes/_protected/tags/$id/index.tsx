@@ -3,17 +3,69 @@ import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 import { Suspense, use } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
+import { css, cx } from 'styled-system/css'
 import * as v from 'valibot'
 
 import { UiError, UiLoading } from '../../../../components/ui-state'
 import type { TagSelectType } from '../../../../db/schema/tag'
 import { tagShelfSearch } from '../../../../features/tags/components/shelf-nav'
 import { getTag } from '../../../../features/tags/tag.function'
+import {
+  button,
+  flash,
+  textLink,
+  workbench,
+  workbenchNav,
+  workbenchTitle
+} from '../../../../styles/ui'
 
 const tagIdParamSchema = v.pipe(v.string(), v.transform(Number), v.integer('Invalid tag id'))
 
 const tagDetailSearchSchema = v.object({
   created: v.optional(v.boolean())
+})
+
+const shelfDot = css({
+  inlineSize: '2.5',
+  blockSize: '2.5',
+  borderRadius: 'full',
+  background: 'border.default',
+  flexShrink: '0'
+})
+
+const tagDetailHeader = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3'
+})
+
+const tagDetailDot = css({
+  inlineSize: '3.5',
+  blockSize: '3.5'
+})
+
+const tagDetailMeta = css({
+  display: 'grid',
+  gap: '3',
+  margin: '0',
+  '& div': {
+    display: 'grid',
+    gap: '1'
+  },
+  '& dt': {
+    color: 'fg.muted',
+    fontSize: 'xs2'
+  },
+  '& dd': {
+    margin: '0'
+  }
+})
+
+const detailActions = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '3',
+  alignItems: 'center'
 })
 
 export const Route = createFileRoute('/_protected/tags/$id/')({
@@ -45,9 +97,9 @@ function RouteComponent() {
   })
 
   return (
-    <div className='pantry-workbench'>
+    <div className={workbench}>
       {newTagCreated ? (
-        <output className='pantry-flash'>
+        <output className={flash}>
           <CircleCheck
             size={16}
             aria-hidden
@@ -56,7 +108,7 @@ function RouteComponent() {
         </output>
       ) : null}
       {tagUpdated ? (
-        <output className='pantry-flash'>
+        <output className={flash}>
           <CircleCheck
             size={16}
             aria-hidden
@@ -65,11 +117,11 @@ function RouteComponent() {
         </output>
       ) : null}
 
-      <nav className='pantry-workbench__nav'>
+      <nav className={workbenchNav}>
         <Link
           to='/tags'
           search={{ limit: 50, offset: 0 }}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -105,16 +157,16 @@ function TagDetail({
 
   return (
     <>
-      <header className='pantry-tag-detail__header'>
+      <header className={tagDetailHeader}>
         <span
-          className='pantry-shelf-dot pantry-tag-detail__dot'
+          className={cx(shelfDot, tagDetailDot)}
           style={tag.color != null ? { backgroundColor: tag.color } : undefined}
           aria-hidden='true'
         />
-        <h1 className='pantry-workbench__title'>{tag.name}</h1>
+        <h1 className={workbenchTitle}>{tag.name}</h1>
       </header>
 
-      <dl className='pantry-tag-detail__meta'>
+      <dl className={tagDetailMeta}>
         <div>
           <dt>ピン</dt>
           <dd>
@@ -137,11 +189,11 @@ function TagDetail({
         </div>
       </dl>
 
-      <div className='pantry-detail__actions'>
+      <div className={detailActions}>
         <Link
           to='/'
           search={tagShelfSearch(tag.name)}
-          className='pantry-button pantry-button--accent'>
+          className={button({ visual: 'accent' })}>
           <Bookmark
             size={16}
             aria-hidden
@@ -151,7 +203,7 @@ function TagDetail({
         <Link
           to='/tags/$id/edit'
           params={{ id }}
-          className='pantry-button pantry-button--secondary'>
+          className={button()}>
           <Pencil
             size={16}
             aria-hidden

@@ -10,6 +10,7 @@ import { ArrowLeft, CircleCheck, ExternalLink, Pencil, Trash2, X } from 'lucide-
 import { Suspense, use, useState, useTransition } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
+import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
 import { buildListBackSearch } from '../-lib/list-back-search'
@@ -17,6 +18,81 @@ import { UiEmpty, UiError } from '../../../../components/ui-state'
 import { deleteBookmark, getBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
 import { formatDateTime } from '../../../../lib/format-date'
+import {
+  button,
+  cx,
+  dialog,
+  dialogActions,
+  dialogBackdrop,
+  dialogTitle,
+  fieldError,
+  flash,
+  skeleton,
+  srOnly,
+  tagChip,
+  textLink,
+  workbenchNav,
+  workbenchTitle
+} from '../../../../styles/ui'
+
+const detailLayout = css({
+  maxInlineSize: '42rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6'
+})
+const detailHeader = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '3',
+  paddingBlockStart: '2',
+  paddingBlockEnd: '1'
+})
+const detailUrl = css({ color: 'accent.solid', wordBreak: 'break-all', lineHeight: 'body' })
+const detailNote = css({
+  margin: '0',
+  color: 'fg.default',
+  lineHeight: 'relaxed',
+  whiteSpace: 'pre-wrap'
+})
+const detailTags = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '2',
+  margin: '0',
+  padding: '0',
+  listStyle: 'none'
+})
+const detailMeta = css({ margin: '0', color: 'fg.muted' })
+const detailDates = css({ display: 'grid', gap: '3', margin: '0' })
+const detailDatesGroup = css({ display: 'grid', gap: '1' })
+const detailDatesDt = css({ color: 'fg.muted', fontSize: 'xs2' })
+const detailDatesDd = css({ margin: '0', fontVariantNumeric: 'tabular-nums' })
+
+const skeletonReset = css({ padding: '0', borderWidth: 'none' })
+const skeletonBlockNote = cx(skeleton, skeletonReset, css({ minBlockSize: '5.5rem' }))
+const skeletonBlockDates = cx(skeleton, skeletonReset, css({ minBlockSize: '4.5rem' }))
+const skeletonLineNav = cx(skeleton, skeletonReset, css({ minBlockSize: '4', inlineSize: '22' }))
+const skeletonLineTitle = cx(
+  skeleton,
+  skeletonReset,
+  css({ minBlockSize: '8', inlineSize: 'min-22' })
+)
+const skeletonLineUrl = cx(
+  skeleton,
+  skeletonReset,
+  css({ minBlockSize: '4', inlineSize: 'min-18' })
+)
+const skeletonLineTags = cx(
+  skeleton,
+  skeletonReset,
+  css({ minBlockSize: '7', inlineSize: 'min-12' })
+)
+const skeletonLineAction = cx(
+  skeleton,
+  skeletonReset,
+  css({ minBlockSize: '11', inlineSize: '22' })
+)
 
 const bookmarkDetailSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
@@ -57,44 +133,44 @@ function DetailError({ error, resetErrorBoundary }: FallbackProps) {
 function DetailSkeleton() {
   return (
     <div
-      className='pantry-detail'
+      className={detailLayout}
       aria-busy='true'>
-      <span className='pantry-sr-only'>詳細を読み込み中</span>
-      <div className='pantry-detail__nav'>
+      <span className={srOnly}>詳細を読み込み中</span>
+      <div className={workbenchNav}>
         <div
-          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--nav'
+          className={skeletonLineNav}
           aria-hidden='true'
         />
       </div>
-      <header className='pantry-detail__header'>
+      <header className={detailHeader}>
         <div
-          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--title'
+          className={skeletonLineTitle}
           aria-hidden='true'
         />
         <div
-          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--url'
+          className={skeletonLineUrl}
           aria-hidden='true'
         />
       </header>
       <div
-        className='pantry-skeleton pantry-detail__skeleton-block pantry-detail__skeleton-block--note'
+        className={skeletonBlockNote}
         aria-hidden='true'
       />
       <div
-        className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--tags'
+        className={skeletonLineTags}
         aria-hidden='true'
       />
       <div
-        className='pantry-skeleton pantry-detail__skeleton-block pantry-detail__skeleton-block--dates'
+        className={skeletonBlockDates}
         aria-hidden='true'
       />
-      <div className='pantry-detail__actions'>
+      <div className={dialogActions}>
         <div
-          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--action'
+          className={skeletonLineAction}
           aria-hidden='true'
         />
         <div
-          className='pantry-skeleton pantry-detail__skeleton-line pantry-detail__skeleton-line--action'
+          className={skeletonLineAction}
           aria-hidden='true'
         />
       </div>
@@ -114,11 +190,11 @@ function RouteComponent() {
 
   return (
     <section
-      className='pantry-detail'
+      className={detailLayout}
       aria-label='ブックマーク詳細'>
       {newBookmarkCreated ? (
         <div
-          className='pantry-flash'
+          className={flash}
           role='alert'>
           <CircleCheck
             size={16}
@@ -129,7 +205,7 @@ function RouteComponent() {
       ) : null}
       {bookmarkUpdated ? (
         <div
-          className='pantry-flash'
+          className={flash}
           role='alert'>
           <CircleCheck
             size={16}
@@ -176,7 +252,7 @@ function DetailBody({
           <Link
             to='/'
             search={listSearch}
-            className='pantry-text-link'>
+            className={textLink}>
             一覧へ戻る
           </Link>
         }
@@ -204,11 +280,11 @@ function DetailBody({
 
   return (
     <>
-      <nav className='pantry-detail__nav'>
+      <nav className={workbenchNav}>
         <Link
           to='/'
           search={listSearch}
-          className='pantry-text-link'>
+          className={textLink}>
           <ArrowLeft
             size={16}
             aria-hidden
@@ -217,13 +293,13 @@ function DetailBody({
         </Link>
       </nav>
 
-      <header className='pantry-detail__header'>
-        <h1 className='pantry-detail__title'>{bookmark.title}</h1>
+      <header className={detailHeader}>
+        <h1 className={workbenchTitle}>{bookmark.title}</h1>
         <a
           href={bookmark.url}
           target='_blank'
           rel='noreferrer'
-          className='pantry-detail__url'>
+          className={detailUrl}>
           {bookmark.url}{' '}
           <ExternalLink
             size={14}
@@ -232,42 +308,42 @@ function DetailBody({
         </a>
       </header>
 
-      {bookmark.note ? <p className='pantry-detail__note'>{bookmark.note}</p> : null}
+      {bookmark.note ? <p className={detailNote}>{bookmark.note}</p> : null}
 
       {tagNames.length > 0 ? (
-        <ul className='pantry-detail__tags'>
+        <ul className={detailTags}>
           {tagNames.map((name) => (
             <li key={name}>
               <Link
                 to='/'
                 search={buildListBackSearch([name])}
-                className='pantry-tag-chip pantry-tag-chip--link'>
+                className={tagChip({ visual: 'link' })}>
                 {name}
               </Link>
             </li>
           ))}
         </ul>
       ) : (
-        <p className='pantry-detail__meta'>タグなし</p>
+        <p className={detailMeta}>タグなし</p>
       )}
 
-      <dl className='pantry-detail__dates'>
-        <div>
-          <dt>作成</dt>
-          <dd>{formatDateTime(bookmark.createdAt)}</dd>
+      <dl className={detailDates}>
+        <div className={detailDatesGroup}>
+          <dt className={detailDatesDt}>作成</dt>
+          <dd className={detailDatesDd}>{formatDateTime(bookmark.createdAt)}</dd>
         </div>
-        <div>
-          <dt>更新</dt>
-          <dd>{formatDateTime(bookmark.updatedAt)}</dd>
+        <div className={detailDatesGroup}>
+          <dt className={detailDatesDt}>更新</dt>
+          <dd className={detailDatesDd}>{formatDateTime(bookmark.updatedAt)}</dd>
         </div>
       </dl>
 
-      <div className='pantry-detail__actions'>
+      <div className={dialogActions}>
         <Link
           to='/bookmarks/$id/edit'
           params={{ id: bookmark.id }}
           search={listSearch.tags !== undefined ? { tags: listSearch.tags } : {}}
-          className='pantry-button pantry-button--accent'>
+          className={button({ visual: 'accent' })}>
           <Pencil
             size={16}
             aria-hidden
@@ -284,7 +360,7 @@ function DetailBody({
             }
           }}>
           <Dialog.Trigger
-            className='pantry-button pantry-button--danger'
+            className={button({ visual: 'danger' })}
             disabled={isDeleting}>
             <Trash2
               size={16}
@@ -293,22 +369,22 @@ function DetailBody({
             削除
           </Dialog.Trigger>
           <Dialog.Portal>
-            <Dialog.Backdrop className='pantry-dialog__backdrop' />
-            <Dialog.Popup className='pantry-dialog'>
-              <Dialog.Title>このブックマークを削除しますか？</Dialog.Title>
+            <Dialog.Backdrop className={dialogBackdrop} />
+            <Dialog.Popup className={dialog}>
+              <Dialog.Title className={dialogTitle}>このブックマークを削除しますか？</Dialog.Title>
               <Dialog.Description>
                 「{bookmark.title}」を削除します。一覧からは見えなくなります。
               </Dialog.Description>
               {deleteError ? (
                 <p
-                  className='pantry-field__error'
+                  className={fieldError}
                   role='alert'>
                   {deleteError}
                 </p>
               ) : null}
-              <div className='pantry-dialog__actions'>
+              <div className={dialogActions}>
                 <Dialog.Close
-                  className='pantry-button pantry-button--secondary'
+                  className={button()}
                   disabled={isDeleting}>
                   <X
                     size={16}
@@ -318,7 +394,7 @@ function DetailBody({
                 </Dialog.Close>
                 <button
                   type='button'
-                  className='pantry-button pantry-button--danger'
+                  className={button({ visual: 'danger' })}
                   onClick={handleDelete}
                   disabled={isDeleting}>
                   <Trash2
