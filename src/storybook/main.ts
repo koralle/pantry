@@ -11,7 +11,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
  * break Storybook's Vite runner. Use a dedicated config for Storybook instead.
  */
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  stories: ['../**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: ['@storybook/addon-docs'],
   framework: '@storybook/tanstack-react',
   core: {
@@ -32,8 +32,8 @@ const config: StorybookConfig = {
     const { rolldownOptions } = viteConfig.build as {
       rolldownOptions: Record<string, unknown>
     }
-    rolldownOptions.experimental = {
-      ...(rolldownOptions.experimental as object | undefined),
+    rolldownOptions['experimental'] = {
+      ...(rolldownOptions['experimental'] as object | undefined),
       strictExecutionOrder: true
     }
 
@@ -41,7 +41,7 @@ const config: StorybookConfig = {
       plugins: [viteReact()],
       resolve: {
         alias: {
-          'styled-system': path.resolve(dirname, '../styled-system')
+          'styled-system': path.resolve(dirname, '../../styled-system')
         }
       }
     })

@@ -12,7 +12,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   resolve: {
     alias: {
-      'styled-system': path.resolve(dirname, '../styled-system')
+      'styled-system': path.resolve(dirname, '../../styled-system')
     }
   }
 })

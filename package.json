@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build-storybook": "storybook build",
+    "build-storybook": "storybook build -c src/storybook",
     "cf-typegen": "wrangler types",
     "db:seed": "pnpm dotenvx run -f .env.development -- pnpm tsx scripts/seed.ts",
     "deploy": "pnpm run build && wrangler deploy",
@@ -22,7 +22,7 @@
     "spec:format": "pnpm run spec:format:fix",
     "spec:format:check": "tsp format api-spec/main.tsp --check",
     "spec:format:fix": "tsp format api-spec/main.tsp",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006 -c src/storybook",
     "studio:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit studio",
     "test": "vitest run",
     "typecheck": "tsgo"
