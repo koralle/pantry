@@ -45,3 +45,7 @@ api-spec/dist/
 styled-system
 .playwright-mcp/
 screenshots/
+
+*storybook.log
+debug-storybook.log
+storybook-static
