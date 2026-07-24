@@ -6,10 +6,6 @@ import viteReact from '@vitejs/plugin-react'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
-/**
- * App vite.config.ts pulls in Cloudflare Workers + TanStack Start plugins that
- * break Storybook's Vite runner. Use a dedicated config for Storybook instead.
- */
 const config: StorybookConfig = {
   stories: ['../**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: ['@storybook/addon-docs'],
@@ -25,17 +21,6 @@ const config: StorybookConfig = {
   },
   async viteFinal(viteConfig) {
     const { mergeConfig } = await import('vite')
-
-    viteConfig.build ??= {}
-    // Vite 8 / Rolldown: preserve Storybook global module execution order.
-    ;(viteConfig.build as { rolldownOptions?: Record<string, unknown> }).rolldownOptions ??= {}
-    const { rolldownOptions } = viteConfig.build as {
-      rolldownOptions: Record<string, unknown>
-    }
-    rolldownOptions['experimental'] = {
-      ...(rolldownOptions['experimental'] as object | undefined),
-      strictExecutionOrder: true
-    }
 
     return mergeConfig(viteConfig, {
       plugins: [viteReact()],
