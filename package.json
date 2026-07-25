@@ -11,7 +11,7 @@
     "dev": "pnpm vite dev --port 3000",
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",
-    "knip": "env BETTER_AUTH_SECRET=knip-placeholder-secret-min-32-chars BETTER_AUTH_URL=http://localhost:3000 TURSO_AUTH_TOKEN=knip TURSO_CONNECTION_URL=http://127.0.0.1:8080 knip",
+    "knip": "pnpm dotenvx run -f .env.example -- knip",
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
     "migrate:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit migrate",
