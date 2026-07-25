@@ -62,8 +62,7 @@ catalogs:
     vitest: 4.1.9
   typescript:
     '@tsconfig/strictest': 2.0.8
-    '@typescript/native-preview': 7.0.0-dev.20260618.1
-    typescript: 6.0.3
+    typescript: 7.0.2
   typespec:
     '@typespec/compiler': 1.13.0
     '@typespec/http': 1.13.0

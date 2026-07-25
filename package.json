@@ -25,7 +25,7 @@
     "storybook": "storybook dev -p 6006 -c src/storybook",
     "studio:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit studio",
     "test": "vitest run",
-    "typecheck": "tsgo"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@base-ui/react": "catalog:ui",
@@ -64,7 +64,6 @@
     "@types/node": "catalog:runtime",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:typescript",
     "@typespec/compiler": "catalog:typespec",
     "@typespec/http": "catalog:typespec",
     "@typespec/openapi": "catalog:typespec",
