@@ -76,6 +76,7 @@ export default defineConfig({
     {
       files: [
         'drizzle.config.ts',
+        'knip.config.ts',
         'oxfmt.config.ts',
         'oxlint.config.ts',
         'panda.config.ts',
