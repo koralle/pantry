@@ -17,9 +17,13 @@ const config: KnipConfig = {
     'src/components/error-fallback.tsx',
     'src/entities/tag.ts'
   ],
+  // Do not parse lefthook.yaml / git hooks for entry scripts and binaries.
+  lefthook: false,
   ignoreDependencies: [
     // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
     'cloudflare',
+    // Used by git hooks; excluded from analysis via `lefthook: false` above
+    'lefthook',
     // Referenced from TypeSpec sources under api-spec/, not from TS/JS
     '@typespec/http',
     '@typespec/openapi',
