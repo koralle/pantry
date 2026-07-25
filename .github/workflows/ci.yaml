@@ -53,3 +53,18 @@ jobs:
         shell: bash
         run: |
           pnpm run typecheck
+
+  knip:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/composite-actions/cache-and-install
+
+      - name: Knip
+        shell: bash
+        run: |
+          pnpm run knip --reporter github-actions

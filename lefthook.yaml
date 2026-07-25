@@ -24,6 +24,8 @@ pre-push:
   commands:
     betterleaks:
       run: betterleaks git . --no-banner -v
+    knip:
+      run: pnpm run knip
 
 post-checkout:
   commands:
