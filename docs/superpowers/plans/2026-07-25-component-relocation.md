@@ -347,7 +347,7 @@ export type TagFormProps = {
 
 | Destination      | Exports                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `button.tsx`     | `button`                                                                                           |
+| `button.tsx`     | `button`、`Button`                                                                                 |
 | `input.tsx`      | `fieldInput`、`Input`                                                                              |
 | `select.tsx`     | `formControl`、`Select`                                                                            |
 | `link.tsx`       | `textLink`                                                                                         |
@@ -367,13 +367,26 @@ export type TagFormProps = {
 
 - [ ] **Step 2: class を merge する薄い primitive component を作成する**
 
-各 wrapper は native/Base UI props と `className` を受け取り、所有する recipe を `cx` で適用して、残りの props をすべて forward する。Input wrapper は Base UI の `onValueChange` contract を維持する。
+各 wrapper は native/Base UI props と `className` を受け取り、所有する recipe を `cx` で適用して、残りの props をすべて forward する。`Button` は native `button` props と `button` recipe の `visual` variant を受ける。Input wrapper は Base UI の `onValueChange` contract を維持する。
 
 ```tsx
 import { Input as BaseInput } from '@base-ui/react'
 import type { ComponentProps } from 'react'
 
 import { cx } from './style-utils'
+
+type ButtonProps = ComponentProps<'button'> & {
+  visual?: 'default' | 'accent' | 'danger'
+}
+
+export function Button({ className, visual, ...props }: ButtonProps) {
+  return (
+    <button
+      {...props}
+      className={cx(button({ visual }), className)}
+    />
+  )
+}
 
 export function Input({ className, ...props }: ComponentProps<typeof BaseInput>) {
   return (
@@ -405,9 +418,9 @@ export function Select({ className, ...props }: ComponentProps<'select'>) {
   一覧へ戻る
 </Link>
 
-<button className={button({ visual: 'accent' })}>
+<Button visual='accent'>
   保存
-</button>
+</Button>
 ```
 
 - [ ] **Step 4: props 互換のある箇所で direct Base UI input と native select を置換する**
@@ -416,7 +429,28 @@ sign-in、bookmark workbench、`src/routes/_protected/tags/-components/tag-form.
 
 `src/routes/_protected/bookmarks/-components/tag-selector.tsx` は source HEAD で unstyled Base UI `Input` を使うため、shared wrapper に置換しない。`fieldInput` を追加せず、`@base-ui/react` からの direct `Input` import と current DOM/display を維持する。
 
-- [ ] **Step 5: `src/styles/ui.ts` の 18 consumer を明示的な module import に移行する**
+- [ ] **Step 5: native button call site を shared Button に置換する**
+
+次の 15 箇所の native `<button className={button(...)}>` を、同じ `type`、`disabled`、`onClick`、`aria-*`、children を渡す `<Button>` に置換する。`visual` は recipe 呼び出し時と同じ値を prop として渡し、custom `className` がある場合は wrapper の merge に任せる。変更前後で render する native `button` と Panda generated class を同一にする。
+
+- `src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx`
+- `src/shared/components/ui-state.tsx`
+- `src/routes/_protected/bookmarks/$id/index.tsx` の native submit button
+- `src/features/bookmarks/components/bookmark-list.tsx`
+- `src/features/tags/components/tag-edit-fields.tsx` の 3 button
+- `src/routes/_protected/settings/index.tsx`
+- `src/routes/_protected/tags/$id.edit.tsx`
+- `src/features/tags/components/inline-add-tag.tsx`
+- `src/routes/_protected/tags/new.tsx`
+- `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx` の 2 button
+
+次の polymorphic caller は wrapper に置換しない。button 以外の element / Base UI component の props contract を保つため、`button` recipe を `className` で直接使い続ける。
+
+- `src/routes/_protected/tags/index.tsx` の button-like `Link`
+- `src/routes/_protected/tags/$id/index.tsx` の 2 button-like `Link`
+- `src/routes/_protected/bookmarks/$id/index.tsx` の `Dialog.Trigger` と `Dialog.Close`
+
+- [ ] **Step 6: `src/styles/ui.ts` の 18 consumer を明示的な module import に移行する**
 
 次の matrix は `styles/ui` の 18 consumer、display preservation のため wrapper migration を免除する TagSelector、Task 5 で新設する TagForm を示す。18 consumer は `styles/ui` import を削除し、recipe は Step 1 の destination module から直接 import し、`cx` は `style-utils.ts` から import する。TagForm は Task 6 で legacy import を direct shared module import に置換する。Task 5 で form-specific style は TagForm に移す一方、tags/new と tags/$id.edit は outer workbench layout と text link を所有し続けるため、aggregation import は `workbench` と `link` の direct import に置換する。
 
@@ -443,7 +477,7 @@ sign-in、bookmark workbench、`src/routes/_protected/tags/-components/tag-form.
 | `src/routes/_protected/-components/entrance-boxes.tsx`                    | `surface` と `link` を直接 import                                                                                                                                                                         |
 | `src/routes/_protected/tags/-components/tag-table.tsx`                    | `a11y` と `link` を直接 import                                                                                                                                                                            |
 
-- [ ] **Step 6: aggregation file を参照数が 0 になるまで残す**
+- [ ] **Step 7: aggregation file を参照数が 0 になるまで残す**
 
 `src/styles/ui.ts` はこの task の consumer migration 中は残す。次の command が 0 件を返すことを確認するまで削除しない。
 
@@ -451,7 +485,7 @@ sign-in、bookmark workbench、`src/routes/_protected/tags/-components/tag-form.
 rg "from ['\"].*styles/ui['\"]" src
 ```
 
-- [ ] **Step 7: format と型の検証を実行する**
+- [ ] **Step 8: format と型の検証を実行する**
 
 実行: `pnpm run format:check && pnpm run lint && pnpm run typecheck`
 

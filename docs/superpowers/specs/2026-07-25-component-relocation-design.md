@@ -78,6 +78,8 @@
 
 `Input` wrapper は `fieldInput` を適用する styled caller だけに使う。source HEAD で unstyled Base UI `Input` を使う `TagSelector` は wrapper に置換せず、直接 import と current DOM/display を維持する。
 
+`Button` は native `button` props と `button` recipe の `visual` variant を受け、`className` を recipe class と merge する。native `<button className={button({ visual })}>` の DOM と生成 class を維持できる call site だけを `<Button visual={visual}>` に置換し、polymorphic caller は recipe を直接使う。
+
 `Alert` という既存 common component はない。`flash` を使う成功通知の DOM は標準化しない。bookmark detail の `newBookmarkCreated` と `bookmarkUpdated` はそれぞれ既存の `<div role='alert'>` を、tag detail の `newTagCreated` と `tagUpdated` はそれぞれ既存の `<output>` を維持する。4 call site すべてで element と ARIA attribute（`role='alert'` と icon の `aria-hidden` を含む）を変更しない。form error summary も `formSummary` recipe を適用する既存の `<div>` のままとする。`alert.ts` は `flash`、`formSummaryTitle`、`formSummaryList` を含む recipe export だけを提供し、DOM を変更する wrapper は導入しない。
 
 ### Tag form extraction
