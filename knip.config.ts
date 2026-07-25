@@ -23,12 +23,7 @@ const config: KnipConfig = {
     // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
     'cloudflare',
     // Used by git hooks; excluded from analysis via `lefthook: false` above
-    'lefthook',
-    // Referenced from TypeSpec sources under api-spec/, not from TS/JS
-    '@typespec/http',
-    '@typespec/openapi',
-    '@typespec/openapi3',
-    '@typespec/rest'
+    'lefthook'
   ],
   rules: {
     // Existing unused exports/types/catalog noise — ratchets later
