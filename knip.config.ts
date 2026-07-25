@@ -39,7 +39,6 @@ const config: KnipConfig = {
     enumMembers: 'warn',
     namespaceMembers: 'warn',
     duplicates: 'warn',
-    // Chokidar is referenced via pnpm-workspace.yaml overrides (catalog:build)
     catalog: 'warn'
   }
 }
