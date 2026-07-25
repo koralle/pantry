@@ -6,5 +6,7 @@ export default defineConfig({
     cloudflareTest({
       wrangler: { configPath: './wrangler.jsonc' }
     })
-  ]
+  ],
+  // Required so Knip's Vitest plugin registers default test entry globs.
+  test: {}
 })
