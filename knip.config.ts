@@ -8,8 +8,8 @@ const config: KnipConfig = {
   storybook: {
     config: ['src/storybook/main.ts'],
     entry: [
-      'src/storybook/{preview,manager,index,vite.config}.{js,jsx,ts,tsx}',
-      'src/**/*.stories.@(js|jsx|mjs|ts|tsx)'
+      'src/storybook/{preview,manager,index,vite.config}.{ts,tsx}',
+      'src/**/*.stories.@(ts|tsx)'
     ]
   },
   ignore: [
