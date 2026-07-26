@@ -383,8 +383,8 @@ export default defineConfig({
 
   jsxFramework: 'react',
 
-  strictTokens: true,
-  strictPropertyValues: true,
+  strictTokens: false,
+  strictPropertyValues: false,
 
   validation: 'error'
 })
