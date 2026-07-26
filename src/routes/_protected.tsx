@@ -1,24 +1,18 @@
 import { Dialog } from '@base-ui/react/dialog'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  redirect,
-  useRouter,
-  useSearch
-} from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useRouter, useSearch } from '@tanstack/react-router'
 import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 import { Suspense, useState, useTransition } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
-import { css, cx } from 'styled-system/css'
+import { css } from 'styled-system/css'
 
 import { UiError, UiLoading } from '../components/ui-state'
 import { authClient } from '../features/auth/auth-client'
 import { getSession } from '../features/auth/auth.function'
 import { ShelfNavAsync } from '../features/tags/components/shelf-nav'
 import { fetchShelfTags } from '../features/tags/tag.function'
+import { StyledLink } from '../shared/components/styled-link'
 import { button } from '../styles/ui'
 import { defaultBookmarkSearch } from './_protected/-lib/bookmark-search-schema'
 
@@ -87,29 +81,6 @@ const headerRow = css({
   alignItems: 'center',
   gap: '3',
   flexWrap: 'wrap'
-})
-
-const headerAction = css({
-  color: 'fg.default',
-  textDecoration: 'none',
-  minBlockSize: 'touch',
-  display: 'inline-flex',
-  alignItems: 'center',
-  paddingBlock: '1.5',
-  paddingInline: '2',
-  borderWidth: 'none',
-  background: 'transparent',
-  cursor: 'pointer'
-})
-
-const brand = css({
-  fontWeight: 'bold',
-  letterSpacing: 'wide',
-  color: 'fg.default',
-  textDecoration: 'none',
-  minBlockSize: 'touch',
-  display: 'inline-flex',
-  alignItems: 'center'
 })
 
 const brandMobile = css({
@@ -291,46 +262,47 @@ function Layout() {
     <div className={shell}>
       <aside className={shelfRail}>
         <div>
-          <Link
+          <StyledLink
             to='/'
             search={defaultBookmarkSearch}
-            className={brand}>
+            visual='brand'>
             Pantry
-          </Link>
+          </StyledLink>
         </div>
         <div className={shelfRailNav}>{renderShelfNav()}</div>
         <div className={shelfRailMeta}>
-          <Link
+          <StyledLink
             to='/tags'
             search={{ limit: 50, offset: 0 }}
-            className={headerAction}>
+            visual='plain'>
             <Tags
               size={16}
               aria-hidden
             />{' '}
             タグ管理
-          </Link>
-          <Link
+          </StyledLink>
+          <StyledLink
             to='/settings'
-            className={headerAction}>
+            visual='plain'>
             <Settings
               size={16}
               aria-hidden
             />{' '}
             設定
-          </Link>
+          </StyledLink>
         </div>
       </aside>
 
       <div className={shellContent}>
         <header className={shellHeader}>
           <div className={headerRow}>
-            <Link
+            <StyledLink
               to='/'
               search={defaultBookmarkSearch}
-              className={cx(brand, brandMobile)}>
+              visual='brand'
+              className={brandMobile}>
               Pantry
-            </Link>
+            </StyledLink>
 
             <Dialog.Root
               open={shelfOpen}
@@ -362,9 +334,9 @@ function Layout() {
           </div>
 
           <div className={headerRow}>
-            <Link
+            <StyledLink
               to='/bookmarks/new'
-              className={headerAction}
+              visual='plain'
               search={
                 indexSearch?.tags !== undefined && indexSearch.tags.length > 0
                   ? { tags: indexSearch.tags }
@@ -375,16 +347,16 @@ function Layout() {
                 aria-hidden
               />{' '}
               新規
-            </Link>
-            <Link
+            </StyledLink>
+            <StyledLink
               to='/settings'
-              className={headerAction}>
+              visual='plain'>
               <Settings
                 size={16}
                 aria-hidden
               />{' '}
               設定
-            </Link>
+            </StyledLink>
             <button
               type='button'
               className={signOut}
