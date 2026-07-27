@@ -8,6 +8,7 @@ import { css } from 'styled-system/css'
 import { PantryMotion } from '../../../components/pantry-motion'
 import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
 import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
+import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { button, cx, formControl, srOnly, surface, tagChip } from '../../../styles/ui'
 import type { ShelfTag } from '../../tags/tag-shelf'
@@ -347,15 +348,13 @@ function ListToolbar({
           }}
           placeholder='タイトル・URL・メモ'
         />
-        <button
-          type='submit'
-          className={button()}>
+        <StyledButton type='submit'>
           <Search
             size={16}
             aria-hidden
           />{' '}
           検索
-        </button>
+        </StyledButton>
       </form>
 
       <div className={controls}>

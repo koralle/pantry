@@ -5,7 +5,8 @@ import { useState } from 'react'
 import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
-import { button, field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../styles/ui'
+import { StyledButton } from '../../../shared/components/styled-button'
+import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../styles/ui'
 import { tagNameSchema } from '../tag-name.schema'
 import { addTag } from '../tag.function'
 
@@ -70,16 +71,15 @@ export function InlineAddTag() {
             }}
             disabled={isPending}
           />
-          <button
+          <StyledButton
             type='submit'
-            className={button()}
             disabled={isPending}>
             <Plus
               size={16}
               aria-hidden
             />{' '}
             {isPending ? '追加中...' : '追加'}
-          </button>
+          </StyledButton>
         </div>
       </div>
       {tagError != null ? (

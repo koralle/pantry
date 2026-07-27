@@ -1,7 +1,8 @@
 import { Check, Minus, Pin, PinOff, Plus } from 'lucide-react'
 import { css, cx } from 'styled-system/css'
 
-import { button, field, fieldLabel, formControl } from '../../../styles/ui'
+import { StyledButton } from '../../../shared/components/styled-button'
+import { field, fieldLabel, formControl } from '../../../styles/ui'
 import { TAG_COLOR_PALETTE } from '../tag-color-palette'
 
 const colorPalette = css({
@@ -99,9 +100,7 @@ export function TagEditFields({
           id='tag-pinned-label'>
           ピン留め
         </span>
-        <button
-          type='button'
-          className={button()}
+        <StyledButton
           aria-pressed={pinned}
           aria-labelledby='tag-pinned-label'
           disabled={disabled}
@@ -120,7 +119,7 @@ export function TagEditFields({
             />
           )}{' '}
           {pinLabel(pinned)}
-        </button>
+        </StyledButton>
       </div>
 
       <fieldset
@@ -170,9 +169,7 @@ export function TagEditFields({
           並び順
         </label>
         <div className={sortOrderRow}>
-          <button
-            type='button'
-            className={button()}
+          <StyledButton
             aria-label='並び順を下げる'
             disabled={disabled}
             onClick={() => {
@@ -182,7 +179,7 @@ export function TagEditFields({
               size={16}
               aria-hidden
             />
-          </button>
+          </StyledButton>
           <input
             className={sortOrderInput}
             id='tag-sort-order'
@@ -198,9 +195,7 @@ export function TagEditFields({
               onSortOrderChange(0)
             }}
           />
-          <button
-            type='button'
-            className={button()}
+          <StyledButton
             aria-label='並び順を上げる'
             disabled={disabled}
             onClick={() => {
@@ -210,7 +205,7 @@ export function TagEditFields({
               size={16}
               aria-hidden
             />
-          </button>
+          </StyledButton>
         </div>
       </div>
     </>

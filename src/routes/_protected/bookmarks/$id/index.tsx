@@ -18,6 +18,7 @@ import { UiEmpty, UiError } from '../../../../components/ui-state'
 import { deleteBookmark, getBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
 import { formatDateTime } from '../../../../lib/format-date'
+import { StyledButton } from '../../../../shared/components/styled-button'
 import { StyledLink } from '../../../../shared/components/styled-link'
 import {
   button,
@@ -392,9 +393,8 @@ function DetailBody({
                   />{' '}
                   キャンセル
                 </Dialog.Close>
-                <button
-                  type='button'
-                  className={button({ visual: 'danger' })}
+                <StyledButton
+                  visual='danger'
                   onClick={handleDelete}
                   disabled={isDeleting}>
                   <Trash2
@@ -402,7 +402,7 @@ function DetailBody({
                     aria-hidden
                   />{' '}
                   {isDeleting ? '削除中…' : '削除を確認'}
-                </button>
+                </StyledButton>
               </div>
             </Dialog.Popup>
           </Dialog.Portal>

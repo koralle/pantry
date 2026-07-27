@@ -7,8 +7,8 @@ import { css } from 'styled-system/css'
 import { defaultBookmarkSearch } from '../-lib/bookmark-search-schema'
 import { authClient } from '../../../features/auth/auth-client'
 import { ensureSession } from '../../../features/auth/auth.function'
+import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { button } from '../../../styles/ui'
 
 const settings = css({
   maxInlineSize: '28rem',
@@ -115,9 +115,8 @@ function RouteComponent() {
 
       <section className={settingsSection}>
         <h2 className={settingsHeading}>セッション</h2>
-        <button
-          type='button'
-          className={button({ visual: 'accent' })}
+        <StyledButton
+          visual='accent'
           onClick={handleSignOut}
           disabled={isPending}>
           <LogOut
@@ -125,7 +124,7 @@ function RouteComponent() {
             aria-hidden
           />{' '}
           {isPending ? 'ログアウト中...' : 'ログアウト'}
-        </button>
+        </StyledButton>
       </section>
 
       <StyledLink
