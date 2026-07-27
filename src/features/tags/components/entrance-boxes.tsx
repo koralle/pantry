@@ -6,7 +6,8 @@ import type { FallbackProps } from 'react-error-boundary'
 import { css, cx } from 'styled-system/css'
 
 import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
-import { surface, textLink } from '../../../styles/ui'
+import { StyledLink } from '../../../shared/components/styled-link'
+import { surface } from '../../../styles/ui'
 import { sortTagsForEntrance } from '../tag-shelf'
 import type { ShelfTag } from '../tag-shelf'
 import { touchTagLastUsed } from '../tag.function'
@@ -105,24 +106,24 @@ function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
         title='まだ箱がありません'
         action={
           <div className={entranceEmptyActions}>
-            <Link
+            <StyledLink
               to='/tags/new'
-              className={textLink}>
+              visual='accent'>
               <Plus
                 size={16}
                 aria-hidden
               />{' '}
               タグを作成
-            </Link>
-            <Link
+            </StyledLink>
+            <StyledLink
               to='/bookmarks/new'
-              className={textLink}>
+              visual='accent'>
               <Plus
                 size={16}
                 aria-hidden
               />{' '}
               新規ブックマーク
-            </Link>
+            </StyledLink>
           </div>
         }
       />

@@ -12,14 +12,6 @@ export const surface = css({
 
 export const srOnly = visuallyHidden()
 
-export const textLink = css({
-  color: 'accent.solid',
-  textDecoration: 'none',
-  minBlockSize: 'touch',
-  display: 'inline-flex',
-  alignItems: 'center'
-})
-
 export const flash = css({
   borderWidth: 'thin',
   borderStyle: 'solid',

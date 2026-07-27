@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, LogOut } from 'lucide-react'
 import { useTransition } from 'react'
 import { css } from 'styled-system/css'
@@ -7,7 +7,8 @@ import { css } from 'styled-system/css'
 import { defaultBookmarkSearch } from '../-lib/bookmark-search-schema'
 import { authClient } from '../../../features/auth/auth-client'
 import { ensureSession } from '../../../features/auth/auth.function'
-import { button, textLink } from '../../../styles/ui'
+import { StyledLink } from '../../../shared/components/styled-link'
+import { button } from '../../../styles/ui'
 
 const settings = css({
   maxInlineSize: '28rem',
@@ -127,16 +128,16 @@ function RouteComponent() {
         </button>
       </section>
 
-      <Link
+      <StyledLink
         to='/'
         search={defaultBookmarkSearch}
-        className={textLink}>
+        visual='accent'>
         <ArrowLeft
           size={16}
           aria-hidden
         />{' '}
         玄関へ戻る
-      </Link>
+      </StyledLink>
     </div>
   )
 }

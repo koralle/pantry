@@ -1,4 +1,4 @@
-export { cx, flash, srOnly, surface, textLink } from './primitives'
+export { cx, flash, srOnly, surface } from './primitives'
 export { button } from './button'
 export { tagChip } from './tag-chip'
 export {

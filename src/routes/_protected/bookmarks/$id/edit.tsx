@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import * as v from 'valibot'
@@ -8,13 +8,8 @@ import { buildListBackSearch } from '../-lib/list-back-search'
 import { UiEmpty } from '../../../../components/ui-state'
 import { getBookmark, updateBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
-import {
-  textLink,
-  workbench,
-  workbenchLead,
-  workbenchNav,
-  workbenchTitle
-} from '../../../../styles/ui'
+import { StyledLink } from '../../../../shared/components/styled-link'
+import { workbench, workbenchLead, workbenchNav, workbenchTitle } from '../../../../styles/ui'
 
 const bookmarkEditSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
@@ -54,12 +49,12 @@ function RouteComponent() {
         <UiEmpty
           title='このブックマークは見つかりません'
           action={
-            <Link
+            <StyledLink
               to='/'
               search={listSearch}
-              className={textLink}>
+              visual='accent'>
               一覧へ戻る
-            </Link>
+            </StyledLink>
           }
         />
       </section>
@@ -97,27 +92,27 @@ function EditWorkbench({
       className={workbench}
       aria-label='ブックマーク編集'>
       <nav className={workbenchNav}>
-        <Link
+        <StyledLink
           to='/bookmarks/$id'
           params={{ id: bookmark.id }}
           search={searchTags !== undefined ? { tags: searchTags } : {}}
-          className={textLink}>
+          visual='accent'>
           <ArrowLeft
             size={16}
             aria-hidden
           />{' '}
           詳細へ戻る
-        </Link>
-        <Link
+        </StyledLink>
+        <StyledLink
           to='/'
           search={listSearch}
-          className={textLink}>
+          visual='accent'>
           <ArrowLeft
             size={16}
             aria-hidden
           />{' '}
           一覧へ戻る
-        </Link>
+        </StyledLink>
       </nav>
 
       <h1 className={workbenchTitle}>ブックマークを並べ替える</h1>

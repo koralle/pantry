@@ -1,8 +1,8 @@
-import { Link } from '@tanstack/react-router'
 import { Globe } from 'lucide-react'
 import { css, cx } from 'styled-system/css'
 
 import { formatDateTime } from '../../../lib/format-date'
+import { StyledLink } from '../../../shared/components/styled-link'
 import { tagChip } from '../../../styles/ui'
 import type { BookmarkListItem } from '../attach-bookmark-tags'
 import { shortenUrl } from '../shorten-url'
@@ -18,14 +18,6 @@ const tableCell = css({
   verticalAlign: 'top'
 })
 const tableHeader = css({ color: 'fg.muted', fontSize: 'xs2', fontWeight: 'semibold' })
-const rowLink = css({
-  color: 'fg.default',
-  textDecoration: 'none',
-  display: 'inline-flex',
-  alignItems: 'center',
-  minBlockSize: 'touch'
-})
-const rowLinkMuted = css({ color: 'fg.muted', fontSize: 'xs' })
 const bookmarkTags = css({
   display: 'flex',
   flexWrap: 'wrap',
@@ -56,26 +48,26 @@ export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTablePro
         {bookmarks.map((bookmark) => (
           <tr key={bookmark.id}>
             <td className={tableCell}>
-              <Link
+              <StyledLink
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
                 search={detailSearch}
-                className={rowLink}>
+                visual='plain'>
                 {bookmark.title}
-              </Link>
+              </StyledLink>
             </td>
             <td className={tableCell}>
-              <Link
+              <StyledLink
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
                 search={detailSearch}
-                className={cx(rowLink, rowLinkMuted)}>
+                visual='muted'>
                 <Globe
                   size={14}
                   aria-hidden
                 />{' '}
                 {shortenUrl(bookmark.url, 48)}
-              </Link>
+              </StyledLink>
             </td>
             <td className={tableCell}>
               {bookmark.tags.length > 0 ? (
@@ -91,13 +83,13 @@ export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTablePro
               )}
             </td>
             <td className={tableCell}>
-              <Link
+              <StyledLink
                 to='/bookmarks/$id'
                 params={{ id: bookmark.id }}
                 search={detailSearch}
-                className={cx(rowLink, rowLinkMuted)}>
+                visual='muted'>
                 {formatDateTime(bookmark.updatedAt)}
-              </Link>
+              </StyledLink>
             </td>
           </tr>
         ))}

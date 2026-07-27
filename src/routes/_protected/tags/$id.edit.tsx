@@ -1,6 +1,6 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
-import { createFileRoute, Link, useNavigate, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, CircleAlert } from 'lucide-react'
 import { Suspense, use, useActionState, useState } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
@@ -11,6 +11,7 @@ import { UiError, UiLoading } from '../../../components/ui-state'
 import type { TagSelectType } from '../../../db/schema/tag'
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { getTag, updateTag } from '../../../features/tags/tag.function'
+import { StyledLink } from '../../../shared/components/styled-link'
 import {
   button,
   field,
@@ -18,7 +19,6 @@ import {
   fieldLabel,
   formSummary,
   srOnly,
-  textLink,
   workbench,
   workbenchFields,
   workbenchForm,
@@ -83,16 +83,16 @@ function RouteComponent() {
   return (
     <div className={workbench}>
       <nav className={workbenchNav}>
-        <Link
+        <StyledLink
           to='/tags'
           search={{ limit: 50, offset: 0 }}
-          className={textLink}>
+          visual='accent'>
           <ArrowLeft
             size={16}
             aria-hidden
           />{' '}
           一覧へ戻る
-        </Link>
+        </StyledLink>
       </nav>
 
       <h1 className={workbenchTitle}>タグ編集</h1>

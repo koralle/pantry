@@ -8,6 +8,7 @@ import { css } from 'styled-system/css'
 import { PantryMotion } from '../../../components/pantry-motion'
 import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
 import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
+import { StyledLink } from '../../../shared/components/styled-link'
 import { button, cx, formControl, srOnly, surface, tagChip } from '../../../styles/ui'
 import type { ShelfTag } from '../../tags/tag-shelf'
 import { touchTagLastUsed } from '../../tags/tag.function'
@@ -29,14 +30,6 @@ const titleRow = css({
   gap: '3'
 })
 const title = css({ margin: '0', fontSize: 'lg', fontWeight: 'bold' })
-const newLink = css({
-  color: 'accent.solid',
-  textDecoration: 'none',
-  minBlockSize: 'touch',
-  display: 'inline-flex',
-  alignItems: 'center',
-  fontWeight: 'semibold'
-})
 const searchForm = css({ display: 'flex', gap: '2', flexWrap: 'wrap' })
 const searchInput = cx(formControl, css({ flex: '1', minInlineSize: '12rem' }))
 const controls = css({
@@ -316,16 +309,16 @@ function ListToolbar({
     <div className={toolbar}>
       <div className={titleRow}>
         <h1 className={title}>{shelfTitle(search)}</h1>
-        <Link
+        <StyledLink
           to='/bookmarks/new'
           search={detailSearchFromList(search)}
-          className={newLink}>
+          visual='accent'>
           <Plus
             size={16}
             aria-hidden
           />{' '}
           新規
-        </Link>
+        </StyledLink>
       </div>
 
       <form
@@ -516,14 +509,15 @@ function BookmarkListResults({
         <UiEmpty
           title='条件に合うブックマークがありません'
           action={
-            <Link
+            <StyledLink
               to='/'
               search={buildListSearch(search, {
                 clearQ: hasQ,
                 clearTags: hasTags
-              })}>
+              })}
+              visual='accent'>
               条件をクリア
-            </Link>
+            </StyledLink>
           }
         />
       )
@@ -533,11 +527,12 @@ function BookmarkListResults({
       <UiEmpty
         title='この棚はまだ空です'
         action={
-          <Link
+          <StyledLink
             to='/bookmarks/new'
-            search={detailSearchFromList(search)}>
+            search={detailSearchFromList(search)}
+            visual='accent'>
             新規ブックマーク
-          </Link>
+          </StyledLink>
         }
       />
     )

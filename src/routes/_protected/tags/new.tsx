@@ -1,12 +1,13 @@
 import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, CircleAlert } from 'lucide-react'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { addTag } from '../../../features/tags/tag.function'
+import { StyledLink } from '../../../shared/components/styled-link'
 import {
   button,
   field,
@@ -14,7 +15,6 @@ import {
   fieldLabel,
   formSummary,
   srOnly,
-  textLink,
   workbench,
   workbenchFields,
   workbenchForm,
@@ -55,16 +55,16 @@ function RouteComponent() {
   return (
     <div className={workbench}>
       <nav className={workbenchNav}>
-        <Link
+        <StyledLink
           to='/tags'
           search={{ limit: 50, offset: 0 }}
-          className={textLink}>
+          visual='accent'>
           <ArrowLeft
             size={16}
             aria-hidden
           />{' '}
           一覧へ戻る
-        </Link>
+        </StyledLink>
       </nav>
 
       <h1 className={workbenchTitle}>タグ新規作成</h1>
