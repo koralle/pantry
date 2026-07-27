@@ -11,9 +11,9 @@ import { UiError, UiLoading } from '../../../components/ui-state'
 import type { TagSelectType } from '../../../db/schema/tag'
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { getTag, updateTag } from '../../../features/tags/tag.function'
+import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import {
-  button,
   field,
   fieldInput,
   fieldLabel,
@@ -215,12 +215,12 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
         />
       </fieldset>
 
-      <button
+      <StyledButton
         type='submit'
-        className={button({ visual: 'accent' })}
+        visual='accent'
         disabled={isPending}>
         {isPending ? '更新中...' : '更新'}
-      </button>
+      </StyledButton>
     </form>
   )
 }

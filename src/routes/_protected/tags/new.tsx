@@ -7,9 +7,9 @@ import * as v from 'valibot'
 
 import { TagEditFields } from '../../../features/tags/components/tag-edit-fields'
 import { addTag } from '../../../features/tags/tag.function'
+import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import {
-  button,
   field,
   fieldInput,
   fieldLabel,
@@ -180,12 +180,12 @@ function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
         />
       </fieldset>
 
-      <button
+      <StyledButton
         type='submit'
-        className={button({ visual: 'accent' })}
+        visual='accent'
         disabled={isPending}>
         {isPending ? '登録中...' : '登録'}
-      </button>
+      </StyledButton>
     </form>
   )
 }

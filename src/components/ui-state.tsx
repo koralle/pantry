@@ -1,7 +1,8 @@
 import { LoaderCircle, PackageOpen, RefreshCw, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { button, skeleton, spinner, stateBox, stateErrorMessage, stateMessage } from '../styles/ui'
+import { StyledButton } from '../shared/components/styled-button'
+import { skeleton, spinner, stateBox, stateErrorMessage, stateMessage } from '../styles/ui'
 
 export function UiLoading({ label = '読み込み中' }: { label?: string }) {
   return (
@@ -42,16 +43,15 @@ export function UiError({ message, onRetry }: { message: string; onRetry?: () =>
       />
       <p className={stateErrorMessage}>{message}</p>
       {onRetry ? (
-        <button
-          type='button'
-          className={button({ visual: 'accent' })}
+        <StyledButton
+          visual='accent'
           onClick={onRetry}>
           <RefreshCw
             size={16}
             aria-hidden
           />{' '}
           再試行
-        </button>
+        </StyledButton>
       ) : undefined}
     </div>
   )

@@ -7,8 +7,8 @@ import * as v from 'valibot'
 import type { TagSelectType } from '../../../../db/schema/tag'
 import { fetchBookmarkTitle } from '../../../../features/bookmarks/bookmark.function'
 import { TagSelector } from '../../../../features/bookmarks/components/tag-selector'
+import { StyledButton } from '../../../../shared/components/styled-button'
 import {
-  button,
   field,
   fieldError,
   fieldInput,
@@ -175,9 +175,7 @@ export function BookmarkWorkbenchForm({
                   required
                   disabled={busy}
                 />
-                <button
-                  type='button'
-                  className={button()}
+                <StyledButton
                   onClick={() => {
                     void handleFetchTitle()
                   }}
@@ -187,7 +185,7 @@ export function BookmarkWorkbenchForm({
                     aria-hidden
                   />{' '}
                   {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
-                </button>
+                </StyledButton>
               </div>
               {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
             </div>
@@ -254,12 +252,12 @@ export function BookmarkWorkbenchForm({
         />
       </div>
 
-      <button
+      <StyledButton
         type='submit'
-        className={button({ visual: 'accent' })}
+        visual='accent'
         disabled={busy}>
         {isPending ? pendingLabel : submitLabel}
-      </button>
+      </StyledButton>
     </form>
   )
 }

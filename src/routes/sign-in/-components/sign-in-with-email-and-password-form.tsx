@@ -8,8 +8,8 @@ import { parseAsync } from 'valibot'
 import { SignInError } from '../-lib/error'
 import { emailSchema, passwordSchema, signInSchema } from '../-lib/schema'
 import type { SignInSchema } from '../-lib/schema'
+import { StyledButton } from '../../../shared/components/styled-button'
 import {
-  button,
   field,
   fieldError,
   fieldInput,
@@ -151,16 +151,16 @@ export const SignInWithEmailAndPasswordForm = ({
         </Field>
       </fieldset>
 
-      <button
+      <StyledButton
         type='submit'
-        className={button({ visual: 'accent' })}
+        visual='accent'
         disabled={isPending}>
         <LogIn
           size={16}
           aria-hidden
         />{' '}
         {isPending ? 'サインイン中...' : 'サインイン'}
-      </button>
+      </StyledButton>
     </form>
   )
 }
