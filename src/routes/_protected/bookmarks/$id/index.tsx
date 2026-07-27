@@ -18,6 +18,7 @@ import { UiEmpty, UiError } from '../../../../components/ui-state'
 import { deleteBookmark, getBookmark } from '../../../../features/bookmarks/bookmark.function'
 import { fetchTags } from '../../../../features/tags/tag.function'
 import { formatDateTime } from '../../../../lib/format-date'
+import { StyledLink } from '../../../../shared/components/styled-link'
 import {
   button,
   cx,
@@ -30,7 +31,6 @@ import {
   skeleton,
   srOnly,
   tagChip,
-  textLink,
   workbenchNav,
   workbenchTitle
 } from '../../../../styles/ui'
@@ -249,12 +249,12 @@ function DetailBody({
       <UiEmpty
         title='このブックマークは見つかりません'
         action={
-          <Link
+          <StyledLink
             to='/'
             search={listSearch}
-            className={textLink}>
+            visual='accent'>
             一覧へ戻る
-          </Link>
+          </StyledLink>
         }
       />
     )
@@ -281,16 +281,16 @@ function DetailBody({
   return (
     <>
       <nav className={workbenchNav}>
-        <Link
+        <StyledLink
           to='/'
           search={listSearch}
-          className={textLink}>
+          visual='accent'>
           <ArrowLeft
             size={16}
             aria-hidden
           />{' '}
           一覧へ戻る
-        </Link>
+        </StyledLink>
       </nav>
 
       <header className={detailHeader}>

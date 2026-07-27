@@ -10,14 +10,8 @@ import { UiError, UiLoading } from '../../../../components/ui-state'
 import type { TagSelectType } from '../../../../db/schema/tag'
 import { tagShelfSearch } from '../../../../features/tags/components/shelf-nav'
 import { getTag } from '../../../../features/tags/tag.function'
-import {
-  button,
-  flash,
-  textLink,
-  workbench,
-  workbenchNav,
-  workbenchTitle
-} from '../../../../styles/ui'
+import { StyledLink } from '../../../../shared/components/styled-link'
+import { button, flash, workbench, workbenchNav, workbenchTitle } from '../../../../styles/ui'
 
 const tagIdParamSchema = v.pipe(v.string(), v.transform(Number), v.integer('Invalid tag id'))
 
@@ -118,16 +112,16 @@ function RouteComponent() {
       ) : null}
 
       <nav className={workbenchNav}>
-        <Link
+        <StyledLink
           to='/tags'
           search={{ limit: 50, offset: 0 }}
-          className={textLink}>
+          visual='accent'>
           <ArrowLeft
             size={16}
             aria-hidden
           />{' '}
           一覧へ戻る
-        </Link>
+        </StyledLink>
       </nav>
 
       <ErrorBoundary

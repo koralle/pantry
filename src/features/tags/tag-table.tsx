@@ -1,10 +1,10 @@
-import { Link } from '@tanstack/react-router'
 import { Pencil, Pin } from 'lucide-react'
 import { use } from 'react'
 import { css } from 'styled-system/css'
 
 import { UiEmpty } from '../../components/ui-state'
-import { srOnly, textLink } from '../../styles/ui'
+import { StyledLink } from '../../shared/components/styled-link'
+import { srOnly } from '../../styles/ui'
 import { tagShelfSearch } from './components/shelf-nav'
 import { sortTagsForNav } from './tag-shelf'
 import type { ShelfTag } from './tag-shelf'
@@ -28,15 +28,6 @@ const tagTableHeader = css({
   color: 'fg.muted',
   fontSize: 'xs2',
   fontWeight: 'semibold'
-})
-
-const tagTableName = css({
-  color: 'fg.default',
-  textDecoration: 'none',
-  fontWeight: 'semibold',
-  minBlockSize: 'touch',
-  display: 'inline-flex',
-  alignItems: 'center'
 })
 
 const tagTableCount = css({
@@ -64,11 +55,11 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
       <UiEmpty
         title='まだ箱がありません'
         action={
-          <Link
+          <StyledLink
             to='/tags/new'
-            className={textLink}>
+            visual='accent'>
             タグを作成
-          </Link>
+          </StyledLink>
         }
       />
     )
@@ -117,12 +108,13 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
               <span className={srOnly}>{tag.color ?? '色なし'}</span>
             </td>
             <td className={tagTableCell}>
-              <Link
+              <StyledLink
                 to='/'
                 search={tagShelfSearch(tag.name)}
-                className={tagTableName}>
+                visual='plain'
+                fontWeight='semibold'>
                 {tag.name}
-              </Link>
+              </StyledLink>
             </td>
             <td className={`${tagTableCell} ${tagTableCount}`}>{tag.bookmarkCount}</td>
             <td className={tagTableCell}>
@@ -139,16 +131,16 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
               )}
             </td>
             <td className={tagTableCell}>
-              <Link
+              <StyledLink
                 to='/tags/$id/edit'
                 params={{ id: String(tag.id) }}
-                className={textLink}>
+                visual='accent'>
                 <Pencil
                   size={16}
                   aria-hidden
                 />{' '}
                 編集
-              </Link>
+              </StyledLink>
             </td>
           </tr>
         ))}
