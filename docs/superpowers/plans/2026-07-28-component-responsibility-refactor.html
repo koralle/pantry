@@ -1,0 +1,2594 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+    <title>Component Responsibility Refactor Implementation Plan</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231c2928'/%3E%3Cpath d='M18 18h28v7H18zm0 12h28v7H18zm0 12h19v7H18z' fill='%23faf7ef'/%3E%3C/svg%3E" />
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #e8ece8;
+        --paper: #faf7ef;
+        --ink: #202522;
+        --muted: #626a64;
+        --rail: #1c2928;
+        --rail-ink: #d8e2dd;
+        --accent: #a84f35;
+        --line: #d8d4c9;
+        --code: #182322;
+        --code-ink: #e0ece6;
+        font-family: Georgia, 'Yu Mincho', 'Hiragino Mincho ProN', serif;
+        line-height: 1.7;
+        color: var(--ink);
+        background: var(--canvas);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 0.18em;
+      }
+      a:focus-visible,
+      pre:focus-visible,
+      .table-scroll:focus-visible {
+        outline: 3px solid #d87554;
+        outline-offset: 3px;
+      }
+
+      .skip-link {
+        position: fixed;
+        inset-block-start: 0.75rem;
+        inset-inline-start: 0.75rem;
+        z-index: 10;
+        padding: 0.6rem 0.85rem;
+        color: white;
+        background: var(--accent);
+        transform: translateY(-200%);
+      }
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      .document-header {
+        padding: 2.5rem clamp(1.25rem, 4vw, 4rem) 1.75rem;
+        color: var(--rail-ink);
+        background: var(--rail);
+      }
+      .document-header p {
+        margin: 0;
+        font:
+          0.78rem/1.5 system-ui,
+          sans-serif;
+      }
+      .document-header strong {
+        display: block;
+        max-width: 32ch;
+        margin-top: 0.35rem;
+        font-size: clamp(1.45rem, 3vw, 2.6rem);
+        line-height: 1.15;
+        color: white;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+        gap: clamp(1rem, 3vw, 3rem);
+        max-width: 96rem;
+        margin: 0 auto;
+        padding: 2rem clamp(1rem, 3vw, 3rem) 5rem;
+        align-items: start;
+      }
+
+      .toc {
+        position: sticky;
+        inset-block-start: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        color: var(--rail-ink);
+        background: var(--rail);
+        font:
+          0.82rem/1.45 system-ui,
+          sans-serif;
+      }
+      .toc h2 {
+        margin: 0 0 0.75rem;
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .toc ol {
+        margin: 0;
+        padding-inline-start: 1.15rem;
+      }
+      .toc > ol {
+        padding-inline-start: 0;
+        list-style: none;
+      }
+      .toc li {
+        margin: 0.28rem 0;
+      }
+      .toc a {
+        display: block;
+        padding: 0.22rem 0.35rem;
+        border-inline-start: 3px solid transparent;
+        color: inherit;
+        text-decoration: none;
+      }
+      .toc a:hover {
+        color: white;
+      }
+      .toc a[aria-current='location'] {
+        border-inline-start-color: #d87554;
+        color: white;
+        background: rgb(255 255 255 / 8%);
+      }
+
+      main {
+        min-width: 0;
+      }
+      article {
+        width: min(100%, 82ch);
+        margin: 0 auto;
+        padding: clamp(1.4rem, 4vw, 4rem);
+        border: 1px solid var(--line);
+        border-radius: 0.75rem;
+        background: var(--paper);
+        box-shadow: 0 1.25rem 4rem rgb(28 41 40 / 9%);
+      }
+      article > h1 {
+        margin-top: 0;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+      }
+      h2,
+      h3 {
+        scroll-margin-top: 1rem;
+        text-wrap: balance;
+      }
+      h2 {
+        margin-top: 3.5rem;
+        padding-top: 1.25rem;
+        border-top: 2px solid var(--line);
+        font-size: clamp(1.45rem, 3vw, 2rem);
+        line-height: 1.2;
+      }
+      h3 {
+        margin-top: 2.25rem;
+        font-size: 1.2rem;
+        line-height: 1.3;
+      }
+      p,
+      li {
+        text-wrap: pretty;
+      }
+      blockquote {
+        margin-inline: 0;
+        padding: 0.9rem 1.1rem;
+        border-inline-start: 4px solid var(--accent);
+        background: #fffaf1;
+      }
+      hr {
+        margin: 3rem 0;
+        border: 0;
+        border-top: 1px solid var(--line);
+      }
+      code {
+        font:
+          0.9em/1.5 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+      }
+      :not(pre) > code {
+        padding: 0.12em 0.35em;
+        border: 1px solid var(--line);
+        border-radius: 0.3rem;
+        background: #f1ede4;
+        overflow-wrap: anywhere;
+      }
+      pre {
+        max-width: 100%;
+        overflow: auto;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        color: var(--code-ink);
+        background: var(--code);
+      }
+      pre code {
+        font-size: 0.78rem;
+      }
+      .table-scroll {
+        max-width: 100%;
+        overflow: auto;
+        margin: 1.5rem 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font:
+          0.88rem/1.45 system-ui,
+          sans-serif;
+      }
+      th,
+      td {
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--line);
+        text-align: start;
+        vertical-align: top;
+      }
+      th {
+        background: #eee9de;
+      }
+      input[type='checkbox'] {
+        inline-size: 1rem;
+        block-size: 1rem;
+        accent-color: var(--accent);
+      }
+      .back-to-top {
+        position: fixed;
+        inset-inline-end: 1rem;
+        inset-block-end: 1rem;
+        padding: 0.55rem 0.75rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--ink);
+        background: var(--paper);
+        font:
+          0.78rem/1 system-ui,
+          sans-serif;
+      }
+
+      @media (max-width: 54rem) {
+        html {
+          scroll-behavior: auto;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .toc {
+          position: static;
+          max-height: none;
+        }
+        article {
+          border-radius: 0.5rem;
+        }
+      }
+
+      @media print {
+        :root {
+          background: white;
+        }
+        .document-header,
+        .toc,
+        .skip-link,
+        .back-to-top {
+          display: none;
+        }
+        .layout {
+          display: block;
+          max-width: none;
+          padding: 0;
+        }
+        article {
+          width: auto;
+          max-width: none;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+          background: white;
+        }
+        h2,
+        h3 {
+          break-after: avoid-page;
+        }
+        pre,
+        blockquote,
+        .table-scroll {
+          break-inside: avoid-page;
+        }
+        pre {
+          border: 1px solid #555;
+          color: black;
+          background: white;
+          white-space: pre-wrap;
+        }
+        a[href^='http']::after {
+          content: ' (' attr(href) ')';
+          font-size: 0.8em;
+        }
+      }
+    </style>
+  </head>
+  <body id="top">
+    <a
+      class="skip-link"
+      href="#content"
+      lang="ja"
+      >本文へ移動</a
+    >
+    <header class="document-header">
+      <p>Pantry / Implementation plan</p>
+      <strong>Component Responsibility Refactor</strong>
+    </header>
+    <div class="layout">
+      <nav
+        class="toc"
+        aria-label="Table of contents">
+        <h2 lang="ja">目次</h2>
+        <ol>
+          <li><a href="#constraints-and-invariants">Constraints And Invariants</a></li>
+          <li>
+            <a href="#target-file-map">Target File Map</a>
+            <ol>
+              <li><a href="#shared-ui-and-styles">Shared UI And Styles</a></li>
+              <li><a href="#navigation">Navigation</a></li>
+              <li><a href="#auth-db-and-settings">Auth, DB, And Settings</a></li>
+              <li><a href="#bookmark-feature">Bookmark Feature</a></li>
+              <li><a href="#tag-feature">Tag Feature</a></li>
+              <li><a href="#app-shell">App Shell</a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#task-1-capture-baseline-and-establish-verification-gates"
+              >Task 1: Capture Baseline And Establish Verification Gates</a
+            >
+          </li>
+          <li>
+            <a href="#task-2-establish-leaf-style-and-shared-ui-ownership"
+              >Task 2: Establish Leaf Style And Shared UI Ownership</a
+            >
+          </li>
+          <li>
+            <a href="#task-3-centralize-navigation-contracts-and-move-pure-feature-libraries"
+              >Task 3: Centralize Navigation Contracts And Move Pure Feature Libraries</a
+            >
+          </li>
+          <li>
+            <a href="#task-4-separate-db-and-authentication-boundaries"
+              >Task 4: Separate DB And Authentication Boundaries</a
+            >
+          </li>
+          <li>
+            <a href="#task-5-split-tag-server-functions-by-use-case"
+              >Task 5: Split Tag Server Functions By Use Case</a
+            >
+          </li>
+          <li>
+            <a href="#task-6-split-bookmark-server-functions-by-use-case"
+              >Task 6: Split Bookmark Server Functions By Use Case</a
+            >
+          </li>
+          <li>
+            <a href="#task-7-remove-route-and-persistence-coupling-from-feature-ui"
+              >Task 7: Remove Route And Persistence Coupling From Feature UI</a
+            >
+          </li>
+          <li>
+            <a href="#task-8-split-bookmark-list-state-and-presentation"
+              >Task 8: Split Bookmark List State And Presentation</a
+            >
+          </li>
+          <li>
+            <a href="#task-9-extract-auth-screens-settings-root-document-and-app-shell"
+              >Task 9: Extract Auth Screens, Settings, Root Document, And App Shell</a
+            >
+          </li>
+          <li>
+            <a href="#task-10-extract-bookmark-new-edit-and-detail-screens"
+              >Task 10: Extract Bookmark New, Edit, And Detail Screens</a
+            >
+          </li>
+          <li>
+            <a href="#task-11-split-tag-fields-share-tagform-and-extract-tag-screens"
+              >Task 11: Split Tag Fields, Share TagForm, And Extract Tag Screens</a
+            >
+          </li>
+          <li>
+            <a href="#task-12-final-cleanup-and-full-verification"
+              >Task 12: Final Cleanup And Full Verification</a
+            >
+          </li>
+          <li>
+            <a href="#files-that-intentionally-remain-cohesive"
+              >Files That Intentionally Remain Cohesive</a
+            >
+          </li>
+          <li><a href="#separate-ticket-candidates">Separate Ticket Candidates</a></li>
+        </ol>
+      </nav>
+      <main
+        id="content"
+        tabindex="-1">
+        <article>
+          <h1>Component Responsibility Refactor Implementation Plan</h1>
+          <blockquote>
+            <p>
+              <strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use
+              superpowers:subagent-driven-development (recommended) or superpowers:executing-plans
+              to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax
+              for tracking.
+            </p>
+          </blockquote>
+          <p>
+            <strong>Goal:</strong> Reorganize Pantry&#39;s production code so each file has one
+            primary reason to change while preserving all current UI, URLs, data contracts,
+            messages, and runtime behavior.
+          </p>
+          <p>
+            <strong>Architecture:</strong> Routes become connection layers that own route
+            declaration, validation, loader startup, and screen wiring. Domain UI and use cases live
+            in shallow feature folders, shared UI lives under <code>src/shared/components</code>,
+            and dependencies flow from <code>route -&gt; feature -&gt; shared/infrastructure</code>;
+            direct imports replace broad barrels. TanStack Server Functions are split one use case
+            per module, while cohesive state variants and tightly coupled form fields remain
+            together.
+          </p>
+          <p>
+            <strong>Tech Stack:</strong> TypeScript, React 19, TanStack Start/Router/Query,
+            Cloudflare Workers, Better Auth, Drizzle ORM, Turso, Base UI, Formisch, Valibot, Panda
+            CSS, Vitest.
+          </p>
+          <hr />
+          <h2 id="constraints-and-invariants">Constraints And Invariants</h2>
+          <ul>
+            <li>
+              This is a structural refactor. Do not change rendered copy, visual behavior, route
+              paths, search parameter semantics, Server Function inputs/outputs, query ordering,
+              error identity/messages, navigation state, or request ordering.
+            </li>
+            <li>
+              Do not add compatibility barrels. Consumers import the concrete owner module directly.
+            </li>
+            <li>
+              Do not add tests or browser smoke tests. Move existing tests with their
+              implementations and update imports only.
+            </li>
+            <li>Do not commit unless the user explicitly requests commits.</li>
+            <li>
+              Keep promises started by route loaders lazy. Do not await a promise merely because its
+              producer or consumer moved.
+            </li>
+            <li>Preserve <code>router.invalidate()</code> and ErrorBoundary reset behavior.</li>
+            <li>
+              Preserve navigation state keys: <code>newBookmarkCreated</code>,
+              <code>bookmarkUpdated</code>, <code>bookmarkDeleted</code>,
+              <code>newTagCreated</code>, and <code>tagUpdated</code>.
+            </li>
+            <li>
+              Preserve list search defaults: <code>limit: 50</code>, <code>offset: 0</code>,
+              <code>view</code>, <code>tagMode: &#39;and&#39;</code>, and
+              <code>sort: &#39;newest&#39;</code>.
+            </li>
+            <li>Keep server-only modules out of client-facing barrels and component imports.</li>
+          </ul>
+          <h2 id="target-file-map">Target File Map</h2>
+          <h3 id="shared-ui-and-styles">Shared UI And Styles</h3>
+          <div
+            class="table-scroll"
+            tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/shared/components/ui-state.tsx</code></td>
+                  <td>Cohesive loading, empty, and error feedback family</td>
+                </tr>
+                <tr>
+                  <td><code>src/shared/components/pantry-motion.tsx</code></td>
+                  <td>Pantry motion wrapper and its variants</td>
+                </tr>
+                <tr>
+                  <td><code>src/styles/button.ts</code></td>
+                  <td>Button recipe only</td>
+                </tr>
+                <tr>
+                  <td><code>src/styles/surface.ts</code></td>
+                  <td>Surface style only</td>
+                </tr>
+                <tr>
+                  <td><code>src/styles/flash.ts</code></td>
+                  <td>Flash-message style only</td>
+                </tr>
+                <tr>
+                  <td><code>src/styles/sr-only.ts</code></td>
+                  <td>Visually-hidden style only</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Delete after migration:</p>
+          <ul>
+            <li><code>src/components/error-fallback.tsx</code></li>
+            <li><code>src/components/ui-state.tsx</code></li>
+            <li><code>src/components/pantry-motion.tsx</code></li>
+            <li><code>src/styles/ui.ts</code></li>
+            <li><code>src/styles/primitives.ts</code></li>
+          </ul>
+          <h3 id="navigation">Navigation</h3>
+          <div
+            class="table-scroll"
+            tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/features/navigation/lib/bookmark-search.ts</code></td>
+                  <td>Bookmark search schema, type, and defaults</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/navigation/lib/bookmark-search-builders.ts</code></td>
+                  <td>Search transitions and route-link projections</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h3 id="auth-db-and-settings">Auth, DB, And Settings</h3>
+          <div
+            class="table-scroll"
+            tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/db/get-db.server.ts</code></td>
+                  <td>DB construction and per-isolate cached provider</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/lib/auth-client.ts</code></td>
+                  <td>Better Auth browser client</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/functions/get-auth.server.ts</code></td>
+                  <td>Better Auth server instance provider</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/functions/request-session.server.ts</code></td>
+                  <td>Plain server-side optional/required request session access</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/functions/get-session.ts</code></td>
+                  <td>Public optional-session Server Function</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/functions/ensure-session.ts</code></td>
+                  <td>Public required-session Server Function</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/hooks/use-sign-out.ts</code></td>
+                  <td>Sign-out, query-cache clearing, navigation, and pending state</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/components/sign-in-screen.tsx</code></td>
+                  <td>Sign-in screen flow and post-auth navigation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/components/sign-in-form.tsx</code></td>
+                  <td>Email/password form</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/components/sign-up-screen.tsx</code></td>
+                  <td>Disabled-sign-up screen</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/lib/sign-in-schema.ts</code></td>
+                  <td>Sign-in input schemas and type</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/auth/lib/sign-in-error.ts</code></td>
+                  <td>Sign-in error model</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/settings/components/settings-screen.tsx</code></td>
+                  <td>Settings presentation and sign-out affordance</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Delete after migration:</p>
+          <ul>
+            <li><code>src/features/auth/auth-client.ts</code></li>
+            <li><code>src/features/auth/auth-config.ts</code></li>
+            <li><code>src/features/auth/auth.function.ts</code></li>
+          </ul>
+          <h3 id="bookmark-feature">Bookmark Feature</h3>
+          <div
+            class="table-scroll"
+            tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/fetch-bookmarks.ts</code></td>
+                  <td>List bookmarks use case</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/add-bookmark.ts</code></td>
+                  <td>Add bookmark use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/get-bookmark.ts</code></td>
+                  <td>Get bookmark use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/update-bookmark.ts</code></td>
+                  <td>Update bookmark use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/delete-bookmark.ts</code></td>
+                  <td>Delete bookmark use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/fetch-bookmark-title.ts</code></td>
+                  <td>Public title-fetch Server Function</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/functions/fetch-page-title.server.ts</code></td>
+                  <td>Server-only page fetching, SSRF checks, limits, and title parsing</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/lib/attach-bookmark-tags.ts</code></td>
+                  <td>Bookmark/tag projection and its types</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/lib/normalize-bookmark-list-query.ts</code></td>
+                  <td>Bookmark-list query normalization</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/lib/list-layout-preference.ts</code></td>
+                  <td>Persisted table/card preference</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/lib/shorten-url.ts</code></td>
+                  <td>URL display shortening</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/lib/format-date-time.ts</code></td>
+                  <td>Bookmark detail date formatting</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/loaders/load-bookmark-detail.ts</code></td>
+                  <td>Detail loader aggregation and not-found mapping</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/loaders/load-bookmark-editor.ts</code></td>
+                  <td>Edit loader aggregation and not-found mapping</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-list.tsx</code></td>
+                  <td>List boundary and child composition</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-list-toolbar.tsx</code></td>
+                  <td>Query, tag, sort, and layout controls</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-card-list.tsx</code></td>
+                  <td>Card list presentation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-list-results.tsx</code></td>
+                  <td>Result, empty, table/card, and load-more presentation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-table.tsx</code></td>
+                  <td>Table presentation; retained</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>src/features/bookmarks/components/bookmark-workbench-form.tsx</code>
+                  </td>
+                  <td>Shared bookmark form</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/new-bookmark-screen.tsx</code></td>
+                  <td>New bookmark screen and create navigation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/edit-bookmark-screen.tsx</code></td>
+                  <td>Edit bookmark screen and update navigation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-detail-screen.tsx</code></td>
+                  <td>Detail boundary, flash, not-found, and composition</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>src/features/bookmarks/components/bookmark-detail-content.tsx</code>
+                  </td>
+                  <td>Successful detail presentation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/components/bookmark-delete-dialog.tsx</code></td>
+                  <td>Delete confirmation, mutation, and navigation</td>
+                </tr>
+                <tr>
+                  <td>
+                    <code>src/features/bookmarks/components/bookmark-detail-skeleton.tsx</code>
+                  </td>
+                  <td>Detail loading representation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/hooks/use-list-layout.ts</code></td>
+                  <td>Layout state and persistence</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/hooks/use-bookmark-list-pagination.ts</code></td>
+                  <td>Incremental list loading state</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/bookmarks/hooks/use-bookmark-title-fetch.ts</code></td>
+                  <td>Remote title-fetch state</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Delete after migration:</p>
+          <ul>
+            <li><code>src/features/bookmarks/bookmark.function.ts</code></li>
+            <li><code>src/features/bookmarks/bookmark.schema.ts</code></li>
+            <li>
+              <code>src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx</code>
+            </li>
+          </ul>
+          <h3 id="tag-feature">Tag Feature</h3>
+          <div
+            class="table-scroll"
+            tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/features/tags/functions/fetch-tags.ts</code></td>
+                  <td>Paginated tag-list use case</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/functions/fetch-shelf-tags.ts</code></td>
+                  <td>Shelf tags with bookmark counts</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/functions/add-tag.ts</code></td>
+                  <td>Add tag use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/functions/get-tag.ts</code></td>
+                  <td>Get tag use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/functions/touch-tag-last-used.ts</code></td>
+                  <td>Last-used mutation use case</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/functions/update-tag.ts</code></td>
+                  <td>Update tag use case and validator</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/lib/tag-name-schema.ts</code></td>
+                  <td>Tag-name schema and normalized type</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/lib/tag-name-already-exists-error.ts</code></td>
+                  <td>Duplicate-name error class</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/lib/tag-shelf.ts</code></td>
+                  <td>Shelf tag view model and ordering policies</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/lib/tag-color-palette.ts</code></td>
+                  <td>Tag-edit color choices</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/hooks/use-touch-tag-last-used.ts</code></td>
+                  <td>Selected-list-tag last-used side effect</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-selector.tsx</code></td>
+                  <td>Select existing tags or create a tag</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-table.tsx</code></td>
+                  <td>Tag table and its loading state</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-management-screen.tsx</code></td>
+                  <td>Tag management screen composition</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-form.tsx</code></td>
+                  <td>Shared create/edit tag form state and validation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-edit-fields.tsx</code></td>
+                  <td>Pin/color/order field composition</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-pin-field.tsx</code></td>
+                  <td>Pin field</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-color-field.tsx</code></td>
+                  <td>Color field</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-sort-order-field.tsx</code></td>
+                  <td>Sort-order field</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/new-tag-screen.tsx</code></td>
+                  <td>New tag mutation and navigation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/edit-tag-screen.tsx</code></td>
+                  <td>Edit tag boundary, mutation, and navigation</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/tags/components/tag-detail-screen.tsx</code></td>
+                  <td>Detail boundary and presentation</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Keep the state variants in these files rather than splitting them further:</p>
+          <ul>
+            <li><code>src/features/tags/components/entrance-boxes.tsx</code></li>
+            <li><code>src/features/tags/components/shelf-nav.tsx</code></li>
+            <li><code>src/features/tags/components/tag-table.tsx</code></li>
+          </ul>
+          <p>Delete after migration:</p>
+          <ul>
+            <li><code>src/features/tags/tag.function.ts</code></li>
+            <li><code>src/features/tags/tag-table.tsx</code></li>
+            <li><code>src/entities/tag.ts</code></li>
+          </ul>
+          <h3 id="app-shell">App Shell</h3>
+          <div
+            class="table-scroll"
+            tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Target</th>
+                  <th>Responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>src/features/app-shell/components/root-document.tsx</code></td>
+                  <td>HTML document and development tools</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/app-shell/components/protected-shell.tsx</code></td>
+                  <td>Protected layout composition</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/app-shell/components/app-header.tsx</code></td>
+                  <td>Header navigation and actions</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/app-shell/components/shelf-sidebar.tsx</code></td>
+                  <td>Desktop shelf rail</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/app-shell/components/mobile-shelf-dialog.tsx</code></td>
+                  <td>Mobile shelf chooser</td>
+                </tr>
+                <tr>
+                  <td><code>src/features/app-shell/components/shelf-nav-panel.tsx</code></td>
+                  <td>Shelf navigation Suspense/ErrorBoundary</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h2 id="task-1-capture-baseline-and-establish-verification-gates">
+            Task 1: Capture Baseline And Establish Verification Gates
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Read: <code>src/**/*.{ts,tsx}</code></p>
+            </li>
+            <li>
+              <p>Read: <code>package.json</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Verify the current worktree without modifying it</strong>
+              </p>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">git status --short
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>
+            Expected: existing user changes are recorded but not modified;
+            <code>typecheck</code> and <code>test</code> exit successfully. If either command
+            already fails, record the exact baseline failure and do not attribute it to later tasks.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Record obsolete-import search baselines</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">rg -n &quot;styles/ui|styles/primitives|bookmark\.function|tag\.function|auth\.function|db/index\.server|components/(ui-state|pantry-motion|error-fallback)&quot; src
+</code></pre>
+          <p>
+            Expected: matches identify the consumers that must be migrated. The final task requires
+            zero matches.
+          </p>
+          <h2 id="task-2-establish-leaf-style-and-shared-ui-ownership">
+            Task 2: Establish Leaf Style And Shared UI Ownership
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Create: <code>src/styles/surface.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/styles/flash.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/styles/sr-only.ts</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/styles/button.ts</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/shared/components/styled-button/index.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/components/ui-state.tsx</code> -&gt;
+                <code>src/shared/components/ui-state.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/components/pantry-motion.tsx</code> -&gt;
+                <code>src/shared/components/pantry-motion.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>Modify: all 17 current <code>src/styles/ui.ts</code> consumers</p>
+            </li>
+            <li>
+              <p>Delete: <code>src/styles/ui.ts</code></p>
+            </li>
+            <li>
+              <p>Delete: <code>src/styles/primitives.ts</code></p>
+            </li>
+            <li>
+              <p>Delete: <code>src/components/error-fallback.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Move each unrelated primitive style to its owner file</strong>
+              </p>
+            </li>
+          </ul>
+          <p>Move the existing definitions without changing their Panda CSS objects:</p>
+          <pre tabindex="0"><code class="language-ts">// src/styles/surface.ts
+import { css } from &#39;styled-system/css&#39;
+
+export const surface = css({
+  borderWidth: &#39;thin&#39;,
+  borderColor: &#39;border.default&#39;,
+  borderRadius: &#39;box&#39;,
+  background: &#39;bg.surface&#39;
+})
+
+// src/styles/flash.ts
+import { css } from &#39;styled-system/css&#39;
+
+export const flash = css({
+  borderWidth: &#39;thin&#39;,
+  borderStyle: &#39;solid&#39;,
+  borderColor: &#39;border.accent&#39;,
+  borderRadius: &#39;box&#39;,
+  background: &#39;accent.subtle&#39;,
+  color: &#39;fg.default&#39;,
+  paddingBlock: &#39;3&#39;,
+  paddingInline: &#39;4&#39;
+})
+
+// src/styles/sr-only.ts
+import { visuallyHidden } from &#39;styled-system/patterns&#39;
+
+export const srOnly = visuallyHidden()
+</code></pre>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Make the style layer own the button recipe</strong>
+            </li>
+          </ul>
+          <p>
+            Move <code>src/shared/components/styled-button/index.tsx:30-94</code> into
+            <code>src/styles/button.ts</code>, including its <code>cva</code> import. Keep every
+            base style, variant, and default value byte-for-byte equivalent. Update
+            <code>StyledButton</code> to import <code>button</code> from
+            <code>../../../styles/button</code>, remove its <code>cva</code> import, export only its
+            component API, and update the file header so it no longer claims to own/export the
+            recipe.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Move shared feedback and motion components</strong>
+            </li>
+          </ul>
+          <p>
+            Move <code>src/components/ui-state.tsx:1-58</code> and
+            <code>src/components/pantry-motion.tsx:1-21</code> to:
+          </p>
+          <pre tabindex="0"><code class="language-text">src/shared/components/ui-state.tsx
+src/shared/components/pantry-motion.tsx
+</code></pre>
+          <p>
+            Keep <code>UiLoading</code>, <code>UiEmpty</code>, and <code>UiError</code> together.
+            Update all consumers to the new paths.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Replace broad style imports with direct imports</strong>
+            </li>
+          </ul>
+          <p>Use this ownership map:</p>
+          <pre tabindex="0"><code class="language-text">button -&gt; styles/button
+tagChip -&gt; styles/tag-chip
+field/formControl/formSummary symbols -&gt; styles/form
+skeleton/spinner/state symbols -&gt; styles/feedback
+workbench symbols -&gt; styles/workbench
+dialog symbols -&gt; styles/dialog
+surface -&gt; styles/surface
+flash -&gt; styles/flash
+srOnly -&gt; styles/sr-only
+cx -&gt; styled-system/css
+</code></pre>
+          <p>Do not introduce a replacement barrel.</p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Delete obsolete shared/style files and verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>
+            Delete <code>src/styles/ui.ts</code>, <code>src/styles/primitives.ts</code>, and the
+            unreferenced <code>src/components/error-fallback.tsx</code>. Remove
+            <code>src/components/</code> once empty.
+          </p>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;styles/ui|styles/primitives|components/(ui-state|pantry-motion|error-fallback)&quot; src
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>Expected: <code>rg</code> returns no matches; both verification commands pass.</p>
+          <h2 id="task-3-centralize-navigation-contracts-and-move-pure-feature-libraries">
+            Task 3: Centralize Navigation Contracts And Move Pure Feature Libraries
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Create: <code>src/features/navigation/lib/bookmark-search.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/navigation/lib/bookmark-search-builders.ts</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/index.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/-lib/bookmark-list-loader-deps.ts</code></p>
+            </li>
+            <li><p>Modify: bookmark new/edit/detail routes</p></li>
+            <li>
+              <p>Modify: <code>src/features/bookmarks/components/bookmark-list.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/features/tags/components/shelf-nav.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/features/tags/components/entrance-boxes.tsx</code></p>
+            </li>
+            <li><p>Modify: tag detail route</p></li>
+            <li>
+              <p>Delete: <code>src/routes/_protected/-lib/bookmark-search-schema.ts</code></p>
+            </li>
+            <li>
+              <p>Delete: <code>src/routes/_protected/bookmarks/-lib/list-back-search.ts</code></p>
+            </li>
+            <li>
+              <p>
+                Move: bookmark/tag pure helper files and their existing tests into <code>lib/</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/lib/format-date.ts</code> -&gt;
+                <code>src/features/bookmarks/lib/format-date-time.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>Delete: <code>src/entities/tag.ts</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Move the bookmark search contract unchanged</strong>
+              </p>
+            </li>
+          </ul>
+          <p><code>bookmark-search.ts</code> owns and exports:</p>
+          <pre tabindex="0"><code class="language-ts">import * as v from &#39;valibot&#39;
+
+import { offsetPaginationQuerySchema } from &#39;../../../schemas/pagination&#39;
+
+export const bookmarkSearchSchema = v.object({
+  ...offsetPaginationQuerySchema.entries,
+  view: v.optional(v.picklist([&#39;entrance&#39;, &#39;list&#39;]), &#39;entrance&#39;),
+  q: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
+  tagMode: v.optional(v.picklist([&#39;and&#39;, &#39;or&#39;]), &#39;and&#39;),
+  sort: v.optional(v.picklist([&#39;newest&#39;, &#39;updated&#39;]), &#39;newest&#39;)
+})
+
+export type BookmarkSearchSchema = v.InferOutput&lt;typeof bookmarkSearchSchema&gt;
+
+export const defaultBookmarkSearch: BookmarkSearchSchema = {
+  limit: 50,
+  offset: 0,
+  view: &#39;entrance&#39;,
+  tagMode: &#39;and&#39;,
+  sort: &#39;newest&#39;
+}
+</code></pre>
+          <p>
+            Update route validation and loader-dependency typing to import this module directly.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Consolidate search builders</strong>
+            </li>
+          </ul>
+          <p><code>bookmark-search-builders.ts</code> owns these behavior-preserving functions:</p>
+          <pre tabindex="0"><code class="language-ts">export type BookmarkSearchPatch = {
+  readonly q?: string | undefined
+  readonly tags?: string[] | undefined
+  readonly tagMode?: BookmarkSearchSchema[&#39;tagMode&#39;]
+  readonly sort?: BookmarkSearchSchema[&#39;sort&#39;]
+  readonly clearQ?: boolean
+  readonly clearTags?: boolean
+}
+
+export function buildListSearch(
+  current: BookmarkSearchSchema,
+  patch: BookmarkSearchPatch
+): BookmarkSearchSchema
+export function buildListBackSearch(tags?: readonly string[]): BookmarkSearchSchema
+export function detailSearchFromList(search: BookmarkSearchSchema): { tags?: string[] }
+export function allShelfSearch(): BookmarkSearchSchema
+export function tagShelfSearch(tagName: string): BookmarkSearchSchema
+</code></pre>
+          <p>
+            Move <code>resolveSearchPatch</code> and <code>buildListSearch</code> from
+            <code>bookmark-list.tsx:234-278</code>, <code>buildListBackSearch</code> from
+            <code>list-back-search.ts:4-15</code>, <code>detailSearchFromList</code> from
+            <code>bookmark-list.tsx:181-186</code>, and the two shelf builders from
+            <code>shelf-nav.tsx:9-15,68-74</code>. Preserve optional-property filtering.
+            <code>shelf-nav.tsx</code> must stop exporting search builders.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Move bookmark pure helpers and colocate existing tests</strong>
+            </li>
+          </ul>
+          <p>Use these exact moves:</p>
+          <pre
+            tabindex="0"><code class="language-text">attach-bookmark-tags.ts -&gt; lib/attach-bookmark-tags.ts
+attach-bookmark-tags.test.ts -&gt; lib/attach-bookmark-tags.test.ts
+bookmark-list-query.ts -&gt; lib/normalize-bookmark-list-query.ts
+bookmark-list-query.test.ts -&gt; lib/normalize-bookmark-list-query.test.ts
+list-layout-preference.ts -&gt; lib/list-layout-preference.ts
+list-layout-preference.test.ts -&gt; lib/list-layout-preference.test.ts
+shorten-url.ts -&gt; lib/shorten-url.ts
+src/lib/format-date.ts -&gt; features/bookmarks/lib/format-date-time.ts
+</code></pre>
+          <p>
+            Retain exported type names unless the old name explicitly describes the old file rather
+            than the contract. Update imports directly.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Move tag pure helpers and colocate existing tests</strong>
+            </li>
+          </ul>
+          <p>Use these exact moves:</p>
+          <pre
+            tabindex="0"><code class="language-text">tag-name.schema.ts -&gt; lib/tag-name-schema.ts
+tag-name.schema.test.ts -&gt; lib/tag-name-schema.test.ts
+tag-errors.ts -&gt; lib/tag-name-already-exists-error.ts
+tag.function.test.ts -&gt; lib/tag-name-already-exists-error.test.ts
+tag-shelf.ts -&gt; lib/tag-shelf.ts
+tag-shelf.test.ts -&gt; lib/tag-shelf.test.ts
+tag-color-palette.ts -&gt; lib/tag-color-palette.ts
+</code></pre>
+          <p>
+            Preserve the current <code>TagNameAlreadyExistsError</code> name/message and both shelf
+            sorting policies.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Remove the unused entity schema and verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Delete <code>src/entities/tag.ts</code>; it has no production or test consumers.</p>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;routes/_protected/-lib/bookmark-search-schema|list-back-search|features/(bookmarks|tags)/(attach-bookmark-tags|bookmark-list-query|list-layout-preference|shorten-url|tag-name\.schema|tag-errors|tag-shelf|tag-color-palette)|src/lib/format-date|entities/tag&quot; src
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>Expected: no obsolete imports; both verification commands pass.</p>
+          <h2 id="task-4-separate-db-and-authentication-boundaries">
+            Task 4: Separate DB And Authentication Boundaries
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>
+                Move: <code>src/db/index.server.ts</code> -&gt; <code>src/db/get-db.server.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/features/auth/auth-client.ts</code> -&gt;
+                <code>src/features/auth/lib/auth-client.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/features/auth/auth-config.ts</code> -&gt;
+                <code>src/features/auth/functions/get-auth.server.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/auth/functions/request-session.server.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/auth/functions/get-session.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/auth/functions/ensure-session.ts</code></p>
+            </li>
+            <li><p>Modify: all auth, bookmark, tag, route, and script consumers</p></li>
+            <li>
+              <p>Delete: <code>src/features/auth/auth.function.ts</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Rename the DB provider without changing its cache</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            Move the complete implementation to <code>src/db/get-db.server.ts</code>. Keep
+            <code>createDb</code>, schema assembly, the DB type, and cached instance private; retain
+            <code>getDB</code> as the only public runtime value.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Move Better Auth client/server providers</strong>
+            </li>
+          </ul>
+          <p>
+            Move the browser client to <code>auth/lib/auth-client.ts</code> and the server provider
+            to <code>auth/functions/get-auth.server.ts</code>. Preserve <code>cachedAuth</code> as
+            module-level immutable infrastructure caching, not request-scoped state.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Create the plain request-session boundary</strong>
+            </li>
+          </ul>
+          <p>
+            Extract the repeated Better Auth call into server-only functions with these contracts:
+          </p>
+          <pre tabindex="0"><code class="language-ts">export async function getRequestSession() {
+  const headers = getRequestHeaders()
+  return getAuth().api.getSession({ headers })
+}
+
+export async function requireRequestSession() {
+  const session = await getRequestSession()
+  if (!session) {
+    throw new Error(&#39;Unauthorized&#39;)
+  }
+  return session
+}
+</code></pre>
+          <p>The exact unauthorized error must remain unchanged.</p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Wrap the plain helpers in public Server Functions</strong>
+            </li>
+          </ul>
+          <pre tabindex="0"><code class="language-ts">// get-session.ts
+export const getSession = createServerFn({ method: &#39;GET&#39; }).handler(async () =&gt; getRequestSession())
+
+// ensure-session.ts
+export const ensureSession = createServerFn({ method: &#39;GET&#39; }).handler(async () =&gt;
+  requireRequestSession()
+)
+</code></pre>
+          <p>
+            Routes import these public wrappers. Bookmark and tag Server Function handlers import
+            <code>requireRequestSession</code> directly.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Delete the aggregate auth module and verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;db/index\.server|features/auth/(auth-client|auth-config|auth\.function)&quot; src scripts
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>Expected: no obsolete imports; both verification commands pass.</p>
+          <h2 id="task-5-split-tag-server-functions-by-use-case">
+            Task 5: Split Tag Server Functions By Use Case
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Create: <code>src/features/tags/functions/fetch-tags.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/functions/fetch-shelf-tags.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/functions/add-tag.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/functions/get-tag.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/functions/touch-tag-last-used.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/functions/update-tag.ts</code></p>
+            </li>
+            <li><p>Modify: all tag Server Function consumers</p></li>
+            <li>
+              <p>Delete: <code>src/features/tags/tag.function.ts</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Extract each existing Server Function unchanged</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            Each target module owns one <code>createServerFn</code>, its validator, its DB
+            query/mutation, and imports <code>requireRequestSession</code>. Keep these public names:
+          </p>
+          <pre tabindex="0"><code class="language-ts">fetchTags
+fetchShelfTags
+addTag
+getTag
+touchTagLastUsed
+updateTag
+</code></pre>
+          <p>
+            Keep the ID validator private in each module that needs it rather than introducing a
+            validator barrel.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Preserve use-case-specific error behavior</strong>
+            </li>
+          </ul>
+          <p>
+            <code>addTag</code> continues to throw <code>TagNameAlreadyExistsError</code>.
+            <code>updateTag</code> continues to throw
+            <code>Error(&#39;Tag name already exists&#39;)</code>. Do not unify them during this
+            refactor.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Update every consumer to a direct use-case import</strong>
+            </li>
+          </ul>
+          <p>
+            Update protected shell, tag routes, bookmark forms/detail, bookmark list, entrance
+            boxes, inline add, and tag selector. Do not create <code>functions/index.ts</code>.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Delete the aggregate and verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">! rg -n &quot;tag\.function&quot; src
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>Expected: no aggregate imports; both verification commands pass.</p>
+          <h2 id="task-6-split-bookmark-server-functions-by-use-case">
+            Task 6: Split Bookmark Server Functions By Use Case
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Create: <code>src/features/bookmarks/functions/fetch-bookmarks.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/functions/add-bookmark.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/functions/get-bookmark.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/functions/update-bookmark.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/functions/delete-bookmark.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/functions/fetch-bookmark-title.ts</code></p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/features/bookmarks/title-fetcher.server.ts</code> -&gt;
+                <code>src/features/bookmarks/functions/fetch-page-title.server.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/features/bookmarks/title-fetcher.server.test.ts</code> -&gt;
+                <code>src/features/bookmarks/functions/fetch-page-title.server.test.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>Split/move: <code>src/features/bookmarks/bookmark.function.test.ts</code></p>
+            </li>
+            <li><p>Modify: all bookmark Server Function consumers</p></li>
+            <li>
+              <p>Delete: <code>src/features/bookmarks/bookmark.function.ts</code></p>
+            </li>
+            <li>
+              <p>Delete: <code>src/features/bookmarks/bookmark.schema.ts</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Extract each existing Server Function unchanged</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            Each target owns one use case and imports only its required Drizzle operators, schemas,
+            DB provider, auth helper, and subordinate library modules. Keep these public names:
+          </p>
+          <pre tabindex="0"><code class="language-ts">fetchBookmarks
+addBookmark
+getBookmark
+updateBookmark
+deleteBookmark
+fetchBookmarkTitle
+</code></pre>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Give add/update validators to their use cases</strong>
+            </li>
+          </ul>
+          <p>
+            Move <code>addBookmarkInputSchema</code> into <code>add-bookmark.ts</code> and
+            <code>updateBookmarkInputSchema</code> into <code>update-bookmark.ts</code>. Keep them
+            exported because existing tests validate the schemas directly.
+          </p>
+          <p>Split <code>bookmark.function.test.ts</code> into:</p>
+          <pre tabindex="0"><code class="language-text">functions/add-bookmark.test.ts
+functions/update-bookmark.test.ts
+</code></pre>
+          <p>Move the existing describe blocks without adding assertions or changing test data.</p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Move the server-only title fetcher</strong>
+            </li>
+          </ul>
+          <p>
+            Move its complete implementation and test to
+            <code>functions/fetch-page-title.server.ts</code> and
+            <code>functions/fetch-page-title.server.test.ts</code>. Keep URL checks, IP checks,
+            redirect count, timeout, response-size limit, and title parsing together as private
+            parts of one public <code>fetchPageTitle</code> operation.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Update every consumer to direct imports</strong>
+            </li>
+          </ul>
+          <p>
+            Update list/detail/editor routes and components. <code>fetch-bookmarks.ts</code> imports
+            <code>normalizeBookmarkListQuery</code> and <code>attachTagsToBookmarks</code> from
+            <code>lib/</code>; <code>fetch-bookmark-title.ts</code> imports only the server-only
+            title helper.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Delete aggregate/schema files and verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;bookmark\.function|bookmark\.schema|title-fetcher\.server&quot; src
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>Expected: no obsolete imports; both verification commands pass.</p>
+          <h2 id="task-7-remove-route-and-persistence-coupling-from-feature-ui">
+            Task 7: Remove Route And Persistence Coupling From Feature UI
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Modify: <code>src/routes/_protected/index.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/features/bookmarks/components/bookmark-list.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/features/tags/components/entrance-boxes.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/features/bookmarks/components/tag-selector.tsx</code> -&gt;
+                <code>src/features/tags/components/tag-selector.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/features/tags/tag-table.tsx</code> -&gt;
+                <code>src/features/tags/components/tag-table.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move:
+                <code>src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx</code>
+                -&gt; <code>src/features/bookmarks/components/bookmark-workbench-form.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>Modify: tag/bookmark consumers that import <code>TagSelectType</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Make BookmarkList prop-driven</strong>
+              </p>
+            </li>
+          </ul>
+          <p>Remove <code>getRouteApi</code> calls. Use an explicit contract equivalent to:</p>
+          <pre tabindex="0"><code class="language-ts">type BookmarkListProps = {
+  readonly search: BookmarkSearchSchema
+  readonly bookmarksPromise: Promise&lt;BookmarkListItem[]&gt; | undefined
+  readonly shelfTagsPromise: Promise&lt;ShelfTag[]&gt;
+}
+</code></pre>
+          <p>
+            The route connector reads both route loader results and passes them. It preserves the
+            current undefined loading state and lazy promise identity.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Make EntranceBoxes prop-driven</strong>
+            </li>
+          </ul>
+          <p>
+            Remove <code>getRouteApi(&#39;/_protected&#39;)</code>. Accept
+            <code>shelfTagsPromise: Promise&lt;ShelfTag[]&gt;</code> and retain
+            <code>useRouter()</code> only for ErrorBoundary invalidation.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Normalize component ownership</strong>
+            </li>
+          </ul>
+          <p>
+            Move <code>TagSelector</code> to tags, <code>TagTable</code> under tags/components, and
+            <code>BookmarkWorkbenchForm</code> into bookmarks/components. Update imports directly;
+            do not create feature barrels.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Replace Drizzle row types at UI boundaries</strong>
+            </li>
+          </ul>
+          <p>
+            Remove <code>TagSelectType</code> imports from client-facing UI. Use Server Function
+            return types at screen boundaries and narrow structural props inside reusable
+            components:
+          </p>
+          <pre tabindex="0"><code class="language-ts">type SelectableTag = {
+  readonly id: number
+  readonly name: string
+}
+</code></pre>
+          <p>
+            Tag edit/detail screens may infer the result from <code>getTag</code> through an
+            <code>import type</code> edge; <code>TagSelector</code> must not require the complete
+            persistence row. Never add a runtime component import of a server-only helper merely to
+            obtain a type.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong
+                >Step 5: Verify route APIs and DB schema no longer leak into feature UI</strong
+              >
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;getRouteApi|routes/_protected/-lib|db/schema&quot; src/features --glob &#39;*.tsx&#39;
+pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>
+            Expected: no route-local imports or route API calls in feature components; any remaining
+            <code>db/schema</code> match must be server-side and explicitly justified; verification
+            passes.
+          </p>
+          <h2 id="task-8-split-bookmark-list-state-and-presentation">
+            Task 8: Split Bookmark List State And Presentation
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Modify: <code>src/features/bookmarks/components/bookmark-list.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/components/bookmark-list-toolbar.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/components/bookmark-card-list.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/components/bookmark-list-results.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/hooks/use-list-layout.ts</code></p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/hooks/use-bookmark-list-pagination.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/hooks/use-touch-tag-last-used.ts</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Extract layout preference state</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            Move the current <code>useListLayout</code> implementation unchanged into
+            <code>use-list-layout.ts</code>. It imports read/write functions from bookmark
+            <code>lib/list-layout-preference.ts</code> and returns the same readonly tuple.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Extract selected-tag last-used behavior</strong>
+            </li>
+          </ul>
+          <p>
+            Move <code>useTouchTagLastUsedOnce</code> into tags/hooks. Preserve the NUL-delimited
+            tag key, cancellation guard, first selected tag behavior, and fire-and-forget Server
+            Function call.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Extract pagination state</strong>
+            </li>
+          </ul>
+          <p>
+            Move item accumulation, <code>hasMore</code>, pending/error state,
+            reset-on-initial-change, and <code>fetchBookmarks</code> into
+            <code>use-bookmark-list-pagination.ts</code>. Its result must expose the current items,
+            load-more state, and <code>loadMore</code> action without changing offset or page-limit
+            calculations.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Extract toolbar and card presentation</strong>
+            </li>
+          </ul>
+          <p>
+            Move all search form/tag/sort/layout JSX and styles to
+            <code>bookmark-list-toolbar.tsx</code>. Move card-only JSX and styles to
+            <code>bookmark-card-list.tsx</code>. Toolbar search transitions import
+            <code>buildListSearch</code> from navigation/lib.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Extract results presentation</strong>
+            </li>
+          </ul>
+          <p>
+            <code>bookmark-list-results.tsx</code> owns empty-state selection, table/card selection,
+            crossfade, and load-more/error presentation. It uses the pagination hook and imports
+            <code>BookmarkTable</code>/<code>BookmarkCardList</code> directly.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 6: Reduce BookmarkList to boundary composition</strong>
+            </li>
+          </ul>
+          <p>
+            Keep list-level ErrorBoundary, Suspense, loading/error variants, toolbar composition,
+            list key, and outer labelled section in <code>bookmark-list.tsx</code>. Do not split
+            tiny list loading/error state variants.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 7: Verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>
+            Expected: both pass; <code>bookmark-list.tsx</code> no longer owns toolbar, card
+            rendering, pagination state, layout persistence, or tag-touch behavior.
+          </p>
+          <h2 id="task-9-extract-auth-screens-settings-root-document-and-app-shell">
+            Task 9: Extract Auth Screens, Settings, Root Document, And App Shell
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>
+                Move:
+                <code>src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx</code>
+                -&gt; <code>src/features/auth/components/sign-in-form.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/routes/sign-in/-lib/schema.ts</code> -&gt;
+                <code>src/features/auth/lib/sign-in-schema.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Move: <code>src/routes/sign-in/-lib/error.ts</code> -&gt;
+                <code>src/features/auth/lib/sign-in-error.ts</code>
+              </p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/auth/components/sign-in-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/auth/components/sign-up-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/auth/hooks/use-sign-out.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/settings/components/settings-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/app-shell/components/root-document.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/app-shell/components/protected-shell.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/app-shell/components/app-header.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/app-shell/components/shelf-sidebar.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/app-shell/components/mobile-shelf-dialog.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/app-shell/components/shelf-nav-panel.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/__root.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/sign-in/index.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/sign-up.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/settings/index.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Extract auth route UI into the auth feature</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            <code>sign-in/index.tsx</code> retains search validation, reads <code>redirect</code>,
+            and renders <code>SignInScreen</code>. <code>SignInScreen</code> owns
+            <code>authClient.signIn.email</code>, error conversion, and post-auth navigation. Move
+            the existing form/schema/error source unchanged before updating names/imports.
+          </p>
+          <p>
+            <code>sign-up.tsx</code> retains only its route declaration and renders
+            <code>SignUpScreen</code> with the current disabled-registration message.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Extract and reuse sign-out workflow</strong>
+            </li>
+          </ul>
+          <p><code>use-sign-out.ts</code> preserves this exact sequence:</p>
+          <pre tabindex="0"><code class="language-text">start transition
+await authClient.signOut
+clear QueryClient in the existing onSuccess callback
+navigate to /sign-in
+expose pending state
+</code></pre>
+          <p>
+            Use the hook in both app header and settings screen. Do not reorder cache clearing and
+            navigation.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Extract SettingsScreen</strong>
+            </li>
+          </ul>
+          <p>
+            The route retains <code>ensureSession</code> loader startup and passes
+            <code>user</code> to <code>SettingsScreen</code>. Move all settings styles and JSX to
+            the screen; use the navigation default from navigation/lib and the shared sign-out hook.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Extract RootDocument</strong>
+            </li>
+          </ul>
+          <p>
+            Move document markup, head scripts, body, and devtools configuration from
+            <code>__root.tsx</code> into <code>app-shell/components/root-document.tsx</code>. Keep
+            root route context and route declaration in <code>__root.tsx</code>.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Extract the five protected-shell responsibilities</strong>
+            </li>
+          </ul>
+          <p>Use these boundaries:</p>
+          <pre
+            tabindex="0"><code class="language-text">ProtectedShell: grid/content/main composition and children
+AppHeader: mobile brand, shelf trigger slot, new/settings/sign-out actions
+ShelfSidebar: desktop brand, shelf nav slot, tag/settings links
+MobileShelfDialog: open state, trigger, popup, close behavior
+ShelfNavPanel: ErrorBoundary, Suspense, ShelfNavAsync, invalidate-on-reset
+</code></pre>
+          <p>
+            <code>_protected.tsx</code> retains session guard, redirect,
+            <code>fetchShelfTags</code> loader startup, parent/index search projection, and
+            <code>&lt;Outlet /&gt;</code> connection. Pass <code>Outlet</code> as children;
+            app-shell components must not import route modules or <code>Outlet</code>.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 6: Verify route thinness and checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>
+            Expected: both pass; auth/settings/root/protected route files contain route concerns and
+            screen wiring rather than full screen implementations.
+          </p>
+          <h2 id="task-10-extract-bookmark-new-edit-and-detail-screens">
+            Task 10: Extract Bookmark New, Edit, And Detail Screens
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Create: <code>src/features/bookmarks/hooks/use-bookmark-title-fetch.ts</code></p>
+            </li>
+            <li>
+              <p>
+                Modify: <code>src/features/bookmarks/components/bookmark-workbench-form.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/loaders/load-bookmark-detail.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/loaders/load-bookmark-editor.ts</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/components/new-bookmark-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/bookmarks/components/edit-bookmark-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/components/bookmark-detail-screen.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/components/bookmark-detail-content.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/components/bookmark-delete-dialog.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>
+                Create: <code>src/features/bookmarks/components/bookmark-detail-skeleton.tsx</code>
+              </p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/bookmarks/new/index.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/bookmarks/$id/edit.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/bookmarks/$id/index.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Extract remote title-fetch state</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            Move title-fetch pending/error handling and the <code>fetchBookmarkTitle</code> call
+            into <code>use-bookmark-title-fetch.ts</code>. The form still owns Formisch state,
+            schema, summary, URL/title/note fields, normalization, and submit handling. Preserve the
+            current manual-title fallback messages.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Create loader aggregation modules</strong>
+            </li>
+          </ul>
+          <p>
+            <code>load-bookmark-detail.ts</code> starts <code>getBookmark</code> and
+            <code>fetchTags</code>, maps tag IDs to names, converts only
+            <code>Error(&#39;Bookmark not found&#39;)</code> to
+            <code>{ kind: &#39;not-found&#39; }</code>, and rethrows all other errors.
+          </p>
+          <p>
+            <code>load-bookmark-editor.ts</code> loads bookmark and tags and performs the same
+            not-found mapping used by the current edit route.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Extract new and edit screens</strong>
+            </li>
+          </ul>
+          <p>
+            <code>NewBookmarkScreen</code> owns selected tag initialization, page workbench UI,
+            <code>addBookmark</code>, and post-create navigation.
+          </p>
+          <p>
+            <code>EditBookmarkScreen</code> owns not-found presentation, selected tag state,
+            workbench UI, <code>updateBookmark</code>, and post-update navigation.
+          </p>
+          <p>
+            Routes retain search validation, loader startup, reading route data/search, and passing
+            navigation inputs.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Split bookmark detail into five responsibilities</strong>
+            </li>
+          </ul>
+          <p>Use these contracts:</p>
+          <pre
+            tabindex="0"><code class="language-text">BookmarkDetailScreen: promise boundary, flash states, not-found state, retry
+BookmarkDetailContent: URL/note/tags/dates/edit action
+BookmarkDeleteDialog: open/error/pending state, delete call, list navigation
+BookmarkDetailSkeleton: existing skeleton markup/styles
+loadBookmarkDetail: data aggregation
+</code></pre>
+          <p>Keep small detail error fallback private to <code>BookmarkDetailScreen</code>.</p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Preserve detail/list navigation exactly</strong>
+            </li>
+          </ul>
+          <p>
+            Keep tag search propagation, list-back search, detail-to-edit search, delete
+            destination, and all route-state flash flags unchanged.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 6: Verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>Expected: both pass; bookmark route files are connection layers.</p>
+          <h2 id="task-11-split-tag-fields-share-tagform-and-extract-tag-screens">
+            Task 11: Split Tag Fields, Share TagForm, And Extract Tag Screens
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li>
+              <p>Create: <code>src/features/tags/components/tag-pin-field.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/tag-color-field.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/tag-sort-order-field.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/features/tags/components/tag-edit-fields.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/tag-form.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/tag-management-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/new-tag-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/edit-tag-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Create: <code>src/features/tags/components/tag-detail-screen.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/tags/index.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/tags/new.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/tags/$id.edit.tsx</code></p>
+            </li>
+            <li>
+              <p>Modify: <code>src/routes/_protected/tags/$id/index.tsx</code></p>
+            </li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Split the independent tag-edit controls</strong>
+              </p>
+            </li>
+          </ul>
+          <p>
+            Move pin toggle, color palette, and sort-order input/stepper JSX and their styles into
+            their named field files. <code>TagEditFields</code> becomes a stateless composer with
+            the current controlled props:
+          </p>
+          <pre tabindex="0"><code class="language-ts">type TagEditFieldsProps = {
+  readonly pinned: boolean
+  readonly color: string | null
+  readonly sortOrder: number
+  readonly onPinnedChange: (pinned: boolean) =&gt; void
+  readonly onColorChange: (color: string | null) =&gt; void
+  readonly onSortOrderChange: (sortOrder: number) =&gt; void
+  readonly disabled?: boolean
+}
+</code></pre>
+          <p>
+            Keep all labels, IDs, aria attributes, button types, number coercion, and palette values
+            unchanged.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Build a shared controlled TagForm</strong>
+            </li>
+          </ul>
+          <p>
+            <code>TagForm</code> owns tag form state, name validation, pin/color/order state,
+            pending/error summary, <code>TagEditFields</code>, and submit button. Configure
+            create/edit through explicit values rather than boolean rendering branches:
+          </p>
+          <pre tabindex="0"><code class="language-ts">type TagFormValues = {
+  readonly name: string
+  readonly pinned: boolean
+  readonly color: string | null
+  readonly sortOrder: number
+}
+
+type TagFormProps = {
+  readonly initialValues: TagFormValues
+  readonly legend: string
+  readonly submitLabel: string
+  readonly pendingLabel: string
+  readonly onSubmit: (values: TagFormValues) =&gt; Promise&lt;void&gt;
+  readonly mapError: (error: unknown) =&gt; string
+}
+</code></pre>
+          <p>Preserve the distinct create/edit error messages through <code>mapError</code>.</p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Extract tag management screen</strong>
+            </li>
+          </ul>
+          <p>
+            Move management header, inline add, table ErrorBoundary/Suspense, and table skeleton
+            ownership into <code>tag-management-screen.tsx</code>. Keep <code>TagTable</code> and
+            its skeleton together in <code>tag-table.tsx</code> as states of one table
+            responsibility.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Extract new/edit/detail screens</strong>
+            </li>
+          </ul>
+          <p>
+            <code>NewTagScreen</code> owns add mutation and post-create navigation.
+            <code>EditTagScreen</code> owns promise boundary, update mutation, invalidation, and
+            post-update navigation. <code>TagDetailScreen</code> owns flash messages, promise
+            boundary, detail presentation, and links.
+          </p>
+          <p>
+            Routes retain route declarations, param/search validation, loader startup, and screen
+            wiring.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 5: Verify the checkpoint</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">pnpm run typecheck
+pnpm run test
+</code></pre>
+          <p>
+            Expected: both pass; tag routes are connection layers and tag form controls have
+            independent change boundaries.
+          </p>
+          <h2 id="task-12-final-cleanup-and-full-verification">
+            Task 12: Final Cleanup And Full Verification
+          </h2>
+          <p><strong>Files:</strong></p>
+          <ul>
+            <li><p>Modify: any import changed by Tasks 2-11</p></li>
+            <li>
+              <p>
+                Delete: empty route-local <code>-components</code>/<code>-lib</code> directories
+              </p>
+            </li>
+            <li><p>Verify: all production and test modules</p></li>
+            <li>
+              <p>
+                <input
+                  disabled=""
+                  type="checkbox" />
+                <strong>Step 1: Confirm obsolete paths are gone</strong>
+              </p>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;styles/ui|styles/primitives|bookmark\.function|tag\.function|auth\.function|db/index\.server|components/(ui-state|pantry-motion|error-fallback)|routes/sign-in/-(components|lib)|routes/_protected/bookmarks/-components/bookmark-workbench-form|entities/tag&quot; src scripts
+</code></pre>
+          <p>Expected: zero matches.</p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 2: Check dependency direction manually</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre
+            tabindex="0"><code class="language-bash">! rg -n &quot;from [&#39;\&quot;][^&#39;\&quot;]*routes/&quot; src/features src/shared
+! rg -n &quot;from [&#39;\&quot;][^&#39;\&quot;]*features/&quot; src/db src/shared
+! rg -n &quot;db/schema&quot; src/features --glob &#39;*.tsx&#39;
+</code></pre>
+          <p>
+            Expected: features/shared do not import route modules; DB/shared do not import features;
+            client UI does not depend on Drizzle row schemas.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 3: Run the complete project verification gate</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">pnpm run typecheck
+pnpm run test
+pnpm run build
+pnpm run lint
+pnpm run format:check
+pnpm run knip
+</code></pre>
+          <p>
+            Expected: every command exits successfully with no new warnings or unused exports/files.
+          </p>
+          <ul>
+            <li>
+              <input
+                disabled=""
+                type="checkbox" />
+              <strong>Step 4: Inspect the final diff for behavior-only drift</strong>
+            </li>
+          </ul>
+          <p>Run:</p>
+          <pre tabindex="0"><code class="language-bash">git status --short
+git diff --stat
+git diff
+</code></pre>
+          <p>
+            Expected: changes consist of moves, focused extraction, import rewiring, and explicitly
+            approved dead-code deletion. Reject any accidental copy, route contract, query,
+            validation, error-message, or navigation-state change.
+          </p>
+          <h2 id="files-that-intentionally-remain-cohesive">
+            Files That Intentionally Remain Cohesive
+          </h2>
+          <p>Do not split these solely because they contain multiple exports or private helpers:</p>
+          <ul>
+            <li>
+              <code>src/shared/components/ui-state.tsx</code>: loading/empty/error are one feedback
+              family.
+            </li>
+            <li>
+              <code>src/shared/components/styled-button/index.tsx</code>: styled base, props, and
+              wrapper are one component API after recipe extraction.
+            </li>
+            <li>
+              <code>src/shared/components/styled-link/index.tsx</code>: raw anchor, TanStack
+              adapter, styles, and typed export are one link API.
+            </li>
+            <li>
+              <code>src/features/bookmarks/components/bookmark-table.tsx</code>: one table
+              presentation responsibility.
+            </li>
+            <li>
+              <code>src/features/bookmarks/components/bookmark-workbench-form.tsx</code>: Formisch
+              fields and validation share one form state; only title-fetch side effects move out.
+            </li>
+            <li>
+              <code>src/features/tags/components/entrance-boxes.tsx</code>:
+              loading/error/resolved/empty are states of one entrance UI.
+            </li>
+            <li>
+              <code>src/features/tags/components/shelf-nav.tsx</code>: sync and async adapters are
+              states of one navigation UI after search builders move out.
+            </li>
+            <li>
+              <code>src/features/tags/components/tag-table.tsx</code>: table and skeleton share one
+              table structure.
+            </li>
+            <li>
+              <code>src/features/tags/components/inline-add-tag.tsx</code>: validation, mutation,
+              and error state form one quick-add transaction.
+            </li>
+            <li>
+              <code>src/features/bookmarks/functions/fetch-page-title.server.ts</code>: SSRF checks,
+              limits, redirects, parsing, and timeout are private parts of one fetch operation.
+            </li>
+            <li>
+              <code>src/features/bookmarks/lib/attach-bookmark-tags.ts</code>: projection types and
+              function form one contract.
+            </li>
+            <li>
+              <code>src/features/bookmarks/lib/list-layout-preference.ts</code>: type, read, and
+              write form one persisted preference.
+            </li>
+            <li>
+              <code>src/features/tags/lib/tag-shelf.ts</code>: view model and two ordering policies
+              form one shelf contract.
+            </li>
+            <li>
+              <code>src/db/schema/auth-schema.ts</code>: Better Auth adapter tables remain one
+              persistence schema.
+            </li>
+            <li>
+              <code>src/db/schema/bookmark.ts</code>, <code>tag.ts</code>, and
+              <code>bookmark-tag.ts</code>: each file remains one persistence entity/relationship.
+            </li>
+            <li>
+              <code>src/styles/form.ts</code>, <code>feedback.ts</code>, <code>workbench.ts</code>,
+              and <code>dialog.ts</code>: each remains a cohesive style suite.
+            </li>
+            <li>
+              <code>src/schemas/pagination.ts</code>: parser, schema, and inferred type form one
+              pagination contract.
+            </li>
+          </ul>
+          <h2 id="separate-ticket-candidates">Separate Ticket Candidates</h2>
+          <p>
+            These existing issues were discovered during the audit but are explicitly outside this
+            behavior-preserving refactor:
+          </p>
+          <ol>
+            <li>
+              Wrap bookmark add/update and tag-link replacement in transactions as required by
+              <code>docs/architecture.md</code>.
+            </li>
+            <li>
+              Verify every submitted tag ID belongs to the authenticated user before bookmark
+              add/update.
+            </li>
+            <li>Scope <code>getBookmark</code> tag joins to the authenticated user.</li>
+            <li>Exclude soft-deleted bookmarks from the initial update lookup.</li>
+            <li>
+              Standardize duplicate-tag-name error identity and user-facing conversion between
+              add/update flows.
+            </li>
+            <li>
+              Harden title-fetch SSRF protection against DNS rebinding/private DNS results and
+              complete IPv6 private/link-local ranges.
+            </li>
+          </ol>
+        </article>
+      </main>
+    </div>
+    <a
+      class="back-to-top"
+      href="#top"
+      lang="ja"
+      >先頭へ戻る</a
+    >
+    <script>
+      const links = new Map(
+        [...document.querySelectorAll('.toc a[href^="#"]')].map((link) => [
+          decodeURIComponent(link.hash.slice(1)),
+          link
+        ])
+      )
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+
+          if (!visible) return
+
+          for (const link of links.values()) link.removeAttribute('aria-current')
+          links.get(visible.target.id)?.setAttribute('aria-current', 'location')
+        },
+        { rootMargin: '0px 0px -72% 0px', threshold: 0 }
+      )
+
+      for (const id of links.keys()) {
+        const heading = document.getElementById(id)
+        if (heading) observer.observe(heading)
+      }
+    </script>
+  </body>
+</html>
