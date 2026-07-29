@@ -19,7 +19,7 @@ interface TagSelectorProps {
 
 export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorProps) {
   const [query, setQuery] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [tagError, setTagError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
   const filteredTags = allTags.filter((tag) =>
@@ -35,12 +35,12 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
   }
 
   async function handleCreate() {
-    setError(null)
+    setTagError(null)
     let parsedName: string
     try {
       parsedName = v.parse(tagNameSchema, query)
     } catch {
-      setError('タグ名を入力してください（32文字以内）')
+      setTagError('タグ名を入力してください（32文字以内）')
       return
     }
 
@@ -55,10 +55,10 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
         if (existing != null && !selectedTagIds.includes(existing.id)) {
           onChange([...selectedTagIds, existing.id])
         }
-        setError('そのタグ名は既に存在します（既存タグを選択しました）')
+        setTagError('そのタグ名は既に存在します（既存タグを選択しました）')
         setQuery('')
       } else {
-        setError('タグの作成に失敗しました')
+        setTagError('タグの作成に失敗しました')
       }
     } finally {
       setIsPending(false)
@@ -107,7 +107,7 @@ export function TagSelector({ allTags, selectedTagIds, onChange }: TagSelectorPr
           />{' '}
           {isPending ? '作成中...' : 'この名前で作成'}
         </button>
-        {error != null && <p role='alert'>{error}</p>}
+        {tagError != null && <p role='alert'>{tagError}</p>}
       </fieldset>
     </div>
   )
