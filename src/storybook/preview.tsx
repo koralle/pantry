@@ -1,7 +1,9 @@
-import '../index.css'
-import type { Preview } from '@storybook/tanstack-react'
+import addonDocs from '@storybook/addon-docs'
+import { definePreview } from '@storybook/tanstack-react'
 
-const preview: Preview = {
+import '../index.css'
+
+export default definePreview({
   parameters: {
     layout: 'padded',
     controls: {
@@ -10,7 +12,7 @@ const preview: Preview = {
         date: /Date$/i
       }
     }
-  }
-}
+  },
 
-export default preview
+  addons: [addonDocs()]
+})
