@@ -2,25 +2,14 @@ import { createServerOnlyFn } from '@tanstack/react-start'
 import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/libsql'
 
-import * as authTables from './schema/auth-schema'
-import { bookmarkTable } from './schema/bookmark'
-import { bookmarkTagsTable } from './schema/bookmark-tag'
-import { tagsTable } from './schema/tag'
 import { resolveTursoConnection } from './turso-connection'
-
-const schema = {
-  ...authTables,
-  bookmark: bookmarkTable,
-  bookmarkTags: bookmarkTagsTable,
-  tags: tagsTable
-}
 
 type PantryDB = ReturnType<typeof createDb>
 
 function createDb(connection: { url: string; authToken: string }) {
+  // Drizzle-orm 1.0: SQLite drizzle() no longer accepts `schema` (use `relations` for RQBv2).
   return drizzle({
-    connection,
-    schema
+    connection
   })
 }
 

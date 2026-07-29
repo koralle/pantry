@@ -5,20 +5,12 @@ import { drizzle } from 'drizzle-orm/libsql'
 
 import { env } from './env'
 import * as schema from './src/db/schema/auth-schema'
-import { bookmarkTable } from './src/db/schema/bookmark'
-import { bookmarkTagsTable } from './src/db/schema/bookmark-tag'
-import { tagsTable } from './src/db/schema/tag'
 
+// Drizzle-orm 1.0: SQLite drizzle() no longer accepts `schema` (use `relations` for RQBv2).
 export const db = drizzle({
   connection: {
     authToken: env.TURSO_AUTH_TOKEN,
     url: env.TURSO_CONNECTION_URL
-  },
-  schema: {
-    ...schema,
-    bookmark: bookmarkTable,
-    bookmarkTags: bookmarkTagsTable,
-    tags: tagsTable
   }
 })
 

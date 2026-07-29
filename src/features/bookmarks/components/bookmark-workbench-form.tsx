@@ -1,5 +1,5 @@
 import { Input } from '@base-ui/react'
-import { Field, getAllErrors, getInput, useForm, validate } from '@formisch/react'
+import { Field, getErrors, getInput, useForm, validate } from '@formisch/react'
 import { CircleAlert, Download } from 'lucide-react'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
@@ -89,7 +89,7 @@ export function BookmarkWorkbenchForm({
   const summaryErrors = [formError, titleFetchError].filter(
     (message): message is string => message != null
   )
-  const schemaErrors = getAllErrors(form)
+  const schemaErrors = getErrors(form)
   const allSummary = [
     ...summaryErrors,
     ...(schemaErrors ?? []).filter((message) => !summaryErrors.includes(message))
