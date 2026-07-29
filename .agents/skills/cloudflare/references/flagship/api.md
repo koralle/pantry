@@ -323,9 +323,7 @@ Changelog entries include the full flag state after the change. `update` entries
 ```json
 {
   "priority": 1,
-  "conditions": [
-    /* Condition[] */
-  ],
+  "conditions": [/* Condition[] */],
   "serve_variation": "on",
   "rollout": { "percentage": 50, "attribute": "targetingKey" }
 }
