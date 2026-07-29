@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
+import type { BookmarkSearchSchema } from '../../../features/navigation/lib/bookmark-search'
 import { bookmarkListLoaderDeps } from './bookmark-list-loader-deps'
-import type { BookmarkSearchSchema } from './bookmark-search-schema'
 
 const baseSearch = {
   limit: 50,

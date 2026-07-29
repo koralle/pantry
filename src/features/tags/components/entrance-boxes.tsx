@@ -1,19 +1,17 @@
-import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { Package, Plus } from 'lucide-react'
 import { Suspense, use } from 'react'
 import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
 import type { FallbackProps } from 'react-error-boundary'
 import { css, cx } from 'styled-system/css'
 
-import { UiEmpty, UiError, UiLoading } from '../../../components/ui-state'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { surface } from '../../../styles/ui'
-import { sortTagsForEntrance } from '../tag-shelf'
-import type { ShelfTag } from '../tag-shelf'
-import { touchTagLastUsed } from '../tag.function'
-import { tagShelfSearch } from './shelf-nav'
-
-const protectedRouteApi = getRouteApi('/_protected')
+import { UiEmpty, UiError, UiLoading } from '../../../shared/components/ui-state'
+import { surface } from '../../../styles/surface'
+import { tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
+import { touchTagLastUsed } from '../functions/touch-tag-last-used'
+import { sortTagsForEntrance } from '../lib/tag-shelf'
+import type { ShelfTag } from '../lib/tag-shelf'
 
 const entranceGrid = css({
   display: 'grid',
@@ -170,8 +168,11 @@ function EntranceBoxesAsync({
   return <EntranceBoxesIdeal tags={tags} />
 }
 
-export function EntranceBoxes() {
-  const { shelfTagsPromise } = protectedRouteApi.useLoaderData()
+export function EntranceBoxes({
+  shelfTagsPromise
+}: {
+  readonly shelfTagsPromise: Promise<ShelfTag[]>
+}) {
   const router = useRouter()
 
   return (

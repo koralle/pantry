@@ -6,9 +6,9 @@ import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../styles/ui'
-import { tagNameSchema } from '../tag-name.schema'
-import { addTag } from '../tag.function'
+import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../styles/form'
+import { addTag } from '../functions/add-tag'
+import { tagNameSchema } from '../lib/tag-name-schema'
 
 const inlineAddTag = css({
   display: 'flex',

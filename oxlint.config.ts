@@ -10,7 +10,13 @@ export default defineConfig({
     style: 'warn',
     suspicious: 'error'
   },
-  ignorePatterns: ['src/routeTree.gen.ts', 'worker-configuration.d.ts', 'postcss.config.cjs'],
+  ignorePatterns: [
+    'src/routeTree.gen.ts',
+    'worker-configuration.d.ts',
+    'postcss.config.cjs',
+    // Empty-module alias target for TanStack virtual modules under Vitest (see vitest.config.ts).
+    'vitest/tanstack-entry-stub.ts'
+  ],
   plugins: [
     'eslint',
     'unicorn',
