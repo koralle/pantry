@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { use } from 'react'
 import { css, cx } from 'styled-system/css'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
@@ -114,22 +113,5 @@ export function ShelfNav({ tags, selection, onNavigate }: ShelfNavProps) {
         )
       })}
     </nav>
-  )
-}
-
-type ShelfNavAsyncProps = {
-  readonly shelfTagsPromise: Promise<ShelfTag[]>
-  readonly selection: ShelfNavSelection
-  readonly onNavigate?: (() => void) | undefined
-}
-
-export function ShelfNavAsync({ shelfTagsPromise, selection, onNavigate }: ShelfNavAsyncProps) {
-  const tags = use(shelfTagsPromise)
-  return (
-    <ShelfNav
-      tags={tags}
-      selection={selection}
-      onNavigate={onNavigate}
-    />
   )
 }

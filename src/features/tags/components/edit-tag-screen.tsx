@@ -1,15 +1,15 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import { Suspense, use } from 'react'
-import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
-import type { FallbackProps } from 'react-error-boundary'
+import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 
+import { createErrorFallback } from '../../../shared/components/error-fallback'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { UiError, UiLoading } from '../../../shared/components/ui-state'
+import { UiLoading } from '../../../shared/components/ui-loading'
 import { workbench, workbenchLead, workbenchNav, workbenchTitle } from '../../../styles/workbench'
 import type { getTag } from '../functions/get-tag'
 import { updateTag } from '../functions/update-tag'
-import { TagForm } from './tag-form'
+import { EditTagForm } from './edit-tag-form'
 
 type TagRecord = Awaited<ReturnType<typeof getTag>>
 
@@ -17,25 +17,7 @@ type EditTagScreenProps = {
   readonly tagPromise: Promise<TagRecord>
 }
 
-type EditTagFormProps = {
-  readonly tagPromise: Promise<TagRecord>
-  readonly submitAction: (input: {
-    id: number
-    name: string
-    pinned: boolean
-    color: string | null
-    sortOrder: number
-  }) => Promise<void>
-}
-
-function EditError({ error, resetErrorBoundary }: FallbackProps) {
-  return (
-    <UiError
-      message={getErrorMessage(error) ?? 'タグの読み込みに失敗しました'}
-      onRetry={resetErrorBoundary}
-    />
-  )
-}
+const EditError = createErrorFallback('タグの読み込みに失敗しました')
 
 export function EditTagScreen({ tagPromise }: EditTagScreenProps) {
   const navigate = useNavigate()
@@ -93,33 +75,5 @@ export function EditTagScreen({ tagPromise }: EditTagScreenProps) {
         </Suspense>
       </ErrorBoundary>
     </div>
-  )
-}
-
-function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
-  const tag = use(tagPromise)
-
-  return (
-    <TagForm
-      initialValues={{
-        name: tag.name,
-        pinned: tag.pinned,
-        color: tag.color,
-        sortOrder: tag.sortOrder
-      }}
-      legend='タグ編集'
-      submitLabel='更新'
-      pendingLabel='更新中...'
-      onSubmit={async ({ name, pinned, color, sortOrder }) => {
-        await submitAction({
-          id: tag.id,
-          name,
-          pinned,
-          color,
-          sortOrder
-        })
-      }}
-      mapError={(error) => (error instanceof Error ? error.message : 'タグの更新に失敗しました')}
-    />
   )
 }

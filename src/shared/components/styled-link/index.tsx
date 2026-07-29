@@ -1,3 +1,6 @@
+/* oxlint-disable react/no-multi-comp */
+// BasicLinkComponent は StyledLink を組み立てるための非公開中間コンポーネントで、
+// 以下の JSDoc が述べる通り単一のプリミティブとして意図的に同居させている。
 /**
  * @file index.tsx
  *

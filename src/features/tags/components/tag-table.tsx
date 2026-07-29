@@ -1,21 +1,20 @@
 import { Pencil, Pin } from 'lucide-react'
 import { use } from 'react'
-import { css, cx } from 'styled-system/css'
+import { css } from 'styled-system/css'
 
 import { StyledLink } from '../../../shared/components/styled-link'
-import { UiEmpty } from '../../../shared/components/ui-state'
-import { skeleton } from '../../../styles/feedback'
+import { UiEmpty } from '../../../shared/components/ui-empty'
 import { srOnly } from '../../../styles/sr-only'
 import { tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
 import { sortTagsForNav } from '../lib/tag-shelf'
 import type { ShelfTag } from '../lib/tag-shelf'
 
-const tagTable = css({
+export const tagTable = css({
   width: 'full',
   borderCollapse: 'collapse'
 })
 
-const tagTableCell = css({
+export const tagTableCell = css({
   borderBlockEndWidth: 'thin',
   borderBlockEndStyle: 'solid',
   borderBlockEndColor: 'border.default',
@@ -25,7 +24,7 @@ const tagTableCell = css({
   verticalAlign: 'middle'
 })
 
-const tagTableHeader = css({
+export const tagTableHeader = css({
   color: 'fg.muted',
   fontSize: 'xs2',
   fontWeight: 'semibold'
@@ -46,39 +45,6 @@ const shelfDot = css({
   borderRadius: 'full',
   background: 'border.default',
   flexShrink: '0'
-})
-
-const skeletonBase = css({
-  display: 'block',
-  borderWidth: 'none',
-  padding: '0'
-})
-
-const skeletonDot = css({
-  inlineSize: '3',
-  blockSize: '3',
-  borderRadius: 'full',
-  minBlockSize: '0'
-})
-
-const skeletonName = css({
-  inlineSize: 'min-10',
-  minBlockSize: '4'
-})
-
-const skeletonCount = css({
-  inlineSize: '8',
-  minBlockSize: '4'
-})
-
-const skeletonPin = css({
-  inlineSize: '10',
-  minBlockSize: '4'
-})
-
-const skeletonAction = css({
-  inlineSize: '10',
-  minBlockSize: '4'
 })
 
 export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag[]> }) {
@@ -180,57 +146,5 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
         ))}
       </tbody>
     </table>
-  )
-}
-
-export function TagTableSkeleton() {
-  return (
-    <div aria-busy='true'>
-      <span className={srOnly}>タグを読み込み中</span>
-      <table
-        className={tagTable}
-        aria-hidden='true'>
-        <thead>
-          <tr>
-            <th
-              scope='col'
-              className={`${tagTableCell} ${tagTableHeader}`}>
-              色
-            </th>
-            <th
-              scope='col'
-              className={`${tagTableCell} ${tagTableHeader}`}>
-              名前
-            </th>
-            <th
-              scope='col'
-              className={`${tagTableCell} ${tagTableHeader}`}>
-              件数
-            </th>
-            <th
-              scope='col'
-              className={`${tagTableCell} ${tagTableHeader}`}>
-              ピン
-            </th>
-            <th
-              scope='col'
-              className={`${tagTableCell} ${tagTableHeader}`}>
-              <span className={srOnly}>操作</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {['a', 'b', 'c', 'd', 'e'].map((row) => (
-            <tr key={row}>
-              <td className={cx(skeleton, skeletonBase, skeletonDot)}>{'\u00a0'}</td>
-              <td className={cx(skeleton, skeletonBase, skeletonName)}>{'\u00a0'}</td>
-              <td className={cx(skeleton, skeletonBase, skeletonCount)}>{'\u00a0'}</td>
-              <td className={cx(skeleton, skeletonBase, skeletonPin)}>{'\u00a0'}</td>
-              <td className={cx(skeleton, skeletonBase, skeletonAction)}>{'\u00a0'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   )
 }

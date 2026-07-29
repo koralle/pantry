@@ -42,9 +42,17 @@ export default defineConfig({
 
     // Restriction
     'react/jsx-filename-extension': 'off',
+    'react/jsx-max-depth': 'off',
+    'react/jsx-no-literals': 'off',
     'react/only-export-components': 'off',
+    // Panda CSS は className によるスタイリングが前提のため無効化
+    'react/forbid-component-props': 'off',
     'oxc/no-async-await': 'off',
+    'oxc/no-optional-chaining': 'off',
     'oxc/no-rest-spread-properties': 'off',
+    'unicorn/no-null': 'off',
+    'no-ternary': 'off',
+    'no-undefined': 'off',
     'import/exports-last': 'off',
     'import/no-relative-parent-imports': 'off',
 
@@ -70,7 +78,10 @@ export default defineConfig({
     {
       files: ['src/routes/**/*.tsx'],
       rules: {
-        'no-use-before-define': 'off'
+        'no-use-before-define': 'off',
+        // TanStack Router のファイルルーティング規約上、Route 定義と
+        // コンポーネント / errorComponent を同ファイルに置くため許容する
+        'react/no-multi-comp': 'off'
       }
     },
     {

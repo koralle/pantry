@@ -1,16 +1,14 @@
 import { useRouter, useRouterState } from '@tanstack/react-router'
 import { CircleCheck } from 'lucide-react'
-import { Suspense, use } from 'react'
-import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
-import type { FallbackProps } from 'react-error-boundary'
+import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { css } from 'styled-system/css'
 
-import { StyledLink } from '../../../shared/components/styled-link'
-import { UiEmpty, UiError } from '../../../shared/components/ui-state'
+import { createErrorFallback } from '../../../shared/components/error-fallback'
 import { flash } from '../../../styles/flash'
-import { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
+import type { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
 import type { loadBookmarkDetail } from '../loaders/load-bookmark-detail'
-import { BookmarkDetailContent } from './bookmark-detail-content'
+import { BookmarkDetailResolved } from './bookmark-detail-resolved'
 import { BookmarkDetailSkeleton } from './bookmark-detail-skeleton'
 
 const detailLayout = css({
@@ -20,14 +18,7 @@ const detailLayout = css({
   gap: '6'
 })
 
-function DetailError({ error, resetErrorBoundary }: FallbackProps) {
-  return (
-    <UiError
-      message={getErrorMessage(error) ?? '詳細の読み込みに失敗しました'}
-      onRetry={resetErrorBoundary}
-    />
-  )
-}
+const DetailError = createErrorFallback('詳細の読み込みに失敗しました')
 
 export function BookmarkDetailScreen({
   detailPromise,
@@ -82,41 +73,5 @@ export function BookmarkDetailScreen({
         </Suspense>
       </ErrorBoundary>
     </section>
-  )
-}
-
-function BookmarkDetailResolved({
-  detailPromise,
-  listSearch
-}: {
-  readonly detailPromise: ReturnType<typeof loadBookmarkDetail>
-  readonly listSearch: ReturnType<typeof buildListBackSearch>
-}) {
-  const detail = use(detailPromise)
-
-  if (detail.kind === 'not-found') {
-    return (
-      <UiEmpty
-        title='このブックマークは見つかりません'
-        action={
-          <StyledLink
-            to='/'
-            search={listSearch}
-            visual='accent'>
-            一覧へ戻る
-          </StyledLink>
-        }
-      />
-    )
-  }
-
-  const { bookmark, tagNames } = detail
-
-  return (
-    <BookmarkDetailContent
-      bookmark={bookmark}
-      tagNames={tagNames}
-      listSearch={listSearch}
-    />
   )
 }

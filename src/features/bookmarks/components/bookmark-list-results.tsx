@@ -4,7 +4,8 @@ import { css, cx } from 'styled-system/css'
 
 import { PantryMotion } from '../../../shared/components/pantry-motion'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { UiEmpty, UiError } from '../../../shared/components/ui-state'
+import { UiEmpty } from '../../../shared/components/ui-empty'
+import { UiError } from '../../../shared/components/ui-error'
 import { button } from '../../../styles/button'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import {

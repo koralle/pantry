@@ -1,15 +1,15 @@
 import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { Suspense } from 'react'
-import { ErrorBoundary, getErrorMessage } from 'react-error-boundary'
-import type { FallbackProps } from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import { css } from 'styled-system/css'
 
-import { UiError } from '../../../shared/components/ui-state'
+import { createErrorFallback } from '../../../shared/components/error-fallback'
 import { button } from '../../../styles/button'
 import type { ShelfTag } from '../lib/tag-shelf'
 import { InlineAddTag } from './inline-add-tag'
-import { TagTable, TagTableSkeleton } from './tag-table'
+import { TagTable } from './tag-table'
+import { TagTableSkeleton } from './tag-table-skeleton'
 
 const tagAdmin = css({
   display: 'flex',
@@ -39,14 +39,7 @@ const tagAdminLead = css({
   minInlineSize: '12rem'
 })
 
-function TagsError({ error, resetErrorBoundary }: FallbackProps) {
-  return (
-    <UiError
-      message={getErrorMessage(error) ?? 'タグの読み込みに失敗しました'}
-      onRetry={resetErrorBoundary}
-    />
-  )
-}
+const TagsError = createErrorFallback('タグの読み込みに失敗しました')
 
 export function TagManagementScreen({
   tagsPromise
