@@ -1,11 +1,11 @@
 import { Globe } from 'lucide-react'
 import { css, cx } from 'styled-system/css'
 
-import { formatDateTime } from '../../../lib/format-date'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { tagChip } from '../../../styles/ui'
-import type { BookmarkListItem } from '../attach-bookmark-tags'
-import { shortenUrl } from '../shorten-url'
+import { tagChip } from '../../../styles/tag-chip'
+import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
+import { formatDateTime } from '../lib/format-date-time'
+import { shortenUrl } from '../lib/shorten-url'
 
 const table = css({ width: 'full', borderCollapse: 'collapse' })
 const tableCell = css({

@@ -35,7 +35,5 @@ export const tagsTable = sqliteTable(
   ]
 )
 
-export type TagSelectType = typeof tagsTable.$inferSelect
-
 export const tagSelectSchema = createSelectSchema(tagsTable)
 export const tagInsertSchema = createInsertSchema(tagsTable)

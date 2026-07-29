@@ -1,10 +1,9 @@
 /**
  * @file index.tsx
  *
- * Input:    Base UI `Button`, Panda `cva`/`styled` factories
- * Output:   StyledButton component and shared `button` recipe
- * Position: Shared UI primitive; documented by index.stories.tsx,
- *           recipe also consumed via `src/styles/button.ts` / `ui.ts`
+ * Input:    Base UI `Button`, Panda `styled` factory
+ * Output:   StyledButton component
+ * Position: Shared UI primitive; documented by index.stories.tsx
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx (stories for new/changed variants)
@@ -13,85 +12,10 @@
  */
 
 import { Button as BaseButton } from '@base-ui/react/button'
-import { cva } from 'styled-system/css'
 import { styled } from 'styled-system/jsx'
 import type { HTMLStyledProps } from 'styled-system/types'
 
-/**
- * Shared button surface recipe.
- *
- * `visual` covers chrome roles (neutral, accent CTA, destructive).
- * `size` scales padding / min-height / font-size; `md` preserves the
- * previous single-size look (`minBlockSize: touch`, padding 2/4).
- *
- * Exported so callers can keep composing with `className={button()}`
- * or `button.raw()` (e.g. Link / Dialog) without switching to StyledButton.
- */
-export const button = cva({
-  base: {
-    borderRadius: 'box',
-    borderWidth: 'thin',
-    borderStyle: 'solid',
-    borderColor: 'border.default',
-    background: 'bg.surface',
-    color: 'fg.default',
-    fontWeight: 'semibold',
-    cursor: 'pointer',
-    textDecoration: 'none',
-    display: 'inline-flex',
-    columnGap: '[0.25em]',
-    alignItems: 'center',
-    justifyContent: 'center',
-    _disabled: {
-      opacity: '0.6',
-      cursor: 'wait'
-    }
-  },
-  variants: {
-    visual: {
-      default: {},
-      accent: {
-        borderColor: 'accent.solid',
-        background: 'accent.solid',
-        color: 'accent.fg'
-      },
-      danger: {
-        borderColor: 'border.danger',
-        color: 'danger.solid',
-        background: 'bg.surface'
-      }
-    },
-    size: {
-      xs: {
-        minBlockSize: '[1.75rem]',
-        fontSize: 'xs',
-        paddingBlock: '1',
-        paddingInline: '2'
-      },
-      sm: {
-        minBlockSize: '[2.25rem]',
-        fontSize: 'xs',
-        paddingBlock: '1.5',
-        paddingInline: '3'
-      },
-      md: {
-        minBlockSize: 'touch',
-        paddingBlock: '2',
-        paddingInline: '4'
-      },
-      lg: {
-        minBlockSize: '[3.5rem]',
-        fontSize: 'md',
-        paddingBlock: '3',
-        paddingInline: '5'
-      }
-    }
-  },
-  defaultVariants: {
-    visual: 'default',
-    size: 'md'
-  }
-})
+import { button } from '../../../styles/button'
 
 /**
  * Intentionally not exported. Consumers get `StyledButton` (or the `button`

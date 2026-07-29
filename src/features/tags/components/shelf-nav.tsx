@@ -1,18 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import { use } from 'react'
 import { css, cx } from 'styled-system/css'
 
-import type { BookmarkSearchSchema } from '../../../routes/_protected/-lib/bookmark-search-schema'
-import { sortTagsForNav } from '../tag-shelf'
-import type { ShelfTag } from '../tag-shelf'
-
-const listDefaults = {
-  limit: 50,
-  offset: 0,
-  view: 'list' as const,
-  tagMode: 'and' as const,
-  sort: 'newest' as const
-}
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
+import { allShelfSearch, tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
+import { sortTagsForNav } from '../lib/tag-shelf'
+import type { ShelfTag } from '../lib/tag-shelf'
 
 const shelfNav = css({
   display: 'flex',
@@ -64,14 +56,6 @@ const shelfDot = css({
 const shelfDotNeutral = css({
   background: 'fg.muted'
 })
-
-export function allShelfSearch(): BookmarkSearchSchema {
-  return { ...listDefaults }
-}
-
-export function tagShelfSearch(tagName: string): BookmarkSearchSchema {
-  return { ...listDefaults, tags: [tagName] }
-}
 
 export type ShelfNavSelection = {
   view?: BookmarkSearchSchema['view'] | undefined
@@ -129,22 +113,5 @@ export function ShelfNav({ tags, selection, onNavigate }: ShelfNavProps) {
         )
       })}
     </nav>
-  )
-}
-
-type ShelfNavAsyncProps = {
-  readonly shelfTagsPromise: Promise<ShelfTag[]>
-  readonly selection: ShelfNavSelection
-  readonly onNavigate?: (() => void) | undefined
-}
-
-export function ShelfNavAsync({ shelfTagsPromise, selection, onNavigate }: ShelfNavAsyncProps) {
-  const tags = use(shelfTagsPromise)
-  return (
-    <ShelfNav
-      tags={tags}
-      selection={selection}
-      onNavigate={onNavigate}
-    />
   )
 }

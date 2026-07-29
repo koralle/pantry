@@ -4,7 +4,9 @@ const config: KnipConfig = {
   tags: ['-lintignore'],
   // Maintenance scripts and the Node-only Better Auth entry they import.
   // Nested `dotenvx` / `pnpm` wrappers are not fully resolved by the script parser.
-  entry: ['auth.ts', 'scripts/**/*.ts'],
+  // The tanstack-entry stub is an alias target loaded by the Vitest bundler
+  // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
+  entry: ['auth.ts', 'scripts/**/*.ts', 'vitest/tanstack-entry-stub.ts'],
   storybook: {
     config: ['src/storybook/main.ts'],
     entry: [
@@ -12,11 +14,6 @@ const config: KnipConfig = {
       'src/**/*.stories.@(ts|tsx)'
     ]
   },
-  ignore: [
-    // Known unused — leave in place for now; catch new unused files as errors
-    'src/components/error-fallback.tsx',
-    'src/entities/tag.ts'
-  ],
   // Do not parse lefthook.yaml / git hooks for entry scripts and binaries.
   lefthook: false,
   ignoreDependencies: [

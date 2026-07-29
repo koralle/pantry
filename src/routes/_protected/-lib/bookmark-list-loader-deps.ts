@@ -1,4 +1,4 @@
-import type { BookmarkSearchSchema } from './bookmark-search-schema'
+import type { BookmarkSearchSchema } from '../../../features/navigation/lib/bookmark-search'
 
 /**
  * Search fields that must invalidate the index route loader.

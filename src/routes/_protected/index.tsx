@@ -1,13 +1,20 @@
-import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  ErrorComponent,
+  ErrorComponentProps,
+  getRouteApi
+} from '@tanstack/react-router'
 import * as v from 'valibot'
 
-import { PantryMotion } from '../../components/pantry-motion'
-import { ensureSession } from '../../features/auth/auth.function'
-import { fetchBookmarks } from '../../features/bookmarks/bookmark.function'
+import { ensureSession } from '../../features/auth/functions/ensure-session'
 import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
+import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmarks'
+import { bookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
 import { EntranceBoxes } from '../../features/tags/components/entrance-boxes'
+import { PantryMotion } from '../../shared/components/pantry-motion'
 import { bookmarkListLoaderDeps } from './-lib/bookmark-list-loader-deps'
-import { bookmarkSearchSchema } from './-lib/bookmark-search-schema'
+
+const protectedRouteApi = getRouteApi('/_protected')
 
 export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
@@ -48,18 +55,24 @@ function BookmarkPageFallbackComponent({ error }: ErrorComponentProps) {
 
 function RouteComponent() {
   const search = Route.useSearch()
+  const { bookmarksPromise } = Route.useLoaderData()
+  const { shelfTagsPromise } = protectedRouteApi.useLoaderData()
 
   if (search.view === 'entrance') {
     return (
       <PantryMotion kind='fade-up'>
-        <EntranceBoxes />
+        <EntranceBoxes shelfTagsPromise={shelfTagsPromise} />
       </PantryMotion>
     )
   }
 
   return (
     <PantryMotion kind='fade-up'>
-      <BookmarkList />
+      <BookmarkList
+        search={search}
+        bookmarksPromise={bookmarksPromise}
+        shelfTagsPromise={shelfTagsPromise}
+      />
     </PantryMotion>
   )
 }

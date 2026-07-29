@@ -1,3 +1,6 @@
+/* oxlint-disable react/no-multi-comp */
+// Catalog / Section / Meta はトークンカタログを描画するための一体のキットで、
+// 分割すると Storybook 用の小さな断片が散らばるだけのため同居させている。
 import type { ReactNode } from 'react'
 import { css } from 'styled-system/css'
 import { token } from 'styled-system/tokens'
