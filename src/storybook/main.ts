@@ -1,12 +1,12 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import type { StorybookConfig } from '@storybook/tanstack-react'
+import { defineMain } from '@storybook/tanstack-react/node'
 import viteReact from '@vitejs/plugin-react'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const config: StorybookConfig = {
+export default defineMain({
   stories: ['../**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: ['@storybook/addon-docs'],
   framework: '@storybook/tanstack-react',
@@ -31,6 +31,4 @@ const config: StorybookConfig = {
       }
     })
   }
-}
-
-export default config
+})

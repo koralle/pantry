@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { css } from 'styled-system/css'
 
+import preview from '../../storybook/preview'
 import { Catalog, Meta as TokenMeta, Section, tokenValue } from './catalog'
 import { pantryColors, semanticColors } from './token-data'
 
@@ -56,18 +56,15 @@ function ColorsCatalog() {
   )
 }
 
-const meta = {
+const meta = preview.meta({
   title: 'Theme/色',
   parameters: { layout: 'padded' }
-} satisfies Meta
+})
 
-export default meta
-type Story = StoryObj
-
-export const CatalogStory: Story = {
+export const CatalogStory = meta.story({
   name: 'カタログ',
   render: () => <ColorsCatalog />
-}
+})
 
 const swatchGrid = css({
   display: 'grid',

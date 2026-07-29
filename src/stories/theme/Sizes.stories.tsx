@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { css } from 'styled-system/css'
 
+import preview from '../../storybook/preview'
 import { Catalog, Meta as TokenMeta, Section, tokenValue } from './catalog'
 import { customSizeTokens } from './token-data'
 
@@ -46,18 +46,15 @@ function SizesCatalog() {
   )
 }
 
-const meta = {
+const meta = preview.meta({
   title: 'Theme/サイズ',
   parameters: { layout: 'padded' }
-} satisfies Meta
+})
 
-export default meta
-type Story = StoryObj
-
-export const CatalogStory: Story = {
+export const CatalogStory = meta.story({
   name: 'カタログ',
   render: () => <SizesCatalog />
-}
+})
 
 const stack = css({
   display: 'flex',

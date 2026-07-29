@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { css } from 'styled-system/css'
 
+import preview from '../../storybook/preview'
 import { Catalog, Meta as TokenMeta, Section, tokenValue } from './catalog'
 import { radiusTokens } from './token-data'
 
@@ -32,18 +32,15 @@ function RadiiCatalog() {
   )
 }
 
-const meta = {
+const meta = preview.meta({
   title: 'Theme/角丸',
   parameters: { layout: 'padded' }
-} satisfies Meta
+})
 
-export default meta
-type Story = StoryObj
-
-export const CatalogStory: Story = {
+export const CatalogStory = meta.story({
   name: 'カタログ',
   render: () => <RadiiCatalog />
-}
+})
 
 const grid = css({
   display: 'grid',
