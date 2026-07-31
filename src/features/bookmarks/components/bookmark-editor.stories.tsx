@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
@@ -6,6 +5,7 @@ import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
 import { err, ok } from '../../../shared/domain/result'
+import preview from '../../../storybook/preview'
 import type { CreateTag } from '../../tags/application/create-tag'
 import { tagIdSchema, tagNameSchema } from '../../tags/domain/tag-values'
 import type { ExecuteUpdateBookmark } from '../application/execute-update-bookmark'
@@ -49,7 +49,7 @@ function deferredTags(): {
   return { promise, resolve }
 }
 
-const meta = {
+const meta = preview.meta({
   title: 'Components / BookmarkEditor',
   component: BookmarkEditor,
   parameters: {
@@ -62,37 +62,30 @@ const meta = {
       </styled.div>
     )
   ]
-} satisfies Meta<typeof BookmarkEditor>
+})
 
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-const baseArgs = {
-  initialData,
-  onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
-  initialTags: resolvedTags(ok(sampleTags)),
-  onLoadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags)),
-  onCreateTag: fn<CreateTag>(async (name) =>
-    ok({ id: v.parse(tagIdSchema, 99), name: v.parse(tagNameSchema, name) })
-  ),
-  onCompleted: fn(async () => undefined),
-  onFetchTitle: fn(async () => '取得したタイトル')
-}
-
-export const Default = {
-  args: baseArgs,
+export const Default = meta.story({
+  args: {
+    initialData,
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
+    initialTags: resolvedTags(ok(sampleTags)),
+    onLoadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags)),
+    onCreateTag: fn<CreateTag>(async (name) =>
+      ok({ id: v.parse(tagIdSchema, 99), name: v.parse(tagNameSchema, name) })
+    ),
+    onCompleted: fn(async () => undefined),
+    onFetchTitle: fn(async () => '取得したタイトル')
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('URL')).toHaveValue(String(initialData.url))
     await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeChecked()
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
   }
-} as const satisfies Story
+})
 
-export const TagOptionsAreLoading = {
+export const TagOptionsAreLoading = Default.extend({
   args: {
-    ...baseArgs,
     initialTags: deferredTags().promise
   },
   play: async ({ canvasElement }) => {
@@ -100,11 +93,10 @@ export const TagOptionsAreLoading = {
     await expect(canvas.getByLabelText('URL')).toBeEnabled()
     await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
   }
-} as const satisfies Story
+})
 
-export const TagOptionsLoadFailed = {
+export const TagOptionsLoadFailed = Default.extend({
   args: {
-    ...baseArgs,
     initialTags: resolvedTags(err({ code: 'unexpected-error' })),
     onLoadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags))
   },
@@ -118,11 +110,10 @@ export const TagOptionsLoadFailed = {
       await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeInTheDocument()
     })
   }
-} as const satisfies Story
+})
 
-export const UpdateHasDuplicateUrl = {
+export const UpdateHasDuplicateUrl = Default.extend({
   args: {
-    ...baseArgs,
     onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => err({ code: 'duplicate-url' }))
   },
   play: async ({ canvasElement }) => {
@@ -132,11 +123,10 @@ export const UpdateHasDuplicateUrl = {
       '同じ URL のブックマークが既にあります'
     )
   }
-} as const satisfies Story
+})
 
-export const UpdateHasUnexpectedError = {
+export const UpdateHasUnexpectedError = Default.extend({
   args: {
-    ...baseArgs,
     onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => {
       throw new Error('boom')
     })
@@ -146,4 +136,4 @@ export const UpdateHasUnexpectedError = {
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('保存に失敗しました')
   }
-} as const satisfies Story
+})

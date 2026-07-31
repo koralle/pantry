@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
+import preview from '../../../storybook/preview'
 import { BookmarkForm } from './bookmark-form'
 import type { BookmarkFormProps, BookmarkFormSubmitValues } from './bookmark-form'
 
-const meta = {
+const meta = preview.meta({
   title: 'Components / BookmarkForm',
   component: BookmarkForm,
   parameters: {
@@ -19,11 +19,7 @@ const meta = {
       </styled.div>
     )
   ]
-} satisfies Meta<typeof BookmarkForm>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
+})
 
 const defaultInitialValues = {
   url: 'https://example.com/article',
@@ -31,28 +27,25 @@ const defaultInitialValues = {
   note: 'メモの下書き'
 } as const
 
-const idleArgs = {
-  initialValues: defaultInitialValues,
-  submission: 'idle' as const,
-  submitLabel: '更新',
-  pendingLabel: '更新中…',
-  onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
-  onFetchTitle: fn(async () => '取得したタイトル')
-}
-
-export const Default = {
-  args: idleArgs,
+export const Default = meta.story({
+  args: {
+    initialValues: defaultInitialValues,
+    submission: 'idle' as const,
+    submitLabel: '更新',
+    pendingLabel: '更新中…',
+    onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
+    onFetchTitle: fn(async () => '取得したタイトル')
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('URL')).toHaveValue(defaultInitialValues.url)
     await expect(canvas.getByLabelText('タイトル')).toHaveValue(defaultInitialValues.title)
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
   }
-} as const satisfies Story
+})
 
-export const FieldError = {
+export const FieldError = Default.extend({
   args: {
-    ...idleArgs,
     initialValues: {
       url: 'not-a-url',
       title: '   ',
@@ -68,11 +61,10 @@ export const FieldError = {
     await expect(canvas.getByText('タイトルを入力してください')).toBeInTheDocument()
     await expect(args.onSubmit).not.toHaveBeenCalled()
   }
-} as const satisfies Story
+})
 
-export const SummaryError = {
+export const SummaryError = Default.extend({
   args: {
-    ...idleArgs,
     errors: {
       summary: '同じURLのブックマークが既に存在します',
       fields: {
@@ -87,11 +79,10 @@ export const SummaryError = {
     )
     await expect(canvas.getByText('別のURLを指定してください')).toBeInTheDocument()
   }
-} as const satisfies Story
+})
 
-export const Pending = {
+export const Pending = Default.extend({
   args: {
-    ...idleArgs,
     submission: 'pending'
   },
   play: async ({ canvasElement }) => {
@@ -99,11 +90,10 @@ export const Pending = {
     await expect(canvas.getByRole('button', { name: '更新中…' })).toBeDisabled()
     await expect(canvas.getByLabelText('URL')).toBeDisabled()
   }
-} as const satisfies Story
+})
 
-export const SubmitsBrandedValues = {
+export const SubmitsBrandedValues = Default.extend({
   args: {
-    ...idleArgs,
     onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
   },
   play: async ({ canvasElement, args }) => {
@@ -116,4 +106,4 @@ export const SubmitsBrandedValues = {
     await expect(values?.title).toBe(defaultInitialValues.title)
     await expect(values?.note).toBe(defaultInitialValues.note)
   }
-} as const satisfies Story
+})

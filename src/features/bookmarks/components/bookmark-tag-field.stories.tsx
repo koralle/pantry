@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/tanstack-react'
 import { useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 import * as v from 'valibot'
 
 import { err, ok } from '../../../shared/domain/result'
+import preview from '../../../storybook/preview'
 import { tagIdSchema, tagNameSchema } from '../../tags/domain/tag-values'
 import type { TagId } from '../../tags/domain/tag-values'
 import { BookmarkTagField } from './bookmark-tag-field'
@@ -19,7 +19,7 @@ function tag(id: number, name: string): SelectableTag {
 
 const sampleTags: readonly SelectableTag[] = [tag(1, 'react'), tag(2, 'typescript'), tag(3, 'uiux')]
 
-const meta = {
+const meta = preview.meta({
   title: 'Components / BookmarkTagField',
   parameters: {
     layout: 'padded'
@@ -31,22 +31,18 @@ const meta = {
       </styled.div>
     )
   ]
-} satisfies Meta
+})
 
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-export const Loading = {
+export const Loading = meta.story({
   render: () => <BookmarkTagField.Loading />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
     await expect(canvas.getByText('タグを読み込み中…')).toHaveAttribute('aria-busy', 'true')
   }
-} as const satisfies Story
+})
 
-export const Empty = {
+export const Empty = meta.story({
   render: () => (
     <BookmarkTagField.Blank onCreateTag={fn<CreateTag>(async () => ok(tag(10, 'new-tag')))} />
   ),
@@ -57,9 +53,9 @@ export const Empty = {
     ).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: 'この名前で作成' })).toBeEnabled()
   }
-} as const satisfies Story
+})
 
-export const Error = {
+export const Error = meta.story({
   render: () => (
     <BookmarkTagField.Error
       message='タグ候補の取得に失敗しました'
@@ -71,7 +67,7 @@ export const Error = {
     await expect(canvas.getByRole('alert')).toHaveTextContent('タグ候補の取得に失敗しました')
     await expect(canvas.getByRole('button', { name: '再試行' })).toBeEnabled()
   }
-} as const satisfies Story
+})
 
 function RetryDemo() {
   const [phase, setPhase] = useState<'error' | 'loading'>('error')
@@ -86,14 +82,14 @@ function RetryDemo() {
   )
 }
 
-export const Retry = {
+export const Retry = meta.story({
   render: () => <RetryDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '再試行' }))
     await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
   }
-} as const satisfies Story
+})
 
 function ReadyDemo({ onCreateTag }: { readonly onCreateTag: CreateTag }) {
   const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>([sampleTags[0]!.id])
@@ -119,7 +115,7 @@ function ReadyDemo({ onCreateTag }: { readonly onCreateTag: CreateTag }) {
   )
 }
 
-export const Ready = {
+export const Ready = meta.story({
   render: () => <ReadyDemo onCreateTag={fn<CreateTag>(async (name) => ok(tag(99, name)))} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -128,9 +124,9 @@ export const Ready = {
     await userEvent.click(canvas.getByLabelText('typescript'))
     await expect(canvas.getByLabelText('typescript')).toBeChecked()
   }
-} as const satisfies Story
+})
 
-export const Create = {
+export const Create = meta.story({
   render: () => (
     <BookmarkTagField.Blank
       onCreateTag={fn<CreateTag>(async (name) => ok(tag(42, name)))}
@@ -144,9 +140,9 @@ export const Create = {
     await userEvent.click(canvas.getByRole('button', { name: 'この名前で作成' }))
     await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
   }
-} as const satisfies Story
+})
 
-export const CreateNameAlreadyExists = {
+export const CreateNameAlreadyExists = meta.story({
   render: () => (
     <BookmarkTagField.Blank
       onCreateTag={fn<CreateTag>(async () => err({ code: 'duplicate-tag-name', field: 'name' }))}
@@ -159,4 +155,4 @@ export const CreateNameAlreadyExists = {
     await userEvent.click(canvas.getByRole('button', { name: 'この名前で作成' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('そのタグ名は既に存在します')
   }
-} as const satisfies Story
+})
