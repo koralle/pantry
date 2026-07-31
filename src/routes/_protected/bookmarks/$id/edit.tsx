@@ -113,7 +113,7 @@ function RouteComponent() {
       <BookmarkEditor
         initialData={initialData}
         initialTags={initialTags}
-        executeUpdate={async (command) => {
+        onUpdateBookmark={async (command) => {
           try {
             return await updateBookmark({
               data: {
@@ -128,8 +128,8 @@ function RouteComponent() {
             return err({ code: 'unexpected-error' })
           }
         }}
-        loadSelectableTags={() => loadSelectableTags()}
-        createTag={async (name) => {
+        onLoadSelectableTags={() => loadSelectableTags()}
+        onCreateTag={async (name) => {
           try {
             return await createTagFn({ data: { name } })
           } catch {

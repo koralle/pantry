@@ -17,10 +17,10 @@ export type { ExecuteUpdateBookmark, LoadSelectableTags }
 
 export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
-  readonly executeUpdate: ExecuteUpdateBookmark
+  readonly onUpdateBookmark: ExecuteUpdateBookmark
   readonly initialTags: Promise<SelectableTagsResult>
-  readonly loadSelectableTags: LoadSelectableTags
-  readonly createTag: CreateTag
+  readonly onLoadSelectableTags: LoadSelectableTags
+  readonly onCreateTag: CreateTag
   readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
   readonly onFetchTitle?: (url: string) => Promise<string | null>
 }
@@ -97,10 +97,10 @@ function resolveTagsState(result: SelectableTagsResult): TagsViewState {
  */
 export function BookmarkEditor({
   initialData,
-  executeUpdate,
+  onUpdateBookmark,
   initialTags,
-  loadSelectableTags,
-  createTag,
+  onLoadSelectableTags,
+  onCreateTag,
   onCompleted,
   onFetchTitle
 }: BookmarkEditorProps) {
@@ -130,7 +130,7 @@ export function BookmarkEditor({
     startTagsTransition(() => {
       setTagsState({ status: 'loading' })
       void (async () => {
-        const result = await loadSelectableTags()
+        const result = await onLoadSelectableTags()
         setTagsState(resolveTagsState(result))
       })()
     })
@@ -157,7 +157,7 @@ export function BookmarkEditor({
     setSubmission('pending')
 
     try {
-      const result = await executeUpdate({
+      const result = await onUpdateBookmark({
         bookmarkId: initialData.bookmarkId,
         url: values.url,
         title: values.title,
@@ -188,7 +188,7 @@ export function BookmarkEditor({
       />
     ) : tagsState.status === 'blank' ? (
       <BookmarkTagField.Blank
-        onCreateTag={createTag}
+        onCreateTag={onCreateTag}
         onCreated={handleTagCreated}
       />
     ) : (
@@ -196,7 +196,7 @@ export function BookmarkEditor({
         tags={tagsState.tags}
         selectedTagIds={selectedTagIds}
         onSelectedTagIdsChange={setSelectedTagIds}
-        onCreateTag={createTag}
+        onCreateTag={onCreateTag}
       />
     )
 

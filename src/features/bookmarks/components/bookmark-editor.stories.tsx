@@ -70,10 +70,10 @@ type Story = StoryObj<typeof meta>
 
 const baseArgs = {
   initialData,
-  executeUpdate: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
+  onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
   initialTags: resolvedTags(ok(sampleTags)),
-  loadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags)),
-  createTag: fn<CreateTag>(async (name) =>
+  onLoadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags)),
+  onCreateTag: fn<CreateTag>(async (name) =>
     ok({ id: v.parse(tagIdSchema, 99), name: v.parse(tagNameSchema, name) })
   ),
   onCompleted: fn(async () => undefined),
@@ -106,14 +106,14 @@ export const TagOptionsLoadFailed = {
   args: {
     ...baseArgs,
     initialTags: resolvedTags(err({ code: 'unexpected-error' })),
-    loadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags))
+    onLoadSelectableTags: fn<LoadSelectableTags>(async () => ok(sampleTags))
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: /再試行/ }))
-    const loadSelectableTags = args.loadSelectableTags as Mock<LoadSelectableTags>
-    await expect(loadSelectableTags).toHaveBeenCalled()
+    const onLoadSelectableTags = args.onLoadSelectableTags as Mock<LoadSelectableTags>
+    await expect(onLoadSelectableTags).toHaveBeenCalled()
     await waitFor(async () => {
       await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeInTheDocument()
     })
@@ -123,7 +123,7 @@ export const TagOptionsLoadFailed = {
 export const UpdateHasDuplicateUrl = {
   args: {
     ...baseArgs,
-    executeUpdate: fn<ExecuteUpdateBookmark>(async () => err({ code: 'duplicate-url' }))
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => err({ code: 'duplicate-url' }))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -137,7 +137,7 @@ export const UpdateHasDuplicateUrl = {
 export const UpdateHasUnexpectedError = {
   args: {
     ...baseArgs,
-    executeUpdate: fn<ExecuteUpdateBookmark>(async () => {
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => {
       throw new Error('boom')
     })
   },
