@@ -30,7 +30,6 @@ const defaultInitialValues = {
 export const Default = meta.story({
   args: {
     initialValues: defaultInitialValues,
-    submission: 'idle' as const,
     submitLabel: '更新',
     pendingLabel: '更新中…',
     onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
@@ -83,10 +82,13 @@ export const SummaryError = Default.extend({
 
 export const Pending = Default.extend({
   args: {
-    submission: 'pending'
+    onSubmit: fn(async () => {
+      await new Promise<void>(() => {})
+    })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('button', { name: '更新中…' })).toBeDisabled()
     await expect(canvas.getByLabelText('URL')).toBeDisabled()
   }

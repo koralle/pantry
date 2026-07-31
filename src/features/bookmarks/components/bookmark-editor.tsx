@@ -109,7 +109,6 @@ export function BookmarkEditor({
   ])
   const [tagsState, setTagsState] = useState<TagsViewState>({ status: 'loading' })
   const [formError, setFormError] = useState<BookmarkFormError | null>(null)
-  const [submission, setSubmission] = useState<'idle' | 'pending'>('idle')
   const [, startTagsTransition] = useTransition()
 
   useEffect(() => {
@@ -154,7 +153,6 @@ export function BookmarkEditor({
 
   async function handleSubmit(values: BookmarkFormSubmitValues) {
     setFormError(null)
-    setSubmission('pending')
 
     try {
       const result = await onUpdateBookmark({
@@ -173,8 +171,6 @@ export function BookmarkEditor({
       await onCompleted(result.value.bookmarkId)
     } catch {
       setFormError(mapUpdateError({ code: 'unexpected-error' }))
-    } finally {
-      setSubmission('idle')
     }
   }
 
@@ -208,7 +204,6 @@ export function BookmarkEditor({
         note: initialData.note
       }}
       errors={formError}
-      submission={submission}
       submitLabel='更新'
       pendingLabel='更新中…'
       onSubmit={handleSubmit}
