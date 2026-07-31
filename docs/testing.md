@@ -13,8 +13,17 @@
 - 認可: 未認証拒否と、他ユーザーのブックマーク・タグを取得/更新/削除できないこと。
 - タイトル取得: URL検証、成功時のtitle抽出、タイムアウト・不正URL・取得失敗時のフォールバック。
 - 認証: 自己サインアップが拒否され、事前作成ユーザーがサインインできること。
+- Domain / Application: brand schema、共有 Result、Bookmark 集約規則、更新 transaction と業務エラー Result。
 
 TypeSpec/OpenAPI契約テストは実施しない。アプリケーション境界はTanStack Start Server Functionである。
+
+## 2.1 UI ブラウザテスト（Storybook）
+
+UI のブラウザ検証の正本は Storybook の Story と `play` 関数とする。Vitest Browser Mode は追加しない。
+
+- Route Story（例: ブックマーク編集）は `RouteComponent` を起点に、Ideal / Blank / Loading / Partial / Error を網羅する。
+- Component Story は注入された port（fake）で更新 Result・タグ候補の loading/error/retry・作成失敗を再現する。
+- Server Function / Router / DB は Story 内で mock または fake port に差し替え、本番実装を直接呼ばない。
 
 ## 3. Playwright MCP検証
 

@@ -1,3 +1,7 @@
+/**
+ * @deprecated 編集 Route は `BookmarkEditor` を使う。
+ * 新規登録など未移行画面が残る場合のみ参照する。
+ */
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
