@@ -1,4 +1,4 @@
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
@@ -33,13 +33,74 @@ export const Default = meta.story({
     submitLabel: '更新',
     pendingLabel: '更新中…',
     onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
-    onFetchTitle: fn(async () => '取得したタイトル')
+    onFetchTitle: fn(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      return '取得したタイトル'
+    })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('URL')).toHaveValue(defaultInitialValues.url)
     await expect(canvas.getByLabelText('タイトル')).toHaveValue(defaultInitialValues.title)
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
+  }
+})
+
+export const RejectsEmptyUrl = Default.extend({
+  args: {
+    initialValues: {
+      url: '',
+      title: '手入力タイトル',
+      note: null
+    }
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
+    await expect(canvas.getByRole('alert')).toHaveTextContent('先にURLを入力してください')
+    await expect(canvas.getByLabelText('タイトル')).toHaveValue('手入力タイトル')
+  }
+})
+
+export const RetryClearsTitleFetchError = Default.extend({
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    const fetchButton = canvas.getByRole('button', { name: 'タイトルを取得' })
+    const onFetchTitle = args.onFetchTitle as Mock<(url: string) => Promise<string | null>>
+    onFetchTitle.mockImplementationOnce(async () => null)
+    onFetchTitle.mockImplementationOnce(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      return '再び取得したタイトル'
+    })
+
+    await userEvent.click(fetchButton)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(
+      'タイトルを取得できませんでした。手入力で続けられます'
+    )
+
+    await userEvent.click(fetchButton)
+    await waitFor(
+      () => {
+        expect(canvas.getByLabelText('タイトル')).toHaveValue('再び取得したタイトル')
+      },
+      { timeout: 3000 }
+    )
+    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
+  }
+})
+
+export const TitleFetchPending = Default.extend({
+  args: {
+    onFetchTitle: fn(async (_url: string): Promise<string | null> => {
+      await new Promise<string | null>(() => {})
+      return null
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
+    await expect(canvas.getByRole('button', { name: '取得中…' })).toBeDisabled()
+    await expect(canvas.getByLabelText('URL')).toBeDisabled()
   }
 })
 

@@ -1,7 +1,7 @@
 import { Input } from '@base-ui/react'
 import { Field, Form, getErrors, getInput, setErrors, setInput, useForm } from '@formisch/react'
 import { CircleAlert, Download } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { startTransition, useActionState, useEffect, useId } from 'react'
 import type { ReactNode } from 'react'
 
 import { StyledButton } from '../../../shared/components/styled-button'
@@ -57,6 +57,14 @@ export type BookmarkFormProps = {
 
 type FormFieldKey = 'url' | 'title' | 'note'
 
+type TitleFetchState =
+  | { readonly status: 'idle' }
+  | { readonly status: 'error'; readonly message: string }
+
+type TitleFetchAction = {
+  readonly url: string
+}
+
 export function BookmarkForm({
   initialValues,
   errors = null,
@@ -72,6 +80,7 @@ export function BookmarkForm({
   const titleId = `${baseId}-title`
   const noteId = `${baseId}-note`
   const summaryId = `${baseId}-summary`
+
   const form = useForm({
     initialInput: {
       url: initialValues.url,
@@ -81,8 +90,40 @@ export function BookmarkForm({
     schema: bookmarkFormSchema
   })
 
-  const [titleFetchError, setTitleFetchError] = useState<string | null>(null)
-  const [isFetchingTitle, setIsFetchingTitle] = useState(false)
+  // タイトル取得はフォーム値ではなく、Formischとは独立した非同期Actionとして管理する。
+  const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
+    async (_previous: TitleFetchState, action: TitleFetchAction): Promise<TitleFetchState> => {
+      if (action.url.trim() === '') {
+        return { status: 'error', message: '先にURLを入力してください' }
+      }
+      if (onFetchTitle === undefined) {
+        return { status: 'idle' }
+      }
+
+      try {
+        const fetchedTitle = await onFetchTitle(action.url)
+        if (fetchedTitle === null) {
+          return {
+            status: 'error',
+            message: 'タイトルを取得できませんでした。手入力で続けられます'
+          }
+        }
+
+        setInput(form, { path: ['title'], input: fetchedTitle })
+        clearFieldError('title')
+        return { status: 'idle' }
+      } catch (error: unknown) {
+        return {
+          status: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'タイトルを取得できませんでした。手入力で続けられます'
+        }
+      }
+    },
+    { status: 'idle' }
+  )
 
   useEffect(() => {
     for (const key of ['url', 'title', 'note'] as const) {
@@ -96,6 +137,8 @@ export function BookmarkForm({
 
   const pending = form.isSubmitting
   const busy = pending || isFetchingTitle
+  const titleFetchError =
+    !isFetchingTitle && titleFetchState.status === 'error' ? titleFetchState.message : null
   const formErrors = getErrors(form) ?? []
   const summaryMessages = [
     ...(form.isSubmitted && !form.isValid ? ['入力内容を確認してください'] : []),
@@ -112,35 +155,11 @@ export function BookmarkForm({
     setErrors(form, { path: [key], errors: null })
   }
 
-  async function handleFetchTitle() {
-    if (onFetchTitle === undefined) {
-      return
-    }
-    setTitleFetchError(null)
-    const url = getInput(form, { path: ['url'] }) ?? ''
-    if (url.trim() === '') {
-      setTitleFetchError('先にURLを入力してください')
-      return
-    }
-
-    setIsFetchingTitle(true)
-    try {
-      const fetched = await onFetchTitle(url)
-      if (fetched === null) {
-        setTitleFetchError('タイトルを取得できませんでした。手入力で続けられます')
-        return
-      }
-      setInput(form, { path: ['title'], input: fetched })
-      clearFieldError('title')
-    } catch (error) {
-      setTitleFetchError(
-        error instanceof Error
-          ? error.message
-          : 'タイトルを取得できませんでした。手入力で続けられます'
-      )
-    } finally {
-      setIsFetchingTitle(false)
-    }
+  function handleFetchTitle() {
+    const currentInputUrl = getInput(form, { path: ['url'] }) ?? ''
+    startTransition(() => {
+      dispatch({ url: currentInputUrl })
+    })
   }
 
   return (
@@ -210,14 +229,9 @@ export function BookmarkForm({
                   {onFetchTitle !== undefined ? (
                     <StyledButton
                       type='button'
-                      onClick={async () => {
-                        try {
-                          await handleFetchTitle()
-                        } catch {
-                          /* TitleFetchError で表示 */
-                        }
-                      }}
-                      disabled={busy}>
+                      onClick={handleFetchTitle}
+                      disabled={busy}
+                      aria-busy={isFetchingTitle}>
                       <Download
                         size={16}
                         aria-hidden
