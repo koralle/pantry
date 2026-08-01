@@ -7,8 +7,19 @@ type BookmarkFormSummaryProps = {
   readonly messages: readonly string[]
 }
 
+// Why?
+// Summary の重複除去はここでだけ行う。BookmarkForm 側では複数の発生源
+// (Formisch / server / title fetch) からのメッセージ候補を素朴に集めるだけにして、
+// 「どのエラーの重複を許すか」という判断を一箇所に集める。
+// 完全一致に限定するのは、意味や field が異なるエラーを文字列比較でまとめないため。
+function dedupeExactMatchMessages(messages: readonly string[]): readonly string[] {
+  return [...new Set(messages)]
+}
+
 export function BookmarkFormSummary({ id, messages }: BookmarkFormSummaryProps) {
-  if (messages.length === 0) {
+  const uniqueMessages = dedupeExactMatchMessages(messages)
+
+  if (uniqueMessages.length === 0) {
     return null
   }
 
@@ -26,7 +37,7 @@ export function BookmarkFormSummary({ id, messages }: BookmarkFormSummaryProps) 
         次を確認してください
       </p>
       <ul>
-        {messages.map((message) => (
+        {uniqueMessages.map((message) => (
           <li key={message}>{message}</li>
         ))}
       </ul>

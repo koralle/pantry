@@ -1,10 +1,16 @@
+import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
 import preview from '../../../../storybook/preview'
 import { BookmarkForm } from './index'
-import type { BookmarkFormProps, BookmarkFormSubmitValues } from './index'
+import type {
+  BookmarkFormFieldKey,
+  BookmarkFormProps,
+  BookmarkFormServerError,
+  BookmarkFormSubmitValues
+} from './index'
 
 const meta = preview.meta({
   title: 'Components / BookmarkForm',
@@ -125,7 +131,7 @@ export const FieldError = Default.extend({
 
 export const SummaryError = Default.extend({
   args: {
-    errors: {
+    serverError: {
       summary: '同じURLのブックマークが既に存在します',
       fields: {
         url: '別のURLを指定してください'
@@ -134,10 +140,170 @@ export const SummaryError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(
-      '同じURLのブックマークが既に存在します'
-    )
-    await expect(canvas.getByText('別のURLを指定してください')).toBeInTheDocument()
+    const summary = canvas.getByRole('alert')
+    await expect(summary).toHaveTextContent('同じURLのブックマークが既に存在します')
+    // Field 由来メッセージは summary 候補にも入るので、summary 側と field 側の両方に現れる
+    await expect(summary).toHaveTextContent('別のURLを指定してください')
+    await expect(canvas.getAllByText('別のURLを指定してください').length).toBeGreaterThanOrEqual(1)
+  }
+})
+
+/**
+ * Server field error の clear を、実際の親が持つ state から検証するための
+ * 制御コンポーネント。BookmarkEditor と同じく「serverError を保持し、
+ * onClearFieldError で該当 field だけ削る」責務を再現する。
+ */
+function ControlledBookmarkForm({
+  initialServerError,
+  onSubmit,
+  ...forwarded
+}: {
+  readonly initialServerError: BookmarkFormServerError
+} & Omit<BookmarkFormProps, 'serverError' | 'onClearFieldError'>) {
+  const [serverError, setServerError] = useState<BookmarkFormServerError | null>(initialServerError)
+
+  function handleClearFieldError(field: BookmarkFormFieldKey) {
+    setServerError((current) => {
+      if (current === null) {
+        return current
+      }
+      const { fields } = current
+      if (fields === undefined || fields[field] === undefined) {
+        return current
+      }
+      const { [field]: _removed, ...remainingFields } = fields
+      const nextFields = Object.keys(remainingFields).length === 0 ? undefined : remainingFields
+      if (nextFields === undefined && current.summary === undefined) {
+        return null
+      }
+      return {
+        ...(current.summary === undefined ? {} : { summary: current.summary }),
+        ...(nextFields === undefined ? {} : { fields: nextFields })
+      }
+    })
+  }
+
+  return (
+    <BookmarkForm
+      {...forwarded}
+      serverError={serverError}
+      onSubmit={onSubmit}
+      onClearFieldError={handleClearFieldError}
+    />
+  )
+}
+
+export const ServerFieldErrorShownInFieldAndSummary = meta.story({
+  args: {
+    initialValues: defaultInitialValues,
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    serverError: {
+      summary: '同じURLのブックマークが既に存在します',
+      fields: { url: 'この URL は既に登録されています' }
+    }
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // Summary に URL 由来メッセージが載る
+    const summary = canvas.getByRole('alert')
+    await expect(summary).toHaveTextContent('同じURLのブックマークが既に存在します')
+    await expect(summary).toHaveTextContent('この URL は既に登録されています')
+    // 同じメッセージが field 側にも表示される (summary と field の 2 か所)
+    await expect(
+      canvas.getAllByText('この URL は既に登録されています').length
+    ).toBeGreaterThanOrEqual(2)
+    // URL 入力が aria-invalid になっている
+    await expect(canvas.getByLabelText('URL')).toHaveAttribute('aria-invalid', 'true')
+  }
+})
+
+export const EditingClearsMatchingServerFieldError = meta.story({
+  render: (args) => (
+    <ControlledBookmarkForm
+      initialValues={args.initialValues}
+      onSubmit={args.onSubmit}
+      initialServerError={{
+        summary: '入力内容を確認してください',
+        fields: {
+          url: 'この URL は既に登録されています',
+          title: 'タイトルを入力してください'
+        }
+      }}
+    />
+  ),
+  args: {
+    initialValues: defaultInitialValues,
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // 初期状態: URL と title 両方に server error (summary と field で 2 回ずつ)
+    await expect(
+      canvas.getAllByText('この URL は既に登録されています').length
+    ).toBeGreaterThanOrEqual(1)
+    await expect(canvas.getAllByText('タイトルを入力してください').length).toBeGreaterThanOrEqual(1)
+
+    // URL を編集すると URL の server error が summary からも field からも消える (title は残る)
+    const url = canvas.getByLabelText('URL')
+    await userEvent.type(url, '?edited')
+    await waitFor(() => {
+      expect(canvas.queryByText('この URL は既に登録されています')).not.toBeInTheDocument()
+    })
+    await expect(canvas.getAllByText('タイトルを入力してください').length).toBeGreaterThanOrEqual(1)
+  }
+})
+
+export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
+  render: (args) => (
+    <ControlledBookmarkForm
+      initialValues={args.initialValues}
+      onSubmit={args.onSubmit}
+      initialServerError={{
+        fields: {
+          url: 'この URL は既に登録されています'
+        }
+      }}
+    />
+  ),
+  args: {
+    initialValues: defaultInitialValues,
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // 別 field (title) を編集しても、url の server error は残る
+    const title = canvas.getByLabelText('タイトル')
+    await userEvent.type(title, '!')
+    await expect(
+      canvas.getAllByText('この URL は既に登録されています').length
+    ).toBeGreaterThanOrEqual(1)
+  }
+})
+
+export const FormischValidationClearsOnEdit = Default.extend({
+  args: {
+    initialValues: {
+      url: 'not-a-url',
+      title: '   ',
+      note: null
+    }
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // 送信で Formisch validation error を出す
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByText('Invalid URL: Received "not-a-url"')).toBeInTheDocument()
+
+    // URL を編集すると Formisch 側の error は onChange で clear される (従来通り)
+    const url = canvas.getByLabelText('URL')
+    await userEvent.clear(url)
+    await userEvent.type(url, 'https://example.com/edited')
+    await waitFor(() => {
+      expect(canvas.queryByText('Invalid URL: Received "not-a-url"')).not.toBeInTheDocument()
+    })
   }
 })
 

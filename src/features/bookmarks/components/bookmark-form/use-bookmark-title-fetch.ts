@@ -1,7 +1,7 @@
 import { getInput, setErrors, setInput } from '@formisch/react'
 import { startTransition, useActionState } from 'react'
 
-import type { BookmarkFormStore, FormFieldKey } from './types'
+import type { BookmarkFormFieldKey, BookmarkFormStore } from './types'
 
 type TitleFetchState =
   | { readonly status: 'idle' }
@@ -64,6 +64,6 @@ export function useBookmarkTitleFetch({ form, onFetchTitle }: UseBookmarkTitleFe
   return { titleFetchError, isFetchingTitle, handleFetchTitle }
 }
 
-function clearFieldError(form: BookmarkFormStore, key: FormFieldKey) {
+function clearFieldError(form: BookmarkFormStore, key: BookmarkFormFieldKey) {
   setErrors(form, { path: [key], errors: null })
 }

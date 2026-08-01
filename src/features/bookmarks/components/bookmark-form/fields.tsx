@@ -1,10 +1,10 @@
 import { Input } from '@base-ui/react'
-import { Field } from '@formisch/react'
+import { Field, setErrors } from '@formisch/react'
 import { Download } from 'lucide-react'
 
 import { StyledButton } from '../../../../shared/components/styled-button'
 import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../styles/form'
-import type { BookmarkFormError, BookmarkFormStore, FormFieldKey } from './types'
+import type { BookmarkFormFieldKey, BookmarkFormServerError, BookmarkFormStore } from './types'
 
 export type BookmarkFormFieldIds = {
   readonly url: string
@@ -15,31 +15,57 @@ export type BookmarkFormFieldIds = {
 type BookmarkFormFieldsProps = {
   readonly form: BookmarkFormStore
   readonly ids: BookmarkFormFieldIds
-  readonly errors?: BookmarkFormError['fields']
+  readonly serverFieldErrors?: BookmarkFormServerError['fields']
   readonly busy: boolean
   readonly isFetchingTitle: boolean
   readonly onFetchTitle: ((url: string) => Promise<string | null>) | undefined
   readonly handleFetchTitle: () => void
-  readonly clearFieldError: (key: FormFieldKey) => void
+  readonly onClearServerFieldError: (key: BookmarkFormFieldKey) => void
+}
+
+// Why?
+// Field に表示するメッセージの優先順位を「Formisch の validation error → server error」に固定する。
+// Formisch は現在の入力値に対する結果、server error は直前の送信時点の入力値に対する結果なので、
+// 現在値へのフィードバックを優先する方が入力者の認知と一致する。
+// また serverError は入力変更時に onClearServerFieldError で clear されるため、
+// この優先順位は過渡状態や race condition に対する最終的な解決ルールでもある。
+function resolveFieldMessage(
+  formErrors: readonly string[] | null | undefined,
+  serverMessage: string | undefined
+): string | undefined {
+  const formismError = formErrors?.[0]
+  if (formismError !== undefined) {
+    return formismError
+  }
+  return serverMessage
 }
 
 export function BookmarkFormFields({
   form,
   ids,
-  errors,
+  serverFieldErrors,
   busy,
   isFetchingTitle,
   onFetchTitle,
   handleFetchTitle,
-  clearFieldError
+  onClearServerFieldError
 }: BookmarkFormFieldsProps) {
+  // Why?
+  // 入力変更時に Formisch 側の field error と server 側の field error を「同時に」clear する。
+  // 所有者は別 (Formisch store / BookmarkEditor) だが、
+  // 入力の変化に対して両者が古い判断を残さないという契約を、この一関数で表現する。
+  function handleFieldChange(key: BookmarkFormFieldKey) {
+    setErrors(form, { path: [key], errors: null })
+    onClearServerFieldError(key)
+  }
+
   return (
     <>
       <Field
         of={form}
         path={['url']}>
         {(fieldProps) => {
-          const errorMessage = fieldProps.errors?.[0] ?? errors?.url
+          const errorMessage = resolveFieldMessage(fieldProps.errors, serverFieldErrors?.url)
 
           return (
             <div className={field}>
@@ -64,7 +90,7 @@ export function BookmarkFormFields({
                   aria-describedby={errorMessage !== undefined ? `${ids.url}-error` : undefined}
                   onValueChange={(value) => {
                     fieldProps.onChange(value)
-                    clearFieldError('url')
+                    handleFieldChange('url')
                   }}
                 />
                 {onFetchTitle !== undefined ? (
@@ -76,7 +102,7 @@ export function BookmarkFormFields({
                     <Download
                       size={16}
                       aria-hidden
-                    />{' '}
+                    />
                     {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
                   </StyledButton>
                 ) : null}
@@ -97,7 +123,7 @@ export function BookmarkFormFields({
         of={form}
         path={['title']}>
         {(fieldProps) => {
-          const errorMessage = fieldProps.errors?.[0] ?? errors?.title
+          const errorMessage = resolveFieldMessage(fieldProps.errors, serverFieldErrors?.title)
 
           return (
             <div className={field}>
@@ -121,7 +147,7 @@ export function BookmarkFormFields({
                 aria-describedby={errorMessage !== undefined ? `${ids.title}-error` : undefined}
                 onValueChange={(value) => {
                   fieldProps.onChange(value)
-                  clearFieldError('title')
+                  handleFieldChange('title')
                 }}
               />
               {errorMessage !== undefined ? (
@@ -140,7 +166,7 @@ export function BookmarkFormFields({
         of={form}
         path={['note']}>
         {(fieldProps) => {
-          const errorMessage = fieldProps.errors?.[0] ?? errors?.note
+          const errorMessage = resolveFieldMessage(fieldProps.errors, serverFieldErrors?.note)
 
           return (
             <div className={field}>
@@ -163,7 +189,7 @@ export function BookmarkFormFields({
                 aria-describedby={errorMessage !== undefined ? `${ids.note}-error` : undefined}
                 onValueChange={(value) => {
                   fieldProps.onChange(value)
-                  clearFieldError('note')
+                  handleFieldChange('note')
                 }}
               />
               {errorMessage !== undefined ? (

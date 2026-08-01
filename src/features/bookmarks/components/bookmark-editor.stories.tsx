@@ -8,7 +8,10 @@ import { err, ok } from '../../../shared/domain/result'
 import preview from '../../../storybook/preview'
 import type { CreateTag } from '../../tags/application/create-tag'
 import { tagIdSchema, tagNameSchema } from '../../tags/domain/tag-values'
-import type { ExecuteUpdateBookmark } from '../application/execute-update-bookmark'
+import type {
+  ExecuteUpdateBookmark,
+  UpdateBookmarkError
+} from '../application/execute-update-bookmark'
 import type { BookmarkEditorData } from '../application/load-bookmark-for-edit'
 import type { LoadSelectableTags, SelectableTagsResult } from '../application/load-selectable-tags'
 import {
@@ -135,5 +138,102 @@ export const UpdateHasUnexpectedError = Default.extend({
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('保存に失敗しました')
+  }
+})
+
+export const UpdateInvalidTagStaysInTagAreaOnly = Default.extend({
+  args: {
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
+      err<UpdateBookmarkError>({
+        code: 'invalid-tag',
+        field: 'tags',
+        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
+      })
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(() => {
+      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+
+    // タグ領域だけに表示される
+    const alerts = await canvas.findAllByRole('alert')
+    const tagAlert = alerts.find((element) =>
+      element.textContent?.includes('選択したタグが見つかりません')
+    )
+    expect(tagAlert).toBeDefined()
+
+    // BookmarkForm の summary (「次を確認してください」) にはタグ由来メッセージが載らない
+    for (const alert of alerts) {
+      if (alert.textContent?.includes('次を確認してください')) {
+        expect(alert.textContent).not.toContain('選択したタグが見つかりません')
+      }
+    }
+  }
+})
+
+/**
+ * タグ選択を変更するとタグ側の更新 server error が clear されることを検証する。
+ * URL/title 側の入力変更経路とは別の clear 契約 (onClearTagsError) を通ることを担保する。
+ */
+export const SelectingTagClearsTagsServerError = Default.extend({
+  args: {
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
+      err<UpdateBookmarkError>({
+        code: 'invalid-tag',
+        field: 'tags',
+        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
+      })
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(() => {
+      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await waitFor(() => {
+      expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
+    })
+
+    // タグの選択変更で server error が消える
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'typescript' }))
+    await waitFor(() => {
+      expect(canvas.queryByText('選択したタグが見つかりません')).not.toBeInTheDocument()
+    })
+  }
+})
+
+/**
+ * BookmarkForm の URL 入力を編集しても、タグ側の server error は消えない。
+ * 「タグの clear はタグ操作で」「URL/title の clear はそれぞれの入力で」という
+ * 責務境界を検証する。
+ */
+export const EditingUrlDoesNotClearTagsServerError = Default.extend({
+  args: {
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
+      err<UpdateBookmarkError>({
+        code: 'invalid-tag',
+        field: 'tags',
+        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
+      })
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(() => {
+      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await waitFor(() => {
+      expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
+    })
+
+    const url = canvas.getByLabelText('URL')
+    await userEvent.type(url, '/updated')
+    // URL 入力変更ではタグ側は消えない
+    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
   }
 })

@@ -1,5 +1,5 @@
-import { Form, getErrors, setErrors, useForm } from '@formisch/react'
-import { useEffect, useId } from 'react'
+import { Form, getErrors, useForm } from '@formisch/react'
+import { useId } from 'react'
 
 import { StyledButton } from '../../../../shared/components/styled-button'
 import { srOnly } from '../../../../styles/sr-only'
@@ -8,21 +8,24 @@ import { BookmarkFormFields } from './fields'
 import type { BookmarkFormFieldIds } from './fields'
 import { bookmarkFormSchema } from './schema'
 import { BookmarkFormSummary } from './summary'
-import type { BookmarkFormProps, FormFieldKey } from './types'
+import type { BookmarkFormFieldKey, BookmarkFormProps } from './types'
 import { useBookmarkTitleFetch } from './use-bookmark-title-fetch'
 
 export { bookmarkFormSchema }
 export type {
-  BookmarkFormError,
+  BookmarkEditorError,
+  BookmarkFormFieldKey,
   BookmarkFormInitialValues,
   BookmarkFormProps,
+  BookmarkFormServerError,
   BookmarkFormSubmitValues
 } from './types'
 export type { BookmarkFormInput, BookmarkFormOutput } from './schema'
 
 export function BookmarkForm({
   initialValues,
-  errors = null,
+  serverError = null,
+  onClearFieldError,
   submitLabel = '更新',
   pendingLabel = '更新中…',
   legend = 'ブックマーク編集',
@@ -52,32 +55,43 @@ export function BookmarkForm({
     onFetchTitle
   })
 
-  useEffect(() => {
-    for (const key of ['url', 'title', 'note'] as const) {
-      const message = errors?.fields?.[key]
-      setErrors(form, {
-        path: [key],
-        errors: message === undefined ? null : [message]
-      })
-    }
-  }, [errors, form])
+  // Why?
+  // Server error を Formisch store へコピーしない。
+  // Formisch は現在の入力値に対する validation を、serverError は直前の送信結果を
+  // それぞれ独立に持つ責務にする。両者を同期させると、外部 prop の serverError と
+  // Formisch 内部 store の clear タイミングがずれて、古い server error が field に
+  // 残り続ける不具合を作る (以前の実装で顕在化していた)。
+  // よって Formisch は Formisch の error だけを所有し、serverError は表示だけ扱う。
 
   const pending = form.isSubmitting
   const busy = pending || isFetchingTitle
   const formErrors = getErrors(form) ?? []
-  const summaryMessages = [
+
+  // Why?
+  // Summary 候補は「重複除去せずに」集めるだけにする。完全一致の除去は
+  // BookmarkFormSummary に任せる。責務境界を、
+  //   BookmarkForm = どのエラーを summary に流すか (発生源の選択)
+  //   BookmarkFormSummary = 表示上の重複除去
+  // で分ける。tag の更新 server error はここに含めない (BookmarkTagField 側で表示する)。
+  const summaryCandidates = [
     ...(form.isSubmitted && !form.isValid ? ['入力内容を確認してください'] : []),
     ...formErrors,
-    errors?.summary,
-    titleFetchError,
-    errors?.fields?.tags
+    serverError?.summary,
+    serverError?.fields?.url,
+    serverError?.fields?.title,
+    serverError?.fields?.note,
+    titleFetchError
   ].filter(
     (message): message is string => message !== null && message !== undefined && message !== ''
   )
-  const uniqueSummaryMessages = [...new Set(summaryMessages)]
 
-  function clearFieldError(key: FormFieldKey) {
-    setErrors(form, { path: [key], errors: null })
+  function handleClearFieldError(key: BookmarkFormFieldKey) {
+    // Why?
+    // Formisch の field error は Formisch store が所有し、
+    // Server error は BookmarkEditor が所有する。所有者が別なので clear も別経路で行う。
+    // Formisch 側の clear は fields.tsx の Field 内で fieldProps.onChange 経由で処理されるため、
+    // ここでは server 側の clear だけを親へ通知する。
+    onClearFieldError?.(key)
   }
 
   return (
@@ -85,10 +99,10 @@ export function BookmarkForm({
       className={workbenchForm}
       of={form}
       onSubmit={onSubmit}
-      aria-describedby={uniqueSummaryMessages.length > 0 ? ids.summary : undefined}>
+      aria-describedby={summaryCandidates.length > 0 ? ids.summary : undefined}>
       <BookmarkFormSummary
         id={ids.summary}
-        messages={uniqueSummaryMessages}
+        messages={summaryCandidates}
       />
 
       <fieldset
@@ -98,12 +112,12 @@ export function BookmarkForm({
         <BookmarkFormFields
           form={form}
           ids={ids}
-          errors={errors?.fields}
+          serverFieldErrors={serverError?.fields}
           busy={busy}
           isFetchingTitle={isFetchingTitle}
           onFetchTitle={onFetchTitle}
           handleFetchTitle={handleFetchTitle}
-          clearFieldError={clearFieldError}
+          onClearServerFieldError={handleClearFieldError}
         />
       </fieldset>
 

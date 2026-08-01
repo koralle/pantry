@@ -4,19 +4,26 @@ import type { ReactNode } from 'react'
 import { bookmarkFormSchema } from './schema'
 import type { BookmarkFormOutput } from './schema'
 
+export type BookmarkFormFieldKey = 'url' | 'title' | 'note'
+
 /**
- * BookmarkForm が表示するエラーだけを表す。
- * UpdateBookmarkError は知らず、Editor が UI 向けに変換した結果を受け取る。
- * Application 層の DTO が揃ったら import に差し替え可能。
+ * BookmarkForm が受け取る画面表示用サーバーエラー。
+ * Formisch の validation error はここに載せず、Formisch store が所有する。
+ * tags は BookmarkForm の責務外なので含めない。
  */
-export type BookmarkFormError = {
+export type BookmarkFormServerError = {
   readonly summary?: string
-  readonly fields?: {
-    readonly url?: string
-    readonly title?: string
-    readonly note?: string
-    readonly tags?: string
-  }
+  readonly fields?: Partial<Record<BookmarkFormFieldKey, string>>
+}
+
+/**
+ * BookmarkEditor が唯一の所有者となる更新結果エラー。
+ * フォーム向けは form へ、タグ向けは tags へ振り分ける。
+ * Formisch validation error はここへ持ち込まない。
+ */
+export type BookmarkEditorError = {
+  readonly form?: BookmarkFormServerError
+  readonly tags?: string
 }
 
 export type BookmarkFormInitialValues = {
@@ -29,8 +36,18 @@ export type BookmarkFormSubmitValues = BookmarkFormOutput
 
 export type BookmarkFormProps = {
   readonly initialValues: BookmarkFormInitialValues
-  /** Editor がサーバー結果から渡す表示用エラー */
-  readonly errors?: BookmarkFormError | null
+  /**
+   * BookmarkEditor が保持するサーバーエラーを表示だけのために受け取る。
+   * Formisch store へコピーしない。入力変更時は onClearFieldError 経由で
+   * 所有者 (BookmarkEditor) に削除を依頼する。
+   */
+  readonly serverError?: BookmarkFormServerError | null
+  /**
+   * Field 入力変更時に、対応する server error を BookmarkEditor 側で clear するための通知。
+   * Formisch の field error は BookmarkForm が自前で clear するので、
+   * ここでは server error 側の clear だけを扱う。
+   */
+  readonly onClearFieldError?: (field: BookmarkFormFieldKey) => void
   readonly submitLabel?: string
   readonly pendingLabel?: string
   readonly legend?: string
@@ -42,5 +59,3 @@ export type BookmarkFormProps = {
 }
 
 export type BookmarkFormStore = FormStore<typeof bookmarkFormSchema>
-
-export type FormFieldKey = 'url' | 'title' | 'note'

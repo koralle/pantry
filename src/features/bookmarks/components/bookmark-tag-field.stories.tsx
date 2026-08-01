@@ -156,3 +156,53 @@ export const CreateNameAlreadyExists = meta.story({
     await expect(canvas.getByRole('alert')).toHaveTextContent('そのタグ名は既に存在します')
   }
 })
+
+function ReadyServerErrorDemo({
+  initialServerError,
+  onCreateTag
+}: {
+  readonly initialServerError: string
+  readonly onCreateTag: CreateTag
+}) {
+  const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>([sampleTags[0]!.id])
+  const [serverError, setServerError] = useState<string | null>(initialServerError)
+
+  return (
+    <BookmarkTagField.Ready
+      tags={sampleTags}
+      selectedTagIds={selectedTagIds}
+      onSelectedTagIdsChange={setSelectedTagIds}
+      onCreateTag={onCreateTag}
+      serverError={serverError}
+      onClearServerError={() => setServerError(null)}
+    />
+  )
+}
+
+export const ReadyShowsServerErrorInTagArea = meta.story({
+  render: () => (
+    <ReadyServerErrorDemo
+      initialServerError='選択したタグが見つかりません'
+      onCreateTag={fn<CreateTag>(async (name) => ok(tag(99, name)))}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent('選択したタグが見つかりません')
+  }
+})
+
+export const SelectingTagClearsServerErrorInTagField = meta.story({
+  render: () => (
+    <ReadyServerErrorDemo
+      initialServerError='選択したタグが見つかりません'
+      onCreateTag={fn<CreateTag>(async (name) => ok(tag(99, name)))}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent('選択したタグが見つかりません')
+    await userEvent.click(canvas.getByLabelText('typescript'))
+    await expect(canvas.queryByText('選択したタグが見つかりません')).not.toBeInTheDocument()
+  }
+})

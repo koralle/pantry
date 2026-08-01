@@ -2,15 +2,17 @@ import { useEffect, useState, useTransition } from 'react'
 
 import type { CreateTag, SelectableTag } from '../../tags/application/create-tag'
 import type { TagId } from '../../tags/domain/tag-values'
-import type {
-  ExecuteUpdateBookmark,
-  UpdateBookmarkError
-} from '../application/execute-update-bookmark'
+import type { ExecuteUpdateBookmark } from '../application/execute-update-bookmark'
 import type { BookmarkEditorData } from '../application/load-bookmark-for-edit'
 import type { LoadSelectableTags, SelectableTagsResult } from '../application/load-selectable-tags'
 import type { BookmarkId } from '../domain/bookmark-values'
+import { mapUpdateBookmarkError } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
-import type { BookmarkFormError, BookmarkFormSubmitValues } from './bookmark-form'
+import type {
+  BookmarkEditorError,
+  BookmarkFormFieldKey,
+  BookmarkFormSubmitValues
+} from './bookmark-form'
 import { BookmarkTagField } from './bookmark-tag-field'
 
 export type { ExecuteUpdateBookmark, LoadSelectableTags }
@@ -30,52 +32,6 @@ type TagsViewState =
   | { readonly status: 'ready'; readonly tags: readonly SelectableTag[] }
   | { readonly status: 'blank' }
   | { readonly status: 'error'; readonly message: string }
-
-function mapUpdateError(error: UpdateBookmarkError): BookmarkFormError {
-  switch (error.code) {
-    case 'bookmark-not-found': {
-      return { summary: 'このブックマークは見つかりません' }
-    }
-    case 'duplicate-url': {
-      return {
-        summary: '同じ URL のブックマークが既にあります',
-        fields: { url: 'この URL は既に登録されています' }
-      }
-    }
-    case 'invalid-title': {
-      return {
-        summary: '入力内容を確認してください',
-        fields: { title: 'タイトルを入力してください' }
-      }
-    }
-    case 'invalid-url': {
-      return {
-        summary: '入力内容を確認してください',
-        fields: { url: '有効な URL を入力してください' }
-      }
-    }
-    case 'duplicate-tag-id': {
-      return {
-        summary: 'タグの指定が不正です',
-        fields: { tags: '同じタグが重複しています' }
-      }
-    }
-    case 'invalid-tag': {
-      return {
-        summary: 'タグの指定が不正です',
-        fields: {
-          tags:
-            error.cause.code === 'tag-not-owned'
-              ? '選択したタグを利用できません'
-              : '選択したタグが見つかりません'
-        }
-      }
-    }
-    case 'unexpected-error': {
-      return { summary: '保存に失敗しました。時間をおいて再度お試しください' }
-    }
-  }
-}
 
 function resolveTagsState(result: SelectableTagsResult): TagsViewState {
   if (!result.ok) {
@@ -108,7 +64,13 @@ export function BookmarkEditor({
     ...initialData.tagIds
   ])
   const [tagsState, setTagsState] = useState<TagsViewState>({ status: 'loading' })
-  const [formError, setFormError] = useState<BookmarkFormError | null>(null)
+  // Why?
+  // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
+  // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
+  // これによって、Formisch の validation error と server error のライフサイクルを
+  // 分離でき、field の onChange から Formisch と server それぞれの clear 経路が
+  // 明確に分かれる。
+  const [editorError, setEditorError] = useState<BookmarkEditorError | null>(null)
   const [, startTagsTransition] = useTransition()
 
   useEffect(() => {
@@ -151,27 +113,74 @@ export function BookmarkEditor({
     })
   }
 
-  async function handleSubmit(values: BookmarkFormSubmitValues) {
-    setFormError(null)
+  function clearFormFieldError(field: BookmarkFormFieldKey) {
+    // Why?
+    // BookmarkForm の field 入力変更に応じて、対応する server field error だけを取り除く。
+    // Summary と他 field は残す。所有者が Editor 側なので、
+    // BookmarkForm から Formisch を触らずに済む。
+    setEditorError((current) => {
+      if (current === null || current.form === undefined) {
+        return current
+      }
+      const { fields } = current.form
+      if (fields === undefined || fields[field] === undefined) {
+        return current
+      }
+      const { [field]: _removed, ...rest } = fields
+      const nextFields = Object.keys(rest).length === 0 ? undefined : rest
+      const nextForm: BookmarkEditorError['form'] = {
+        ...(current.form.summary === undefined ? {} : { summary: current.form.summary }),
+        ...(nextFields === undefined ? {} : { fields: nextFields })
+      }
+      const isFormEmpty = nextForm.summary === undefined && nextForm.fields === undefined
+      return {
+        ...(isFormEmpty ? {} : { form: nextForm }),
+        ...(current.tags === undefined ? {} : { tags: current.tags })
+      }
+    })
+  }
 
+  function clearTagsError() {
+    setEditorError((current) => {
+      if (current === null || current.tags === undefined) {
+        return current
+      }
+      if (current.form === undefined) {
+        return null
+      }
+      return { form: current.form }
+    })
+  }
+
+  async function handleSubmit(values: BookmarkFormSubmitValues) {
+    setEditorError(null)
+
+    // Why?
+    // OnUpdateBookmark と onCompleted のエラー境界を分離する。
+    // Update が成功したあとに navigation (onCompleted) が失敗しても、
+    // それは「保存失敗」ではない (実データは保存済み)。
+    // 一括の try/catch で包むと「保存失敗しました」を誤表示するので、
+    // 明示的に段階を分けて Editor 側の formError には流さない。
+    let updateResult: Awaited<ReturnType<ExecuteUpdateBookmark>>
     try {
-      const result = await onUpdateBookmark({
+      updateResult = await onUpdateBookmark({
         bookmarkId: initialData.bookmarkId,
         url: values.url,
         title: values.title,
         note: values.note,
         tagIds: selectedTagIds
       })
-
-      if (!result.ok) {
-        setFormError(mapUpdateError(result.error))
-        return
-      }
-
-      await onCompleted(result.value.bookmarkId)
     } catch {
-      setFormError(mapUpdateError({ code: 'unexpected-error' }))
+      setEditorError(mapUpdateBookmarkError({ code: 'unexpected-error' }))
+      return
     }
+
+    if (!updateResult.ok) {
+      setEditorError(mapUpdateBookmarkError(updateResult.error))
+      return
+    }
+
+    await onCompleted(updateResult.value.bookmarkId)
   }
 
   const tagField =
@@ -186,6 +195,8 @@ export function BookmarkEditor({
       <BookmarkTagField.Blank
         onCreateTag={onCreateTag}
         onCreated={handleTagCreated}
+        serverError={editorError?.tags ?? null}
+        onClearServerError={clearTagsError}
       />
     ) : (
       <BookmarkTagField.Ready
@@ -193,6 +204,8 @@ export function BookmarkEditor({
         selectedTagIds={selectedTagIds}
         onSelectedTagIdsChange={setSelectedTagIds}
         onCreateTag={onCreateTag}
+        serverError={editorError?.tags ?? null}
+        onClearServerError={clearTagsError}
       />
     )
 
@@ -203,7 +216,8 @@ export function BookmarkEditor({
         title: initialData.title,
         note: initialData.note
       }}
-      errors={formError}
+      serverError={editorError?.form ?? null}
+      onClearFieldError={clearFormFieldError}
       submitLabel='更新'
       pendingLabel='更新中…'
       onSubmit={handleSubmit}

@@ -156,12 +156,15 @@ function QueryAndCreate({
   onQueryChange,
   onCreateTag,
   onCreated,
+  onBeforeCreate,
   inputId
 }: {
   readonly query: string
   readonly onQueryChange: (value: string) => void
   readonly onCreateTag: CreateTag
   readonly onCreated?: (tag: SelectableTag) => void
+  /** タグ作成の直前に呼ばれる。更新 server error を clear する用途を想定。 */
+  readonly onBeforeCreate?: (() => void) | undefined
   readonly inputId: string
 }) {
   const { createError, creating, clearCreateError, createFromQuery } = useCreateTagAction(
@@ -194,6 +197,7 @@ function QueryAndCreate({
         <StyledButton
           type='button'
           onClick={() => {
+            onBeforeCreate?.()
             createFromQuery(query).catch(() => {
               /* CreateError で表示 */
             })
@@ -214,6 +218,22 @@ function QueryAndCreate({
         </p>
       ) : null}
     </div>
+  )
+}
+
+// Why?
+// 更新 server error のタグ分は BookmarkForm の summary へ混ぜず、タグ領域だけで表示する。
+// タグ選択や新規作成といったタグ領域内の操作でだけ clear する意味を、
+// 「BookmarkTagField が受け取って表示する」「タグ操作時に onClearServerError を呼ぶ」の
+// 二点でコードに表現する。BookmarkForm を経由させると URL/title 側の入力変更でも
+// Clear が発火してしまい、責務境界がぼやける。
+function ServerErrorNotice({ message }: { readonly message: string }) {
+  return (
+    <p
+      className={fieldError}
+      role='alert'>
+      {message}
+    </p>
   )
 }
 
@@ -261,10 +281,15 @@ function ErrorState({
 
 function Blank({
   onCreateTag,
-  onCreated
+  onCreated,
+  serverError,
+  onClearServerError
 }: {
   readonly onCreateTag: CreateTag
   readonly onCreated?: (tag: SelectableTag) => void
+  /** BookmarkEditor が保持する更新 server error のうち tags 側だけを受け取る */
+  readonly serverError?: string | null
+  readonly onClearServerError?: () => void
 }) {
   const inputId = useId()
   const [query, setQuery] = useState('')
@@ -272,11 +297,15 @@ function Blank({
   return (
     <Frame>
       <p className={tagStatus}>タグがまだありません。名前を入れて作成できます。</p>
+      {serverError != null && serverError !== '' ? (
+        <ServerErrorNotice message={serverError} />
+      ) : null}
       <QueryAndCreate
         inputId={inputId}
         query={query}
         onQueryChange={setQuery}
         onCreateTag={onCreateTag}
+        onBeforeCreate={onClearServerError}
         onCreated={(tag) => {
           setQuery('')
           onCreated?.(tag)
@@ -290,10 +319,14 @@ function Ready({
   tags,
   selectedTagIds,
   onSelectedTagIdsChange,
-  onCreateTag
+  onCreateTag,
+  serverError,
+  onClearServerError
 }: SelectionProps & {
   readonly tags: readonly SelectableTag[]
   readonly onCreateTag: CreateTag
+  readonly serverError?: string | null
+  readonly onClearServerError?: () => void
 }) {
   const inputId = useId()
   const [query, setQuery] = useState('')
@@ -301,6 +334,11 @@ function Ready({
   const filteredTags = tags.filter((tag) => tag.name.toLowerCase().includes(normalizedQuery))
 
   function toggleTag(tagId: TagId) {
+    // Why?
+    // タグ選択の変更は「BookmarkEditor が保持している更新 server error (tags)」を
+    // 意味的に無効化するので、変更前に server error を clear する。
+    // BookmarkForm の URL/title 入力変更とは分離した clear 経路にしている。
+    onClearServerError?.()
     if (selectedTagIds.includes(tagId)) {
       onSelectedTagIdsChange(selectedTagIds.filter((id) => id !== tagId))
     } else {
@@ -310,6 +348,10 @@ function Ready({
 
   return (
     <Frame>
+      {serverError != null && serverError !== '' ? (
+        <ServerErrorNotice message={serverError} />
+      ) : null}
+
       <div className={tagOptionList}>
         {filteredTags.map((tag) => {
           const optionId = `${inputId}-tag-${tag.id}`
@@ -335,6 +377,7 @@ function Ready({
         query={query}
         onQueryChange={setQuery}
         onCreateTag={onCreateTag}
+        onBeforeCreate={onClearServerError}
         onCreated={(tag) => {
           setQuery('')
           if (!selectedTagIds.includes(tag.id)) {

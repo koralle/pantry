@@ -203,7 +203,17 @@ export const UpdateHasInvalidTag = meta.story({
       await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
     })
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByRole('alert')).toHaveTextContent('タグの指定が不正です')
+    // タグ側の更新 server error はタグ領域だけに表示される。
+    // BookmarkForm の summary へは混ぜないので、'次を確認してください' には出さない。
+    await waitFor(async () => {
+      await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
+    })
+    const alerts = canvas.queryAllByRole('alert')
+    for (const alert of alerts) {
+      if (alert.textContent?.includes('次を確認してください')) {
+        await expect(alert.textContent).not.toContain('選択したタグが見つかりません')
+      }
+    }
   }
 })
 
