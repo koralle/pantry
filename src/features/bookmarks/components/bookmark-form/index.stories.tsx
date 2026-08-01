@@ -2,9 +2,9 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
-import preview from '../../../storybook/preview'
-import { BookmarkForm } from './bookmark-form'
-import type { BookmarkFormProps, BookmarkFormSubmitValues } from './bookmark-form'
+import preview from '../../../../storybook/preview'
+import { BookmarkForm } from './index'
+import type { BookmarkFormProps, BookmarkFormSubmitValues } from './index'
 
 const meta = preview.meta({
   title: 'Components / BookmarkForm',

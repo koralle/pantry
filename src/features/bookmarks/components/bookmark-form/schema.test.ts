@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 
-import { bookmarkFormSchema } from './bookmark-form-schema'
+import { bookmarkFormSchema } from './schema'
 
 describe('bookmarkFormSchema', () => {
   test('parses URL and title into branded values', () => {
