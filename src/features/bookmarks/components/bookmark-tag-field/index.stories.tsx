@@ -3,12 +3,12 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 import * as v from 'valibot'
 
-import { err, ok } from '../../../shared/domain/result'
-import preview from '../../../storybook/preview'
-import { tagIdSchema, tagNameSchema } from '../../tags/domain/tag-values'
-import type { TagId } from '../../tags/domain/tag-values'
-import { BookmarkTagField } from './bookmark-tag-field'
-import type { CreateTag, SelectableTag } from './bookmark-tag-field'
+import { err, ok } from '../../../../shared/domain/result'
+import preview from '../../../../storybook/preview'
+import { tagIdSchema, tagNameSchema } from '../../../tags/domain/tag-values'
+import type { TagId } from '../../../tags/domain/tag-values'
+import { BookmarkTagField } from './index'
+import type { CreateTag, SelectableTag } from './index'
 
 function tag(id: number, name: string): SelectableTag {
   return {
@@ -65,7 +65,7 @@ export const Error = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent('タグ候補の取得に失敗しました')
-    await expect(canvas.getByRole('button', { name: '再試行' })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
   }
 })
 
@@ -86,7 +86,7 @@ export const Retry = meta.story({
   render: () => <RetryDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: '再試行' }))
+    await userEvent.click(canvas.getByRole('button', { name: /再試行/ }))
     await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
   }
 })

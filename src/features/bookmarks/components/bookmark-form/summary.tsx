@@ -7,7 +7,6 @@ type BookmarkFormSummaryProps = {
   readonly messages: readonly string[]
 }
 
-// Why?
 // Summary の重複除去はここでだけ行う。BookmarkForm 側では複数の発生源
 // (Formisch / server / title fetch) からのメッセージ候補を素朴に集めるだけにして、
 // 「どのエラーの重複を許すか」という判断を一箇所に集める。

@@ -55,7 +55,6 @@ export function BookmarkForm({
     onFetchTitle
   })
 
-  // Why?
   // Server error を Formisch store へコピーしない。
   // Formisch は現在の入力値に対する validation を、serverError は直前の送信結果を
   // それぞれ独立に持つ責務にする。両者を同期させると、外部 prop の serverError と
@@ -67,7 +66,6 @@ export function BookmarkForm({
   const busy = pending || isFetchingTitle
   const formErrors = getErrors(form) ?? []
 
-  // Why?
   // Summary 候補は「重複除去せずに」集めるだけにする。完全一致の除去は
   // BookmarkFormSummary に任せる。責務境界を、
   //   BookmarkForm = どのエラーを summary に流すか (発生源の選択)
@@ -86,7 +84,6 @@ export function BookmarkForm({
   )
 
   function handleClearFieldError(key: BookmarkFormFieldKey) {
-    // Why?
     // Formisch の field error は Formisch store が所有し、
     // Server error は BookmarkEditor が所有する。所有者が別なので clear も別経路で行う。
     // Formisch 側の clear は fields.tsx の Field 内で fieldProps.onChange 経由で処理されるため、

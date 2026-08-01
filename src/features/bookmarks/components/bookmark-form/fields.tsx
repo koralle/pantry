@@ -23,7 +23,6 @@ type BookmarkFormFieldsProps = {
   readonly onClearServerFieldError: (key: BookmarkFormFieldKey) => void
 }
 
-// Why?
 // Field に表示するメッセージの優先順位を「Formisch の validation error → server error」に固定する。
 // Formisch は現在の入力値に対する結果、server error は直前の送信時点の入力値に対する結果なので、
 // 現在値へのフィードバックを優先する方が入力者の認知と一致する。
@@ -50,7 +49,6 @@ export function BookmarkFormFields({
   handleFetchTitle,
   onClearServerFieldError
 }: BookmarkFormFieldsProps) {
-  // Why?
   // 入力変更時に Formisch 側の field error と server 側の field error を「同時に」clear する。
   // 所有者は別 (Formisch store / BookmarkEditor) だが、
   // 入力の変化に対して両者が古い判断を残さないという契約を、この一関数で表現する。

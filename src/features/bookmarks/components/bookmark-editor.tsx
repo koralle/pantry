@@ -64,7 +64,6 @@ export function BookmarkEditor({
     ...initialData.tagIds
   ])
   const [tagsState, setTagsState] = useState<TagsViewState>({ status: 'loading' })
-  // Why?
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
   // これによって、Formisch の validation error と server error のライフサイクルを
@@ -114,7 +113,6 @@ export function BookmarkEditor({
   }
 
   function clearFormFieldError(field: BookmarkFormFieldKey) {
-    // Why?
     // BookmarkForm の field 入力変更に応じて、対応する server field error だけを取り除く。
     // Summary と他 field は残す。所有者が Editor 側なので、
     // BookmarkForm から Formisch を触らずに済む。
@@ -155,7 +153,6 @@ export function BookmarkEditor({
   async function handleSubmit(values: BookmarkFormSubmitValues) {
     setEditorError(null)
 
-    // Why?
     // OnUpdateBookmark と onCompleted のエラー境界を分離する。
     // Update が成功したあとに navigation (onCompleted) が失敗しても、
     // それは「保存失敗」ではない (実データは保存済み)。
