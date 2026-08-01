@@ -147,6 +147,20 @@ export const TagOptionsLoadFailed = meta.story({
   }
 })
 
+export const TagOptionsLoadRejected = meta.story({
+  beforeEach: async () => {
+    mocked(loadSelectableTags).mockRejectedValue(new Error('tag load failed'))
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(async () => {
+      await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
+    })
+    await expect(canvas.getByLabelText('URL')).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
+  }
+})
+
 export const TagOptionsRetrySucceeded = meta.story({
   beforeEach: async () => {
     mocked(loadSelectableTags)

@@ -112,6 +112,7 @@ function RouteComponent() {
       <p className={workbenchLead}>内容を直し、主ボタンで保存します。</p>
 
       <BookmarkEditor
+        key={initialData.bookmarkId}
         initialData={initialData}
         initialTags={initialTags}
         onUpdateBookmark={async (command) => {
