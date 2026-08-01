@@ -52,6 +52,10 @@ function deferredTags(): {
   return { promise, resolve }
 }
 
+function rejectedTags(): Promise<SelectableTagsResult> {
+  return Promise.reject(new Error('tag load failed'))
+}
+
 const meta = preview.meta({
   title: 'Components / BookmarkEditor',
   component: BookmarkEditor,
@@ -115,6 +119,17 @@ export const TagOptionsLoadFailed = Default.extend({
   }
 })
 
+export const TagOptionsLoadRejected = Default.extend({
+  args: {
+    initialTags: rejectedTags()
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
+  }
+})
+
 export const UpdateHasDuplicateUrl = Default.extend({
   args: {
     onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => err({ code: 'duplicate-url' }))
@@ -138,6 +153,90 @@ export const UpdateHasUnexpectedError = Default.extend({
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('保存に失敗しました')
+  }
+})
+
+export const UpdateHasInvalidTagWhileTagsAreLoading = Default.extend({
+  args: {
+    initialTags: deferredTags().promise,
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
+      err<UpdateBookmarkError>({
+        code: 'invalid-tag',
+        field: 'tags',
+        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
+      })
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
+  }
+})
+
+export const UpdateHasInvalidTagWhileTagsFailed = Default.extend({
+  args: {
+    initialTags: resolvedTags(err({ code: 'unexpected-error' })),
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
+      err<UpdateBookmarkError>({
+        code: 'invalid-tag',
+        field: 'tags',
+        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
+      })
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
+  }
+})
+
+export const UpdatePendingDisablesTagControls = Default.extend({
+  args: {
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(
+      () => new Promise<Awaited<ReturnType<ExecuteUpdateBookmark>>>(() => {})
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: 'この名前で作成' })).toBeDisabled()
+  }
+})
+
+export const CompletionNavigationFails = Default.extend({
+  args: {
+    onCompleted: fn(async () => {
+      throw new Error('navigation failed')
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByRole('alert')).toHaveTextContent(
+      '保存は完了しましたが、画面の移動に失敗しました'
+    )
+    await expect(canvas.queryByText('navigation failed')).not.toBeInTheDocument()
+  }
+})
+
+export const FetchingTitleClearsTitleServerError = Default.extend({
+  args: {
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
+      err({ code: 'invalid-title', field: 'title' })
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByText('タイトルを入力してください')).toBeInTheDocument()
+
+    await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
+    await expect(canvas.getByText('取得したタイトル')).toBeInTheDocument()
+    await expect(canvas.queryByText('タイトルを入力してください')).not.toBeInTheDocument()
   }
 })
 

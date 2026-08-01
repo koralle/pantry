@@ -14,9 +14,14 @@ type TitleFetchAction = {
 type UseBookmarkTitleFetchOptions = {
   readonly form: BookmarkFormStore
   readonly onFetchTitle: ((url: string) => Promise<string | null>) | undefined
+  readonly onClearFieldError: ((field: BookmarkFormFieldKey) => void) | undefined
 }
 
-export function useBookmarkTitleFetch({ form, onFetchTitle }: UseBookmarkTitleFetchOptions) {
+export function useBookmarkTitleFetch({
+  form,
+  onFetchTitle,
+  onClearFieldError
+}: UseBookmarkTitleFetchOptions) {
   const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
     async (_previous: TitleFetchState, action: TitleFetchAction): Promise<TitleFetchState> => {
       if (action.url.trim() === '') {
@@ -37,6 +42,7 @@ export function useBookmarkTitleFetch({ form, onFetchTitle }: UseBookmarkTitleFe
 
         setInput(form, { path: ['title'], input: fetchedTitle })
         clearFieldError(form, 'title')
+        onClearFieldError?.('title')
         return { status: 'idle' }
       } catch (error: unknown) {
         return {

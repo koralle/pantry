@@ -52,7 +52,8 @@ export function BookmarkForm({
 
   const { titleFetchError, isFetchingTitle, handleFetchTitle } = useBookmarkTitleFetch({
     form,
-    onFetchTitle
+    onFetchTitle,
+    onClearFieldError
   })
 
   // Server error を Formisch store へコピーしない。
@@ -116,9 +117,8 @@ export function BookmarkForm({
           handleFetchTitle={handleFetchTitle}
           onClearServerFieldError={handleClearFieldError}
         />
+        {children}
       </fieldset>
-
-      {children}
 
       <StyledButton
         type='submit'

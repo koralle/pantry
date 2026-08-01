@@ -10,9 +10,12 @@ import { ServerErrorNotice } from './server-error-notice'
 import { tagActions, tagOption, tagOptionList, tagStatus } from './styles'
 import type { CreateTag, SelectableTag, SelectionProps, ServerErrorProps } from './types'
 
-export function Loading() {
+export function Loading({ serverError }: ServerErrorProps) {
   return (
     <Frame>
+      {serverError != null && serverError !== '' ? (
+        <ServerErrorNotice message={serverError} />
+      ) : null}
       <p
         className={tagStatus}
         aria-busy='true'
@@ -25,13 +28,17 @@ export function Loading() {
 
 export function ErrorState({
   message,
-  onRetry
+  onRetry,
+  serverError
 }: {
   readonly message: string
   readonly onRetry: () => void
-}) {
+} & ServerErrorProps) {
   return (
     <Frame>
+      {serverError != null && serverError !== '' ? (
+        <ServerErrorNotice message={serverError} />
+      ) : null}
       <p
         className={fieldError}
         role='alert'>

@@ -33,9 +33,11 @@ type TagsViewState =
   | { readonly status: 'blank' }
   | { readonly status: 'error'; readonly message: string }
 
+const tagLoadErrorMessage = 'タグ候補の取得に失敗しました'
+
 function resolveTagsState(result: SelectableTagsResult): TagsViewState {
   if (!result.ok) {
-    return { status: 'error', message: 'タグ候補の取得に失敗しました' }
+    return { status: 'error', message: tagLoadErrorMessage }
   }
   if (result.value.length === 0) {
     return { status: 'blank' }
@@ -43,6 +45,14 @@ function resolveTagsState(result: SelectableTagsResult): TagsViewState {
   return {
     status: 'ready',
     tags: result.value.map((tag) => ({ id: tag.id, name: tag.name }))
+  }
+}
+
+async function loadTagsState(load: () => Promise<SelectableTagsResult>): Promise<TagsViewState> {
+  try {
+    return resolveTagsState(await load())
+  } catch {
+    return { status: 'error', message: tagLoadErrorMessage }
   }
 }
 
@@ -75,9 +85,9 @@ export function BookmarkEditor({
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const result = await initialTags
+      const nextState = await loadTagsState(() => initialTags)
       if (!cancelled) {
-        setTagsState(resolveTagsState(result))
+        setTagsState(nextState)
       }
     })()
     return () => {
@@ -90,8 +100,7 @@ export function BookmarkEditor({
     startTagsTransition(() => {
       setTagsState({ status: 'loading' })
       void (async () => {
-        const result = await onLoadSelectableTags()
-        setTagsState(resolveTagsState(result))
+        setTagsState(await loadTagsState(onLoadSelectableTags))
       })()
     })
   }
@@ -154,10 +163,10 @@ export function BookmarkEditor({
     setEditorError(null)
 
     // OnUpdateBookmark と onCompleted のエラー境界を分離する。
-    // Update が成功したあとに navigation (onCompleted) が失敗しても、
+    // Update が成功したあとに Navigation (onCompleted) が失敗しても、
     // それは「保存失敗」ではない (実データは保存済み)。
-    // 一括の try/catch で包むと「保存失敗しました」を誤表示するので、
-    // 明示的に段階を分けて Editor 側の formError には流さない。
+    // 保存済みであることを伝える安全なメッセージへ変換し、Formisch の submit
+    // Handler へ rejection を返して raw error を validation error にしない。
     let updateResult: Awaited<ReturnType<ExecuteUpdateBookmark>>
     try {
       updateResult = await onUpdateBookmark({
@@ -177,16 +186,25 @@ export function BookmarkEditor({
       return
     }
 
-    await onCompleted(updateResult.value.bookmarkId)
+    try {
+      await onCompleted(updateResult.value.bookmarkId)
+    } catch {
+      setEditorError({
+        form: {
+          summary: '保存は完了しましたが、画面の移動に失敗しました'
+        }
+      })
+    }
   }
 
   const tagField =
     tagsState.status === 'loading' ? (
-      <BookmarkTagField.Loading />
+      <BookmarkTagField.Loading serverError={editorError?.tags ?? null} />
     ) : tagsState.status === 'error' ? (
       <BookmarkTagField.Error
         message={tagsState.message}
         onRetry={retryTags}
+        serverError={editorError?.tags ?? null}
       />
     ) : tagsState.status === 'blank' ? (
       <BookmarkTagField.Blank
