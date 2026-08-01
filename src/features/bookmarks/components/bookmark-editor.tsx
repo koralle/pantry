@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
 import type { CreateTag, SelectableTag } from '../../tags/application/create-tag'
 import type { TagId } from '../../tags/domain/tag-values'
 import type { ExecuteUpdateBookmark } from '../application/execute-update-bookmark'
 import type { BookmarkEditorData } from '../application/load-bookmark-for-edit'
-import type { LoadSelectableTags, SelectableTagsResult } from '../application/load-selectable-tags'
+import { recoverSelectableTagsPromise } from '../application/load-selectable-tags';
+import type { LoadSelectableTags, SelectableTagsResult } from '../application/load-selectable-tags';
 import type { BookmarkId } from '../domain/bookmark-values'
 import { mapUpdateBookmarkError } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
@@ -74,20 +75,11 @@ export function BookmarkEditor({
     ...initialData.tagIds
   ])
   const [tagsState, setTagsState] = useState<TagsViewState>({ status: 'loading' })
+  const latestTagsRequest = useRef(0)
   // Promise の reject handler は Effect より早く登録する。
   // Route から受け取るタグ取得 Promise が render と Effect の間に reject しても、
   // Unhandled rejection にせず、タグ領域の retry 可能な error state へ変換する。
-  const safeInitialTags = useMemo(
-    () =>
-      initialTags.catch(
-        () =>
-          ({
-            ok: false,
-            error: { code: 'unexpected-error' }
-          }) as const
-      ),
-    [initialTags]
-  )
+  const safeInitialTags = useMemo(() => recoverSelectableTagsPromise(initialTags), [initialTags])
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
   // これによって、Formisch の validation error と server error のライフサイクルを
@@ -97,10 +89,12 @@ export function BookmarkEditor({
   const [, startTagsTransition] = useTransition()
 
   useEffect(() => {
+    const requestId = latestTagsRequest.current + 1
+    latestTagsRequest.current = requestId
     let cancelled = false
     void (async () => {
       const nextState = await loadTagsState(() => safeInitialTags)
-      if (!cancelled) {
+      if (!cancelled && latestTagsRequest.current === requestId) {
         setTagsState(nextState)
       }
     })()
@@ -111,10 +105,15 @@ export function BookmarkEditor({
 
   function retryTags() {
     // タグ再取得は入力をブロックしない非緊急更新として useTransition で包む。
+    const requestId = latestTagsRequest.current + 1
+    latestTagsRequest.current = requestId
     startTagsTransition(() => {
       setTagsState({ status: 'loading' })
       void (async () => {
-        setTagsState(await loadTagsState(onLoadSelectableTags))
+        const nextState = await loadTagsState(onLoadSelectableTags)
+        if (latestTagsRequest.current === requestId) {
+          setTagsState(nextState)
+        }
       })()
     })
   }

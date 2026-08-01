@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, PackageOpen } from 'lucide-react'
 import * as v from 'valibot'
 
+import { recoverSelectableTagsPromise } from '../../../../features/bookmarks/application/load-selectable-tags'
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
 import { fetchBookmarkTitle } from '../../../../features/bookmarks/functions/fetch-bookmark-title'
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
@@ -37,7 +38,7 @@ export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
     }
 
     // タグ候補は await しない。本体フォームを先に描画し、TagField だけ Partial にする。
-    const initialTags = loadSelectableTags()
+    const initialTags = recoverSelectableTagsPromise(loadSelectableTags())
 
     return {
       kind: 'ok' as const,

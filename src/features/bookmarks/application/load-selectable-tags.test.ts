@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
 
 import type { AppDb } from '../../../db/app-db'
-import { loadSelectableTags } from './load-selectable-tags'
+import { loadSelectableTags, recoverSelectableTagsPromise } from './load-selectable-tags'
 import { createThenableChain, tagName, userId } from './test-helpers'
 
 describe('loadSelectableTags', () => {
@@ -51,6 +51,15 @@ describe('loadSelectableTags', () => {
       db: { select } as unknown as AppDb,
       actorId: userId('user-1')
     })
+
+    expect(result).toStrictEqual({
+      ok: false,
+      error: { code: 'unexpected-error' }
+    })
+  })
+
+  test('converts a rejected server function promise into Err(unexpected-error)', async () => {
+    const result = await recoverSelectableTagsPromise(Promise.reject(new Error('network down')))
 
     expect(result).toStrictEqual({
       ok: false,

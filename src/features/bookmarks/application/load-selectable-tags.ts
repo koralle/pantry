@@ -21,6 +21,12 @@ export type SelectableTagsResult = Result<readonly SelectableTag[], LoadSelectab
 /** UI / Server Function 注入用。db と actorId は境界側で束縛済み。 */
 export type LoadSelectableTags = () => Promise<SelectableTagsResult>
 
+export function recoverSelectableTagsPromise(
+  promise: Promise<SelectableTagsResult>
+): Promise<SelectableTagsResult> {
+  return promise.catch(() => err({ code: 'unexpected-error' }))
+}
+
 export async function loadSelectableTags(params: {
   readonly db: AppDb
   readonly actorId: UserId

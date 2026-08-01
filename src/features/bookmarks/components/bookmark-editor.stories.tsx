@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
@@ -44,17 +45,19 @@ function resolvedTags(result: SelectableTagsResult): Promise<SelectableTagsResul
 function deferredTags(): {
   promise: Promise<SelectableTagsResult>
   resolve: (result: SelectableTagsResult) => void
+  reject: (reason?: unknown) => void
 } {
   let resolve!: (result: SelectableTagsResult) => void
-  const promise = new Promise<SelectableTagsResult>((res) => {
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<SelectableTagsResult>((res, rej) => {
     resolve = res
+    reject = rej
   })
-  return { promise, resolve }
+  return { promise, resolve, reject }
 }
 
-function rejectedTags(): Promise<SelectableTagsResult> {
-  return Promise.reject(new Error('tag load failed'))
-}
+const rejectedTagLoad = deferredTags()
+const staleRetryTagLoad = deferredTags()
 
 const meta = preview.meta({
   title: 'Components / BookmarkEditor',
@@ -121,12 +124,60 @@ export const TagOptionsLoadFailed = Default.extend({
 
 export const TagOptionsLoadRejected = Default.extend({
   args: {
-    initialTags: rejectedTags()
+    initialTags: rejectedTagLoad.promise
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    rejectedTagLoad.reject(new Error('tag load failed'))
+    await expect(canvas.findByText('タグ候補の取得に失敗しました')).resolves.toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
+  }
+})
+
+export const StaleTagLoadDoesNotReplaceNewTags = meta.story({
+  args: {
+    initialData,
+    initialTags: resolvedTags(err({ code: 'unexpected-error' })),
+    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
+    onLoadSelectableTags: fn<LoadSelectableTags>(async () => staleRetryTagLoad.promise),
+    onCreateTag: fn<CreateTag>(async (name) =>
+      ok({ id: v.parse(tagIdSchema, 99), name: v.parse(tagNameSchema, name) })
+    ),
+    onCompleted: fn(async () => undefined),
+    onFetchTitle: fn(async () => '取得したタイトル')
+  },
+  render: (args) => {
+    const [initialTags, setInitialTags] = useState(args.initialTags)
+    return (
+      <>
+        <button
+          type='button'
+          onClick={() => setInitialTags(resolvedTags(ok(sampleTags)))}>
+          新しいタグ候補を読み込む
+        </button>
+        <BookmarkEditor
+          {...args}
+          initialTags={initialTags}
+        />
+      </>
+    )
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
+    await userEvent.click(canvas.getByRole('button', { name: /再試行/ }))
+    await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
+
+    await userEvent.click(canvas.getByRole('button', { name: '新しいタグ候補を読み込む' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeInTheDocument()
+    })
+
+    staleRetryTagLoad.resolve(err({ code: 'unexpected-error' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeInTheDocument()
+      await expect(canvas.queryByText('タグ候補の取得に失敗しました')).not.toBeInTheDocument()
+    })
   }
 })
 
@@ -235,7 +286,7 @@ export const FetchingTitleClearsTitleServerError = Default.extend({
     await expect(canvas.getByRole('alert')).toHaveTextContent('タイトルを入力してください')
 
     await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
-    await expect(canvas.getByText('取得したタイトル')).toBeInTheDocument()
+    await expect(canvas.getByLabelText('タイトル')).toHaveValue('取得したタイトル')
     await expect(canvas.queryByText('タイトルを入力してください')).not.toBeInTheDocument()
   }
 })
