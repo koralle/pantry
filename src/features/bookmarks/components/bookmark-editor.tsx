@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 
 import type { CreateTag, SelectableTag } from '../../tags/application/create-tag'
 import type { TagId } from '../../tags/domain/tag-values'
@@ -74,6 +74,20 @@ export function BookmarkEditor({
     ...initialData.tagIds
   ])
   const [tagsState, setTagsState] = useState<TagsViewState>({ status: 'loading' })
+  // Promise の reject handler は Effect より早く登録する。
+  // Route から受け取るタグ取得 Promise が render と Effect の間に reject しても、
+  // Unhandled rejection にせず、タグ領域の retry 可能な error state へ変換する。
+  const safeInitialTags = useMemo(
+    () =>
+      initialTags.catch(
+        () =>
+          ({
+            ok: false,
+            error: { code: 'unexpected-error' }
+          }) as const
+      ),
+    [initialTags]
+  )
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
   // これによって、Formisch の validation error と server error のライフサイクルを
@@ -85,7 +99,7 @@ export function BookmarkEditor({
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const nextState = await loadTagsState(() => initialTags)
+      const nextState = await loadTagsState(() => safeInitialTags)
       if (!cancelled) {
         setTagsState(nextState)
       }
@@ -93,7 +107,7 @@ export function BookmarkEditor({
     return () => {
       cancelled = true
     }
-  }, [initialTags])
+  }, [safeInitialTags])
 
   function retryTags() {
     // タグ再取得は入力をブロックしない非緊急更新として useTransition で包む。

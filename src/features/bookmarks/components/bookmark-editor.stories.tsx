@@ -232,7 +232,7 @@ export const FetchingTitleClearsTitleServerError = Default.extend({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByText('タイトルを入力してください')).toBeInTheDocument()
+    await expect(canvas.getByRole('alert')).toHaveTextContent('タイトルを入力してください')
 
     await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
     await expect(canvas.getByText('取得したタイトル')).toBeInTheDocument()
