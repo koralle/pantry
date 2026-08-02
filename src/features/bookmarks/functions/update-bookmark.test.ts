@@ -34,19 +34,19 @@ describe('updateBookmarkInputSchema', () => {
     expect(result.note).toBeNull()
   })
 
-  test('rejects invalid url', async () => {
-    await expect(
-      v.parseAsync(updateBookmarkInputSchema, {
-        id: 'test-bookmark-id',
-        url: 'not-a-url',
-        title: 'Example Site',
-        note: null,
-        tags: []
-      })
-    ).rejects.toThrow()
+  test('accepts raw url string (brand validation is in the handler)', async () => {
+    const result = await v.parseAsync(updateBookmarkInputSchema, {
+      id: 'test-bookmark-id',
+      url: 'not-a-url',
+      title: 'Example Site',
+      note: null,
+      tags: []
+    })
+
+    expect(result.url).toBe('not-a-url')
   })
 
-  test('accepts empty title', async () => {
+  test('accepts empty title (brand validation is in the handler)', async () => {
     const result = await v.parseAsync(updateBookmarkInputSchema, {
       id: 'test-bookmark-id',
       url: 'https://example.com',
@@ -57,9 +57,7 @@ describe('updateBookmarkInputSchema', () => {
 
     expect(result.title).toBe('')
   })
-})
 
-describe('updateBookmarkInputSchema', () => {
   test('tags 配列を受け付ける', async () => {
     const result = await v.parseAsync(updateBookmarkInputSchema, {
       id: 'test-bookmark-id',
