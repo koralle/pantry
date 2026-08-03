@@ -1,6 +1,6 @@
 import { CircleAlert } from 'lucide-react'
 
-import { formSummary } from '../../../../styles/form'
+import { formSummary } from '../../../../../styles/form'
 
 type BookmarkFormSummaryProps = {
   readonly id: string

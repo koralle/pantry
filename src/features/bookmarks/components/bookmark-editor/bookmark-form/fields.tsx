@@ -2,8 +2,8 @@ import { Input } from '@base-ui/react'
 import { Field, setErrors } from '@formisch/react'
 import { Download } from 'lucide-react'
 
-import { StyledButton } from '../../../../shared/components/styled-button'
-import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../styles/form'
+import { StyledButton } from '../../../../../shared/components/styled-button'
+import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../../styles/form'
 import type { BookmarkFormFieldKey, BookmarkFormServerError, BookmarkFormStore } from './types'
 
 export type BookmarkFormFieldIds = {

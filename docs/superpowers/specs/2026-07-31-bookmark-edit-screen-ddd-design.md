@@ -474,7 +474,7 @@ Component Story:
 次の箇所に、日本語で設計理由を短く記録する。
 
 - `src/routes/_protected/bookmarks/$id/edit.tsx`: RouteComponentがScreenおよびStorybookのRoute Story起点である理由
-- `src/features/bookmarks/components/bookmark-editor.tsx`: Server FunctionとRouterを直接importせず依存注入する理由
+- `src/features/bookmarks/components/bookmark-editor/index.tsx`: Server FunctionとRouterを直接importせず依存注入する理由
 - `src/features/bookmarks/application/execute-update-bookmark.ts`: transaction、Result、rollback adapterの関係
 - `src/shared/domain/result.ts`: 共有Resultを最小APIにする理由
 

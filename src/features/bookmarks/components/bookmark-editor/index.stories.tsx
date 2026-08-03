@@ -5,23 +5,26 @@ import { styled } from 'styled-system/jsx'
 import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
-import { err, ok } from '../../../shared/domain/result'
-import preview from '../../../storybook/preview'
-import type { CreateTag } from '../../tags/application/create-tag'
-import { tagIdSchema, tagNameSchema } from '../../tags/domain/tag-values'
+import { err, ok } from '../../../../shared/domain/result'
+import preview from '../../../../storybook/preview'
+import type { CreateTag } from '../../../tags/application/create-tag'
+import { tagIdSchema, tagNameSchema } from '../../../tags/domain/tag-values'
 import type {
   ExecuteUpdateBookmark,
   UpdateBookmarkError
-} from '../application/execute-update-bookmark'
-import type { BookmarkEditorData } from '../application/load-bookmark-for-edit'
-import type { LoadSelectableTags, SelectableTagsResult } from '../application/load-selectable-tags'
+} from '../../application/execute-update-bookmark'
+import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
+import type {
+  LoadSelectableTags,
+  SelectableTagsResult
+} from '../../application/load-selectable-tags'
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
   bookmarkTitleSchema,
   bookmarkUrlSchema
-} from '../domain/bookmark-values'
-import { BookmarkEditor } from './bookmark-editor'
+} from '../../domain/bookmark-values'
+import { BookmarkEditor } from './index'
 
 const bookmarkId = v.parse(bookmarkIdSchema, uuidv7())
 

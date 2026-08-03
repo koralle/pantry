@@ -4,7 +4,7 @@ import {
   bookmarkNoteSchema,
   bookmarkTitleSchema,
   bookmarkUrlSchema
-} from '../../domain/bookmark-values'
+} from '../../../domain/bookmark-values'
 
 export const bookmarkFormSchema = v.object({
   url: bookmarkUrlSchema,

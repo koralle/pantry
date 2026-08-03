@@ -1,9 +1,9 @@
 import { Form, getErrors, useForm } from '@formisch/react'
 import { useId } from 'react'
 
-import { StyledButton } from '../../../../shared/components/styled-button'
-import { srOnly } from '../../../../styles/sr-only'
-import { workbenchFields, workbenchForm } from '../../../../styles/workbench'
+import { StyledButton } from '../../../../../shared/components/styled-button'
+import { srOnly } from '../../../../../styles/sr-only'
+import { workbenchFields, workbenchForm } from '../../../../../styles/workbench'
 import { BookmarkFormFields } from './fields'
 import type { BookmarkFormFieldIds } from './fields'
 import { bookmarkFormSchema } from './schema'
