@@ -1,4 +1,4 @@
-import type { UpdateBookmarkError } from '../application/execute-update-bookmark'
+import type { UpdateBookmarkError } from '../../application/execute-update-bookmark'
 import type { BookmarkEditorError } from './bookmark-form'
 
 /**

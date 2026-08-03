@@ -1,4 +1,4 @@
-import { fieldError } from '../../../../styles/form'
+import { fieldError } from '../../../../../styles/form'
 
 // 更新 server error のタグ分は BookmarkForm の summary へ混ぜず、タグ領域だけで表示する。
 // タグ選択や新規作成といったタグ領域内の操作でだけ clear する意味を、

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import * as v from 'valibot'
 
-import { err, ok } from '../../../../shared/domain/result'
-import type { Result } from '../../../../shared/domain/result'
-import { tagNameSchema } from '../../../tags/domain/tag-values'
+import { err, ok } from '../../../../../shared/domain/result'
+import type { Result } from '../../../../../shared/domain/result'
+import { tagNameSchema } from '../../../../tags/domain/tag-values'
 import type { CreateTag, CreateTagError, SelectableTag } from './types'
 
 function createErrorMessage(error: CreateTagError): string {

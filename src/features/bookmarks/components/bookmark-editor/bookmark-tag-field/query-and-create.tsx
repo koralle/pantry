@@ -1,8 +1,8 @@
 import { Input } from '@base-ui/react'
 import { Plus, Search } from 'lucide-react'
 
-import { StyledButton } from '../../../../shared/components/styled-button'
-import { fieldError, fieldInput } from '../../../../styles/form'
+import { StyledButton } from '../../../../../shared/components/styled-button'
+import { fieldError, fieldInput } from '../../../../../styles/form'
 import { tagQueryRow } from './styles'
 import type { CreateTag, SelectableTag } from './types'
 import { useCreateTagAction } from './use-create-tag-action'

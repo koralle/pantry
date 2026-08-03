@@ -3,7 +3,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
-import preview from '../../../../storybook/preview'
+import preview from '../../../../../storybook/preview'
 import { BookmarkForm } from './index'
 import type {
   BookmarkFormFieldKey,

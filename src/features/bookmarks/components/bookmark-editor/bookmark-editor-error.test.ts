@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { tagId } from '../application/test-helpers'
+import { tagId } from '../../application/test-helpers'
 import { mapUpdateBookmarkError } from './bookmark-editor-error'
 
 describe('mapUpdateBookmarkError', () => {

@@ -3,8 +3,8 @@ import type {
   CreateTagError,
   CreateTagResult,
   SelectableTag
-} from '../../../tags/application/create-tag'
-import type { TagId } from '../../../tags/domain/tag-values'
+} from '../../../../tags/application/create-tag'
+import type { TagId } from '../../../../tags/domain/tag-values'
 
 export type { CreateTag, CreateTagError, CreateTagResult, SelectableTag }
 

@@ -1,9 +1,9 @@
 import { RefreshCw } from 'lucide-react'
 import { useId, useState } from 'react'
 
-import { StyledButton } from '../../../../shared/components/styled-button'
-import { fieldError } from '../../../../styles/form'
-import type { TagId } from '../../../tags/domain/tag-values'
+import { StyledButton } from '../../../../../shared/components/styled-button'
+import { fieldError } from '../../../../../styles/form'
+import type { TagId } from '../../../../tags/domain/tag-values'
 import { Frame } from './frame'
 import { QueryAndCreate } from './query-and-create'
 import { ServerErrorNotice } from './server-error-notice'

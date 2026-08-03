@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
-import type { CreateTag, SelectableTag } from '../../tags/application/create-tag'
-import type { TagId } from '../../tags/domain/tag-values'
-import type { ExecuteUpdateBookmark } from '../application/execute-update-bookmark'
-import type { BookmarkEditorData } from '../application/load-bookmark-for-edit'
-import { recoverSelectableTagsPromise } from '../application/load-selectable-tags'
-import type { LoadSelectableTags, SelectableTagsResult } from '../application/load-selectable-tags'
-import type { BookmarkId } from '../domain/bookmark-values'
+import type { CreateTag, SelectableTag } from '../../../tags/application/create-tag'
+import type { TagId } from '../../../tags/domain/tag-values'
+import type { ExecuteUpdateBookmark } from '../../application/execute-update-bookmark'
+import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
+import { recoverSelectableTagsPromise } from '../../application/load-selectable-tags'
+import type {
+  LoadSelectableTags,
+  SelectableTagsResult
+} from '../../application/load-selectable-tags'
+import type { BookmarkId } from '../../domain/bookmark-values'
 import { mapUpdateBookmarkError } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
 import type {
