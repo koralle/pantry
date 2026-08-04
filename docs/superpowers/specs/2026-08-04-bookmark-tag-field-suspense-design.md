@@ -122,6 +122,46 @@ flowchart TB
 
 ## データの流れとエラー処理
 
+```mermaid
+sequenceDiagram
+  participant R as ルートローダー
+  participant L as loadSelectableTags
+  participant E as BookmarkEditor
+  participant F as BookmarkTagField
+  participant S as Suspense
+  participant A as BookmarkTagFieldAsync
+  participant B as ErrorBoundary
+  actor U as 利用者
+
+  R->>L: タグ候補の取得を開始
+  L-->>R: initialTags Promise
+  R-->>E: フォーム本体と Promise
+  E->>F: Promise と再読み込み関数
+  F->>B: ErrorBoundary を配置
+  B->>S: Suspense を配置
+  S->>A: BookmarkTagFieldAsync を描画
+  A->>A: use(tagsPromise)
+
+  alt Promise が保留中
+    A-->>S: 待機
+    S-->>F: Loading を表示
+  else Result.Ok(tags)
+    A-->>F: Ready を表示
+  else Result.Ok([])
+    A-->>F: Blank を表示
+  else Result.Err または Promise の reject
+    A-->>B: タグ取得エラーを throw
+    B-->>F: Error と再試行ボタンを表示
+    U->>B: 再試行
+    B->>F: onRetry
+    F->>L: onLoadSelectableTags()
+    L-->>F: 新しい Promise
+    F->>B: ErrorBoundary をリセット
+    F->>S: 新しい Promise を渡す
+    S->>A: BookmarkTagFieldAsync を再描画
+  end
+```
+
 1. ルートローダーは `loadSelectableTags()` を開始するが、完了を待たずにフォームのデータを返す。
 2. ルートはタグ候補 Promise を `BookmarkEditor` に渡す。
 3. `BookmarkEditor` は Promise と再読み込み関数を `BookmarkTagField` に渡す。
