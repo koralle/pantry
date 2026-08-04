@@ -40,6 +40,30 @@ BookmarkTagField
 |        `- Blank または Ready
 ```
 
+```mermaid
+flowchart TB
+  route["ルートローダー<br/>initialTags Promise"]
+  editor["BookmarkEditor<br/>フォーム本体"]
+  field["BookmarkTagField<br/>公開コンポーネント"]
+  boundary["ErrorBoundary"]
+  suspense["Suspense"]
+  async["BookmarkTagFieldAsync<br/>use(tagsPromise)"]
+  loading["Loading<br/>タグ領域だけ"]
+  error["Error<br/>再試行"]
+  blank["Blank"]
+  ready["Ready"]
+
+  route --> editor
+  editor --> field
+  field --> boundary
+  boundary --> suspense
+  suspense --> async
+  suspense -.->|保留中| loading
+  async --> blank
+  async --> ready
+  boundary -.->|取得失敗| error
+```
+
 ### BookmarkTagField
 
 `BookmarkTagField` は、利用側が使う公開コンポーネントである。
@@ -117,6 +141,17 @@ BookmarkTagField
 ## 再試行の動作
 
 再試行ボタンは、`useActionState` の Action ではなく、タグ候補リソースを差し替えるイベントとして扱う。
+
+```mermaid
+stateDiagram-v2
+  [*] --> Loading: 初回 Promise
+  Loading --> Blank: Result.Ok([])
+  Loading --> Ready: Result.Ok(tags)
+  Loading --> Error: Result.Err または reject
+  Error --> Loading: 再試行で Promise を差し替え
+  Blank --> Ready: タグ作成に成功
+  Ready --> Ready: タグ作成に成功
+```
 
 1. `onLoadSelectableTags()` を呼び出して、新しい Promise を作る。
 2. 同期的な throw と Promise の reject を、既存のタグ読み込みエラー契約へ正規化する。
