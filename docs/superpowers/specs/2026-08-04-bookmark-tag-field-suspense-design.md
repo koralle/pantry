@@ -1,68 +1,79 @@
-# BookmarkTagField Suspense Design
+# BookmarkTagField の Suspense 設計
 
-## 1. Purpose
+## 目的
 
-Replace the manual tag-loading state machine in `BookmarkEditor` with a React-native async boundary built from `Suspense`, `ErrorBoundary`, and `use()`.
+現在の `BookmarkEditor` は、タグ候補の読み込み状態を `useEffect` と `useState` で管理している。
 
-The bookmark form must render without waiting for selectable tags. Only the tag field may show a loading or error state.
+この状態管理を、`Suspense`、`ErrorBoundary`、`use()` を使う構成へ置き換える。
 
-## 2. Goals
+ブックマークのフォーム本体はタグ候補の読み込みを待たずに表示する。
 
-- Make `BookmarkTagField` a real public React component.
-- Use `Suspense` for the selectable-tag Promise.
-- Use `ErrorBoundary` for rejected or failed tag loading.
-- Keep the existing `Result` type at the application and Server Function boundaries.
-- Retry by replacing the resource Promise, not by rebuilding a parent-owned loading state machine.
-- Keep bookmark form errors and tag-field errors separate.
-- Keep the existing tag creation, selection, and server-error behavior.
+読み込み中または読み込み失敗時に置き換わるのは、タグ領域だけとする。
 
-## 3. Non-goals
+## 目標
 
-- Do not introduce `useActionState` for selectable-tag loading.
-- Do not redesign tag creation or bookmark save actions.
-- Do not change the route loader's partial-rendering behavior.
-- Do not change the visual design of the field.
-- Do not introduce TanStack Query for this screen.
+- `BookmarkTagField` を、利用側から直接使える React コンポーネントにする。
+- タグ候補の Promise が保留中のときは `Suspense` でタグ領域だけを待機させる。
+- タグ候補の取得失敗は `ErrorBoundary` で表示する。
+- アプリケーション層と Server Function の境界では、既存の `Result` 型を使い続ける。
+- 再試行では、親の読み込み状態を作り直さず、新しいタグ候補 Promise に差し替える。
+- ブックマークフォームのエラーとタグ領域のエラーを分離する。
+- 既存のタグ作成、タグ選択、更新エラーの動作を維持する。
 
-## 4. Component Structure
+## 対象外
 
-`BookmarkTagField` becomes the public component and owns the async boundary:
+- タグ候補の取得に `useActionState` を導入しない。
+- タグ作成 Action やブックマーク保存 Action の設計は変更しない。
+- ルートローダーがフォーム本体を先に表示する設計は変更しない。
+- タグフィールドの見た目は変更しない。
+- この画面に TanStack Query を導入しない。
+
+## コンポーネント構成
+
+`BookmarkTagField` が公開コンポーネントとなり、非同期処理の境界を所有する。
 
 ```text
 BookmarkTagField
 |- ErrorBoundary
 |  `- Suspense
 |     `- BookmarkTagFieldAsync
-|        `- Blank or Ready
+|        `- Blank または Ready
 ```
 
-### `BookmarkTagField`
+### BookmarkTagField
 
-- Receives the initial tag Promise and the tag-loading function.
-- Stores only the current retry resource and replaces it on retry.
-- Uses a newly received `initialTags` Promise as the resource when its identity changes.
-- Ensures a retry started from an older `initialTags` Promise cannot replace newer initial data.
-- Renders the `ErrorBoundary` and `Suspense` boundaries.
-- Renders the existing `Loading` view as the Suspense fallback.
-- Renders the existing `Error` view as the ErrorBoundary fallback.
-- Preserves `serverError` in both loading and error views.
+`BookmarkTagField` は、利用側が使う公開コンポーネントである。
 
-### `BookmarkTagFieldAsync`
+- 初回のタグ候補 Promise と、再読み込み用の関数を受け取る。
+- 現在の再試行用リソースだけを保持する。
+- 再試行時には、新しい Promise へ差し替える。
+- `initialTags` の Promise が差し替わった場合は、新しい Promise を使用する。
+- 古い Promise に対する再試行が、新しい初期データを上書きしないようにする。
+- `ErrorBoundary` と `Suspense` を配置する。
+- `Suspense` の fallback として既存の `Loading` を表示する。
+- `ErrorBoundary` の fallback として既存の `Error` を表示する。
+- 読み込み中と読み込み失敗時の両方で、タグ更新エラーを表示できるようにする。
 
-- Reads the Promise with `use()`.
-- Converts a failed `Result` into a tag-loading error thrown during render.
-- Renders `Blank` when no selectable tags exist.
-- Renders `Ready` when selectable tags exist.
-- Owns the in-memory candidate-list update after a tag is created.
-- Not part of the public component API.
+### BookmarkTagFieldAsync
 
-### Presentational views
+`BookmarkTagFieldAsync` は、タグ候補 Promise を読む内部コンポーネントである。
 
-`Loading`, `Error`, `Blank`, and `Ready` remain display-focused components. They do not manage the tag-loading lifecycle.
+- `use()` でタグ候補 Promise を読む。
+- `Result.Err` をタグ候補の取得エラーへ変換して throw する。
+- タグ候補が空なら `Blank` を表示する。
+- タグ候補が存在すれば `Ready` を表示する。
+- タグ作成後の候補リスト更新を管理する。
+- 公開 API には含めない。
 
-## 5. Public API
+### 表示コンポーネント
 
-`BookmarkEditor` will render one component instead of selecting a view from a `tagsState` union:
+`Loading`、`Error`、`Blank`、`Ready` は表示だけを担当する。
+
+これらのコンポーネントは、タグ候補の読み込み状態を管理しない。
+
+## 公開 API
+
+`BookmarkEditor` は、タグの状態に応じて表示コンポーネントを選ぶのではなく、`BookmarkTagField` を一つだけ表示する。
 
 ```tsx
 <BookmarkTagField
@@ -76,93 +87,108 @@ BookmarkTagField
 />
 ```
 
-The public props are the existing selection, creation, and server-error props plus:
+公開 Props には、既存の選択、タグ作成、更新エラー用の Props に加えて、次の二つを追加する。
 
-- `initialTags: Promise<SelectableTagsResult>`
-- `onLoadSelectableTags: LoadSelectableTags`
+- `initialTags: Promise<SelectableTagsResult>`：初回に読み込むタグ候補。
+- `onLoadSelectableTags: LoadSelectableTags`：再試行時にタグ候補を読み込む関数。
 
-The `BookmarkTagField.Loading`, `BookmarkTagField.Error`, `BookmarkTagField.Blank`, and `BookmarkTagField.Ready` namespace object is removed. The public API is the `BookmarkTagField` component itself.
+現在の `BookmarkTagField.Loading`、`BookmarkTagField.Error`、`BookmarkTagField.Blank`、`BookmarkTagField.Ready` という名前空間オブジェクトは廃止する。
 
-## 6. Data and Error Flow
+公開 API は `BookmarkTagField` コンポーネントそのものとする。
 
-1. The route loader starts `loadSelectableTags()` without awaiting it.
-2. The route passes the Promise to `BookmarkEditor`.
-3. `BookmarkEditor` passes the Promise and reload function to `BookmarkTagField`.
-4. `BookmarkTagFieldAsync` calls `use(tagsPromise)`.
-5. A pending Promise suspends only the tag subtree.
-6. A successful `Result.Ok` becomes `Blank` or `Ready`.
-7. A `Result.Err` is converted to a tag-loading error and thrown.
-8. A rejected load is normalized to the same tag-loading failure path.
-9. `ErrorBoundary` displays the fixed message `タグ候補の取得に失敗しました` and a retry button.
+## データの流れとエラー処理
 
-Raw exception messages are not displayed to users.
+1. ルートローダーは `loadSelectableTags()` を開始するが、完了を待たずにフォームのデータを返す。
+2. ルートはタグ候補 Promise を `BookmarkEditor` に渡す。
+3. `BookmarkEditor` は Promise と再読み込み関数を `BookmarkTagField` に渡す。
+4. `BookmarkTagFieldAsync` は `use(tagsPromise)` で Promise を読む。
+5. Promise が保留中なら、タグ領域だけが `Suspense` の fallback になる。
+6. `Result.Ok` なら、タグ候補の件数に応じて `Blank` または `Ready` を表示する。
+7. `Result.Err` なら、タグ候補の取得エラーを throw する。
+8. Promise が reject した場合も、同じタグ候補取得エラーとして扱う。
+9. `ErrorBoundary` は `タグ候補の取得に失敗しました` と再試行ボタンを表示する。
 
-The existing application-level `Result` contract remains unchanged. The conversion from `Result.Err` to a thrown UI error happens only at the `BookmarkTagFieldAsync` presentation boundary.
+利用者には、例外オブジェクトのメッセージをそのまま表示しない。
 
-## 7. Retry Behavior
+アプリケーション層の `Result` 契約は変更しない。
 
-The retry button is a normal event-driven resource replacement, not a `useActionState` action.
+`Result.Err` を throw する処理は、`BookmarkTagFieldAsync` の表示境界にだけ置く。
 
-- Call `onLoadSelectableTags()` to create a new Promise.
-- Normalize synchronous throws and Promise rejections into the existing load-error contract.
-- Replace the current Promise in `BookmarkTagField`.
-- Reset the ErrorBoundary.
-- Show the tag-only Suspense fallback while the new Promise is pending.
-- Render the resolved tag field or ErrorBoundary fallback based on the new result.
+## 再試行の動作
 
-Retry does not reset the bookmark form, selected tag IDs, created-tag state outside the field, or unrelated server errors.
+再試行ボタンは、`useActionState` の Action ではなく、タグ候補リソースを差し替えるイベントとして扱う。
 
-`useActionState` is intentionally not used because selectable-tag loading is a read resource consumed by `use()`. Using `useActionState` would add a second loading/result state model and would not itself provide Suspense behavior. It remains a candidate for future mutation flows such as tag creation or bookmark saving.
+1. `onLoadSelectableTags()` を呼び出して、新しい Promise を作る。
+2. 同期的な throw と Promise の reject を、既存のタグ読み込みエラー契約へ正規化する。
+3. `BookmarkTagField` が保持する Promise を新しいものへ差し替える。
+4. `ErrorBoundary` をリセットする。
+5. 新しい Promise が保留中の間は、タグ領域だけに `Loading` を表示する。
+6. Promise の結果に応じて `Blank`、`Ready`、または `Error` を表示する。
 
-## 8. Tag Creation Behavior
+再試行によって、ブックマークフォーム、選択済みタグ ID、タグ領域以外の更新エラーはリセットしない。
 
-`BookmarkTagFieldAsync` owns the resolved candidate list used by the field.
+タグ候補の取得は、`use()` が読むリソースである。
 
-- On successful creation, add the tag if it is not already present.
-- Add the tag ID through `onSelectedTagIdsChange` if it is not selected.
-- Clear the query input.
-- When the initial result was empty, transition from `Blank` to `Ready` with the new tag selected.
+`useActionState` を使うと、初回読み込みの Suspense と再試行の Action state が別々の状態管理になる。
 
-The editor continues to own the selected tag IDs because they are part of the bookmark update command. The field owns only the displayed candidate list.
+その構成では、タグ候補の読み込み状態を手動で再び管理することになるため、今回の設計では採用しない。
 
-## 9. BookmarkEditor Simplification
+`useActionState` は、将来タグ作成やブックマーク保存のような更新処理を整理するときの候補として残す。
 
-Remove the tag-loading orchestration from `BookmarkEditor`:
+## タグ作成後の動作
+
+`BookmarkTagFieldAsync` は、画面に表示するタグ候補の一覧を管理する。
+
+- タグ作成に成功したら、同じ ID のタグがない場合だけ候補一覧へ追加する。
+- 作成したタグが未選択なら、`onSelectedTagIdsChange` で選択済みタグへ追加する。
+- 検索入力を空にする。
+- 初期候補が空だった場合は、作成したタグを選択した状態で `Blank` から `Ready` へ切り替える。
+
+選択済みタグ ID はブックマーク更新コマンドに含まれるため、引き続き `BookmarkEditor` が所有する。
+
+画面に表示する候補一覧だけを `BookmarkTagField` が所有する。
+
+## BookmarkEditor から削除する責務
+
+`BookmarkEditor` から、タグ候補の読み込みを管理する次のコードを削除する。
 
 - `TagsViewState`
 - `tagsState`
 - `resolveTagsState`
 - `loadTagsState`
 - `latestTagsRequest`
-- tag-loading `useEffect`
-- tag-loading `useTransition`
+- タグ読み込み用の `useEffect`
+- タグ読み込み用の `useTransition`
 - `handleTagCreated`
 
-Keep the editor's selection state, update handling, server-error ownership, and form submission behavior unchanged.
+選択済みタグ ID、ブックマーク更新処理、更新エラーの所有、フォーム送信処理は維持する。
 
-## 10. Verification
+## 検証項目
 
-Storybook `play` functions remain the UI verification source of truth.
+UI の検証には、既存方針どおり Storybook の `play` 関数を使う。
 
-Cover these scenarios:
+次の動作を確認する。
 
-- Initial tag loading leaves the main form usable and suspends only the tag field.
-- Successful loading renders `Ready`.
-- An empty result renders `Blank`.
-- A `Result.Err` renders the ErrorBoundary fallback.
-- A rejected Promise renders the same fallback without exposing a raw error.
-- Retry replaces the Promise and resolves back to `Ready`.
-- Retry failure returns to the ErrorBoundary fallback.
-- Creating a tag in `Blank` adds and selects the new candidate.
-- Creating a tag in `Ready` adds and selects the new candidate.
-- Tag server errors are shown in the tag area and cleared by tag operations.
-- URL/title changes do not clear tag server errors.
+- タグ候補の初回読み込み中もフォーム本体を操作でき、タグ領域だけが待機する。
+- タグ候補を取得できた場合に `Ready` が表示される。
+- タグ候補が空の場合に `Blank` が表示される。
+- `Result.Err` の場合に `ErrorBoundary` の fallback が表示される。
+- Promise が reject した場合も同じ fallback が表示され、内部エラーの内容が表示されない。
+- 再試行によって Promise が差し替わり、成功後に `Ready` が表示される。
+- 再試行も失敗した場合に、再び `ErrorBoundary` の fallback が表示される。
+- `Blank` でタグを作成すると、新しい候補が追加されて選択される。
+- `Ready` でタグを作成すると、新しい候補が追加されて選択される。
+- タグ領域の更新エラーが表示され、タグ操作で消える。
+- URL やタイトルを変更しても、タグ領域の更新エラーは消えない。
+- 新しい `initialTags` が届いた場合に、古い再試行 Promise の結果が新しい候補を上書きしない。
 
-Application tests for `recoverSelectableTagsPromise` remain valid. Add focused tests only if the resource-normalization helper is extracted into application code.
+`recoverSelectableTagsPromise` のアプリケーションテストは維持する。
 
-Run the repository verification commands after implementation:
+Promise を正規化する処理をアプリケーション層へ切り出す場合だけ、その処理に対する小さなテストを追加する。
 
-```text
+実装後は、次のコマンドを実行する。
+
+```sh
 pnpm run format:check
 pnpm run lint
 pnpm run typecheck
@@ -170,16 +196,16 @@ pnpm run test
 pnpm run build
 ```
 
-## 11. Change Scope
+## 変更するファイル
 
-Expected implementation files:
+- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/index.tsx`：公開コンポーネントと非同期境界。
+- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/async.tsx`：`use()` による Promise の読み込みと成功状態の分岐。
+- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/views.tsx`：表示コンポーネントの整理。
+- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/types.ts`：公開 Props の定義。
+- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/index.stories.tsx`：タグフィールド単体の Storybook 検証。
+- `src/features/bookmarks/components/bookmark-editor/index.tsx`：手動のタグ読み込み状態管理の削除。
+- `src/features/bookmarks/components/bookmark-editor/index.stories.tsx`：ブックマーク編集画面の Storybook 検証の更新。
 
-- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/index.tsx`
-- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/async.tsx`
-- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/views.tsx`
-- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/types.ts`
-- `src/features/bookmarks/components/bookmark-editor/bookmark-tag-field/index.stories.tsx`
-- `src/features/bookmarks/components/bookmark-editor/index.tsx`
-- `src/features/bookmarks/components/bookmark-editor/index.stories.tsx`
+ルートとアプリケーション層の読み込み契約は変更しない。
 
-The route and application loading contract should remain unchanged unless implementation reveals a concrete Promise-rejection handling issue.
+実装中に Promise の reject を安全に扱うための具体的な修正が必要になった場合だけ、関連する読み込み処理を変更する。
