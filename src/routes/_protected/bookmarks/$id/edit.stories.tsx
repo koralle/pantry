@@ -147,38 +147,6 @@ export const TagOptionsLoadFailed = meta.story({
   }
 })
 
-export const TagOptionsLoadRejected = meta.story({
-  beforeEach: async () => {
-    mocked(loadSelectableTags).mockRejectedValue(new Error('tag load failed'))
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
-    })
-    await expect(canvas.getByLabelText('URL')).toBeEnabled()
-    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
-  }
-})
-
-export const TagOptionsRetrySucceeded = meta.story({
-  beforeEach: async () => {
-    mocked(loadSelectableTags)
-      .mockResolvedValueOnce(err({ code: 'unexpected-error' }))
-      .mockResolvedValueOnce(ok(sampleTags))
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(canvas.getByRole('button', { name: /再試行/ })).toBeInTheDocument()
-    })
-    await userEvent.click(canvas.getByRole('button', { name: /再試行/ }))
-    await waitFor(async () => {
-      await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeInTheDocument()
-    })
-  }
-})
-
 export const UpdateHasDuplicateUrl = meta.story({
   beforeEach: async () => {
     mocked(updateBookmark).mockResolvedValue(err({ code: 'duplicate-url' }))

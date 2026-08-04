@@ -1,13 +1,11 @@
-import { RefreshCw } from 'lucide-react'
 import { useId, useState } from 'react'
 
-import { StyledButton } from '../../../../../shared/components/styled-button'
 import { fieldError } from '../../../../../styles/form'
 import type { TagId } from '../../../../tags/domain/tag-values'
 import { Frame } from './frame'
 import { QueryAndCreate } from './query-and-create'
 import { ServerErrorNotice } from './server-error-notice'
-import { tagActions, tagOption, tagOptionList, tagStatus } from './styles'
+import { tagOption, tagOptionList, tagStatus } from './styles'
 import type { CreateTag, SelectableTag, SelectionProps, ServerErrorProps } from './types'
 
 export function Loading({ serverError }: ServerErrorProps) {
@@ -28,11 +26,9 @@ export function Loading({ serverError }: ServerErrorProps) {
 
 export function ErrorState({
   message,
-  onRetry,
   serverError
 }: {
   readonly message: string
-  readonly onRetry: () => void
 } & ServerErrorProps) {
   return (
     <Frame>
@@ -44,17 +40,6 @@ export function ErrorState({
         role='alert'>
         {message}
       </p>
-      <div className={tagActions}>
-        <StyledButton
-          type='button'
-          onClick={onRetry}>
-          <RefreshCw
-            size={16}
-            aria-hidden
-          />{' '}
-          再試行
-        </StyledButton>
-      </div>
     </Frame>
   )
 }
@@ -97,11 +82,13 @@ export function Ready({
   selectedTagIds,
   onSelectedTagIdsChange,
   onCreateTag,
+  onCreated,
   serverError,
   onClearServerError
 }: SelectionProps & {
   readonly tags: readonly SelectableTag[]
   readonly onCreateTag: CreateTag
+  readonly onCreated?: (tag: SelectableTag) => void
 } & ServerErrorProps) {
   const inputId = useId()
   const [query, setQuery] = useState('')
@@ -154,9 +141,7 @@ export function Ready({
         onBeforeCreate={onClearServerError}
         onCreated={(tag) => {
           setQuery('')
-          if (!selectedTagIds.includes(tag.id)) {
-            onSelectedTagIdsChange([...selectedTagIds, tag.id])
-          }
+          onCreated?.(tag)
         }}
       />
     </Frame>

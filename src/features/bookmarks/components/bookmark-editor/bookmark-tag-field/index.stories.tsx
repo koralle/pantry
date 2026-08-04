@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, userEvent, within } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 import * as v from 'valibot'
 
@@ -7,6 +7,7 @@ import { err, ok } from '../../../../../shared/domain/result'
 import preview from '../../../../../storybook/preview'
 import { tagIdSchema, tagNameSchema } from '../../../../tags/domain/tag-values'
 import type { TagId } from '../../../../tags/domain/tag-values'
+import type { SelectableTagsResult } from '../../../application/load-selectable-tags'
 import { BookmarkTagField } from './index'
 import type { CreateTag, SelectableTag } from './index'
 
@@ -19,8 +20,56 @@ function tag(id: number, name: string): SelectableTag {
 
 const sampleTags: readonly SelectableTag[] = [tag(1, 'react'), tag(2, 'typescript'), tag(3, 'uiux')]
 
+const defaultCreateTag: CreateTag = async (name) => ok(tag(99, name))
+
+function resolvedTags(result: SelectableTagsResult): Promise<SelectableTagsResult> {
+  return Promise.resolve(result)
+}
+
+function deferredTags(): {
+  promise: Promise<SelectableTagsResult>
+  resolve: (result: SelectableTagsResult) => void
+  reject: (reason?: unknown) => void
+} {
+  let resolve!: (result: SelectableTagsResult) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<SelectableTagsResult>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
+type TagFieldStoryProps = {
+  readonly initialTags: Promise<SelectableTagsResult>
+  readonly onCreateTag?: CreateTag | undefined
+  readonly initialServerError?: string
+}
+
+function TagFieldStory({
+  initialTags,
+  onCreateTag = defaultCreateTag,
+  initialServerError
+}: TagFieldStoryProps) {
+  const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>([sampleTags[0]!.id])
+  const [serverError, setServerError] = useState<string | null>(initialServerError ?? null)
+
+  return (
+    <BookmarkTagField
+      initialTags={initialTags}
+      selectedTagIds={selectedTagIds}
+      onSelectedTagIdsChange={setSelectedTagIds}
+      onCreateTag={onCreateTag}
+      serverError={serverError}
+      onClearServerError={() => setServerError(null)}
+    />
+  )
+}
+
+const loadingTags = deferredTags()
 const meta = preview.meta({
   title: 'Components / BookmarkTagField',
+  component: BookmarkTagField,
   parameters: {
     layout: 'padded'
   },
@@ -34,7 +83,7 @@ const meta = preview.meta({
 })
 
 export const Loading = meta.story({
-  render: () => <BookmarkTagField.Loading />,
+  render: () => <TagFieldStory initialTags={loadingTags.promise} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
@@ -43,9 +92,7 @@ export const Loading = meta.story({
 })
 
 export const Empty = meta.story({
-  render: () => (
-    <BookmarkTagField.Blank onCreateTag={fn<CreateTag>(async () => ok(tag(10, 'new-tag')))} />
-  ),
+  render: () => <TagFieldStory initialTags={resolvedTags(ok([]))} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(
@@ -56,96 +103,40 @@ export const Empty = meta.story({
 })
 
 export const Error = meta.story({
-  render: () => (
-    <BookmarkTagField.Error
-      message='タグ候補の取得に失敗しました'
-      onRetry={fn()}
-    />
-  ),
+  render: () => <TagFieldStory initialTags={resolvedTags(err({ code: 'unexpected-error' }))} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent('タグ候補の取得に失敗しました')
-    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeEnabled()
-  }
-})
-
-function RetryDemo() {
-  const [phase, setPhase] = useState<'error' | 'loading'>('error')
-  if (phase === 'loading') {
-    return <BookmarkTagField.Loading />
-  }
-  return (
-    <BookmarkTagField.Error
-      message='タグ候補の取得に失敗しました'
-      onRetry={() => setPhase('loading')}
-    />
-  )
-}
-
-export const Retry = meta.story({
-  render: () => <RetryDemo />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: /再試行/ }))
-    await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
-  }
-})
-
-function ReadyDemo({ onCreateTag }: { readonly onCreateTag: CreateTag }) {
-  const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>([sampleTags[0]!.id])
-  const [tags, setTags] = useState<readonly SelectableTag[]>(sampleTags)
-
-  return (
-    <BookmarkTagField.Ready
-      tags={tags}
-      selectedTagIds={selectedTagIds}
-      onSelectedTagIdsChange={setSelectedTagIds}
-      onCreateTag={async (name) => {
-        const result = await onCreateTag(name)
-        if (result.ok) {
-          setTags((current) =>
-            current.some((item) => item.id === result.value.id)
-              ? current
-              : [...current, result.value]
-          )
-        }
-        return result
-      }}
-    />
-  )
-}
-
-export const Ready = meta.story({
-  render: () => <ReadyDemo onCreateTag={fn<CreateTag>(async (name) => ok(tag(99, name)))} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('react')).toBeChecked()
-    await expect(canvas.getByLabelText('typescript')).not.toBeChecked()
-    await userEvent.click(canvas.getByLabelText('typescript'))
-    await expect(canvas.getByLabelText('typescript')).toBeChecked()
   }
 })
 
 export const Create = meta.story({
-  render: () => (
-    <BookmarkTagField.Blank
-      onCreateTag={fn<CreateTag>(async (name) => ok(tag(42, name)))}
-      onCreated={fn()}
-    />
-  ),
+  render: () => <TagFieldStory initialTags={resolvedTags(ok([]))} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const input = canvas.getByPlaceholderText('タグを絞り込む / 新規作成')
     await userEvent.type(input, 'pantry')
     await userEvent.click(canvas.getByRole('button', { name: 'この名前で作成' }))
-    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
+    await expect(canvas.findByRole('checkbox', { name: 'pantry' })).resolves.toBeChecked()
+  }
+})
+
+export const CreateFromReady = meta.story({
+  render: () => <TagFieldStory initialTags={resolvedTags(ok(sampleTags))} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const input = canvas.getByPlaceholderText('タグを絞り込む / 新規作成')
+    await userEvent.type(input, 'pantry')
+    await userEvent.click(canvas.getByRole('button', { name: 'この名前で作成' }))
+    await expect(canvas.findByRole('checkbox', { name: 'pantry' })).resolves.toBeChecked()
   }
 })
 
 export const CreateNameAlreadyExists = meta.story({
   render: () => (
-    <BookmarkTagField.Blank
-      onCreateTag={fn<CreateTag>(async () => err({ code: 'duplicate-tag-name', field: 'name' }))}
+    <TagFieldStory
+      initialTags={resolvedTags(ok(sampleTags))}
+      onCreateTag={async () => err({ code: 'duplicate-tag-name', field: 'name' })}
     />
   ),
   play: async ({ canvasElement }) => {
@@ -157,33 +148,22 @@ export const CreateNameAlreadyExists = meta.story({
   }
 })
 
-function ReadyServerErrorDemo({
-  initialServerError,
-  onCreateTag
-}: {
-  readonly initialServerError: string
-  readonly onCreateTag: CreateTag
-}) {
-  const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>([sampleTags[0]!.id])
-  const [serverError, setServerError] = useState<string | null>(initialServerError)
-
-  return (
-    <BookmarkTagField.Ready
-      tags={sampleTags}
-      selectedTagIds={selectedTagIds}
-      onSelectedTagIdsChange={setSelectedTagIds}
-      onCreateTag={onCreateTag}
-      serverError={serverError}
-      onClearServerError={() => setServerError(null)}
-    />
-  )
-}
+export const Ready = meta.story({
+  render: () => <TagFieldStory initialTags={resolvedTags(ok(sampleTags))} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByLabelText('react')).toBeChecked()
+    await expect(canvas.getByLabelText('typescript')).not.toBeChecked()
+    await userEvent.click(canvas.getByLabelText('typescript'))
+    await expect(canvas.getByLabelText('typescript')).toBeChecked()
+  }
+})
 
 export const ReadyShowsServerErrorInTagArea = meta.story({
   render: () => (
-    <ReadyServerErrorDemo
+    <TagFieldStory
+      initialTags={resolvedTags(ok(sampleTags))}
       initialServerError='選択したタグが見つかりません'
-      onCreateTag={fn<CreateTag>(async (name) => ok(tag(99, name)))}
     />
   ),
   play: async ({ canvasElement }) => {
@@ -194,14 +174,13 @@ export const ReadyShowsServerErrorInTagArea = meta.story({
 
 export const SelectingTagClearsServerErrorInTagField = meta.story({
   render: () => (
-    <ReadyServerErrorDemo
+    <TagFieldStory
+      initialTags={resolvedTags(ok(sampleTags))}
       initialServerError='選択したタグが見つかりません'
-      onCreateTag={fn<CreateTag>(async (name) => ok(tag(99, name)))}
     />
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent('選択したタグが見つかりません')
     await userEvent.click(canvas.getByLabelText('typescript'))
     await expect(canvas.queryByText('選択したタグが見つかりません')).not.toBeInTheDocument()
   }

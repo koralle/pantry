@@ -130,7 +130,6 @@ function RouteComponent() {
             return err({ code: 'unexpected-error' })
           }
         }}
-        onLoadSelectableTags={() => loadSelectableTags()}
         onCreateTag={async (name) => {
           try {
             return await createTagFn({ data: { name } })

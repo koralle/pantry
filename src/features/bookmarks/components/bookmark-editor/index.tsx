@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useState } from 'react'
 
-import type { CreateTag, SelectableTag } from '../../../tags/application/create-tag'
+import type { CreateTag } from '../../../tags/application/create-tag'
 import type { TagId } from '../../../tags/domain/tag-values'
 import type { ExecuteUpdateBookmark } from '../../application/execute-update-bookmark'
 import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
-import { recoverSelectableTagsPromise } from '../../application/load-selectable-tags'
-import type {
-  LoadSelectableTags,
-  SelectableTagsResult
-} from '../../application/load-selectable-tags'
+import type { SelectableTagsResult } from '../../application/load-selectable-tags'
 import type { BookmarkId } from '../../domain/bookmark-values'
 import { mapUpdateBookmarkError } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
@@ -19,45 +15,15 @@ import type {
 } from './bookmark-form'
 import { BookmarkTagField } from './bookmark-tag-field'
 
-export type { ExecuteUpdateBookmark, LoadSelectableTags }
+export type { ExecuteUpdateBookmark }
 
 export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
   readonly onUpdateBookmark: ExecuteUpdateBookmark
   readonly initialTags: Promise<SelectableTagsResult>
-  readonly onLoadSelectableTags: LoadSelectableTags
   readonly onCreateTag: CreateTag
   readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
   readonly onFetchTitle?: (url: string) => Promise<string | null>
-}
-
-type TagsViewState =
-  | { readonly status: 'loading' }
-  | { readonly status: 'ready'; readonly tags: readonly SelectableTag[] }
-  | { readonly status: 'blank' }
-  | { readonly status: 'error'; readonly message: string }
-
-const tagLoadErrorMessage = 'タグ候補の取得に失敗しました'
-
-function resolveTagsState(result: SelectableTagsResult): TagsViewState {
-  if (!result.ok) {
-    return { status: 'error', message: tagLoadErrorMessage }
-  }
-  if (result.value.length === 0) {
-    return { status: 'blank' }
-  }
-  return {
-    status: 'ready',
-    tags: result.value.map((tag) => ({ id: tag.id, name: tag.name }))
-  }
-}
-
-async function loadTagsState(load: () => Promise<SelectableTagsResult>): Promise<TagsViewState> {
-  try {
-    return resolveTagsState(await load())
-  } catch {
-    return { status: 'error', message: tagLoadErrorMessage }
-  }
 }
 
 /**
@@ -69,7 +35,6 @@ export function BookmarkEditor({
   initialData,
   onUpdateBookmark,
   initialTags,
-  onLoadSelectableTags,
   onCreateTag,
   onCompleted,
   onFetchTitle
@@ -77,65 +42,12 @@ export function BookmarkEditor({
   const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>(() => [
     ...initialData.tagIds
   ])
-  const [tagsState, setTagsState] = useState<TagsViewState>({ status: 'loading' })
-  const latestTagsRequest = useRef(0)
-  // Promise の reject handler は Effect より早く登録する。
-  // Route から受け取るタグ取得 Promise が render と Effect の間に reject しても、
-  // Unhandled rejection にせず、タグ領域の retry 可能な error state へ変換する。
-  const safeInitialTags = useMemo(() => recoverSelectableTagsPromise(initialTags), [initialTags])
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
   // これによって、Formisch の validation error と server error のライフサイクルを
   // 分離でき、field の onChange から Formisch と server それぞれの clear 経路が
   // 明確に分かれる。
   const [editorError, setEditorError] = useState<BookmarkEditorError | null>(null)
-  const [, startTagsTransition] = useTransition()
-
-  useEffect(() => {
-    const requestId = latestTagsRequest.current + 1
-    latestTagsRequest.current = requestId
-    let cancelled = false
-    void (async () => {
-      const nextState = await loadTagsState(() => safeInitialTags)
-      if (!cancelled && latestTagsRequest.current === requestId) {
-        setTagsState(nextState)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [safeInitialTags])
-
-  function retryTags() {
-    // タグ再取得は入力をブロックしない非緊急更新として useTransition で包む。
-    const requestId = latestTagsRequest.current + 1
-    latestTagsRequest.current = requestId
-    startTagsTransition(() => {
-      setTagsState({ status: 'loading' })
-      void (async () => {
-        const nextState = await loadTagsState(onLoadSelectableTags)
-        if (latestTagsRequest.current === requestId) {
-          setTagsState(nextState)
-        }
-      })()
-    })
-  }
-
-  function handleTagCreated(tag: SelectableTag) {
-    setSelectedTagIds((current) => (current.includes(tag.id) ? current : [...current, tag.id]))
-    setTagsState((current) => {
-      if (current.status === 'blank') {
-        return { status: 'ready', tags: [tag] }
-      }
-      if (current.status === 'ready') {
-        if (current.tags.some((existing) => existing.id === tag.id)) {
-          return current
-        }
-        return { status: 'ready', tags: [...current.tags, tag] }
-      }
-      return current
-    })
-  }
 
   function clearFormFieldError(field: BookmarkFormFieldKey) {
     // BookmarkForm の field 入力変更に応じて、対応する server field error だけを取り除く。
@@ -213,33 +125,6 @@ export function BookmarkEditor({
     }
   }
 
-  const tagField =
-    tagsState.status === 'loading' ? (
-      <BookmarkTagField.Loading serverError={editorError?.tags ?? null} />
-    ) : tagsState.status === 'error' ? (
-      <BookmarkTagField.Error
-        message={tagsState.message}
-        onRetry={retryTags}
-        serverError={editorError?.tags ?? null}
-      />
-    ) : tagsState.status === 'blank' ? (
-      <BookmarkTagField.Blank
-        onCreateTag={onCreateTag}
-        onCreated={handleTagCreated}
-        serverError={editorError?.tags ?? null}
-        onClearServerError={clearTagsError}
-      />
-    ) : (
-      <BookmarkTagField.Ready
-        tags={tagsState.tags}
-        selectedTagIds={selectedTagIds}
-        onSelectedTagIdsChange={setSelectedTagIds}
-        onCreateTag={onCreateTag}
-        serverError={editorError?.tags ?? null}
-        onClearServerError={clearTagsError}
-      />
-    )
-
   return (
     <BookmarkForm
       initialValues={{
@@ -253,7 +138,14 @@ export function BookmarkEditor({
       pendingLabel='更新中…'
       onSubmit={handleSubmit}
       {...(onFetchTitle != null ? { onFetchTitle } : {})}>
-      {tagField}
+      <BookmarkTagField
+        initialTags={initialTags}
+        selectedTagIds={selectedTagIds}
+        onSelectedTagIdsChange={setSelectedTagIds}
+        onCreateTag={onCreateTag}
+        serverError={editorError?.tags ?? null}
+        onClearServerError={clearTagsError}
+      />
     </BookmarkForm>
   )
 }

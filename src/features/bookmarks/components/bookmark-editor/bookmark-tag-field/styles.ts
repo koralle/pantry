@@ -45,9 +45,3 @@ export const tagStatus = css({
   margin: '0',
   color: 'fg.muted'
 })
-
-export const tagActions = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2'
-})
