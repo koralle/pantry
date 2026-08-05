@@ -23,6 +23,7 @@
 | `pnpm run cf-typegen`  | Worker バインディングの型生成            |
 | `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用 |
 | `pnpm run db:seed`     | Turso開発DBへテスト／開発データを投入    |
+| `pnpm run lint:markup` | HTML/JSX のアクセシビリティ・マークアップ検査（markuplint） |
 
 ## 設計方針
 

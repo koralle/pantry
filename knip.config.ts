@@ -20,7 +20,10 @@ const config: KnipConfig = {
     // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
     'cloudflare',
     // Used by git hooks; excluded from analysis via `lefthook: false` above
-    'lefthook'
+    'lefthook',
+    // Referenced by string name from `.markuplintrc` (parser / specs)
+    '@markuplint/jsx-parser',
+    '@markuplint/react-spec'
   ],
   rules: {
     // Existing unused exports/types/catalog noise — ratchets later

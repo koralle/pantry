@@ -18,6 +18,8 @@ export function RootDocument({ children }: { readonly children: React.ReactNode 
   return (
     <html lang='ja'>
       <head>
+        <meta charSet='UTF-8' />
+        <title>Pantry</title>
         <HeadContent />
       </head>
       <body>

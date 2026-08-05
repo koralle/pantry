@@ -43,7 +43,10 @@ catalogs:
   githooks:
     lefthook: 2.1.10
   lint:
+    '@markuplint/jsx-parser': 4.18.3
+    '@markuplint/react-spec': 4.18.0
     knip: 6.29.0
+    markuplint: 4.18.3
     oxlint: 1.76.0
     oxlint-tsgolint: 0.25.0
   react:

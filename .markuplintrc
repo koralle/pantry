@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/markuplint/markuplint/main/config-schema.json",
+  "extends": ["markuplint:recommended"],
+  "parser": {
+    "\\.[jt]sx?$": "@markuplint/jsx-parser"
+  },
+  "specs": {
+    "\\.[jt]sx?$": "@markuplint/react-spec"
+  },
+  "excludeFiles": ["**/node_modules/**", "**/*.stories.tsx"],
+  "pretenders": [
+    {
+      "selector": "HeadContent",
+      "as": "meta"
+    },
+    {
+      "selector": "Scripts",
+      "as": "script"
+    }
+  ]
+}

@@ -14,6 +14,12 @@ pre-commit:
               pnpm oxlint {staged_files} --fix --no-error-on-unmatched-pattern
             stage_fixed: true
 
+          - name: Lint markup with markuplint
+            glob:
+              - '**/*.{tsx,jsx}'
+            run: |
+              pnpm markuplint {staged_files} --allow-warnings
+
           - name: Typecheck
             glob:
               - '**/*.{ts,tsx}'
