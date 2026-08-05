@@ -51,6 +51,7 @@
     "@cloudflare/vitest-pool-workers": "catalog:test",
     "@dotenvx/dotenvx": "catalog:envvars",
     "@markuplint/jsx-parser": "catalog:lint",
+    "@markuplint/ml-config": "catalog:lint",
     "@markuplint/react-spec": "catalog:lint",
     "@pandacss/dev": "catalog:ui",
     "@storybook/addon-docs": "catalog:storybook",

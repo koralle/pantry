@@ -94,6 +94,9 @@ catalogs:
     '@markuplint/jsx-parser':
       specifier: 4.18.3
       version: 4.18.3
+    '@markuplint/ml-config':
+      specifier: 4.18.1
+      version: 4.18.1
     '@markuplint/react-spec':
       specifier: 4.18.0
       version: 4.18.0
@@ -190,7 +193,7 @@ overrides:
   kysely: 0.28.17
   esbuild: 0.28.1
 
-pnpmfileChecksum: sha256-Cd2bypuMnE1SQaQNCISKzk1RyV0shDo0a3309nZuCwE=
+pnpmfileChecksum: sha256-eyMjb4e17YZGWpoay7eBfA7c686nn+Eh7HK4IAJezCA=
 
 importers:
 
@@ -269,6 +272,9 @@ importers:
       '@markuplint/jsx-parser':
         specifier: catalog:lint
         version: 4.18.3(supports-color@10.2.2)
+      '@markuplint/ml-config':
+        specifier: catalog:lint
+        version: 4.18.1(supports-color@10.2.2)
       '@markuplint/react-spec':
         specifier: catalog:lint
         version: 4.18.0(supports-color@10.2.2)
@@ -322,7 +328,7 @@ importers:
         version: 2.1.10
       markuplint:
         specifier: catalog:lint
-        version: 4.18.3(supports-color@10.2.2)(typescript@7.0.2)
+        version: 4.18.3(supports-color@10.2.2)
       oxfmt:
         specifier: catalog:format
         version: 0.61.0
@@ -3142,11 +3148,6 @@ packages:
   cosmiconfig@9.0.1:
     resolution: {integrity: sha512-hr4ihw+DBqcvrsEDioRO31Z17x71pUYoNe/4h6Z0wB72p7MU7/9gH8Q3s12NFhHPfYBBOV3qyfUxmr/Yn3shnQ==}
     engines: {node: '>=14'}
-    peerDependencies:
-      typescript: '>=4.9.5'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -5685,7 +5686,7 @@ snapshots:
 
   '@markuplint/config-presets@4.18.0': {}
 
-  '@markuplint/file-resolver@4.18.3(supports-color@10.2.2)(typescript@7.0.2)':
+  '@markuplint/file-resolver@4.18.3(supports-color@10.2.2)':
     dependencies:
       '@markuplint/html-parser': 4.18.3(supports-color@10.2.2)
       '@markuplint/ml-ast': 4.18.0
@@ -5695,7 +5696,7 @@ snapshots:
       '@markuplint/parser-utils': 4.18.3(supports-color@10.2.2)
       '@markuplint/selector': 4.18.1(supports-color@10.2.2)
       '@markuplint/shared': 4.18.0
-      cosmiconfig: 9.0.1(typescript@7.0.2)
+      cosmiconfig: 9.0.1
       debug: 4.4.3(supports-color@10.2.2)
       glob: 13.0.6
       ignore: 7.0.5
@@ -5704,7 +5705,6 @@ snapshots:
       minimatch: 10.2.5
     transitivePeerDependencies:
       - supports-color
-      - typescript
 
   '@markuplint/html-parser@4.18.3(supports-color@10.2.2)':
     dependencies:
@@ -7591,14 +7591,13 @@ snapshots:
 
   cookie@1.1.1: {}
 
-  cosmiconfig@9.0.1(typescript@7.0.2):
+  cosmiconfig@9.0.1:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
       js-yaml: 4.3.1
       parse-json: 5.2.0
-    optionalDependencies:
-      typescript: 7.0.2
+      typescript: 5.9.3
 
   cross-spawn@7.0.6:
     dependencies:
@@ -8266,10 +8265,10 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  markuplint@4.18.3(supports-color@10.2.2)(typescript@7.0.2):
+  markuplint@4.18.3(supports-color@10.2.2):
     dependencies:
       '@markuplint/cli-utils': 4.18.0
-      '@markuplint/file-resolver': 4.18.3(supports-color@10.2.2)(typescript@7.0.2)
+      '@markuplint/file-resolver': 4.18.3(supports-color@10.2.2)
       '@markuplint/html-parser': 4.18.3(supports-color@10.2.2)
       '@markuplint/html-spec': 4.18.0(supports-color@10.2.2)
       '@markuplint/i18n': 4.18.0
@@ -8289,7 +8288,6 @@ snapshots:
       type-fest: 5.6.0
     transitivePeerDependencies:
       - supports-color
-      - typescript
 
   mdn-data@2.27.1: {}
 
