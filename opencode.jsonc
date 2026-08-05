@@ -81,6 +81,11 @@
       "repository": "mui/base-ui",
       "branch": "main",
       "description": "From the creators of Radix, Floating UI, and Material UI, Base UI is an unstyled UI component library for building accessible user interfaces."
+    },
+    "react": {
+      "repository": "react/react",
+      "branch": "main",
+      "description": "A JavaScript library for building user interfaces."
     }
   },
   "permission": {
