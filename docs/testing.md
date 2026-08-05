@@ -21,20 +21,20 @@ TypeSpec/OpenAPI契約テストは実施しない。アプリケーション境�
 
 UI のブラウザ検証の正本は Storybook の Story と `play` 関数とする。Vitest Browser Mode は追加しない。
 
-- Route Story（例: ブックマーク編集）は `RouteComponent` を起点に、Ideal / Blank / Loading / Partial / Error を網羅する。
-- Component Story は注入された port（fake）で更新 Result・タグ候補の loading/error/retry・作成失敗を再現する。
+- Route Story（例: ブックマーク編集）は `RouteComponent` を起点に、Ideal / Blank / Loading / Error を網羅する。
+- Component Story は注入された port（fake）で更新 Result とフォームエラーを再現する。
 - Server Function / Router / DB は Story 内で mock または fake port に差し替え、本番実装を直接呼ばない。
 
 ## 3. Playwright MCP検証
 
 ローカルとデプロイ済みWorkerに対し、Playwright MCPで実ブラウザ検証を実施する。
 
-- サインイン -> 登録 -> タグ付与 -> 一覧検索 -> AND/OR切替 -> 編集 -> 削除の一連の操作。
+- サインイン -> 登録 -> 一覧検索 -> AND/OR切替 -> 編集 -> 削除の一連の操作。
 - タイトル取得の失敗後も、手入力タイトルで保存できること。
 - 認証・登録・更新・削除のエラーが利用者に分かる形で表示されること。
 - デスクトップ幅とモバイル幅で主要操作が完結すること。
 - アクセシビリティツリーで、見出し、フォームラベル、ボタン名、エラー通知を確認すること。
-- キーボードだけでフォーム送信、タグ操作、削除確認を完了でき、フォーカスが見失われないこと。
+- キーボードだけでフォーム送信、削除確認を完了でき、フォーカスが見失われないこと。
 
 ## 4. リリース判定
 

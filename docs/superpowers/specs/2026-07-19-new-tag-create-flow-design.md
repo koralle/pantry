@@ -10,13 +10,11 @@
 
 - `addTag` に重複チェックがなく、同名タグが複数作成できてしまう（アプリ層で事前に弾いていない）
 - タグ一覧画面から「その場で追加」する導線・UI がない
-- ブックマーク新規／編集画面にタグ選択 UI がなく、タグのインライン作成・紐付けができない
 
 本設計では以下を実現する：
 
 1. サーバー層で `addTag` の重複を明示的に弾く（専用エラー）
 2. タグ一覧画面に常設インライン入力でその場追加
-3. ブックマーク新規／編集画面にタグ選択＋インライン作成 UI を追加し、中間テーブルへ紐付け保存する
 
 ## 現状の関連コード
 
@@ -82,20 +80,7 @@ if (duplicate != null) {
 
 UI ライブラリは既存と同じ `@base-ui/react` の `Input` を使用する。
 
-### 3. ブックマーク画面：タグ選択＋インライン作成＋紐付け保存
-
-#### 3a. タグ選択コンポーネント
-
-新規コンポーネント（配置場所は `src/features/bookmarks/components/tag-selector.tsx` または `src/features/tags/components/`）：
-
-- 既存タグ一覧をチップ／マルチセレクトで表示し、選択状態（tagId の Set／配列）を保持
-- 入力欄で既存タグを絞り込みつつ、入力した名前で「その場で作成」可能
-- 作成時は `addTag` を呼び：
-  - 成功 → 作成したタグを選択状態に追加
-  - `TagNameAlreadyExistsError` → 「既に存在します」と表示しつつ、既存タグを検索して選択状態に追加（再利用）
-- 選択状態は親（ブックマークフォーム）へ tagId 配列として渡す
-
-#### 3b. ブックマーク サーバー関数の拡張
+### 3. ブックマーク サーバー関数のタグ契約
 
 `addBookmark`（`bookmark.function.ts:33`）と `updateBookmark`（`:66`）の入力スキーマに
 `tags: v.array(v.number())` を追加する。
@@ -105,12 +90,6 @@ UI ライブラリは既存と同じ `@base-ui/react` の `Input` を使用す�
 
 両者とも `ensureSession` で `userId` を取得済み。tagId が自ユーザー所有かの検証は、
 MVP スコープでは既存タグ選択 UI からのみ渡される前提とし、厳密な所有権検証は将来課題とする（YAGNI）。
-
-#### 3c. ブックマークフォームへの組み込み
-
-- `src/routes/_protected/bookmarks/new/index.tsx` と
-  `src/routes/_protected/bookmarks/$id/edit.tsx` に `tag-selector` を組み込み、
-  submit 時に選択 tagId 配列を `addBookmark`／`updateBookmark` へ渡す。
 
 ### 4. テスト戦略
 
@@ -142,5 +121,4 @@ MVP スコープでは既存タグ選択 UI からのみ渡される前提とし
 1. `addTag` 重複ガード ＋ `TagNameAlreadyExistsError`
 2. `addBookmark`／`updateBookmark` のタグ紐付け拡張
 3. 一覧画面インライン入力コンポーネント
-4. ブックマーク用タグ選択コンポーネント ＋ フォーム組み込み
-5. テスト追加・拡張
+4. テスト追加・拡張

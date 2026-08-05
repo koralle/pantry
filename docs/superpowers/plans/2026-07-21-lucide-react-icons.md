@@ -37,7 +37,6 @@
 | `src/routes/_protected/bookmarks/$id/edit.tsx`                            | 編集ワークベンチ（戻るリンク）                                |
 | `src/routes/_protected/bookmarks/new/index.tsx`                           | 新規ワークベンチ（戻るリンク）                                |
 | `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx` | エラーサマリー・タイトル取得                                  |
-| `src/features/bookmarks/components/tag-selector.tsx`                      | 絞り込み・作成                                                |
 | `src/routes/_protected/tags/index.tsx`                                    | 新規タグリンク                                                |
 | `src/routes/_protected/tags/new.tsx`                                      | 戻る・エラーサマリー                                          |
 | `src/routes/_protected/tags/$id.edit.tsx`                                 | 戻る・エラーサマリー                                          |
@@ -1242,12 +1241,11 @@ git commit -m "feat(ui): add icons to bookmark detail and workbench nav"
 
 ---
 
-## Task 9: ワークベンチフォーム・タグセレクター
+## Task 9: ワークベンチフォーム
 
 **Files:**
 
 - Modify: `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx`
-- Modify: `src/features/bookmarks/components/tag-selector.tsx`
 
 - [ ] **Step 1: `bookmark-workbench-form.tsx` に import を追加**
 
@@ -1301,66 +1299,16 @@ import { CircleAlert, Download } from 'lucide-react'
                 </button>
 ```
 
-- [ ] **Step 4: `tag-selector.tsx` に import を追加**
-
-`src/features/bookmarks/components/tag-selector.tsx` の import 群に追加:
-
-```tsx
-import { Plus, Search } from 'lucide-react'
-```
-
-- [ ] **Step 5: 絞り込みラベルに Search**
-
-次を探す:
-
-```tsx
-        <label htmlFor='tag-selector-query'>
-          タグを絞り込む / 新規作成
-```
-
-次で置き換える:
-
-```tsx
-        <label htmlFor='tag-selector-query'>
-          <Search
-            size={16}
-            aria-hidden
-          />{' '}
-          タグを絞り込む / 新規作成
-```
-
-- [ ] **Step 6: 「この名前で作成」に Plus**
-
-次を探す:
-
-```tsx
-          disabled={isPending}>
-          {isPending ? '作成中...' : 'この名前で作成'}
-        </button>
-```
-
-次で置き換える:
-
-```tsx
-          disabled={isPending}>
-          <Plus
-            size={16}
-            aria-hidden
-          />{' '}
-          {isPending ? '作成中...' : 'この名前で作成'}
-        </button>
-```
-
-- [ ] **Step 7: テスト・型チェック**
+- [ ] **Step 4: テスト・型チェック**
 
 Run: `pnpm run test && pnpm run typecheck`
 Expected: 全テスト PASS、型エラーなし
 
-- [ ] **Step 8: コミット**
+- [ ] **Step 5: コミット**
 
 ```bash
-git add "src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx" src/features/bookmarks/components/tag-selector.tsx
-git commit -m "feat(ui): add icons to workbench form and tag selector"
+git add "src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx"
+git commit -m "feat(ui): add icons to workbench form"
 ```
 
 ---

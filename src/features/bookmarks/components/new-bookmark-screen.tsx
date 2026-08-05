@@ -1,29 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
 
 import { StyledLink } from '../../../shared/components/styled-link'
 import { workbench, workbenchLead, workbenchNav, workbenchTitle } from '../../../styles/workbench'
 import { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
-import { fetchTags } from '../../tags/functions/fetch-tags'
 import { addBookmark } from '../functions/add-bookmark'
 import { BookmarkWorkbenchForm } from './bookmark-workbench-form'
+import { buildNewBookmarkCommand } from './new-bookmark-command'
 
-export function NewBookmarkScreen({
-  tags,
-  searchTags
-}: {
-  readonly tags: Awaited<ReturnType<typeof fetchTags>>
-  readonly searchTags: string[] | undefined
-}) {
+export function NewBookmarkScreen({ searchTags }: { readonly searchTags: string[] | undefined }) {
   const navigate = useNavigate()
   const listSearch = buildListBackSearch(searchTags)
-  const [selectedTagIds, setSelectedTagIds] = useState<number[]>(() => {
-    if (searchTags === undefined || searchTags.length === 0) {
-      return []
-    }
-    return tags.filter((tag) => searchTags?.includes(tag.name)).map((tag) => tag.id)
-  })
 
   return (
     <section
@@ -48,14 +35,11 @@ export function NewBookmarkScreen({
       <BookmarkWorkbenchForm
         mode='new'
         initialValues={{ url: '', title: '', note: null }}
-        allTags={tags}
-        selectedTagIds={selectedTagIds}
-        onTagChange={setSelectedTagIds}
         submitLabel='登録'
         pendingLabel='登録中…'
         onSubmit={async ({ url, title, note }) => {
           const { id } = await addBookmark({
-            data: { url, title, note, tags: selectedTagIds }
+            data: buildNewBookmarkCommand({ url, title, note })
           })
           await navigate({
             to: '/bookmarks/$id',

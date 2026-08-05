@@ -73,18 +73,16 @@ Issue: [#101 アイコンとしてLucide (lucide-react) を導入する](https:/
 
 ### ブックマーク詳細・編集
 
-| ファイル                                             | 箇所                         | アイコン       |
-| ---------------------------------------------------- | ---------------------------- | -------------- |
-| `src/routes/_protected/bookmarks/$id/index.tsx`      | 「一覧へ戻る」               | `ArrowLeft`    |
-| 同上                                                 | フラッシュメッセージ         | `CircleCheck`  |
-| 同上                                                 | 外部 URL リンク              | `ExternalLink` |
-| 同上                                                 | 「編集」                     | `Pencil`       |
-| 同上                                                 | 「削除」トリガー・確認ボタン | `Trash2`       |
-| 同上                                                 | ダイアログ「キャンセル」     | `X`            |
-| `src/routes/_protected/bookmarks/$id.edit.tsx`       | 戻るリンク群                 | `ArrowLeft`    |
-| `src/routes/_protected/bookmarks/new/index.tsx`      | 戻るリンク                   | `ArrowLeft`    |
-| `src/features/bookmarks/components/tag-selector.tsx` | 「この名前で作成」           | `Plus`         |
-| 同上                                                 | フィルタ入力                 | `Search`       |
+| ファイル                                        | 箇所                         | アイコン       |
+| ----------------------------------------------- | ---------------------------- | -------------- |
+| `src/routes/_protected/bookmarks/$id/index.tsx` | 「一覧へ戻る」               | `ArrowLeft`    |
+| 同上                                            | フラッシュメッセージ         | `CircleCheck`  |
+| 同上                                            | 外部 URL リンク              | `ExternalLink` |
+| 同上                                            | 「編集」                     | `Pencil`       |
+| 同上                                            | 「削除」トリガー・確認ボタン | `Trash2`       |
+| 同上                                            | ダイアログ「キャンセル」     | `X`            |
+| `src/routes/_protected/bookmarks/$id.edit.tsx`  | 戻るリンク群                 | `ArrowLeft`    |
+| `src/routes/_protected/bookmarks/new/index.tsx` | 戻るリンク                   | `ArrowLeft`    |
 
 ### ワークベンチフォーム
 

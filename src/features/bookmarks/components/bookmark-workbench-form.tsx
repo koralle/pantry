@@ -15,8 +15,6 @@ import {
 } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../styles/workbench'
-import { TagSelector } from '../../tags/components/tag-selector'
-import type { SelectableTag } from '../../tags/components/tag-selector'
 import { useBookmarkTitleFetch } from '../hooks/use-bookmark-title-fetch'
 
 export const workbenchSchema = v.object({
@@ -34,9 +32,6 @@ export type BookmarkWorkbenchValues = {
 interface BookmarkWorkbenchFormProps {
   readonly mode: 'new' | 'edit'
   readonly initialValues: BookmarkWorkbenchValues
-  readonly allTags: SelectableTag[]
-  readonly selectedTagIds: number[]
-  readonly onTagChange: (ids: number[]) => void
   readonly submitLabel: string
   readonly pendingLabel: string
   readonly onSubmit: (values: BookmarkWorkbenchValues) => Promise<void>
@@ -45,9 +40,6 @@ interface BookmarkWorkbenchFormProps {
 export function BookmarkWorkbenchForm({
   mode,
   initialValues,
-  allTags,
-  selectedTagIds,
-  onTagChange,
   submitLabel,
   pendingLabel,
   onSubmit
@@ -215,14 +207,6 @@ export function BookmarkWorkbenchForm({
           )}
         </Field>
       </fieldset>
-
-      <div>
-        <TagSelector
-          allTags={allTags}
-          selectedTagIds={selectedTagIds}
-          onChange={onTagChange}
-        />
-      </div>
 
       <StyledButton
         type='submit'
