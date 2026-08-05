@@ -8,10 +8,7 @@ import {
   bookmarkUrlSchema
 } from '../../../../features/bookmarks/domain/bookmark-values'
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
-import { loadSelectableTags } from '../../../../features/bookmarks/functions/load-selectable-tags'
 import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
-import { tagIdSchema, tagNameSchema } from '../../../../features/tags/domain/tag-values'
-import { createTag } from '../../../../features/tags/functions/create-tag'
 import { err, ok } from '../../../../shared/domain/result'
 import preview from '../../../../storybook/preview'
 import { Route } from './edit'
@@ -29,13 +26,7 @@ const editorData = {
   tagIds: []
 }
 
-const sampleTags = [
-  { id: v.parse(tagIdSchema, 1), name: v.parse(tagNameSchema, 'react') },
-  { id: v.parse(tagIdSchema, 2), name: v.parse(tagNameSchema, 'typescript') },
-  { id: v.parse(tagIdSchema, 3), name: v.parse(tagNameSchema, 'uiux') }
-]
-
-function neverTags() {
+function neverBookmark() {
   return new Promise<never>(() => undefined)
 }
 
@@ -57,14 +48,7 @@ const meta = preview.meta({
   },
   beforeEach: async () => {
     mocked(loadBookmarkForEdit).mockResolvedValue(ok(editorData))
-    mocked(loadSelectableTags).mockResolvedValue(ok(sampleTags))
     mocked(updateBookmark).mockResolvedValue(ok({ bookmarkId: editorData.bookmarkId }))
-    mocked(createTag).mockResolvedValue(
-      ok({
-        id: v.parse(tagIdSchema, 10),
-        name: v.parse(tagNameSchema, 'created')
-      })
-    )
   }
 })
 
@@ -75,15 +59,13 @@ export const Default = meta.story({
       canvas.getByRole('heading', { name: 'ブックマークを並べ替える' })
     ).toBeInTheDocument()
     await expect(canvas.getByLabelText('URL')).toHaveValue(String(editorData.url))
-    await waitFor(async () => {
-      await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeInTheDocument()
-    })
+    await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
   }
 })
 
 export const InitialLoading = meta.story({
   beforeEach: async () => {
-    mocked(loadBookmarkForEdit).mockImplementation(() => neverTags())
+    mocked(loadBookmarkForEdit).mockImplementation(() => neverBookmark())
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -106,47 +88,6 @@ export const BookmarkIsNotFound = meta.story({
   }
 })
 
-export const TagOptionsAreLoading = meta.story({
-  beforeEach: async () => {
-    mocked(loadBookmarkForEdit).mockResolvedValue(ok(editorData))
-    mocked(loadSelectableTags).mockImplementation(() => neverTags())
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('URL')).toBeEnabled()
-    await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
-  }
-})
-
-export const TagOptionsAreEmpty = meta.story({
-  beforeEach: async () => {
-    mocked(loadSelectableTags).mockResolvedValue(ok([]))
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(
-        canvas.getByText('タグがまだありません。名前を入れて作成できます。')
-      ).toBeInTheDocument()
-    })
-    await expect(canvas.getByRole('button', { name: /この名前で作成/ })).toBeInTheDocument()
-  }
-})
-
-export const TagOptionsLoadFailed = meta.story({
-  beforeEach: async () => {
-    mocked(loadSelectableTags).mockResolvedValue(err({ code: 'unexpected-error' }))
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
-    })
-    await expect(canvas.getByLabelText('URL')).toBeEnabled()
-    await expect(canvas.getByRole('button', { name: /再試行/ })).toBeInTheDocument()
-  }
-})
-
 export const UpdateHasDuplicateUrl = meta.story({
   beforeEach: async () => {
     mocked(updateBookmark).mockResolvedValue(err({ code: 'duplicate-url' }))
@@ -163,42 +104,6 @@ export const UpdateHasDuplicateUrl = meta.story({
   }
 })
 
-export const UpdateHasInvalidTag = meta.story({
-  beforeEach: async () => {
-    mocked(loadBookmarkForEdit).mockResolvedValue(
-      ok({
-        ...editorData,
-        tagIds: [v.parse(tagIdSchema, 1)]
-      })
-    )
-    mocked(updateBookmark).mockResolvedValue(
-      err({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
-    })
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    // タグ側の更新 server error はタグ領域だけに表示される。
-    // BookmarkForm の summary へは混ぜないので、'次を確認してください' には出さない。
-    await waitFor(async () => {
-      await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-    })
-    const alerts = canvas.queryAllByRole('alert')
-    for (const alert of alerts) {
-      if (alert.textContent?.includes('次を確認してください')) {
-        await expect(alert.textContent).not.toContain('選択したタグが見つかりません')
-      }
-    }
-  }
-})
-
 export const UpdateHasUnexpectedError = meta.story({
   beforeEach: async () => {
     mocked(updateBookmark).mockRejectedValue(new Error('server boom'))
@@ -210,50 +115,5 @@ export const UpdateHasUnexpectedError = meta.story({
     })
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('保存に失敗しました')
-  }
-})
-
-export const CreateTagFromEmptyOptions = meta.story({
-  beforeEach: async () => {
-    mocked(loadSelectableTags).mockResolvedValue(ok([]))
-    mocked(createTag).mockImplementation(async (input) => {
-      const name =
-        typeof input === 'object' && input != null && 'data' in input
-          ? String((input as { data: { name: string } }).data.name)
-          : 'new-tag'
-      return ok({
-        id: v.parse(tagIdSchema, 42),
-        name: v.parse(tagNameSchema, name)
-      })
-    })
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(canvas.getByRole('button', { name: /この名前で作成/ })).toBeInTheDocument()
-    })
-    const input = canvas.getByPlaceholderText('タグを絞り込む / 新規作成')
-    await userEvent.type(input, 'new-tag')
-    await userEvent.click(canvas.getByRole('button', { name: /この名前で作成/ }))
-    await waitFor(async () => {
-      await expect(canvas.getByRole('checkbox', { name: 'new-tag' })).toBeChecked()
-    })
-  }
-})
-
-export const CreateTagNameAlreadyExists = meta.story({
-  beforeEach: async () => {
-    mocked(loadSelectableTags).mockResolvedValue(ok([]))
-    mocked(createTag).mockResolvedValue(err({ code: 'duplicate-tag-name', field: 'name' }))
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(async () => {
-      await expect(canvas.getByRole('button', { name: /この名前で作成/ })).toBeInTheDocument()
-    })
-    const input = canvas.getByPlaceholderText('タグを絞り込む / 新規作成')
-    await userEvent.type(input, 'react')
-    await userEvent.click(canvas.getByRole('button', { name: /この名前で作成/ }))
-    await expect(canvas.getByRole('alert')).toHaveTextContent('そのタグ名は既に存在します')
   }
 })

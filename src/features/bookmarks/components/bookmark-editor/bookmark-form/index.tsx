@@ -30,8 +30,7 @@ export function BookmarkForm({
   pendingLabel = '更新中…',
   legend = 'ブックマーク編集',
   onSubmit,
-  onFetchTitle,
-  children
+  onFetchTitle
 }: BookmarkFormProps) {
   const baseId = useId()
   const ids: BookmarkFormFieldIds & { readonly summary: string } = {
@@ -71,7 +70,7 @@ export function BookmarkForm({
   // BookmarkFormSummary に任せる。責務境界を、
   //   BookmarkForm = どのエラーを summary に流すか (発生源の選択)
   //   BookmarkFormSummary = 表示上の重複除去
-  // で分ける。tag の更新 server error はここに含めない (BookmarkTagField 側で表示する)。
+  // で分ける。
   const summaryCandidates = [
     ...(form.isSubmitted && !form.isValid ? ['入力内容を確認してください'] : []),
     ...formErrors,
@@ -117,7 +116,6 @@ export function BookmarkForm({
           handleFetchTitle={handleFetchTitle}
           onClearServerFieldError={handleClearFieldError}
         />
-        {children}
       </fieldset>
 
       <StyledButton

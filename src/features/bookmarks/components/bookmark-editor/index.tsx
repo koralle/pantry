@@ -1,11 +1,9 @@
 import { useState } from 'react'
 
-import type { CreateTag } from '../../../tags/application/create-tag'
-import type { TagId } from '../../../tags/domain/tag-values'
 import type { ExecuteUpdateBookmark } from '../../application/execute-update-bookmark'
 import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
-import type { SelectableTagsResult } from '../../application/load-selectable-tags'
 import type { BookmarkId } from '../../domain/bookmark-values'
+import { buildUpdateBookmarkCommand } from './bookmark-editor-command'
 import { mapUpdateBookmarkError } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
 import type {
@@ -13,15 +11,12 @@ import type {
   BookmarkFormFieldKey,
   BookmarkFormSubmitValues
 } from './bookmark-form'
-import { BookmarkTagField } from './bookmark-tag-field'
 
 export type { ExecuteUpdateBookmark }
 
 export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
   readonly onUpdateBookmark: ExecuteUpdateBookmark
-  readonly initialTags: Promise<SelectableTagsResult>
-  readonly onCreateTag: CreateTag
   readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
   readonly onFetchTitle?: (url: string) => Promise<string | null>
 }
@@ -34,14 +29,9 @@ export type BookmarkEditorProps = {
 export function BookmarkEditor({
   initialData,
   onUpdateBookmark,
-  initialTags,
-  onCreateTag,
   onCompleted,
   onFetchTitle
 }: BookmarkEditorProps) {
-  const [selectedTagIds, setSelectedTagIds] = useState<readonly TagId[]>(() => [
-    ...initialData.tagIds
-  ])
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
   // これによって、Formisch の validation error と server error のライフサイクルを
@@ -68,22 +58,7 @@ export function BookmarkEditor({
         ...(nextFields === undefined ? {} : { fields: nextFields })
       }
       const isFormEmpty = nextForm.summary === undefined && nextForm.fields === undefined
-      return {
-        ...(isFormEmpty ? {} : { form: nextForm }),
-        ...(current.tags === undefined ? {} : { tags: current.tags })
-      }
-    })
-  }
-
-  function clearTagsError() {
-    setEditorError((current) => {
-      if (current === null || current.tags === undefined) {
-        return current
-      }
-      if (current.form === undefined) {
-        return null
-      }
-      return { form: current.form }
+      return isFormEmpty ? {} : { form: nextForm }
     })
   }
 
@@ -97,13 +72,7 @@ export function BookmarkEditor({
     // Handler へ rejection を返して raw error を validation error にしない。
     let updateResult: Awaited<ReturnType<ExecuteUpdateBookmark>>
     try {
-      updateResult = await onUpdateBookmark({
-        bookmarkId: initialData.bookmarkId,
-        url: values.url,
-        title: values.title,
-        note: values.note,
-        tagIds: selectedTagIds
-      })
+      updateResult = await onUpdateBookmark(buildUpdateBookmarkCommand(initialData, values))
     } catch {
       setEditorError(mapUpdateBookmarkError({ code: 'unexpected-error' }))
       return
@@ -137,15 +106,7 @@ export function BookmarkEditor({
       submitLabel='更新'
       pendingLabel='更新中…'
       onSubmit={handleSubmit}
-      {...(onFetchTitle != null ? { onFetchTitle } : {})}>
-      <BookmarkTagField
-        initialTags={initialTags}
-        selectedTagIds={selectedTagIds}
-        onSelectedTagIdsChange={setSelectedTagIds}
-        onCreateTag={onCreateTag}
-        serverError={editorError?.tags ?? null}
-        onClearServerError={clearTagsError}
-      />
-    </BookmarkForm>
+      {...(onFetchTitle != null ? { onFetchTitle } : {})}
+    />
   )
 }

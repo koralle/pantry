@@ -2,14 +2,11 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, PackageOpen } from 'lucide-react'
 import * as v from 'valibot'
 
-import { recoverSelectableTagsPromise } from '../../../../features/bookmarks/application/load-selectable-tags'
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
 import { fetchBookmarkTitle } from '../../../../features/bookmarks/functions/fetch-bookmark-title'
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
-import { loadSelectableTags } from '../../../../features/bookmarks/functions/load-selectable-tags'
 import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
 import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
-import { createTag as createTagFn } from '../../../../features/tags/functions/create-tag'
 import { StyledLink } from '../../../../shared/components/styled-link'
 import { err } from '../../../../shared/domain/result'
 import {
@@ -37,13 +34,9 @@ export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
       return { kind: 'not-found' as const }
     }
 
-    // タグ候補は await しない。本体フォームを先に描画し、TagField だけ Partial にする。
-    const initialTags = recoverSelectableTagsPromise(loadSelectableTags())
-
     return {
       kind: 'ok' as const,
-      initialData: bookmarkResult.value,
-      initialTags
+      initialData: bookmarkResult.value
     }
   },
   component: RouteComponent
@@ -77,7 +70,7 @@ function RouteComponent() {
     )
   }
 
-  const { initialData, initialTags } = data
+  const { initialData } = data
   const detailSearch = search?.tags !== undefined ? { tags: search.tags } : {}
 
   return (
@@ -114,7 +107,6 @@ function RouteComponent() {
       <BookmarkEditor
         key={initialData.bookmarkId}
         initialData={initialData}
-        initialTags={initialTags}
         onUpdateBookmark={async (command) => {
           try {
             return await updateBookmark({
@@ -126,13 +118,6 @@ function RouteComponent() {
                 tags: [...command.tagIds]
               }
             })
-          } catch {
-            return err({ code: 'unexpected-error' })
-          }
-        }}
-        onCreateTag={async (name) => {
-          try {
-            return await createTagFn({ data: { name } })
           } catch {
             return err({ code: 'unexpected-error' })
           }

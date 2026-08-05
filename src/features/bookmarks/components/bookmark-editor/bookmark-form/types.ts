@@ -1,5 +1,4 @@
 import type { FormStore } from '@formisch/react'
-import type { ReactNode } from 'react'
 
 import { bookmarkFormSchema } from './schema'
 import type { BookmarkFormOutput } from './schema'
@@ -18,12 +17,10 @@ export type BookmarkFormServerError = {
 
 /**
  * BookmarkEditor が唯一の所有者となる更新結果エラー。
- * フォーム向けは form へ、タグ向けは tags へ振り分ける。
  * Formisch validation error はここへ持ち込まない。
  */
 export type BookmarkEditorError = {
   readonly form?: BookmarkFormServerError
-  readonly tags?: string
 }
 
 export type BookmarkFormInitialValues = {
@@ -54,8 +51,6 @@ export type BookmarkFormProps = {
   readonly onSubmit: (values: BookmarkFormSubmitValues) => void | Promise<void>
   /** タイトル取得。Server Function は注入側が持つ */
   readonly onFetchTitle?: (url: string) => Promise<string | null>
-  /** タグ領域など、フォーム内に差し込む UI */
-  readonly children?: ReactNode
 }
 
 export type BookmarkFormStore = FormStore<typeof bookmarkFormSchema>

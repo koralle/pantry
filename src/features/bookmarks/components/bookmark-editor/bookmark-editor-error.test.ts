@@ -40,34 +40,13 @@ describe('mapUpdateBookmarkError', () => {
     })
   })
 
-  test('duplicate-tag-id を tags 側だけへ振り分け、form へ混ぜない', () => {
+  test('タグ関連エラーをフォーム summary へ振り分ける', () => {
     const result = mapUpdateBookmarkError({
       code: 'duplicate-tag-id',
       field: 'tags',
       tagId: tagId(1)
     })
-    expect(result).toStrictEqual({ tags: '同じタグが重複しています' })
-    expect(result.form).toBeUndefined()
-  })
-
-  test('invalid-tag: tag-not-owned を tags のみへ振り分ける', () => {
-    const result = mapUpdateBookmarkError({
-      code: 'invalid-tag',
-      field: 'tags',
-      cause: { code: 'tag-not-owned', tagId: tagId(1) }
-    })
-    expect(result).toStrictEqual({ tags: '選択したタグを利用できません' })
-    expect(result.form).toBeUndefined()
-  })
-
-  test('invalid-tag: tag-not-found を tags のみへ振り分ける', () => {
-    const result = mapUpdateBookmarkError({
-      code: 'invalid-tag',
-      field: 'tags',
-      cause: { code: 'tag-not-found', tagId: tagId(2) }
-    })
-    expect(result).toStrictEqual({ tags: '選択したタグが見つかりません' })
-    expect(result.form).toBeUndefined()
+    expect(result).toStrictEqual({ form: { summary: '保存できないタグ情報が含まれています' } })
   })
 
   test('unexpected-error を form summary へ振り分ける', () => {

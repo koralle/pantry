@@ -9,9 +9,7 @@
 ## 対象範囲
 
 - ブックマーク編集画面の読み取りと更新
-- 編集画面でのタグ候補の遅延取得
-- 編集画面でのタグ新規作成
-- `BookmarkEditor`、`BookmarkForm`、`BookmarkTagField`の責務分離
+- `BookmarkEditor`、`BookmarkForm`の責務分離
 - Domain値のbrand化
 - Application Result契約
 - Route StoryとStorybook `play`テストによるUI状態検証
@@ -27,7 +25,7 @@
 
 RouteComponentはScreenとして扱う。StorybookのRoute Storyはこのコンポーネントを起点に画面全体を検証する。
 
-`BookmarkEditor`はScreenとは名乗らず、編集操作のオーケストレーターとする。`BookmarkForm`は入力フォーム、`BookmarkTagField`はタグ領域のUIを担当する。
+`BookmarkEditor`はScreenとは名乗らず、編集操作のオーケストレーターとする。`BookmarkForm`は入力フォームを担当する。
 
 DomainとApplicationはRouterを知らない。UIコンポーネントはServer Function、Router、DBを直接importせず、必要な操作をcallbackまたはportとして注入する。
 
@@ -40,13 +38,8 @@ RouteComponent（Screen）
           -> domain Bookmark / branded values
 
 RouteComponent
-  -> functions/load-selectable-tags.ts
-      -> application/load-selectable-tags.ts
-
-RouteComponent
   -> BookmarkEditor
       -> BookmarkForm
-      -> BookmarkTagField
 
 RouteComponent
   -> injected executeUpdate
@@ -62,37 +55,31 @@ RouteComponent
 flowchart LR
   route["RouteComponent<br/>Screen"]
   bookmarkFn["functions/load-bookmark-for-edit"]
-  tagsFn["functions/load-selectable-tags"]
   updateFn["functions/update-bookmark"]
   bookmarkApp["application/load-bookmark-for-edit"]
-  tagsApp["application/load-selectable-tags"]
   updateApp["application/execute-update-bookmark"]
   domain["Domain<br/>Bookmark / branded values"]
   db[("AppDb")]
   editor["BookmarkEditor"]
   form["BookmarkForm"]
-  tagField["BookmarkTagField"]
-  ports["Injected ports<br/>executeUpdate / loadTags / createTag"]
+  ports["Injected ports<br/>executeUpdate"]
 
   route --> bookmarkFn --> bookmarkApp
-  route --> tagsFn --> tagsApp
   route --> editor
   route --> ports
   editor --> form
-  editor --> tagField
   ports --> updateFn --> updateApp
   bookmarkApp --> domain
   updateApp --> domain
   bookmarkApp --> db
-  tagsApp --> db
   updateApp --> db
 
   classDef ui fill:#e8f1ff,stroke:#4267a8
   classDef boundary fill:#fff3d6,stroke:#a87500
   classDef domain fill:#e8f7e8,stroke:#3d8245
-  class route,editor,form,tagField ui
-  class bookmarkFn,tagsFn,updateFn,ports boundary
-  class bookmarkApp,tagsApp,updateApp,domain domain
+  class route,editor,form ui
+  class bookmarkFn,updateFn,ports boundary
+  class bookmarkApp,updateApp,domain domain
 ```
 
 RouteからDomain・DBへ直接矢印を引かないことが、この図の重要な制約である。UIコンポーネントからServer Functionへ直接依存せず、注入されたportを通ることでStorybookのfakeへ差し替えられる。
@@ -104,19 +91,17 @@ RouteからDomain・DBへ直接矢印を引かないことが、この図の重�
 - `list`: コレクションを取得するApplication query
 - `fetch`: 外部HTTPリソースを取得する処理
 
-編集画面では`loadBookmarkForEdit`と`loadSelectableTags`を使う。外部ページのタイトル取得は`fetchPageTitle`とする。
+編集画面では`loadBookmarkForEdit`を使う。外部ページのタイトル取得は`fetchPageTitle`とする。
 
 ## 読み取りフロー
 
-Route loaderはブックマーク編集データをawaitし、成功後にタグ候補取得を開始する。ただしタグ候補Promiseはawaitせず、画面へ渡す。
+Route loaderはブックマーク編集データをawaitし、成功した編集データを画面へ渡す。
 
 ```text
 1. loadBookmarkForEditをawaitする
-2. not-foundならタグ取得を開始せず、RouteがBlank/Not-foundを表示する
-3. 成功ならloadSelectableTagsを開始する
-4. タグ候補Promiseをawaitせず、BookmarkEditorへ渡す
-5. BookmarkEditorは本体フォームを表示する
-6. BookmarkTagFieldだけがloading/error/success状態になる
+2. not-foundならRouteがBlank/Not-foundを表示する
+3. 成功ならBookmarkEditorへ編集データを渡す
+4. BookmarkEditorはフォームを表示する
 ```
 
 ```mermaid
@@ -125,9 +110,7 @@ sequenceDiagram
   participant Route as RouteComponent
   participant BookmarkFn as load-bookmark-for-edit
   participant BookmarkApp as application query
-  participant TagsFn as load-selectable-tags
   participant Editor as BookmarkEditor
-  participant TagField as BookmarkTagField
 
   User->>Route: 編集画面へ遷移
   Route->>BookmarkFn: bookmarkIdを渡す
@@ -139,18 +122,8 @@ sequenceDiagram
   else Bookmarkが存在する
     BookmarkApp-->>BookmarkFn: Ok(BookmarkEditorData)
     BookmarkFn-->>Route: Ok(BookmarkEditorData)
-    Route->>TagsFn: loadSelectableTagsを開始（awaitしない）
-    Route->>Editor: editor data + tags promise + injected ports
+    Route->>Editor: editor data + injected ports
     Editor-->>User: 本体フォームを表示
-    Editor->>TagField: loading状態を表示
-    TagsFn-->>TagField: Resultを解決
-    alt タグ候補あり
-      TagField-->>User: Idealなタグ選択UI
-    else タグ候補が0件
-      TagField-->>User: Blank + タグ作成UI
-    else タグ候補取得失敗
-      TagField-->>User: Partial + エラー + retry
-    end
   end
 ```
 
@@ -168,13 +141,7 @@ type BookmarkEditorData = {
 
 DB行の`userId`、日時、`deletedAt`などはUI DTOへ含めない。
 
-`loadSelectableTags`は次を返す。
-
-```ts
-Promise<Result<readonly SelectableTag[], LoadSelectableTagsError>>
-```
-
-タグ候補取得に失敗しても、本体フォームは利用可能とする。タグを変更しない保存では、初期`tagIds`をそのまま送る。タグ候補の再試行はBookmarkEditorが状態と処理を所有し、BookmarkTagFieldは再試行callbackを呼ぶだけにする。
+タグ設定UIを持たないため、編集フォームは既存の`tagIds`を変更せずに更新Commandへ渡す。
 
 ## Domain値とbrand
 
@@ -334,21 +301,6 @@ type UpdateBookmarkError =
 
 Application内部では`unexpected-error`もResultとして扱う。Server Function境界では、既知の業務エラーはResultとして返し、`unexpected-error`は安全な情報へ変換した上でHTTP 500相当として扱う。クライアントへ内部Errorやcauseは返さない。
 
-## タグ作成
-
-`BookmarkTagField`は`createTag`を直接importしない。作成能力を注入する。
-
-```ts
-type CreateTagResult = Result<SelectableTag, CreateTagError>
-
-type CreateTagError =
-  | { readonly code: 'invalid-tag-name'; readonly field: 'name' }
-  | { readonly code: 'duplicate-tag-name'; readonly field: 'name' }
-  | { readonly code: 'unexpected-error' }
-```
-
-タグ候補が0件でも「この名前で作成」操作を表示する。作成成功時は`SelectableTag`全体を返し、候補一覧と選択状態へ追加する。
-
 ## UIコンポーネント契約
 
 `RouteComponent`はScreenとして、Route params、search、loader、not-found、Route固有のリンク、navigationを担当する。
@@ -359,36 +311,28 @@ type CreateTagError =
 type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
   readonly executeUpdate: ExecuteUpdateBookmark
-  readonly initialTags: Promise<SelectableTagsResult>
-  readonly loadSelectableTags: LoadSelectableTags
-  readonly createTag: CreateTag
   readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
 }
 ```
 
-`BookmarkEditor`は選択タグ状態、更新Resultの表示用変換、タグ候補の状態、成功後callbackを担当する。Server Function、Router、DBは直接importしない。
+`BookmarkEditor`は更新Resultの表示用変換と成功後callbackを担当する。Server Function、Router、DBは直接importしない。
 
 `BookmarkForm`は未検証の入力値を管理し、submit時に`v.safeParse`を行う。検証成功後のbrand値を`BookmarkEditor`へ渡し、`BookmarkFormError`だけを表示する。`UpdateBookmarkError`は知らない。
 
-`BookmarkTagField`はタグ候補のloading、empty、error、successを表示し、retryとcreateのcallbackを呼ぶ。データ取得やDB処理は所有しない。
-
 ## The five UI states
 
-編集画面とタグ領域で状態を明示的に設計する。
+編集画面と送信処理で状態を明示的に設計する。
 
-- Ideal: Bookmarkとタグ候補が取得済みで、エラーがない
-- Blank: Bookmarkが存在しない、またはタグ候補が0件
-- Loading: 初期Bookmark取得中、タグ候補取得中、更新中
-- Partial: Bookmark本体は利用可能だが、タグ候補がloadingまたはerror
+- Ideal: Bookmarkが取得済みで、エラーがない
+- Blank: Bookmarkが存在しない
+- Loading: 初期Bookmark取得中、更新中
 - Error: 通信障害、更新失敗、予期しない読み取り失敗
 
-`BookmarkIsNotFound`はサーバー障害ではなくBlank/Not-found stateとして扱う。タグ候補0件もErrorではなく、タグ領域のBlank stateとして扱い、新規タグ作成を可能にする。
-
-タグ候補取得に失敗しても、URL・タイトル・メモは編集・保存可能とする。タグ領域にはエラー内容とretry操作を表示し、既存タグIDは破棄しない。
+`BookmarkIsNotFound`はサーバー障害ではなくBlank/Not-found stateとして扱う。
 
 ### 状態遷移
 
-この画面はRoute、タグ領域、送信処理という独立した状態を持つ。これらを一つの巨大な状態機械へ統合しない。実装ではタグ付きunionとReact stateを使い、状態遷移図は状態の洗い出しとStoryの網羅性を確認するために使う。
+この画面はRouteと送信処理という独立した状態を持つ。これらを一つの巨大な状態機械へ統合しない。状態遷移図は状態の洗い出しとStoryの網羅性を確認するために使う。
 
 #### Route状態
 
@@ -398,19 +342,6 @@ stateDiagram-v2
   RouteLoading --> NotFound: bookmark-not-found
   RouteLoading --> RouteReady: Bookmark取得成功
   NotFound --> [*]: 一覧へ戻る
-```
-
-#### タグ領域の状態
-
-```mermaid
-stateDiagram-v2
-  [*] --> TagsLoading
-  TagsLoading --> TagsReady: tags ok（1件以上）
-  TagsLoading --> TagsBlank: tags ok（0件）
-  TagsLoading --> TagsError: tags error
-  TagsError --> TagsLoading: retry
-  TagsBlank --> TagsReady: createTag成功
-  TagsReady --> TagsReady: createTag成功 / 候補へ追加
 ```
 
 #### 送信状態
@@ -427,7 +358,7 @@ stateDiagram-v2
   Updated --> [*]: 詳細画面へ遷移
 ```
 
-例えば`RouteReady + TagsLoading + SubmitIdle`は、Bookmark本体が操作可能でタグ領域だけが待機中というPartial stateである。現時点ではXStateなどのステートマシンライブラリを導入しない。独立した状態が増え、競合・キャンセル・再利用される遷移の不具合が実際に現れた時点で再評価する。
+現時点ではXStateなどのステートマシンライブラリを導入しない。独立した状態が増え、競合・キャンセル・再利用される遷移の不具合が実際に現れた時点で再評価する。
 
 ## Storybookとテスト
 
@@ -438,23 +369,13 @@ Route Story:
 - `Default`
 - `InitialLoading`
 - `BookmarkIsNotFound`
-- `TagOptionsAreLoading`
-- `TagOptionsAreEmpty`
-- `TagOptionsLoadFailed`
-- `TagOptionsRetrySucceeded`
 - `UpdateHasDuplicateUrl`
-- `UpdateHasInvalidTag`
 - `UpdateHasUnexpectedError`
-- `CreateTagFromEmptyOptions`
-- `CreateTagNameAlreadyExists`
-
-`TagOptionsAreEmpty`ではタグ候補取得を`ok([])`にし、タグ作成操作が残ることを`play`で検証する。
 
 Component Story:
 
-- `BookmarkEditor`: 更新Result分岐、タグloading/error/retry
+- `BookmarkEditor`: 更新Result分岐、既存タグIDの保持
 - `BookmarkForm`: 入力、field error、summary error、pending
-- `BookmarkTagField`: loading、empty、error、retry、create
 
 通常のVitestでは、brand schema、Result、Domain規則、Application transaction、DB統合を検証する。
 
@@ -462,12 +383,12 @@ Component Story:
 
 今後の画面改修では、Reactの非同期プリミティブを、処理の意味とUXに合わせて積極的に採用する。すべての処理へ機械的に導入するのではなく、Promiseの境界、緊急度、再描画コストを確認して選択する。
 
-- `use`とSuspense: Routeから渡された遅延Promiseや、コンポーネント境界で読み取る非同期データに使う。今回の`loadSelectableTags`はこの形へ展開できる。
-- `useTransition`: タグ候補のretry、検索結果の更新、保存後の画面更新など、入力や現在の操作をブロックしない非緊急更新に使う。
-- `useDeferredValue`: タグ候補の絞り込みなど、入力値をすぐ反映しつつ重い表示更新だけを遅延させる場合に使う。データ取得そのものの代替にはしない。
+- `use`とSuspense: Routeから渡された遅延Promiseや、コンポーネント境界で読み取る非同期データに使う。
+- `useTransition`: 検索結果の更新、保存後の画面更新など、入力や現在の操作をブロックしない非緊急更新に使う。
+- `useDeferredValue`: 検索結果の絞り込みなど、入力値をすぐ反映しつつ重い表示更新だけを遅延させる場合に使う。データ取得そのものの代替にはしない。
 - `useEffectEvent`: Effect内から最新のイベント処理や依存値を参照する必要がある場合に使う。Effectの依存関係を隠す目的では使わない。
 
-これらの採用理由とLoading/Partial stateの対応を、該当コンポーネントの日本語コメントとStorybook Storyで確認できるようにする。非同期Hookの導入によってResultのエラー契約、入力状態、アクセシビリティ、Storybookでの再現性を損なわないことを条件とする。
+これらの採用理由とLoading stateの対応を、該当コンポーネントの日本語コメントとStorybook Storyで確認できるようにする。非同期Hookの導入によってResultのエラー契約、入力状態、アクセシビリティ、Storybookでの再現性を損なわないことを条件とする。
 
 ## コメントによる設計記録
 

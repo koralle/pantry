@@ -1,18 +1,13 @@
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
 import { err, ok } from '../../../../shared/domain/result'
 import preview from '../../../../storybook/preview'
-import type { CreateTag } from '../../../tags/application/create-tag'
-import { tagIdSchema, tagNameSchema } from '../../../tags/domain/tag-values'
-import type {
-  ExecuteUpdateBookmark,
-  UpdateBookmarkError
-} from '../../application/execute-update-bookmark'
+import { tagIdSchema } from '../../../tags/domain/tag-values'
+import type { ExecuteUpdateBookmark } from '../../application/execute-update-bookmark'
 import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
-import type { SelectableTagsResult } from '../../application/load-selectable-tags'
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
@@ -29,29 +24,6 @@ const initialData: BookmarkEditorData = {
   title: v.parse(bookmarkTitleSchema, 'Example Article'),
   note: v.parse(bookmarkNoteSchema, 'メモ'),
   tagIds: [v.parse(tagIdSchema, 1)]
-}
-
-const sampleTags = [
-  { id: v.parse(tagIdSchema, 1), name: v.parse(tagNameSchema, 'react') },
-  { id: v.parse(tagIdSchema, 2), name: v.parse(tagNameSchema, 'typescript') }
-] as const
-
-function resolvedTags(result: SelectableTagsResult): Promise<SelectableTagsResult> {
-  return Promise.resolve(result)
-}
-
-function deferredTags(): {
-  promise: Promise<SelectableTagsResult>
-  resolve: (result: SelectableTagsResult) => void
-  reject: (reason?: unknown) => void
-} {
-  let resolve!: (result: SelectableTagsResult) => void
-  let reject!: (reason?: unknown) => void
-  const promise = new Promise<SelectableTagsResult>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return { promise, resolve, reject }
 }
 
 const meta = preview.meta({
@@ -73,40 +45,13 @@ export const Default = meta.story({
   args: {
     initialData,
     onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
-    initialTags: resolvedTags(ok(sampleTags)),
-    onCreateTag: fn<CreateTag>(async (name) =>
-      ok({ id: v.parse(tagIdSchema, 99), name: v.parse(tagNameSchema, name) })
-    ),
     onCompleted: fn(async () => undefined),
     onFetchTitle: fn(async () => '取得したタイトル')
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('URL')).toHaveValue(String(initialData.url))
-    await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeChecked()
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
-  }
-})
-
-export const TagOptionsAreLoading = Default.extend({
-  args: {
-    initialTags: deferredTags().promise
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('URL')).toBeEnabled()
-    await expect(canvas.getByText('タグを読み込み中…')).toBeInTheDocument()
-  }
-})
-
-export const TagOptionsLoadFailed = Default.extend({
-  args: {
-    initialTags: resolvedTags(err({ code: 'unexpected-error' }))
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
-    await expect(canvas.getByLabelText('URL')).toBeEnabled()
   }
 })
 
@@ -133,57 +78,6 @@ export const UpdateHasUnexpectedError = Default.extend({
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('保存に失敗しました')
-  }
-})
-
-export const UpdateHasInvalidTagWhileTagsAreLoading = Default.extend({
-  args: {
-    initialTags: deferredTags().promise,
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err<UpdateBookmarkError>({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-  }
-})
-
-export const UpdateHasInvalidTagWhileTagsFailed = Default.extend({
-  args: {
-    initialTags: resolvedTags(err({ code: 'unexpected-error' })),
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err<UpdateBookmarkError>({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByText('タグ候補の取得に失敗しました')).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-  }
-})
-
-export const UpdatePendingDisablesTagControls = Default.extend({
-  args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(
-      () => new Promise<Awaited<ReturnType<ExecuteUpdateBookmark>>>(() => {})
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByRole('checkbox', { name: 'react' })).toBeDisabled()
-    await expect(canvas.getByRole('button', { name: 'この名前で作成' })).toBeDisabled()
   }
 })
 
@@ -217,128 +111,5 @@ export const FetchingTitleClearsTitleServerError = Default.extend({
     await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
     await expect(canvas.getByLabelText('タイトル')).toHaveValue('取得したタイトル')
     await expect(canvas.queryByText('タイトルを入力してください')).not.toBeInTheDocument()
-  }
-})
-
-export const UpdateInvalidTagStaysInTagAreaOnly = Default.extend({
-  args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err<UpdateBookmarkError>({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(() => {
-      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
-    })
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-
-    // タグ領域だけに表示される
-    const alerts = await canvas.findAllByRole('alert')
-    const tagAlert = alerts.find((element) =>
-      element.textContent?.includes('選択したタグが見つかりません')
-    )
-    expect(tagAlert).toBeDefined()
-
-    // BookmarkForm の summary (「次を確認してください」) にはタグ由来メッセージが載らない
-    for (const alert of alerts) {
-      if (alert.textContent?.includes('次を確認してください')) {
-        expect(alert.textContent).not.toContain('選択したタグが見つかりません')
-      }
-    }
-  }
-})
-
-/**
- * タグ選択を変更するとタグ側の更新 server error が clear されることを検証する。
- * URL/title 側の入力変更経路とは別の clear 契約 (onClearTagsError) を通ることを担保する。
- */
-export const SelectingTagClearsTagsServerError = Default.extend({
-  args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err<UpdateBookmarkError>({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(() => {
-      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
-    })
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await waitFor(() => {
-      expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-    })
-
-    // タグの選択変更で server error が消える
-    await userEvent.click(canvas.getByRole('checkbox', { name: 'typescript' }))
-    await waitFor(() => {
-      expect(canvas.queryByText('選択したタグが見つかりません')).not.toBeInTheDocument()
-    })
-  }
-})
-
-/**
- * BookmarkForm の URL 入力を編集しても、タグ側の server error は消えない。
- * 「タグの clear はタグ操作で」「URL/title の clear はそれぞれの入力で」という
- * 責務境界を検証する。
- */
-export const EditingUrlDoesNotClearTagsServerError = Default.extend({
-  args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err<UpdateBookmarkError>({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(() => {
-      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
-    })
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await waitFor(() => {
-      expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-    })
-
-    const url = canvas.getByLabelText('URL')
-    await userEvent.type(url, '/updated')
-    // URL 入力変更ではタグ側は消えない
-    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-  }
-})
-
-export const EditingTitleDoesNotClearTagsServerError = Default.extend({
-  args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err<UpdateBookmarkError>({
-        code: 'invalid-tag',
-        field: 'tags',
-        cause: { code: 'tag-not-found', tagId: v.parse(tagIdSchema, 1) }
-      })
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(() => {
-      expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
-    })
-    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await waitFor(() => {
-      expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
-    })
-
-    const title = canvas.getByLabelText('タイトル')
-    await userEvent.type(title, ' updated')
-    await expect(canvas.getByText('選択したタグが見つかりません')).toBeInTheDocument()
   }
 })
