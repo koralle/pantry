@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, PackageOpen } from 'lucide-react'
+import { ErrorBoundary } from 'react-error-boundary'
 import * as v from 'valibot'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
@@ -8,6 +9,7 @@ import { fetchBookmarkTitle } from '../../../../features/bookmarks/functions/fet
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
 import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
 import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
+import { createErrorFallback } from '../../../../shared/components/error-fallback'
 import { StyledLink } from '../../../../shared/components/styled-link'
 import { err } from '../../../../shared/domain/result'
 import {
@@ -45,6 +47,9 @@ const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url 
     }
   }
 }
+
+// 想定外エラー (action の reject など) の最終防衛線。想定内エラーは action の state 経由で表示される。
+const EditError = createErrorFallback('編集画面の表示に失敗しました')
 
 /**
  * RouteComponent は編集画面の Screen 境界であり、Storybook の Route Story 起点でもある。
@@ -130,34 +135,36 @@ function RouteComponent() {
       <h1 className={workbenchTitle}>ブックマークを並べ替える</h1>
       <p className={workbenchLead}>内容を直し、主ボタンで保存します。</p>
 
-      <BookmarkEditor
-        key={initialData.bookmarkId}
-        initialData={initialData}
-        onUpdateBookmark={async (command) => {
-          try {
-            return await updateBookmark({
-              data: {
-                id: command.bookmarkId,
-                url: command.url,
-                title: command.title,
-                note: command.note,
-                tags: [...command.tagIds]
-              }
+      <ErrorBoundary FallbackComponent={EditError}>
+        <BookmarkEditor
+          key={initialData.bookmarkId}
+          initialData={initialData}
+          onUpdateBookmark={async (command) => {
+            try {
+              return await updateBookmark({
+                data: {
+                  id: command.bookmarkId,
+                  url: command.url,
+                  title: command.title,
+                  note: command.note,
+                  tags: [...command.tagIds]
+                }
+              })
+            } catch {
+              return err({ code: 'unexpected-error' })
+            }
+          }}
+          fetchTitleAction={fetchTitleAction}
+          onCompleted={async (bookmarkId) => {
+            await navigate({
+              to: '/bookmarks/$id',
+              params: { id: bookmarkId },
+              search: detailSearch,
+              state: { bookmarkUpdated: true }
             })
-          } catch {
-            return err({ code: 'unexpected-error' })
-          }
-        }}
-        fetchTitleAction={fetchTitleAction}
-        onCompleted={async (bookmarkId) => {
-          await navigate({
-            to: '/bookmarks/$id',
-            params: { id: bookmarkId },
-            search: detailSearch,
-            state: { bookmarkUpdated: true }
-          })
-        }}
-      />
+          }}
+        />
+      </ErrorBoundary>
     </section>
   )
 }
