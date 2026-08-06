@@ -1,10 +1,11 @@
 import { getInput, setErrors, setInput } from '@formisch/react'
-import { startTransition, useActionState, useEffect, useEffectEvent, useState } from 'react'
+import { startTransition, useActionState, useState } from 'react'
 
 import type {
   BookmarkFormFieldKey,
   BookmarkFormStore,
   BookmarkTitleFetchAction,
+  BookmarkTitleFetchPayload,
   BookmarkTitleFetchState
 } from './types'
 
@@ -21,34 +22,32 @@ export function useBookmarkTitleFetch({
   fetchTitleAction,
   onClearFieldError
 }: UseBookmarkTitleFetchOptions) {
-  // 受け取った fetchTitleAction をそのまま useActionState に渡す。
-  // この action は form store にアクセスできないため、空 URL 判定と
-  // 成功結果の form store への反映はこの hook 側で行う。
+  // 注入された fetchTitleAction は form store にアクセスできないため、この hook 側で
+  // ラップし、success 時の form 反映 (setInput / error clear) を action 内で同期実行する。
+  // 注入 action は純粋なまま、form 反映は BookmarkForm 側が所有する。
+  // このラッパーは毎レンダー新しく生成されるが、useActionState が最新レンダーの action を
+  // 実行するため、閉包 (form / onClearFieldError / fetchTitleAction) は最新になる。
+  const applyFetchedTitleAction = async (
+    previous: BookmarkTitleFetchState,
+    payload: BookmarkTitleFetchPayload
+  ): Promise<BookmarkTitleFetchState> => {
+    const next = await fetchTitleAction(previous, payload)
+    if (next.status === 'success') {
+      setInput(form, { path: ['title'], input: next.title })
+      clearFieldError(form, 'title')
+      onClearFieldError?.('title')
+    }
+    return next
+  }
+
   const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
-    fetchTitleAction,
+    applyFetchedTitleAction,
     initialTitleFetchState
   )
 
   // 空 URL は dispatch 前に弾くため useActionState の state には載せられない。
   // そのような form-local なエラーは hook 側で保持し、表示時に action 由来のエラーより優先する。
   const [urlRequiredError, setUrlRequiredError] = useState<string | null>(null)
-
-  // 成功 state (status: 'success') は action の戻り値としてしか得られないため、
-  // 受け取ってから Formisch の title input へ反映する。
-  // Formisch の field error と server error (onClearFieldError) も同時に clear する。
-  // 依存配列には state の変化だけを載せ、親の再レンダーで title が上書きされないようにする。
-  const applyFetchedTitle = useEffectEvent((title: string) => {
-    setInput(form, { path: ['title'], input: title })
-    clearFieldError(form, 'title')
-    onClearFieldError?.('title')
-  })
-
-  useEffect(() => {
-    if (titleFetchState.status !== 'success') {
-      return
-    }
-    applyFetchedTitle(titleFetchState.title)
-  }, [titleFetchState])
 
   const titleFetchError =
     urlRequiredError ??
