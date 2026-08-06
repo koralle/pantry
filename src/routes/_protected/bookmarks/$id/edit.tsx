@@ -21,16 +21,12 @@ const bookmarkEditSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
 })
 
-/**
- * タイトル取得失敗時のフォールバック文言。
- * fetchBookmarkTitle の null と非 Error の throw はこれを表示し、
- * Error の throw は error.message をそのまま表示する。
- */
+// タイトル取得失敗時のフォールバック文言 (null / 非 Error の throw で表示)
 const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんでした。手入力で続けられます'
 
 /**
- * タイトル取得 action。BookmarkForm 側のラッパーを経て useActionState に渡る。
- * fetchBookmarkTitle の null / throw を表示用メッセージへ変換して返す。
+ * タイトル取得 action。BookmarkForm 側のラッパーを経て useActionState に渡り、
+ * fetchBookmarkTitle の null / throw を表示用メッセージへ変換する。
  */
 const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url }) => {
   try {

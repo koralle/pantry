@@ -31,29 +31,18 @@ export type BookmarkFormInitialValues = {
 
 export type BookmarkFormSubmitValues = BookmarkFormOutput
 
-/**
- * タイトル取得 action の payload。useActionState の第2引数として渡す。
- * FormData ではなく、URL を載せた通常のオブジェクト。
- */
+/** タイトル取得 action の payload。useActionState の第2引数に渡すオブジェクト */
 export type BookmarkTitleFetchPayload = {
   readonly url: string
 }
 
-/**
- * タイトル取得 action が返す state。
- * status: 'success' の title は hook 側が Formisch の store へ反映する
- * (action は form store にアクセスできない)。
- */
+/** タイトル取得 action が返す state。success の title は hook 側のラッパーが form へ反映する */
 export type BookmarkTitleFetchState =
   | { readonly status: 'idle' }
   | { readonly status: 'success'; readonly title: string }
   | { readonly status: 'error'; readonly message: string }
 
-/**
- * タイトル取得 action。useActionState の action 型に合わせたシグネチャを持つ。
- * 前回の state と payload ({ url }) を受け取り、次の state を返す。
- * form store には触れない。成功時の form 反映は hook 側のラッパー action が行う。
- */
+/** タイトル取得 action。前回の state と payload から次の state を返す。form 反映は hook 側のラッパーが行う */
 export type BookmarkTitleFetchAction = (
   previousState: BookmarkTitleFetchState,
   payload: BookmarkTitleFetchPayload

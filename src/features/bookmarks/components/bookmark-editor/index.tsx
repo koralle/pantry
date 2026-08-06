@@ -14,11 +14,7 @@ import type {
 } from './bookmark-form'
 
 export type { ExecuteUpdateBookmark }
-export type {
-  BookmarkTitleFetchAction,
-  BookmarkTitleFetchPayload,
-  BookmarkTitleFetchState
-} from './bookmark-form'
+export type { BookmarkTitleFetchAction } from './bookmark-form'
 
 export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
