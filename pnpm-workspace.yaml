@@ -4,6 +4,9 @@ allowBuilds:
   sharp: true
   workerd: true
 
+catalog:
+  react-scan: 0.5.7
+
 catalogMode: strict
 
 catalogs:
