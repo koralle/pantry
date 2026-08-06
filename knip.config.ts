@@ -23,7 +23,9 @@ const config: KnipConfig = {
     'lefthook',
     // Referenced by string name from `.markuplintrc` (parser / specs)
     '@markuplint/jsx-parser',
-    '@markuplint/react-spec'
+    '@markuplint/react-spec',
+    // Dev-only CDN script URL in RootDocument; intentionally not module-imported
+    'react-scan'
   ],
   rules: {
     // Existing unused exports/types/catalog noise — ratchets later

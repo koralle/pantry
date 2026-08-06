@@ -18,8 +18,14 @@ export function RootDocument({ children }: { readonly children: React.ReactNode 
   return (
     <html lang='ja'>
       <head>
-        <meta charSet='UTF-8' />
+        <meta charSet='utf-8' />
         <title>Pantry</title>
+        {import.meta.env.DEV ? (
+          <script
+            crossOrigin='anonymous'
+            src='//unpkg.com/react-scan/dist/auto.global.js'
+          />
+        ) : null}
         <HeadContent />
       </head>
       <body>

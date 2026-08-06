@@ -17,5 +17,17 @@
       "selector": "Scripts",
       "as": "script"
     }
+  ],
+  "nodeRules": [
+    {
+      "selector": "script[src*='react-scan/dist/auto.global.js']",
+      "rules": {
+        "required-attr": {
+          "options": {
+            "ignoreAttrs": ["defer"]
+          }
+        }
+      }
+    }
   ]
 }

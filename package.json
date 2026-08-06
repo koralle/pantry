@@ -73,6 +73,7 @@
     "oxlint": "catalog:lint",
     "oxlint-tsgolint": "catalog:lint",
     "postcss": "catalog:ui",
+    "react-scan": "catalog:",
     "storybook": "catalog:storybook",
     "tsx": "catalog:script",
     "typescript": "catalog:typescript",
