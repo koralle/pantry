@@ -11,6 +11,9 @@ import type {
 
 const initialTitleFetchState: BookmarkTitleFetchState = { status: 'idle' }
 
+// 空 URL の表示文言。文言は state に保存せず、表示時にこの定数から導出する。
+const urlRequiredMessage = '先にURLを入力してください'
+
 type UseBookmarkTitleFetchOptions = {
   readonly form: BookmarkFormStore
   readonly fetchTitleAction: BookmarkTitleFetchAction
@@ -46,20 +49,28 @@ export function useBookmarkTitleFetch({
   )
 
   // 空 URL は dispatch 前に弾くため useActionState の state には載せられない。
-  // そのような form-local なエラーは hook 側で保持し、表示時に action 由来のエラーより優先する。
-  const [urlRequiredError, setUrlRequiredError] = useState<string | null>(null)
+  // 「表示するかどうか」だけをフラグで持ち、「なんと表示するか」は表示時に導出する。
+  // 文言を state に持たないため、URL の入力変更だけでエラーが自動で消える
+  // (フラグ && 現在入力が空、の導出表示の帰結)。
+  // 一度フラグが立ったあとに再び空へ戻すとクリックなしで再表示されるが、仕様として許容する。
+  const [urlEmptyErrorShown, setUrlEmptyErrorShown] = useState(false)
+
+  const urlEmptyError =
+    urlEmptyErrorShown && (getInput(form, { path: ['url'] }) ?? '').trim() === ''
+      ? urlRequiredMessage
+      : null
 
   const titleFetchError =
-    urlRequiredError ??
+    urlEmptyError ??
     (titleFetchState.status === 'error' && !isFetchingTitle ? titleFetchState.message : null)
 
   function handleFetchTitle() {
     const currentInputUrl = getInput(form, { path: ['url'] }) ?? ''
     if (currentInputUrl.trim() === '') {
-      setUrlRequiredError('先にURLを入力してください')
+      setUrlEmptyErrorShown(true)
       return
     }
-    setUrlRequiredError(null)
+    setUrlEmptyErrorShown(false)
     startTransition(() => {
       dispatch({ url: currentInputUrl })
     })
