@@ -15,6 +15,7 @@ import {
   bookmarkUrlSchema
 } from '../../domain/bookmark-values'
 import { BookmarkEditor } from './index'
+import type { BookmarkTitleFetchAction } from './index'
 
 const bookmarkId = v.parse(bookmarkIdSchema, uuidv7())
 
@@ -46,7 +47,10 @@ export const Default = meta.story({
     initialData,
     onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
     onCompleted: fn(async () => undefined),
-    onFetchTitle: fn(async () => '取得したタイトル')
+    fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => ({
+      status: 'success',
+      title: '取得したタイトル'
+    }))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

@@ -1,67 +1,73 @@
 import { getInput, setErrors, setInput } from '@formisch/react'
-import { startTransition, useActionState } from 'react'
+import { startTransition, useActionState, useEffect, useEffectEvent, useState } from 'react'
 
-import type { BookmarkFormFieldKey, BookmarkFormStore } from './types'
+import type {
+  BookmarkFormFieldKey,
+  BookmarkFormStore,
+  BookmarkTitleFetchAction,
+  BookmarkTitleFetchState
+} from './types'
 
-type TitleFetchState =
-  | { readonly status: 'idle' }
-  | { readonly status: 'error'; readonly message: string }
+const initialTitleFetchState: BookmarkTitleFetchState = { status: 'idle' }
 
-type TitleFetchAction = {
-  readonly url: string
-}
+// 未指定時のフォールバック。未指定時は handleFetchTitle が dispatch しないため
+// 実行されることはない (useActionState の action は undefined にできない)。
+const noopTitleFetchAction: BookmarkTitleFetchAction = async () => ({ status: 'idle' })
 
 type UseBookmarkTitleFetchOptions = {
   readonly form: BookmarkFormStore
-  readonly onFetchTitle: ((url: string) => Promise<string | null>) | undefined
+  readonly fetchTitleAction: BookmarkTitleFetchAction | undefined
   readonly onClearFieldError: ((field: BookmarkFormFieldKey) => void) | undefined
 }
 
 export function useBookmarkTitleFetch({
   form,
-  onFetchTitle,
+  fetchTitleAction,
   onClearFieldError
 }: UseBookmarkTitleFetchOptions) {
+  // 受け取った fetchTitleAction をそのまま useActionState に渡す。
+  // この action は form store にアクセスできないため、空 URL 判定と
+  // 成功結果の form store への反映はこの hook 側で行う。
   const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
-    async (_previous: TitleFetchState, action: TitleFetchAction): Promise<TitleFetchState> => {
-      if (action.url.trim() === '') {
-        return { status: 'error', message: '先にURLを入力してください' }
-      }
-      if (onFetchTitle === undefined) {
-        return { status: 'idle' }
-      }
-
-      try {
-        const fetchedTitle = await onFetchTitle(action.url)
-        if (fetchedTitle === null) {
-          return {
-            status: 'error',
-            message: 'タイトルを取得できませんでした。手入力で続けられます'
-          }
-        }
-
-        setInput(form, { path: ['title'], input: fetchedTitle })
-        clearFieldError(form, 'title')
-        onClearFieldError?.('title')
-        return { status: 'idle' }
-      } catch (error: unknown) {
-        return {
-          status: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'タイトルを取得できませんでした。手入力で続けられます'
-        }
-      }
-    },
-    { status: 'idle' }
+    fetchTitleAction ?? noopTitleFetchAction,
+    initialTitleFetchState
   )
 
+  // 空 URL は dispatch 前に弾くため useActionState の state には載せられない。
+  // そのような form-local なエラーは hook 側で保持し、表示時に action 由来のエラーより優先する。
+  const [urlRequiredError, setUrlRequiredError] = useState<string | null>(null)
+
+  // 成功 state (status: 'success') は action の戻り値としてしか得られないため、
+  // 受け取ってから Formisch の title input へ反映する。
+  // Formisch の field error と server error (onClearFieldError) も同時に clear する。
+  // 依存配列には state の変化だけを載せ、親の再レンダーで title が上書きされないようにする。
+  const applyFetchedTitle = useEffectEvent((title: string) => {
+    setInput(form, { path: ['title'], input: title })
+    clearFieldError(form, 'title')
+    onClearFieldError?.('title')
+  })
+
+  useEffect(() => {
+    if (titleFetchState.status !== 'success') {
+      return
+    }
+    applyFetchedTitle(titleFetchState.title)
+  }, [titleFetchState])
+
   const titleFetchError =
-    !isFetchingTitle && titleFetchState.status === 'error' ? titleFetchState.message : null
+    urlRequiredError ??
+    (titleFetchState.status === 'error' && !isFetchingTitle ? titleFetchState.message : null)
 
   function handleFetchTitle() {
+    if (fetchTitleAction === undefined) {
+      return
+    }
     const currentInputUrl = getInput(form, { path: ['url'] }) ?? ''
+    if (currentInputUrl.trim() === '') {
+      setUrlRequiredError('先にURLを入力してください')
+      return
+    }
+    setUrlRequiredError(null)
     startTransition(() => {
       dispatch({ url: currentInputUrl })
     })

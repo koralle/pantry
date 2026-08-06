@@ -9,16 +9,22 @@ import { BookmarkForm } from './bookmark-form'
 import type {
   BookmarkEditorError,
   BookmarkFormFieldKey,
-  BookmarkFormSubmitValues
+  BookmarkFormSubmitValues,
+  BookmarkTitleFetchAction
 } from './bookmark-form'
 
 export type { ExecuteUpdateBookmark }
+export type {
+  BookmarkTitleFetchAction,
+  BookmarkTitleFetchPayload,
+  BookmarkTitleFetchState
+} from './bookmark-form'
 
 export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
   readonly onUpdateBookmark: ExecuteUpdateBookmark
   readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
-  readonly onFetchTitle?: (url: string) => Promise<string | null>
+  readonly fetchTitleAction?: BookmarkTitleFetchAction
 }
 
 /**
@@ -30,7 +36,7 @@ export function BookmarkEditor({
   initialData,
   onUpdateBookmark,
   onCompleted,
-  onFetchTitle
+  fetchTitleAction
 }: BookmarkEditorProps) {
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
@@ -106,7 +112,7 @@ export function BookmarkEditor({
       submitLabel='更新'
       pendingLabel='更新中…'
       onSubmit={handleSubmit}
-      {...(onFetchTitle != null ? { onFetchTitle } : {})}
+      {...(fetchTitleAction != null ? { fetchTitleAction } : {})}
     />
   )
 }

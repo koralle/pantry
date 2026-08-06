@@ -9,7 +9,8 @@ import type {
   BookmarkFormFieldKey,
   BookmarkFormProps,
   BookmarkFormServerError,
-  BookmarkFormSubmitValues
+  BookmarkFormSubmitValues,
+  BookmarkTitleFetchAction
 } from './index'
 
 const meta = preview.meta({
@@ -39,9 +40,9 @@ export const Default = meta.story({
     submitLabel: '更新',
     pendingLabel: '更新中…',
     onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
-    onFetchTitle: fn(async () => {
+    fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
-      return '取得したタイトル'
+      return { status: 'success', title: '取得したタイトル' }
     })
   },
   play: async ({ canvasElement }) => {
@@ -72,11 +73,14 @@ export const RetryClearsTitleFetchError = Default.extend({
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     const fetchButton = canvas.getByRole('button', { name: 'タイトルを取得' })
-    const onFetchTitle = args.onFetchTitle as Mock<(url: string) => Promise<string | null>>
-    onFetchTitle.mockImplementationOnce(async () => null)
-    onFetchTitle.mockImplementationOnce(async () => {
+    const fetchTitleAction = args.fetchTitleAction as Mock<BookmarkTitleFetchAction>
+    fetchTitleAction.mockImplementationOnce(async () => ({
+      status: 'error',
+      message: 'タイトルを取得できませんでした。手入力で続けられます'
+    }))
+    fetchTitleAction.mockImplementationOnce(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
-      return '再び取得したタイトル'
+      return { status: 'success', title: '再び取得したタイトル' }
     })
 
     await userEvent.click(fetchButton)
@@ -97,9 +101,9 @@ export const RetryClearsTitleFetchError = Default.extend({
 
 export const TitleFetchPending = Default.extend({
   args: {
-    onFetchTitle: fn(async (_url: string): Promise<string | null> => {
-      await new Promise<string | null>(() => {})
-      return null
+    fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
+      await new Promise(() => {})
+      return { status: 'idle' }
     })
   },
   play: async ({ canvasElement }) => {

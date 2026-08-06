@@ -4,7 +4,12 @@ import { Download } from 'lucide-react'
 
 import { StyledButton } from '../../../../../shared/components/styled-button'
 import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../../styles/form'
-import type { BookmarkFormFieldKey, BookmarkFormServerError, BookmarkFormStore } from './types'
+import type {
+  BookmarkFormFieldKey,
+  BookmarkFormServerError,
+  BookmarkFormStore,
+  BookmarkTitleFetchAction
+} from './types'
 
 export type BookmarkFormFieldIds = {
   readonly url: string
@@ -18,7 +23,7 @@ type BookmarkFormFieldsProps = {
   readonly serverFieldErrors?: BookmarkFormServerError['fields']
   readonly busy: boolean
   readonly isFetchingTitle: boolean
-  readonly onFetchTitle: ((url: string) => Promise<string | null>) | undefined
+  readonly fetchTitleAction: BookmarkTitleFetchAction | undefined
   readonly handleFetchTitle: () => void
   readonly onClearServerFieldError: (key: BookmarkFormFieldKey) => void
 }
@@ -45,7 +50,7 @@ export function BookmarkFormFields({
   serverFieldErrors,
   busy,
   isFetchingTitle,
-  onFetchTitle,
+  fetchTitleAction,
   handleFetchTitle,
   onClearServerFieldError
 }: BookmarkFormFieldsProps) {
@@ -91,7 +96,7 @@ export function BookmarkFormFields({
                     handleFieldChange('url')
                   }}
                 />
-                {onFetchTitle !== undefined ? (
+                {fetchTitleAction !== undefined ? (
                   <StyledButton
                     type='button'
                     onClick={handleFetchTitle}

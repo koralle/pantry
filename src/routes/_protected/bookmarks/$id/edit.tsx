@@ -3,6 +3,7 @@ import { ArrowLeft, PackageOpen } from 'lucide-react'
 import * as v from 'valibot'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
+import type { BookmarkTitleFetchAction } from '../../../../features/bookmarks/components/bookmark-editor'
 import { fetchBookmarkTitle } from '../../../../features/bookmarks/functions/fetch-bookmark-title'
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
 import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
@@ -19,6 +20,31 @@ import {
 const bookmarkEditSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
 })
+
+/**
+ * タイトル取得 action。BookmarkForm の useActionState にそのまま渡される。
+ * fetchBookmarkTitle の null / throw を表示用メッセージへ変換して返す。
+ */
+const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url }) => {
+  try {
+    const fetchedTitle = await fetchBookmarkTitle({ data: { url } })
+    if (fetchedTitle === null) {
+      return {
+        status: 'error',
+        message: 'タイトルを取得できませんでした。手入力で続けられます'
+      }
+    }
+    return { status: 'success', title: fetchedTitle }
+  } catch (error: unknown) {
+    return {
+      status: 'error',
+      message:
+        error instanceof Error
+          ? error.message
+          : 'タイトルを取得できませんでした。手入力で続けられます'
+    }
+  }
+}
 
 /**
  * RouteComponent は編集画面の Screen 境界であり、Storybook の Route Story 起点でもある。
@@ -122,13 +148,7 @@ function RouteComponent() {
             return err({ code: 'unexpected-error' })
           }
         }}
-        onFetchTitle={async (url) => {
-          try {
-            return await fetchBookmarkTitle({ data: { url } })
-          } catch {
-            return null
-          }
-        }}
+        fetchTitleAction={fetchTitleAction}
         onCompleted={async (bookmarkId) => {
           await navigate({
             to: '/bookmarks/$id',
