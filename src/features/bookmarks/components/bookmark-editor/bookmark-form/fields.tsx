@@ -18,7 +18,6 @@ type BookmarkFormFieldsProps = {
   readonly serverFieldErrors?: BookmarkFormServerError['fields']
   readonly busy: boolean
   readonly isFetchingTitle: boolean
-  readonly onFetchTitle: ((url: string) => Promise<string | null>) | undefined
   readonly handleFetchTitle: () => void
   readonly onClearServerFieldError: (key: BookmarkFormFieldKey) => void
 }
@@ -45,7 +44,6 @@ export function BookmarkFormFields({
   serverFieldErrors,
   busy,
   isFetchingTitle,
-  onFetchTitle,
   handleFetchTitle,
   onClearServerFieldError
 }: BookmarkFormFieldsProps) {
@@ -91,19 +89,17 @@ export function BookmarkFormFields({
                     handleFieldChange('url')
                   }}
                 />
-                {onFetchTitle !== undefined ? (
-                  <StyledButton
-                    type='button'
-                    onClick={handleFetchTitle}
-                    disabled={busy}
-                    aria-busy={isFetchingTitle}>
-                    <Download
-                      size={16}
-                      aria-hidden
-                    />
-                    {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
-                  </StyledButton>
-                ) : null}
+                <StyledButton
+                  type='button'
+                  onClick={handleFetchTitle}
+                  disabled={busy}
+                  aria-busy={isFetchingTitle}>
+                  <Download
+                    size={16}
+                    aria-hidden
+                  />
+                  {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
+                </StyledButton>
               </div>
               {errorMessage !== undefined ? (
                 <p

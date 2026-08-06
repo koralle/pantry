@@ -18,7 +18,8 @@ export type {
   BookmarkFormInitialValues,
   BookmarkFormProps,
   BookmarkFormServerError,
-  BookmarkFormSubmitValues
+  BookmarkFormSubmitValues,
+  BookmarkTitleFetchAction
 } from './types'
 export type { BookmarkFormInput, BookmarkFormOutput } from './schema'
 
@@ -30,7 +31,7 @@ export function BookmarkForm({
   pendingLabel = '更新中…',
   legend = 'ブックマーク編集',
   onSubmit,
-  onFetchTitle
+  fetchTitleAction
 }: BookmarkFormProps) {
   const baseId = useId()
   const ids: BookmarkFormFieldIds & { readonly summary: string } = {
@@ -51,7 +52,7 @@ export function BookmarkForm({
 
   const { titleFetchError, isFetchingTitle, handleFetchTitle } = useBookmarkTitleFetch({
     form,
-    onFetchTitle,
+    fetchTitleAction,
     onClearFieldError
   })
 
@@ -112,7 +113,6 @@ export function BookmarkForm({
           serverFieldErrors={serverError?.fields}
           busy={busy}
           isFetchingTitle={isFetchingTitle}
-          onFetchTitle={onFetchTitle}
           handleFetchTitle={handleFetchTitle}
           onClearServerFieldError={handleClearFieldError}
         />

@@ -9,7 +9,8 @@ import type {
   BookmarkFormFieldKey,
   BookmarkFormProps,
   BookmarkFormServerError,
-  BookmarkFormSubmitValues
+  BookmarkFormSubmitValues,
+  BookmarkTitleFetchAction
 } from './index'
 
 const meta = preview.meta({
@@ -33,15 +34,21 @@ const defaultInitialValues = {
   note: 'メモの下書き'
 } as const
 
+// タイトル取得を主目的としない story が共通で使う action。
+const defaultFetchTitleAction = fn<BookmarkTitleFetchAction>(async () => ({
+  status: 'success',
+  title: '取得したタイトル'
+}))
+
 export const Default = meta.story({
   args: {
     initialValues: defaultInitialValues,
     submitLabel: '更新',
     pendingLabel: '更新中…',
     onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
-    onFetchTitle: fn(async () => {
+    fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
-      return '取得したタイトル'
+      return { status: 'success', title: '取得したタイトル' }
     })
   },
   play: async ({ canvasElement }) => {
@@ -60,11 +67,14 @@ export const RejectsEmptyUrl = Default.extend({
       note: null
     }
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
+    const fetchTitleAction = args.fetchTitleAction as Mock<BookmarkTitleFetchAction>
     await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('先にURLを入力してください')
     await expect(canvas.getByLabelText('タイトル')).toHaveValue('手入力タイトル')
+    // 空 URL は dispatch 前に弾かれるため、Server (action) は呼ばれない
+    await expect(fetchTitleAction).not.toHaveBeenCalled()
   }
 })
 
@@ -72,11 +82,14 @@ export const RetryClearsTitleFetchError = Default.extend({
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     const fetchButton = canvas.getByRole('button', { name: 'タイトルを取得' })
-    const onFetchTitle = args.onFetchTitle as Mock<(url: string) => Promise<string | null>>
-    onFetchTitle.mockImplementationOnce(async () => null)
-    onFetchTitle.mockImplementationOnce(async () => {
+    const fetchTitleAction = args.fetchTitleAction as Mock<BookmarkTitleFetchAction>
+    fetchTitleAction.mockImplementationOnce(async () => ({
+      status: 'error',
+      message: 'タイトルを取得できませんでした。手入力で続けられます'
+    }))
+    fetchTitleAction.mockImplementationOnce(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
-      return '再び取得したタイトル'
+      return { status: 'success', title: '再び取得したタイトル' }
     })
 
     await userEvent.click(fetchButton)
@@ -97,9 +110,9 @@ export const RetryClearsTitleFetchError = Default.extend({
 
 export const TitleFetchPending = Default.extend({
   args: {
-    onFetchTitle: fn(async (_url: string): Promise<string | null> => {
-      await new Promise<string | null>(() => {})
-      return null
+    fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
+      await new Promise(() => {})
+      return { status: 'idle' }
     })
   },
   play: async ({ canvasElement }) => {
@@ -197,6 +210,7 @@ export const ServerFieldErrorShownInFieldAndSummary = meta.story({
   args: {
     initialValues: defaultInitialValues,
     onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    fetchTitleAction: defaultFetchTitleAction,
     serverError: {
       summary: '同じURLのブックマークが既に存在します',
       fields: { url: 'この URL は既に登録されています' }
@@ -222,6 +236,7 @@ export const EditingClearsMatchingServerFieldError = meta.story({
     <ControlledBookmarkForm
       initialValues={args.initialValues}
       onSubmit={args.onSubmit}
+      fetchTitleAction={defaultFetchTitleAction}
       initialServerError={{
         summary: '入力内容を確認してください',
         fields: {
@@ -233,7 +248,8 @@ export const EditingClearsMatchingServerFieldError = meta.story({
   ),
   args: {
     initialValues: defaultInitialValues,
-    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    fetchTitleAction: defaultFetchTitleAction
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -259,6 +275,7 @@ export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
     <ControlledBookmarkForm
       initialValues={args.initialValues}
       onSubmit={args.onSubmit}
+      fetchTitleAction={defaultFetchTitleAction}
       initialServerError={{
         fields: {
           url: 'この URL は既に登録されています'
@@ -268,7 +285,8 @@ export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
   ),
   args: {
     initialValues: defaultInitialValues,
-    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    fetchTitleAction: defaultFetchTitleAction
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

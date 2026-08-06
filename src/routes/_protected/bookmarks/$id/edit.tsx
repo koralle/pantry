@@ -1,12 +1,15 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, PackageOpen } from 'lucide-react'
+import { ErrorBoundary } from 'react-error-boundary'
 import * as v from 'valibot'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
+import type { BookmarkTitleFetchAction } from '../../../../features/bookmarks/components/bookmark-editor'
 import { fetchBookmarkTitle } from '../../../../features/bookmarks/functions/fetch-bookmark-title'
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
 import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
 import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
+import { createErrorFallback } from '../../../../shared/components/error-fallback'
 import { StyledLink } from '../../../../shared/components/styled-link'
 import { err } from '../../../../shared/domain/result'
 import {
@@ -19,6 +22,34 @@ import {
 const bookmarkEditSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
 })
+
+// タイトル取得失敗時のフォールバック文言 (null / 非 Error の throw で表示)
+const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんでした。手入力で続けられます'
+
+/**
+ * タイトル取得 action。BookmarkForm 側のラッパーを経て useActionState に渡り、
+ * fetchBookmarkTitle の null / throw を表示用メッセージへ変換する。
+ */
+const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url }) => {
+  try {
+    const fetchedTitle = await fetchBookmarkTitle({ data: { url } })
+    if (fetchedTitle === null) {
+      return {
+        status: 'error',
+        message: bookmarkTitleFetchFailedMessage
+      }
+    }
+    return { status: 'success', title: fetchedTitle }
+  } catch (error: unknown) {
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : bookmarkTitleFetchFailedMessage
+    }
+  }
+}
+
+// 想定外エラー (action の reject など) の最終防衛線。想定内エラーは action の state 経由で表示される。
+const EditError = createErrorFallback('編集画面の表示に失敗しました')
 
 /**
  * RouteComponent は編集画面の Screen 境界であり、Storybook の Route Story 起点でもある。
@@ -104,40 +135,36 @@ function RouteComponent() {
       <h1 className={workbenchTitle}>ブックマークを並べ替える</h1>
       <p className={workbenchLead}>内容を直し、主ボタンで保存します。</p>
 
-      <BookmarkEditor
-        key={initialData.bookmarkId}
-        initialData={initialData}
-        onUpdateBookmark={async (command) => {
-          try {
-            return await updateBookmark({
-              data: {
-                id: command.bookmarkId,
-                url: command.url,
-                title: command.title,
-                note: command.note,
-                tags: [...command.tagIds]
-              }
+      <ErrorBoundary FallbackComponent={EditError}>
+        <BookmarkEditor
+          key={initialData.bookmarkId}
+          initialData={initialData}
+          onUpdateBookmark={async (command) => {
+            try {
+              return await updateBookmark({
+                data: {
+                  id: command.bookmarkId,
+                  url: command.url,
+                  title: command.title,
+                  note: command.note,
+                  tags: [...command.tagIds]
+                }
+              })
+            } catch {
+              return err({ code: 'unexpected-error' })
+            }
+          }}
+          fetchTitleAction={fetchTitleAction}
+          onCompleted={async (bookmarkId) => {
+            await navigate({
+              to: '/bookmarks/$id',
+              params: { id: bookmarkId },
+              search: detailSearch,
+              state: { bookmarkUpdated: true }
             })
-          } catch {
-            return err({ code: 'unexpected-error' })
-          }
-        }}
-        onFetchTitle={async (url) => {
-          try {
-            return await fetchBookmarkTitle({ data: { url } })
-          } catch {
-            return null
-          }
-        }}
-        onCompleted={async (bookmarkId) => {
-          await navigate({
-            to: '/bookmarks/$id',
-            params: { id: bookmarkId },
-            search: detailSearch,
-            state: { bookmarkUpdated: true }
-          })
-        }}
-      />
+          }}
+        />
+      </ErrorBoundary>
     </section>
   )
 }

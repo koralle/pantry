@@ -31,6 +31,27 @@ export type BookmarkFormInitialValues = {
 
 export type BookmarkFormSubmitValues = BookmarkFormOutput
 
+/** タイトル取得 action の payload。useActionState の第2引数に渡すオブジェクト */
+export type BookmarkTitleFetchPayload = {
+  readonly url: string
+}
+
+/** タイトル取得 action が返す state。success の title は hook 側のラッパーが form へ反映する */
+export type BookmarkTitleFetchState =
+  | { readonly status: 'idle' }
+  | { readonly status: 'success'; readonly title: string }
+  | { readonly status: 'error'; readonly message: string }
+
+/**
+ * タイトル取得 action。前回の state と payload から次の state を返す。
+ * 呼び出し時の previousState は 'success' にならない (ラッパーが反映後に idle へ正規化する)。
+ * 成功時の form 反映は hook 側のラッパーが行う。
+ */
+export type BookmarkTitleFetchAction = (
+  previousState: BookmarkTitleFetchState,
+  payload: BookmarkTitleFetchPayload
+) => Promise<BookmarkTitleFetchState>
+
 export type BookmarkFormProps = {
   readonly initialValues: BookmarkFormInitialValues
   /**
@@ -49,8 +70,8 @@ export type BookmarkFormProps = {
   readonly pendingLabel?: string
   readonly legend?: string
   readonly onSubmit: (values: BookmarkFormSubmitValues) => void | Promise<void>
-  /** タイトル取得。Server Function は注入側が持つ */
-  readonly onFetchTitle?: (url: string) => Promise<string | null>
+  /** タイトル取得 action。hook 側のラッパーを経て useActionState に渡る。Server Function は注入側が持つ */
+  readonly fetchTitleAction: BookmarkTitleFetchAction
 }
 
 export type BookmarkFormStore = FormStore<typeof bookmarkFormSchema>

@@ -1,67 +1,86 @@
 import { getInput, setErrors, setInput } from '@formisch/react'
-import { startTransition, useActionState } from 'react'
+import { startTransition, useActionState, useRef, useState } from 'react'
 
-import type { BookmarkFormFieldKey, BookmarkFormStore } from './types'
+import type {
+  BookmarkFormFieldKey,
+  BookmarkFormStore,
+  BookmarkTitleFetchAction,
+  BookmarkTitleFetchPayload,
+  BookmarkTitleFetchState
+} from './types'
 
-type TitleFetchState =
-  | { readonly status: 'idle' }
-  | { readonly status: 'error'; readonly message: string }
+const initialTitleFetchState: BookmarkTitleFetchState = { status: 'idle' }
 
-type TitleFetchAction = {
-  readonly url: string
-}
+// 空 URL の表示文言。文言は state に保存せず、表示時にこの定数から導出する。
+const urlRequiredMessage = '先にURLを入力してください'
 
 type UseBookmarkTitleFetchOptions = {
   readonly form: BookmarkFormStore
-  readonly onFetchTitle: ((url: string) => Promise<string | null>) | undefined
+  readonly fetchTitleAction: BookmarkTitleFetchAction
   readonly onClearFieldError: ((field: BookmarkFormFieldKey) => void) | undefined
 }
 
 export function useBookmarkTitleFetch({
   form,
-  onFetchTitle,
+  fetchTitleAction,
   onClearFieldError
 }: UseBookmarkTitleFetchOptions) {
-  const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
-    async (_previous: TitleFetchState, action: TitleFetchAction): Promise<TitleFetchState> => {
-      if (action.url.trim() === '') {
-        return { status: 'error', message: '先にURLを入力してください' }
-      }
-      if (onFetchTitle === undefined) {
-        return { status: 'idle' }
-      }
+  // 連打ガード用の in-flight ref。isPending はコミット前の同じレンダーでは false のままなので、
+  // 同期チェックできる ref で race window を塞ぐ (閉包の isFetchingTitle では塞げない)。
+  const inFlightRef = useRef(false)
 
-      try {
-        const fetchedTitle = await onFetchTitle(action.url)
-        if (fetchedTitle === null) {
-          return {
-            status: 'error',
-            message: 'タイトルを取得できませんでした。手入力で続けられます'
-          }
-        }
-
-        setInput(form, { path: ['title'], input: fetchedTitle })
+  // 成功時の form 反映 (setInput / error clear) はこのラッパーが行う (fetchTitleAction は form store に触れないため)。
+  // ラッパーは毎レンダー再生成されるが、useActionState は最新レンダーの action を実行する。
+  const applyFetchedTitleAction = async (
+    previous: BookmarkTitleFetchState,
+    payload: BookmarkTitleFetchPayload
+  ): Promise<BookmarkTitleFetchState> => {
+    try {
+      const next = await fetchTitleAction(previous, payload)
+      if (next.status === 'success') {
+        setInput(form, { path: ['title'], input: next.title })
         clearFieldError(form, 'title')
         onClearFieldError?.('title')
+        // 反映後に success を state に残す必要はないため idle へ正規化する。
         return { status: 'idle' }
-      } catch (error: unknown) {
-        return {
-          status: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'タイトルを取得できませんでした。手入力で続けられます'
-        }
       }
-    },
-    { status: 'idle' }
+      return next
+    } finally {
+      // 例外 (reject / throw) でも必ず in-flight を解除する。
+      inFlightRef.current = false
+    }
+  }
+
+  const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
+    applyFetchedTitleAction,
+    initialTitleFetchState
   )
 
+  // 空 URL は dispatch 前に弾くため、表示するかどうかだけをフラグで持ち、
+  // 文言は表示時に導出する (フラグ && 現在入力が空)。
+  const [urlEmptyErrorShown, setUrlEmptyErrorShown] = useState(false)
+
+  const urlEmptyError =
+    urlEmptyErrorShown && (getInput(form, { path: ['url'] }) ?? '').trim() === ''
+      ? urlRequiredMessage
+      : null
+
   const titleFetchError =
-    !isFetchingTitle && titleFetchState.status === 'error' ? titleFetchState.message : null
+    urlEmptyError ??
+    (titleFetchState.status === 'error' && !isFetchingTitle ? titleFetchState.message : null)
 
   function handleFetchTitle() {
+    // 連打 (disabled がコミットされる前の同じレンダーの閉包) でも 2 回目の dispatch を防ぐ。
+    if (inFlightRef.current) {
+      return
+    }
     const currentInputUrl = getInput(form, { path: ['url'] }) ?? ''
+    if (currentInputUrl.trim() === '') {
+      setUrlEmptyErrorShown(true)
+      return
+    }
+    setUrlEmptyErrorShown(false)
+    inFlightRef.current = true
     startTransition(() => {
       dispatch({ url: currentInputUrl })
     })
