@@ -1,5 +1,5 @@
 import { getInput, setErrors, setInput } from '@formisch/react'
-import { startTransition, useActionState, useState } from 'react'
+import { startTransition, useActionState, useRef, useState } from 'react'
 
 import type {
   BookmarkFormFieldKey,
@@ -25,21 +25,30 @@ export function useBookmarkTitleFetch({
   fetchTitleAction,
   onClearFieldError
 }: UseBookmarkTitleFetchOptions) {
+  // 連打ガード用の in-flight ref。isPending はコミット前の同じレンダーでは false のままなので、
+  // 同期チェックできる ref で race window を塞ぐ (閉包の isFetchingTitle では塞げない)。
+  const inFlightRef = useRef(false)
+
   // 成功時の form 反映 (setInput / error clear) はこのラッパーが行う (fetchTitleAction は form store に触れないため)。
   // ラッパーは毎レンダー再生成されるが、useActionState は最新レンダーの action を実行する。
   const applyFetchedTitleAction = async (
     previous: BookmarkTitleFetchState,
     payload: BookmarkTitleFetchPayload
   ): Promise<BookmarkTitleFetchState> => {
-    const next = await fetchTitleAction(previous, payload)
-    if (next.status === 'success') {
-      setInput(form, { path: ['title'], input: next.title })
-      clearFieldError(form, 'title')
-      onClearFieldError?.('title')
-      // 反映後に success を state に残す必要はないため idle へ正規化する。
-      return { status: 'idle' }
+    try {
+      const next = await fetchTitleAction(previous, payload)
+      if (next.status === 'success') {
+        setInput(form, { path: ['title'], input: next.title })
+        clearFieldError(form, 'title')
+        onClearFieldError?.('title')
+        // 反映後に success を state に残す必要はないため idle へ正規化する。
+        return { status: 'idle' }
+      }
+      return next
+    } finally {
+      // 例外 (reject / throw) でも必ず in-flight を解除する。
+      inFlightRef.current = false
     }
-    return next
   }
 
   const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
@@ -61,12 +70,17 @@ export function useBookmarkTitleFetch({
     (titleFetchState.status === 'error' && !isFetchingTitle ? titleFetchState.message : null)
 
   function handleFetchTitle() {
+    // 連打 (disabled がコミットされる前の同じレンダーの閉包) でも 2 回目の dispatch を防ぐ。
+    if (inFlightRef.current) {
+      return
+    }
     const currentInputUrl = getInput(form, { path: ['url'] }) ?? ''
     if (currentInputUrl.trim() === '') {
       setUrlEmptyErrorShown(true)
       return
     }
     setUrlEmptyErrorShown(false)
+    inFlightRef.current = true
     startTransition(() => {
       dispatch({ url: currentInputUrl })
     })

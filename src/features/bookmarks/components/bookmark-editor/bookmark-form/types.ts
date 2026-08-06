@@ -42,7 +42,11 @@ export type BookmarkTitleFetchState =
   | { readonly status: 'success'; readonly title: string }
   | { readonly status: 'error'; readonly message: string }
 
-/** タイトル取得 action。前回の state と payload から次の state を返す。form 反映は hook 側のラッパーが行う */
+/**
+ * タイトル取得 action。前回の state と payload から次の state を返す。
+ * 呼び出し時の previousState は 'success' にならない (ラッパーが反映後に idle へ正規化する)。
+ * 成功時の form 反映は hook 側のラッパーが行う。
+ */
 export type BookmarkTitleFetchAction = (
   previousState: BookmarkTitleFetchState,
   payload: BookmarkTitleFetchPayload
