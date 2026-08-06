@@ -77,7 +77,7 @@ export type BookmarkFormProps = {
   readonly legend?: string
   readonly onSubmit: (values: BookmarkFormSubmitValues) => void | Promise<void>
   /** タイトル取得 action。useActionState にそのまま渡す。Server Function は注入側が持つ */
-  readonly fetchTitleAction?: BookmarkTitleFetchAction
+  readonly fetchTitleAction: BookmarkTitleFetchAction
 }
 
 export type BookmarkFormStore = FormStore<typeof bookmarkFormSchema>

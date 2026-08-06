@@ -115,7 +115,6 @@ export function BookmarkForm({
           serverFieldErrors={serverError?.fields}
           busy={busy}
           isFetchingTitle={isFetchingTitle}
-          fetchTitleAction={fetchTitleAction}
           handleFetchTitle={handleFetchTitle}
           onClearServerFieldError={handleClearFieldError}
         />

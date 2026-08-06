@@ -24,7 +24,7 @@ export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
   readonly onUpdateBookmark: ExecuteUpdateBookmark
   readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
-  readonly fetchTitleAction?: BookmarkTitleFetchAction
+  readonly fetchTitleAction: BookmarkTitleFetchAction
 }
 
 /**
@@ -112,7 +112,7 @@ export function BookmarkEditor({
       submitLabel='更新'
       pendingLabel='更新中…'
       onSubmit={handleSubmit}
-      {...(fetchTitleAction != null ? { fetchTitleAction } : {})}
+      fetchTitleAction={fetchTitleAction}
     />
   )
 }

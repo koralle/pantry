@@ -4,12 +4,7 @@ import { Download } from 'lucide-react'
 
 import { StyledButton } from '../../../../../shared/components/styled-button'
 import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../../styles/form'
-import type {
-  BookmarkFormFieldKey,
-  BookmarkFormServerError,
-  BookmarkFormStore,
-  BookmarkTitleFetchAction
-} from './types'
+import type { BookmarkFormFieldKey, BookmarkFormServerError, BookmarkFormStore } from './types'
 
 export type BookmarkFormFieldIds = {
   readonly url: string
@@ -23,7 +18,6 @@ type BookmarkFormFieldsProps = {
   readonly serverFieldErrors?: BookmarkFormServerError['fields']
   readonly busy: boolean
   readonly isFetchingTitle: boolean
-  readonly fetchTitleAction: BookmarkTitleFetchAction | undefined
   readonly handleFetchTitle: () => void
   readonly onClearServerFieldError: (key: BookmarkFormFieldKey) => void
 }
@@ -50,7 +44,6 @@ export function BookmarkFormFields({
   serverFieldErrors,
   busy,
   isFetchingTitle,
-  fetchTitleAction,
   handleFetchTitle,
   onClearServerFieldError
 }: BookmarkFormFieldsProps) {
@@ -96,19 +89,17 @@ export function BookmarkFormFields({
                     handleFieldChange('url')
                   }}
                 />
-                {fetchTitleAction !== undefined ? (
-                  <StyledButton
-                    type='button'
-                    onClick={handleFetchTitle}
-                    disabled={busy}
-                    aria-busy={isFetchingTitle}>
-                    <Download
-                      size={16}
-                      aria-hidden
-                    />
-                    {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
-                  </StyledButton>
-                ) : null}
+                <StyledButton
+                  type='button'
+                  onClick={handleFetchTitle}
+                  disabled={busy}
+                  aria-busy={isFetchingTitle}>
+                  <Download
+                    size={16}
+                    aria-hidden
+                  />
+                  {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
+                </StyledButton>
               </div>
               {errorMessage !== undefined ? (
                 <p

@@ -10,13 +10,9 @@ import type {
 
 const initialTitleFetchState: BookmarkTitleFetchState = { status: 'idle' }
 
-// 未指定時のフォールバック。未指定時は handleFetchTitle が dispatch しないため
-// 実行されることはない (useActionState の action は undefined にできない)。
-const noopTitleFetchAction: BookmarkTitleFetchAction = async () => ({ status: 'idle' })
-
 type UseBookmarkTitleFetchOptions = {
   readonly form: BookmarkFormStore
-  readonly fetchTitleAction: BookmarkTitleFetchAction | undefined
+  readonly fetchTitleAction: BookmarkTitleFetchAction
   readonly onClearFieldError: ((field: BookmarkFormFieldKey) => void) | undefined
 }
 
@@ -29,7 +25,7 @@ export function useBookmarkTitleFetch({
   // この action は form store にアクセスできないため、空 URL 判定と
   // 成功結果の form store への反映はこの hook 側で行う。
   const [titleFetchState, dispatch, isFetchingTitle] = useActionState(
-    fetchTitleAction ?? noopTitleFetchAction,
+    fetchTitleAction,
     initialTitleFetchState
   )
 
@@ -59,9 +55,6 @@ export function useBookmarkTitleFetch({
     (titleFetchState.status === 'error' && !isFetchingTitle ? titleFetchState.message : null)
 
   function handleFetchTitle() {
-    if (fetchTitleAction === undefined) {
-      return
-    }
     const currentInputUrl = getInput(form, { path: ['url'] }) ?? ''
     if (currentInputUrl.trim() === '') {
       setUrlRequiredError('先にURLを入力してください')

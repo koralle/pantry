@@ -34,6 +34,12 @@ const defaultInitialValues = {
   note: 'メモの下書き'
 } as const
 
+// タイトル取得を主目的としない story が共通で使う action。
+const defaultFetchTitleAction = fn<BookmarkTitleFetchAction>(async () => ({
+  status: 'success',
+  title: '取得したタイトル'
+}))
+
 export const Default = meta.story({
   args: {
     initialValues: defaultInitialValues,
@@ -201,6 +207,7 @@ export const ServerFieldErrorShownInFieldAndSummary = meta.story({
   args: {
     initialValues: defaultInitialValues,
     onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    fetchTitleAction: defaultFetchTitleAction,
     serverError: {
       summary: '同じURLのブックマークが既に存在します',
       fields: { url: 'この URL は既に登録されています' }
@@ -226,6 +233,7 @@ export const EditingClearsMatchingServerFieldError = meta.story({
     <ControlledBookmarkForm
       initialValues={args.initialValues}
       onSubmit={args.onSubmit}
+      fetchTitleAction={defaultFetchTitleAction}
       initialServerError={{
         summary: '入力内容を確認してください',
         fields: {
@@ -237,7 +245,8 @@ export const EditingClearsMatchingServerFieldError = meta.story({
   ),
   args: {
     initialValues: defaultInitialValues,
-    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    fetchTitleAction: defaultFetchTitleAction
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -263,6 +272,7 @@ export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
     <ControlledBookmarkForm
       initialValues={args.initialValues}
       onSubmit={args.onSubmit}
+      fetchTitleAction={defaultFetchTitleAction}
       initialServerError={{
         fields: {
           url: 'この URL は既に登録されています'
@@ -272,7 +282,8 @@ export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
   ),
   args: {
     initialValues: defaultInitialValues,
-    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>()
+    onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
+    fetchTitleAction: defaultFetchTitleAction
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
