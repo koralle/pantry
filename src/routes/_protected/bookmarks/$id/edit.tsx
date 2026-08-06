@@ -29,7 +29,7 @@ const bookmarkEditSearchSchema = v.object({
 const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんでした。手入力で続けられます'
 
 /**
- * タイトル取得 action。BookmarkForm の useActionState にそのまま渡される。
+ * タイトル取得 action。BookmarkForm 側のラッパーを経て useActionState に渡る。
  * fetchBookmarkTitle の null / throw を表示用メッセージへ変換して返す。
  */
 const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url }) => {
