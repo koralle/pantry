@@ -67,11 +67,14 @@ export const RejectsEmptyUrl = Default.extend({
       note: null
     }
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
+    const fetchTitleAction = args.fetchTitleAction as Mock<BookmarkTitleFetchAction>
     await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('先にURLを入力してください')
     await expect(canvas.getByLabelText('タイトル')).toHaveValue('手入力タイトル')
+    // 空 URL は dispatch 前に弾かれるため、Server (action) は呼ばれない
+    await expect(fetchTitleAction).not.toHaveBeenCalled()
   }
 })
 
