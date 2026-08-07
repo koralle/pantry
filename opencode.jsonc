@@ -26,6 +26,35 @@
       }
     }
   },
+  "agent": {
+    "[OpenCode] DeepSeek V4 Flash": {
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4-flash",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "[QwenCloud] Qwen 3.8 Max": {
+      "mode": "primary",
+      "model": "balian-token-plan-personal/qwen3.8-max-preview",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "[OpenAI] GPT-5.6 Luna": {
+      "mode": "primary",
+      "model": "openai/gpt-5.6-luna",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  },
   "mcp": {
     "better-auth": {
       "type": "remote",
@@ -51,6 +80,11 @@
     "cloudflare-observability": {
       "type": "remote",
       "url": "https://observability.mcp.cloudflare.com/mcp",
+      "enabled": true
+    },
+    "formisch": {
+      "type": "remote",
+      "url": "https://formisch.dev/mcp",
       "enabled": true
     },
     "playwright": {
