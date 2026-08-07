@@ -86,7 +86,7 @@ function isSignInEmailRequest(request: Request): boolean {
 
 async function runSignInEmailGuard(request: Request, next: NextHandler): Promise<Response> {
   if (!isJsonContentType(request.headers.get('content-type'))) {
-    return errorResponse('INVALID_CONTENT_TYPE', 'Content type must be application/json.', 415)
+    return errorResponse('UNSUPPORTED_MEDIA_TYPE', 'Content type must be application/json.', 415)
   }
 
   const bodyText = await readBodyBounded(request)

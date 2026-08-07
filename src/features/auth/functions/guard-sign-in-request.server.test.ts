@@ -102,7 +102,53 @@ test('rejects a non-JSON content type', async () => {
   const response = await guardSignInRequest(request, next)
 
   expect(response.status).toBe(415)
+  expect(await response.json()).toMatchObject({ code: 'UNSUPPORTED_MEDIA_TYPE' })
   expect(next).not.toHaveBeenCalled()
+})
+
+test('rejects a missing content type', async () => {
+  const next = vi.fn(() => new Response('handled'))
+
+  const request = new Request('https://pantry.example/api/auth/sign-in/email', {
+    method: 'POST',
+    body: JSON.stringify({ email: 'user@example.com', password: 'a'.repeat(PASSWORD_MAX_LENGTH) })
+  })
+
+  const response = await guardSignInRequest(request, next)
+
+  expect(response.status).toBe(415)
+  expect(next).not.toHaveBeenCalled()
+})
+
+test('rejects a vendor-prefixed JSON content type', async () => {
+  const next = vi.fn(() => new Response('handled'))
+
+  const request = new Request('https://pantry.example/api/auth/sign-in/email', {
+    method: 'POST',
+    headers: { 'content-type': 'application/problem+json' },
+    body: JSON.stringify({ email: 'user@example.com', password: 'a'.repeat(PASSWORD_MAX_LENGTH) })
+  })
+
+  const response = await guardSignInRequest(request, next)
+
+  expect(response.status).toBe(415)
+  expect(next).not.toHaveBeenCalled()
+})
+
+test('accepts an uppercased JSON content type', async () => {
+  const handled = new Response('handled')
+  const next = vi.fn(() => handled)
+
+  const request = new Request('https://pantry.example/api/auth/sign-in/email', {
+    method: 'POST',
+    headers: { 'content-type': 'Application/JSON' },
+    body: JSON.stringify({ email: 'user@example.com', password: 'a'.repeat(PASSWORD_MAX_LENGTH) })
+  })
+
+  const response = await guardSignInRequest(request, next)
+
+  expect(response).toBe(handled)
+  expect(next).toHaveBeenCalledOnce()
 })
 
 test('accepts application/json with a charset parameter', async () => {
@@ -275,4 +321,69 @@ test('does not apply the guard to a sign-in path with a trailing slash', async (
 
   expect(response).toBe(handled)
   expect(next).toHaveBeenCalledOnce()
+})
+
+test('returns 413 even when the stream cancel rejects', async () => {
+  const encoder = new TextEncoder()
+  const next = vi.fn(() => new Response('handled'))
+
+  const request = new Request('https://pantry.example/api/auth/sign-in/email', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode('a'.repeat(SIGN_IN_BODY_MAX_BYTES + 1)))
+      },
+      cancel() {
+        return Promise.reject(new Error('cancel failed'))
+      }
+    })
+  })
+
+  const response = await guardSignInRequest(request, next)
+
+  expect(response.status).toBe(413)
+  expect(next).not.toHaveBeenCalled()
+})
+
+test('decodes multi-byte characters split across chunk boundaries', async () => {
+  const encoder = new TextEncoder()
+  const handled = new Response('handled')
+  const next = vi.fn(() => handled)
+
+  const body = JSON.stringify({ email: 'user@example.com', password: 'あ'.repeat(64) })
+  const bytes = encoder.encode(body)
+  const chunks: Uint8Array[] = []
+  for (let offset = 0; offset < bytes.length; offset += 2) {
+    chunks.push(bytes.slice(offset, offset + 2))
+  }
+
+  const request = new Request('https://pantry.example/api/auth/sign-in/email', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: new ReadableStream({
+      start(controller) {
+        for (const chunk of chunks) {
+          controller.enqueue(chunk)
+        }
+        controller.close()
+      }
+    })
+  })
+
+  const response = await guardSignInRequest(request, next)
+
+  expect(response).toBe(handled)
+  expect(next).toHaveBeenCalledOnce()
+})
+
+test('keeps the maximum legitimate sign-in body under the byte cap', () => {
+  const body = JSON.stringify({
+    email: `${'a'.repeat(243)}@example.com`,
+    password: 'a'.repeat(PASSWORD_MAX_LENGTH),
+    rememberMe: true,
+    callbackURL: `https://pantry.example/redirect/${'a'.repeat(512)}`
+  })
+
+  expect(body.length).toBeLessThan(SIGN_IN_BODY_MAX_BYTES)
 })
