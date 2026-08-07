@@ -1,1 +1,3 @@
 export const PASSWORD_MAX_LENGTH = 128
+
+export const SIGN_IN_BODY_MAX_BYTES = 4096
