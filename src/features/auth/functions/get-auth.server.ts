@@ -6,6 +6,7 @@ import { env } from 'cloudflare:workers'
 
 import { getDB } from '../../../db/get-db.server'
 import * as schema from '../../../db/schema/auth-schema'
+import { PASSWORD_MAX_LENGTH } from '../domain/password-policy'
 
 type Auth = ReturnType<typeof createAuth>
 
@@ -20,7 +21,8 @@ function createAuth() {
       }
     }),
     emailAndPassword: {
-      enabled: true
+      enabled: true,
+      maxPasswordLength: PASSWORD_MAX_LENGTH
     },
     plugins: [admin()]
   })
