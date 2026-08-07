@@ -96,7 +96,7 @@ test('rejects a non-JSON content type', async () => {
   const request = new Request('https://pantry.example/api/auth/sign-in/email', {
     method: 'POST',
     headers: { 'content-type': 'text/plain' },
-    body: `password=${  'a'.repeat(PASSWORD_MAX_LENGTH + 1)}`
+    body: `password=${'a'.repeat(PASSWORD_MAX_LENGTH + 1)}`
   })
 
   const response = await guardSignInRequest(request, next)

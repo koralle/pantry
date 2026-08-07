@@ -28,23 +28,32 @@
 
 ### Server validation
 
-`/api/auth/sign-in/email`を処理するcatch-all routeで、Better Auth handlerへ委譲する前にrequest bodyを検査する。`request.clone()`を使ってJSONを読み取り、passwordが文字列で共有上限を超えている場合は400を返す。それ以外のrequestは元のrequestをそのまま`getAuth().handler(request)`へ渡す。
+`/api/auth/sign-in/email`を処理するcatch-all routeで、Better Auth handlerへ委譲する前にrequest bodyを検査する。guardは以下の順で処理する。
+
+1. pathが`/api/auth/sign-in/email`に完全一致する`POST`だけを対象にする。
+2. `Content-Type`が`application/json`（charset付きを許容）以外なら`415`を返す。Better Authのsign-in/emailは`application/x-www-form-urlencoded`も受け付けるが、guardはJSONのみを許可し、form経路で巨大なpasswordがhash/verifyへ到達することを防ぐ。
+3. bodyを上限バイト数`SIGN_IN_BODY_MAX_BYTES = 4096`で読み取る。`Content-Length`が上限を超えていれば読み取り前に`413`を返し、`Content-Length`がないstream bodyは上限を超えた時点でcancelする。正常なbodyは上限を超えないため、guard自身のメモリ・CPU消費もboundedになる。
+4. 上限内ならJSONをparseし、passwordが文字列で`PASSWORD_MAX_LENGTH`を超えていれば`400`とcode `PASSWORD_TOO_LONG`を返す。codeはBetter Authのsign-upが上限超過で返す語彙と一致させる。
 
 JSONが壊れている場合、passwordが欠落している場合、passwordの型が違う場合はguardで独自処理せず、既存どおりBetter Authへ委譲する。guardはsign-in email endpointにだけ適用し、他の認証endpointの挙動を変えない。
 
 Better Authの`emailAndPassword.maxPasswordLength`にも共有定数を設定する。これはsign-upなどBetter Auth自身が上限検証する処理との整合性を保つためであり、sign-inの事前拒否はroute guardが担う。
 
+パスワード長の境界はJS文字列の`length`（UTF-16 code unit）で判定し、client schema（Valibotの`maxLength`）と同じ基準にする。
+
 ### データフロー
 
 ```text
 POST /api/auth/sign-in/email
-  -> request cloneのJSONを検査
-  -> password.length > 128: 400を返す
+  -> path完全一致かつPOSTのみ対象
+  -> Content-Typeがapplication/json以外: 415を返す
+  -> Content-Lengthが上限超過 / stream読取で上限超過: 413を返す
+  -> password.length > 128: 400 (code: PASSWORD_TOO_LONG)を返す
   -> その他: getAuth().handler(request)
   -> Better Authの通常処理
 ```
 
-リクエストのbodyをcloneから読むため、正常なリクエストのbodyは消費されず、Better Authは元のrequestを受け取れる。
+リクエストのbodyはcloneからboundedに読むため、正常なリクエストのbodyは消費されず、Better Authは元のrequestを受け取れる。
 
 ## テスト
 
@@ -52,13 +61,26 @@ POST /api/auth/sign-in/email
 - password schemaは129文字を拒否する。
 - server guardは129文字のrequestでhandlerを呼ばず、400を返す。
 - server guardは128文字のrequestをhandlerへ委譲する。
+- form-urlencodedや`text/plain`のrequestは415で拒否し、handlerを呼ばない。
+- `Content-Length`が上限超過のrequestは413で拒否し、handlerを呼ばない。
+- `Content-Length`のないstream bodyが上限を超えたら413で拒否する。
+- bodyが上限バイト数ちょうどなら委譲する。
+- `application/json; charset=utf-8`は受け付ける。
+- malformed JSON、password欠落、password非stringは既存どおり委譲する。
+- 委譲後も元のrequest bodyをhandlerが読める。
+- 上限境界はUTF-16 code unitで判定される（絵文字2単位相当のケース）。
+- 完全一致以外のpath（他endpoint、trailing slash）にはguardを適用しない。
 - 既存の認証schemaの下限（8文字）と認証テストは維持する。
 
 server guardはBetter AuthやDBを起動しない単体テストにし、fake handlerの呼び出し有無でhash/verify前の拒否を検証する。
 
 ## エラーと互換性
 
-上限超過時は400系のJSON responseを返す。画面側は既存の汎用サインインエラー表示にフォールバックでき、認証成功・失敗のアカウント列挙防止方針を変更しない。正常なsign-in requestとsign-in以外のauth requestは既存handlerへ委譲する。
+上限超過時は400系のJSON response（400 / 413 / 415）を返す。画面側は既存の汎用サインインエラー表示にフォールバックでき、認証成功・失敗のアカウント列挙防止方針を変更しない。正常なsign-in requestとsign-in以外のauth requestは既存handlerへ委譲する。
+
+## 残余リスク
+
+guardが拒否するrequestはBetter Authの内部rate limiterを経由しないため、guardの拒否path自体のレート制限はこのIssueの範囲外である。body処理は上限バイトでboundedになるため、1 requestあたりの資源消費は抑えられるが、繰り返しの過大入力にはWAF・rate limitなどの別層が必要になる。
 
 ## 代替案と採否
 
