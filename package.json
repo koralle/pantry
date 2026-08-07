@@ -75,6 +75,7 @@
     "postcss": "catalog:ui",
     "react-scan": "catalog:",
     "storybook": "catalog:storybook",
+    "storybook-device-viewports": "catalog:",
     "tsx": "catalog:script",
     "typescript": "catalog:typescript",
     "vite": "catalog:build",

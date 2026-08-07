@@ -6,6 +6,7 @@ allowBuilds:
 
 catalog:
   react-scan: 0.5.7
+  storybook-device-viewports: 0.1.2
 
 catalogMode: strict
 

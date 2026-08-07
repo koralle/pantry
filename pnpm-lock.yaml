@@ -55,6 +55,9 @@ catalogs:
     react-scan:
       specifier: 0.5.7
       version: 0.5.7
+    storybook-device-viewports:
+      specifier: 0.1.2
+      version: 0.1.2
   envvars:
     '@dotenvx/dotenvx':
       specifier: 1.75.1
@@ -345,6 +348,9 @@ importers:
       storybook:
         specifier: catalog:storybook
         version: 10.5.5(@types/react@19.2.17)(prettier@3.9.6)(react@19.2.8)
+      storybook-device-viewports:
+        specifier: 'catalog:'
+        version: 0.1.2(@types/react@19.2.17)(prettier@3.9.6)(react@19.2.8)
       tsx:
         specifier: catalog:script
         version: 4.23.1
@@ -5188,6 +5194,9 @@ packages:
   stdin-discarder@0.3.2:
     resolution: {integrity: sha512-eCPu1qRxPVkl5605OTWF8Wz40b4Mf45NY5LQmVPQ599knfs5QhASUm9GbJ5BDMDOXgrnh0wyEdvzmL//YMlw0A==}
     engines: {node: '>=18'}
+
+  storybook-device-viewports@0.1.2:
+    resolution: {integrity: sha512-mxRapulaXTX2hyhGnFYCqS4Dxp7uqDFPqFdFnQUh0FMFYc81w4s3Nkaj7uPTDt+j93orJ7XNx3obuKipVyXWqQ==}
 
   storybook@10.5.5:
     resolution: {integrity: sha512-UscBIBJDloUeqntukHOhP1a5W/vouePDJbzPSxj466WK801FZtzQiMffMtkjzJiWSuj20wfaYlB2QQKh9aOYAg==}
@@ -10205,6 +10214,17 @@ snapshots:
   std-env@4.2.0: {}
 
   stdin-discarder@0.3.2: {}
+
+  storybook-device-viewports@0.1.2(@types/react@19.2.17)(prettier@3.9.6)(react@19.2.8):
+    dependencies:
+      storybook: 10.5.5(@types/react@19.2.17)(prettier@3.9.6)(react@19.2.8)
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - prettier
+      - react
+      - utf-8-validate
+      - vite-plus
 
   storybook@10.5.5(@types/react@19.2.17)(prettier@3.9.6)(react@19.2.8):
     dependencies:
