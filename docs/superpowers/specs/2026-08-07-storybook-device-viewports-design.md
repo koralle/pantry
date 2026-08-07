@@ -23,10 +23,11 @@ Storybook の viewport selector から、Apple iPhone、Apple iPad、Google Pixe
 ### Preview configuration
 
 `src/storybook/preview.tsx` で `AWESOME_DEVICE_VIEWPORTS` を import し、既存の parameters に次を追加する。
+Storybook 10 では viewport 定義の parameter key に `options` を使う。
 
 ```ts
 viewport: {
-  viewports: AWESOME_DEVICE_VIEWPORTS
+  options: AWESOME_DEVICE_VIEWPORTS
 }
 ```
 
