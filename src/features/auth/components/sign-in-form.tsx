@@ -1,7 +1,7 @@
 import { Field, getInput, useForm } from '@formisch/react'
 import { CircleAlert, Lock, LogIn, Mail } from 'lucide-react'
 import { useActionState } from 'react'
-import { styled } from 'styled-system/jsx'
+import { css, cx } from 'styled-system/css'
 import { parseAsync } from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
@@ -9,9 +9,14 @@ import { StyledInput } from '../../../shared/components/styled-input'
 import { StyledLabel } from '../../../shared/components/styled-label'
 import { field, fieldError, formSummary } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
+import { workbenchFields, workbenchForm } from '../../../styles/workbench'
 import { SignInError } from '../lib/sign-in-error'
 import { emailSchema, passwordSchema, signInSchema } from '../lib/sign-in-schema'
 import type { SignInSchema } from '../lib/sign-in-schema'
+
+const signInForm = css({
+  marginBlockStart: '2'
+})
 
 interface SignInWithEmailAndPasswordFormProps {
   readonly onSignIn: ({ email, password }: SignInSchema) => Promise<SignInError | null>
@@ -53,12 +58,10 @@ export const SignInWithEmailAndPasswordForm = ({
       : null
 
   return (
-    <styled.form
+    <form
+      className={cx(workbenchForm, signInForm)}
       action={throwError}
-      noValidate
-
-      display='grid'
-      gap={6}>
+      noValidate>
       {signInError != null ? (
         <div
           className={formSummary}
@@ -74,10 +77,9 @@ export const SignInWithEmailAndPasswordForm = ({
         </div>
       ) : null}
 
-      <styled.fieldset
-        disabled={isPending}
-        display='grid'
-        gap={6}>
+      <fieldset
+        className={workbenchFields}
+        disabled={isPending}>
         <legend className={srOnly}>ログイン</legend>
 
         <Field
@@ -113,11 +115,7 @@ export const SignInWithEmailAndPasswordForm = ({
           of={signInFormInstance}
           path={['password']}>
           {(fieldProps) => (
-            <styled.div
-              display='grid'
-              justifyItems='start'
-              alignContent='center'
-              gap='0.5em'>
+            <div className={field}>
               <StyledLabel htmlFor={fieldProps.props.name}>
                 <Lock
                   size={16}
@@ -138,10 +136,10 @@ export const SignInWithEmailAndPasswordForm = ({
                 aria-invalid={fieldErrorText != null}
               />
               {fieldErrorText != null ? <p className={fieldError}>{fieldErrorText}</p> : null}
-            </styled.div>
+            </div>
           )}
         </Field>
-      </styled.fieldset>
+      </fieldset>
 
       <StyledButton
         type='submit'
@@ -153,6 +151,6 @@ export const SignInWithEmailAndPasswordForm = ({
         />
         {isPending ? 'サインイン中...' : 'サインイン'}
       </StyledButton>
-    </styled.form>
+    </form>
   )
 }

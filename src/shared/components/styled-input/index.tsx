@@ -8,13 +8,12 @@ const RawInput = styled(BaseInput, {
     borderWidth: 'thin',
     borderStyle: 'solid',
     borderColor: 'border.default',
-    borderRadius: 8,
+    borderRadius: 'box',
     paddingBlock: '2',
-    paddingInline: 4,
+    paddingInline: '3',
     background: 'bg.surface',
     width: 'full',
-    boxSizing: 'border-box',
-    blockSize: '3.5rem'
+    boxSizing: 'border-box'
   }
 })
 

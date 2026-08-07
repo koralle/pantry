@@ -1,4 +1,4 @@
-import { expect, mocked, userEvent, within } from 'storybook/test'
+import { expect, mocked, userEvent, waitFor, within } from 'storybook/test'
 
 import { authClient } from '../../features/auth/lib/auth-client'
 import preview from '../../storybook/preview'
@@ -70,10 +70,14 @@ export const InvalidCredentials = meta.story({
     await userEvent.type(canvas.getByLabelText('メール'), 'user@example.com')
     await userEvent.type(canvas.getByLabelText('パスワード'), 'wrong-password')
     await userEvent.click(canvas.getByRole('button', { name: 'サインイン' }))
-    await expect(canvas.getByRole('alert')).toHaveTextContent(
-      'メールまたはパスワードが正しくありません'
-    )
-    await expect(canvas.getAllByText('メールまたはパスワードを確認してください')).toHaveLength(2)
+    await waitFor(async () => {
+      await expect(canvas.getByRole('alert')).toHaveTextContent(
+        'メールまたはパスワードが正しくありません'
+      )
+    })
+    await waitFor(() => {
+      expect(canvas.getAllByText('メールまたはパスワードを確認してください')).toHaveLength(2)
+    })
   }
 })
 
@@ -86,7 +90,9 @@ export const Pending = meta.story({
     await userEvent.type(canvas.getByLabelText('メール'), 'user@example.com')
     await userEvent.type(canvas.getByLabelText('パスワード'), 'password123')
     await userEvent.click(canvas.getByRole('button', { name: 'サインイン' }))
-    await expect(canvas.getByRole('button', { name: 'サインイン中...' })).toBeDisabled()
+    await waitFor(async () => {
+      await expect(canvas.getByRole('button', { name: 'サインイン中...' })).toBeDisabled()
+    })
     await expect(canvas.getByRole('group', { name: 'ログイン' })).toBeDisabled()
   }
 })
