@@ -1,4 +1,16 @@
-import { brand, object, email, nonEmpty, string, minLength, pipe, InferOutput } from 'valibot'
+import {
+  brand,
+  email,
+  InferOutput,
+  maxLength,
+  minLength,
+  nonEmpty,
+  object,
+  pipe,
+  string
+} from 'valibot'
+
+import { PASSWORD_MAX_LENGTH } from '../domain/password-policy'
 
 export const emailSchema = pipe(
   string('Please enter your email.'),
@@ -11,6 +23,7 @@ export const passwordSchema = pipe(
   string('Please enter your password.'),
   nonEmpty('Please enter your password.'),
   minLength(8, 'Your password must have 8 characters or more.'),
+  maxLength(PASSWORD_MAX_LENGTH, 'Your password must have 128 characters or fewer.'),
   brand('Password')
 )
 
