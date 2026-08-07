@@ -72,6 +72,7 @@ catalogs:
     '@storybook/addon-docs': 10.5.5
     '@storybook/builder-vite': 10.5.5
     '@storybook/tanstack-react': 10.5.5
+    storybook-device-viewports: 0.1.2
     storybook: 10.5.5
   ui:
     '@base-ui/react': 1.6.0

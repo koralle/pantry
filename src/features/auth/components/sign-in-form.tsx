@@ -1,4 +1,3 @@
-import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { CircleAlert, Lock, LogIn, Mail } from 'lucide-react'
 import { useActionState } from 'react'
@@ -6,7 +5,9 @@ import { css, cx } from 'styled-system/css'
 import { parseAsync } from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { field, fieldError, fieldInput, fieldLabel, formSummary } from '../../../styles/form'
+import { StyledInput } from '../../../shared/components/styled-input'
+import { StyledLabel } from '../../../shared/components/styled-label'
+import { field, fieldError, formSummary } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../styles/workbench'
 import { SignInError } from '../lib/sign-in-error'
@@ -86,17 +87,15 @@ export const SignInWithEmailAndPasswordForm = ({
           path={['email']}>
           {(fieldProps) => (
             <div className={field}>
-              <label
-                className={fieldLabel}
-                htmlFor={fieldProps.props.name}>
+              <StyledLabel htmlFor={fieldProps.props.name}>
                 <Mail
                   size={16}
                   aria-hidden
-                />{' '}
+                />
                 メール
-              </label>
-              <Input
-                className={fieldInput}
+              </StyledLabel>
+
+              <StyledInput
                 id={fieldProps.props.name}
                 value={fieldProps.input}
                 type='email'
@@ -117,17 +116,15 @@ export const SignInWithEmailAndPasswordForm = ({
           path={['password']}>
           {(fieldProps) => (
             <div className={field}>
-              <label
-                className={fieldLabel}
-                htmlFor={fieldProps.props.name}>
+              <StyledLabel htmlFor={fieldProps.props.name}>
                 <Lock
                   size={16}
                   aria-hidden
-                />{' '}
+                />
                 パスワード
-              </label>
-              <Input
-                className={fieldInput}
+              </StyledLabel>
+
+              <StyledInput
                 id={fieldProps.props.name}
                 value={fieldProps.input}
                 type='password'
@@ -151,7 +148,7 @@ export const SignInWithEmailAndPasswordForm = ({
         <LogIn
           size={16}
           aria-hidden
-        />{' '}
+        />
         {isPending ? 'サインイン中...' : 'サインイン'}
       </StyledButton>
     </form>
