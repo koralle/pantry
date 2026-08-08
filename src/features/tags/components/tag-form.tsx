@@ -1,11 +1,11 @@
-import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { CircleAlert } from 'lucide-react'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { field, fieldInput, fieldLabel, formSummary } from '../../../styles/form'
+import { StyledInput } from '../../../shared/components/styled-input'
+import { field, fieldLabel, formSummary } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../styles/workbench'
 import { TagEditFields } from './tag-edit-fields'
@@ -93,11 +93,9 @@ export function TagForm({
                 htmlFor={fieldProps.props.name}>
                 タグ名
               </label>
-              <Input
-                className={fieldInput}
+              <StyledInput
                 id={fieldProps.props.name}
                 value={fieldProps.input}
-                type='text'
                 onValueChange={(newValue) => {
                   fieldProps.onChange(newValue)
                 }}
