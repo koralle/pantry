@@ -1,8 +1,8 @@
-import { Input } from '@base-ui/react'
 import { Field, setErrors } from '@formisch/react'
 import { Download } from 'lucide-react'
 
 import { StyledButton } from '../../../../../shared/components/styled-button'
+import { StyledInput } from '../../../../../shared/components/styled-input'
 import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../../styles/form'
 import type { BookmarkFormFieldKey, BookmarkFormServerError, BookmarkFormStore } from './types'
 
@@ -71,7 +71,7 @@ export function BookmarkFormFields({
                 URL
               </label>
               <div className={fieldUrlRow}>
-                <Input
+                <StyledInput
                   id={ids.url}
                   name={fieldProps.props.name}
                   ref={(element) => {
@@ -126,7 +126,7 @@ export function BookmarkFormFields({
                 className={fieldLabel}>
                 タイトル
               </label>
-              <Input
+              <StyledInput
                 id={ids.title}
                 name={fieldProps.props.name}
                 ref={(element) => {
@@ -169,7 +169,7 @@ export function BookmarkFormFields({
                 className={fieldLabel}>
                 メモ
               </label>
-              <Input
+              <StyledInput
                 id={ids.note}
                 name={fieldProps.props.name}
                 ref={(element) => {

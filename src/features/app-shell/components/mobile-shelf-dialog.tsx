@@ -1,6 +1,9 @@
-import { Dialog } from '@base-ui/react/dialog'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from 'react-aria-components/Button'
+import { Dialog, DialogTrigger } from 'react-aria-components/Dialog'
+import { Heading } from 'react-aria-components/Heading'
+import { Modal, ModalOverlay } from 'react-aria-components/Modal'
 import { css } from 'styled-system/css'
 
 import type { ShelfNavSelection } from '../../tags/components/shelf-nav'
@@ -92,36 +95,46 @@ export function MobileShelfDialog({
   }
 
   return (
-    <Dialog.Root
-      open={shelfOpen}
+    <DialogTrigger
+      isOpen={shelfOpen}
       onOpenChange={setShelfOpen}>
-      <Dialog.Trigger className={shelfChanger}>
+      <Button className={shelfChanger}>
         <Menu
           size={16}
           aria-hidden
         />{' '}
         棚を変える
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Backdrop className={shelfSheetBackdrop} />
-        <Dialog.Popup className={shelfSheet}>
-          <div className={shelfSheetHeader}>
-            <Dialog.Title className={shelfSheetTitle}>棚を選ぶ</Dialog.Title>
-            <Dialog.Close className={shelfSheetClose}>
-              <X
-                size={16}
-                aria-hidden
-              />{' '}
-              閉じる
-            </Dialog.Close>
-          </div>
-          <ShelfNavPanel
-            shelfTagsPromise={shelfTagsPromise}
-            selection={selection}
-            onNavigate={closeShelf}
-          />
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+      </Button>
+      <ModalOverlay
+        className={shelfSheetBackdrop}
+        isDismissable>
+        <Modal>
+          <Dialog className={shelfSheet}>
+            <div className={shelfSheetHeader}>
+              <Heading
+                slot='title'
+                level={2}
+                className={shelfSheetTitle}>
+                棚を選ぶ
+              </Heading>
+              <Button
+                slot='close'
+                className={shelfSheetClose}>
+                <X
+                  size={16}
+                  aria-hidden
+                />{' '}
+                閉じる
+              </Button>
+            </div>
+            <ShelfNavPanel
+              shelfTagsPromise={shelfTagsPromise}
+              selection={selection}
+              onNavigate={closeShelf}
+            />
+          </Dialog>
+        </Modal>
+      </ModalOverlay>
+    </DialogTrigger>
   )
 }

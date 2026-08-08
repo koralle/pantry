@@ -1,10 +1,10 @@
-import { Input } from '@base-ui/react'
 import { Field, getErrors, getInput, useForm, validate } from '@formisch/react'
 import { CircleAlert, Download } from 'lucide-react'
 import { useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
+import { StyledInput } from '../../../shared/components/styled-input'
 import {
   field,
   fieldError,
@@ -128,7 +128,7 @@ export function BookmarkWorkbenchForm({
                 URL
               </label>
               <div className={fieldUrlRow}>
-                <Input
+                <StyledInput
                   id={f.props.name}
                   className={fieldInput}
                   value={f.input}
@@ -166,7 +166,7 @@ export function BookmarkWorkbenchForm({
                 className={fieldLabel}>
                 タイトル
               </label>
-              <Input
+              <StyledInput
                 id={f.props.name}
                 className={fieldInput}
                 value={f.input}
@@ -192,7 +192,7 @@ export function BookmarkWorkbenchForm({
                 className={fieldLabel}>
                 メモ
               </label>
-              <Input
+              <StyledInput
                 id={f.props.name}
                 className={fieldInput}
                 value={f.input ?? ''}
