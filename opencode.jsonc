@@ -4,22 +4,21 @@
   "provider": {
     "balian-token-plan-personal": {
       "npm": "@ai-sdk/anthropic",
-      "name": "Alibaba Cloud Model Studio",
+      "name": "QwenCloud",
       "options": {
         "baseURL": "https://token-plan.ap-southeast-1.maas.aliyuncs.com/apps/anthropic/v1",
         "apiKey": "{env:QWEN_API_KEY}"
       },
       "models": {
-        "qwen3.8-max-preview": {
-          "name": "Qwen3.8 Max Preview",
+        "qwen3.8-max": {
+          "name": "Qwen3.8 Max",
           "contextWindow": 983616,
           "maxOutputTokens": 131072,
           "options": {
             "thinking": {
               "type": "enabled",
-              "budgetTokens": 99072
+              "budgetTokens": 262144
             },
-            "temperature": 0.6,
             "reasoning": true
           }
         }
@@ -38,7 +37,7 @@
     },
     "[QwenCloud] Qwen 3.8 Max": {
       "mode": "primary",
-      "model": "balian-token-plan-personal/qwen3.8-max-preview",
+      "model": "balian-token-plan-personal/qwen3.8-max",
       "tools": {
         "write": true,
         "edit": true,
