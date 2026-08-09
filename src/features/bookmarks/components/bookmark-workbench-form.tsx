@@ -1,7 +1,7 @@
-import { Input } from '@base-ui/react'
 import { Field, getErrors, getInput, useForm, validate } from '@formisch/react'
 import { CircleAlert, Download } from 'lucide-react'
 import { useActionState, useState } from 'react'
+import { Input } from 'react-aria-components'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
@@ -133,17 +133,17 @@ export function BookmarkWorkbenchForm({
                   className={fieldInput}
                   value={f.input}
                   type='url'
-                  onValueChange={(newValue) => {
-                    f.onChange(newValue)
+                  onChange={(event) => {
+                    f.onChange(event.target.value)
                   }}
                   required
                   disabled={busy}
                 />
                 <StyledButton
-                  onClick={() => {
+                  onPress={() => {
                     void handleFetchTitle()
                   }}
-                  disabled={busy}>
+                  isDisabled={busy}>
                   <Download
                     size={16}
                     aria-hidden
@@ -171,8 +171,8 @@ export function BookmarkWorkbenchForm({
                 className={fieldInput}
                 value={f.input}
                 type='text'
-                onValueChange={(newValue) => {
-                  f.onChange(newValue)
+                onChange={(event) => {
+                  f.onChange(event.target.value)
                 }}
                 required
                 disabled={busy}
@@ -197,8 +197,8 @@ export function BookmarkWorkbenchForm({
                 className={fieldInput}
                 value={f.input ?? ''}
                 type='text'
-                onValueChange={(newValue) => {
-                  f.onChange(newValue)
+                onChange={(event) => {
+                  f.onChange(event.target.value)
                 }}
                 disabled={busy}
               />
@@ -211,7 +211,7 @@ export function BookmarkWorkbenchForm({
       <StyledButton
         type='submit'
         visual='accent'
-        disabled={busy}>
+        isDisabled={busy}>
         {isPending ? pendingLabel : submitLabel}
       </StyledButton>
     </form>

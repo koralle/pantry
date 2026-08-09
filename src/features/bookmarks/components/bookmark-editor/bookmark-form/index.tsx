@@ -121,7 +121,7 @@ export function BookmarkForm({
       <StyledButton
         type='submit'
         visual='accent'
-        disabled={busy}>
+        isDisabled={busy}>
         {pending ? pendingLabel : submitLabel}
       </StyledButton>
     </Form>

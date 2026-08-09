@@ -16,7 +16,7 @@ export function UiError({ message, onRetry }: { message: string; onRetry?: () =>
       {onRetry ? (
         <StyledButton
           visual='accent'
-          onClick={onRetry}>
+          onPress={onRetry}>
           <RefreshCw
             size={16}
             aria-hidden

@@ -1,8 +1,8 @@
-import { Input as BaseInput } from '@base-ui/react/input'
+import { Input as AriaInput } from 'react-aria-components'
 import { styled } from 'styled-system/jsx'
 import type { HTMLStyledProps } from 'styled-system/types'
 
-const RawInput = styled(BaseInput, {
+const RawInput = styled(AriaInput, {
   base: {
     minBlockSize: 'touch',
     borderWidth: 'thin',

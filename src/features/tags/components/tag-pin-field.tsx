@@ -27,8 +27,8 @@ export function TagPinField({ pinned, onPinnedChange, disabled = false }: TagPin
       <StyledButton
         aria-pressed={pinned}
         aria-labelledby='tag-pinned-label'
-        disabled={disabled}
-        onClick={() => {
+        isDisabled={disabled}
+        onPress={() => {
           onPinnedChange(!pinned)
         }}>
         {pinned ? (

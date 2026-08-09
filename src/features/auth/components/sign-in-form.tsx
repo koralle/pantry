@@ -99,8 +99,8 @@ export const SignInWithEmailAndPasswordForm = ({
                 id={fieldProps.props.name}
                 value={fieldProps.input}
                 type='email'
-                onValueChange={(newValue) => {
-                  fieldProps.onChange(newValue)
+                onChange={(event) => {
+                  fieldProps.onChange(event.target.value)
                 }}
                 autoComplete='email webauthn'
                 required
@@ -128,8 +128,8 @@ export const SignInWithEmailAndPasswordForm = ({
                 id={fieldProps.props.name}
                 value={fieldProps.input}
                 type='password'
-                onValueChange={(newValue) => {
-                  fieldProps.onChange(newValue)
+                onChange={(event) => {
+                  fieldProps.onChange(event.target.value)
                 }}
                 autoComplete='current-password webauthn'
                 required
@@ -144,7 +144,7 @@ export const SignInWithEmailAndPasswordForm = ({
       <StyledButton
         type='submit'
         visual='accent'
-        disabled={isPending}>
+        isDisabled={isPending}>
         <LogIn
           size={16}
           aria-hidden
