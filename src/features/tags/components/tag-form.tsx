@@ -1,7 +1,7 @@
-import { Input } from '@base-ui/react'
 import { Field, getInput, useForm } from '@formisch/react'
 import { CircleAlert } from 'lucide-react'
 import { useActionState, useState } from 'react'
+import { Input } from 'react-aria-components'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
@@ -98,8 +98,8 @@ export function TagForm({
                 id={fieldProps.props.name}
                 value={fieldProps.input}
                 type='text'
-                onValueChange={(newValue) => {
-                  fieldProps.onChange(newValue)
+                onChange={(event) => {
+                  fieldProps.onChange(event.target.value)
                 }}
                 required
               />
@@ -121,7 +121,7 @@ export function TagForm({
       <StyledButton
         type='submit'
         visual='accent'
-        disabled={isPending}>
+        isDisabled={isPending}>
         {isPending ? pendingLabel : submitLabel}
       </StyledButton>
     </form>

@@ -40,8 +40,8 @@ export function TagSortOrderField({
       <div className={sortOrderRow}>
         <StyledButton
           aria-label='並び順を下げる'
-          disabled={disabled}
-          onClick={() => {
+          isDisabled={disabled}
+          onPress={() => {
             onSortOrderChange(sortOrder - 1)
           }}>
           <Minus
@@ -66,8 +66,8 @@ export function TagSortOrderField({
         />
         <StyledButton
           aria-label='並び順を上げる'
-          disabled={disabled}
-          onClick={() => {
+          isDisabled={disabled}
+          onPress={() => {
             onSortOrderChange(sortOrder + 1)
           }}>
           <Plus

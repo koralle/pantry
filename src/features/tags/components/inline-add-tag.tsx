@@ -1,7 +1,7 @@
-import { Input } from '@base-ui/react'
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
+import { Input } from 'react-aria-components'
 import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
@@ -66,14 +66,14 @@ export function InlineAddTag() {
             id='inline-add-tag-name'
             value={name}
             type='text'
-            onValueChange={(newValue) => {
-              setName(newValue)
+            onChange={(event) => {
+              setName(event.target.value)
             }}
             disabled={isPending}
           />
           <StyledButton
             type='submit'
-            disabled={isPending}>
+            isDisabled={isPending}>
             <Plus
               size={16}
               aria-hidden

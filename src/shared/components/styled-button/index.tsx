@@ -1,7 +1,7 @@
 /**
  * @file index.tsx
  *
- * Input:    Base UI `Button`, Panda `styled` factory
+ * Input:    React Aria Components `Button`, Panda `styled` factory
  * Output:   StyledButton component
  * Position: Shared UI primitive; documented by index.stories.tsx
  *
@@ -11,7 +11,7 @@
  * Last synced props: visual, size, type, className, css, plus every Panda style prop
  */
 
-import { Button as BaseButton } from '@base-ui/react/button'
+import { Button as AriaButton } from 'react-aria-components'
 import { styled } from 'styled-system/jsx'
 import type { HTMLStyledProps } from 'styled-system/types'
 
@@ -19,13 +19,13 @@ import { button } from '../../../styles/button'
 
 /**
  * Intentionally not exported. Consumers get `StyledButton` (or the `button`
- * recipe for className composition) instead of a bare styled Base UI Button.
+ * recipe for className composition) instead of a bare styled RAC Button.
  */
-const RawButton = styled(BaseButton, button)
+const RawButton = styled(AriaButton, button)
 
 /**
  * NOT `StyledVariantProps`: that helper resolves to the recipe's variant record
- * alone and drops both Base UI / native button props and `JsxStyleProps`.
+ * alone and drops both React Aria / native button props and `JsxStyleProps`.
  * `HTMLStyledProps` keeps those attributes and style props while still
  * carrying the recipe variants.
  */

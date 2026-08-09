@@ -25,7 +25,6 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@base-ui/react": "catalog:ui",
     "@better-auth/drizzle-adapter": "catalog:authentication",
     "@cloudflare/vite-plugin": "catalog:build",
     "@formisch/react": "catalog:form",
@@ -42,6 +41,7 @@
     "drizzle-orm": "catalog:database",
     "lucide-react": "catalog:ui",
     "react": "catalog:react",
+    "react-aria-components": "catalog:ui",
     "react-dom": "catalog:react",
     "react-error-boundary": "catalog:errors",
     "uuidv7": "catalog:uuid",

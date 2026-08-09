@@ -1,6 +1,6 @@
-import { Input } from '@base-ui/react'
 import { Field, setErrors } from '@formisch/react'
 import { Download } from 'lucide-react'
+import { Input } from 'react-aria-components'
 
 import { StyledButton } from '../../../../../shared/components/styled-button'
 import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../../styles/form'
@@ -84,15 +84,15 @@ export function BookmarkFormFields({
                   required
                   aria-invalid={errorMessage !== undefined}
                   aria-describedby={errorMessage !== undefined ? `${ids.url}-error` : undefined}
-                  onValueChange={(value) => {
-                    fieldProps.onChange(value)
+                  onChange={(event) => {
+                    fieldProps.onChange(event.target.value)
                     handleFieldChange('url')
                   }}
                 />
                 <StyledButton
                   type='button'
-                  onClick={handleFetchTitle}
-                  disabled={busy}
+                  onPress={handleFetchTitle}
+                  isDisabled={busy}
                   aria-busy={isFetchingTitle}>
                   <Download
                     size={16}
@@ -139,8 +139,8 @@ export function BookmarkFormFields({
                 required
                 aria-invalid={errorMessage !== undefined}
                 aria-describedby={errorMessage !== undefined ? `${ids.title}-error` : undefined}
-                onValueChange={(value) => {
-                  fieldProps.onChange(value)
+                onChange={(event) => {
+                  fieldProps.onChange(event.target.value)
                   handleFieldChange('title')
                 }}
               />
@@ -181,8 +181,8 @@ export function BookmarkFormFields({
                 autoComplete='off'
                 aria-invalid={errorMessage !== undefined}
                 aria-describedby={errorMessage !== undefined ? `${ids.note}-error` : undefined}
-                onValueChange={(value) => {
-                  fieldProps.onChange(value)
+                onChange={(event) => {
+                  fieldProps.onChange(event.target.value)
                   handleFieldChange('note')
                 }}
               />

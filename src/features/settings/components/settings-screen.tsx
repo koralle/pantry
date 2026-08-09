@@ -91,8 +91,8 @@ export function SettingsScreen({ user }: SettingsScreenProps) {
         <h2 className={settingsHeading}>セッション</h2>
         <StyledButton
           visual='accent'
-          onClick={handleSignOut}
-          disabled={isPending}>
+          onPress={handleSignOut}
+          isDisabled={isPending}>
           <LogOut
             size={16}
             aria-hidden
