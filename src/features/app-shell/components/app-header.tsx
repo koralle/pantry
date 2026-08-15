@@ -13,7 +13,8 @@ const shellHeader = css({
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: '3',
-  paddingBlock: '3',
+  minBlockSize: '4rem',
+  paddingBlock: '2',
   paddingInline: '4',
   borderBlockEndWidth: 'thin',
   borderBlockEndStyle: 'solid',
@@ -24,11 +25,18 @@ const shellHeader = css({
 const headerRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '3',
-  flexWrap: 'wrap'
+  gap: '2',
+  flexWrap: 'nowrap',
+  minInlineSize: '0'
 })
 
 const brandMobile = css({
+  md: {
+    display: 'none'
+  }
+})
+
+const settingsAction = css({
   md: {
     display: 'none'
   }
@@ -80,7 +88,8 @@ export function AppHeader({
         </StyledLink>
         <StyledLink
           to='/settings'
-          visual='plain'>
+          visual='plain'
+          className={settingsAction}>
           <Settings
             size={16}
             aria-hidden

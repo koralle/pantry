@@ -127,7 +127,7 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
                   <span className={srOnly}>ピン留め中</span>
                 </span>
               ) : (
-                <span className={tagTableMuted}>—</span>
+                <span className={tagTableMuted}>-</span>
               )}
             </td>
             <td className={tagTableCell}>

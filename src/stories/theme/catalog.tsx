@@ -58,7 +58,7 @@ export function Meta({ path, value }: { readonly path: string; readonly value: s
 }
 
 export function tokenValue(entry: TokenEntry): string {
-  return token(entry.path) ?? '—'
+  return token(entry.path) ?? '-'
 }
 
 const catalogRoot = css({

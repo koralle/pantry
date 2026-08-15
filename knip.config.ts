@@ -25,7 +25,9 @@ const config: KnipConfig = {
     '@markuplint/jsx-parser',
     '@markuplint/react-spec',
     // Dev-only CDN script URL in RootDocument; intentionally not module-imported
-    'react-scan'
+    'react-scan',
+    // Self-hosted typeface loaded via @import in src/index.css
+    '@fontsource/noto-sans-jp'
   ],
   rules: {
     // Existing unused exports/types/catalog noise — ratchets later

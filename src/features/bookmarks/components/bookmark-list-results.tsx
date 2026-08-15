@@ -82,7 +82,7 @@ export function BookmarkListResults({
             to='/bookmarks/new'
             search={detailSearchFromList(search)}
             visual='accent'>
-            新規ブックマーク
+            新規
           </StyledLink>
         }
       />

@@ -19,6 +19,10 @@ export function RootDocument({ children }: { readonly children: React.ReactNode 
     <html lang='ja'>
       <head>
         <meta charSet='utf-8' />
+        <meta
+          name='viewport'
+          content='width=device-width, initial-scale=1'
+        />
         <title>Pantry</title>
         {import.meta.env.DEV ? (
           <script
@@ -30,10 +34,12 @@ export function RootDocument({ children }: { readonly children: React.ReactNode 
       </head>
       <body>
         {children}
-        <TanStackDevtools
-          config={tanstackDevtoolsConfig}
-          plugins={tanstackDevtoolsPlugins}
-        />
+        {import.meta.env.DEV ? (
+          <TanStackDevtools
+            config={tanstackDevtoolsConfig}
+            plugins={tanstackDevtoolsPlugins}
+          />
+        ) : null}
         <Scripts />
       </body>
     </html>

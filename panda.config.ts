@@ -6,6 +6,7 @@ const globalCss = defineGlobalStyles({
   },
   ':root': {
     fontFamily: 'body',
+    fontSizeAdjust: 'from-font',
     lineHeight: 'body',
     textSpacingTrim: 'trim-start',
     textAutospace: 'normal',
@@ -264,10 +265,16 @@ export default defineConfig({
           skeleton: { value: '1.2s' },
           spin: { value: '1s' },
           fadeUp: { value: '200ms' },
-          crossfade: { value: '160ms' }
+          crossfade: { value: '160ms' },
+          press: { value: '120ms' }
+        },
+        easings: {
+          press: { value: 'cubic-bezier(0.16, 1, 0.3, 1)' }
         },
         fonts: {
-          body: { value: 'sans-serif' }
+          body: {
+            value: ['Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'sans-serif']
+          }
         },
         lineHeights: {
           body: { value: '1.5' },

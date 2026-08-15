@@ -1,5 +1,4 @@
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router'
-import { Package } from 'lucide-react'
 import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
@@ -46,10 +45,7 @@ const signInBrand = css({
   margin: '0',
   fontSize: '3xl',
   fontWeight: 'bold',
-  letterSpacing: 'wide',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '2'
+  letterSpacing: 'wide'
 })
 
 const signInTagline = css({
@@ -78,13 +74,7 @@ function SignInScreen({ redirect }: { readonly redirect: string | undefined }) {
   return (
     <div className={signInPage}>
       <div className={signInPanel}>
-        <p className={signInBrand}>
-          <Package
-            size={28}
-            aria-hidden
-          />
-          Pantry
-        </p>
+        <p className={signInBrand}>Pantry</p>
         <p className={signInTagline}>自分の棚に入る</p>
         <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
       </div>

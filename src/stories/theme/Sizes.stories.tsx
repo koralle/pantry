@@ -35,7 +35,7 @@ function SizesCatalog() {
                     />
                   </div>
                 ) : (
-                  <p className={note}>動的 / 特殊値 — ラベルで確認</p>
+                  <p className={note}>動的 / 特殊値 - ラベルで確認</p>
                 )}
               </article>
             )

@@ -1,19 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
-import { LayoutGrid, List, Plus, Search, X } from 'lucide-react'
+import { LayoutGrid, List, Search, X } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { css, cx } from 'styled-system/css'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { StyledLink } from '../../../shared/components/styled-link'
 import { formControl } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { tagChip } from '../../../styles/tag-chip'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { BookmarkSearchPatch } from '../../navigation/lib/bookmark-search-builders'
-import {
-  buildListSearch,
-  detailSearchFromList
-} from '../../navigation/lib/bookmark-search-builders'
+import { buildListSearch } from '../../navigation/lib/bookmark-search-builders'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
 import type { ListLayout } from '../lib/list-layout-preference'
 
@@ -57,7 +53,11 @@ const toggleButton = css({
   alignItems: 'center',
   justifyContent: 'center',
   fontWeight: 'semibold',
-  _pressed: { borderColor: 'accent.solid', background: 'accent.subtle', color: 'accent.solid' }
+  transitionProperty: 'transform, background-color, border-color, color',
+  transitionDuration: 'press',
+  transitionTimingFunction: 'press',
+  _pressed: { borderColor: 'accent.solid', background: 'accent.subtle', color: 'accent.solid' },
+  _active: { transform: 'scale(0.98)' }
 })
 const sortLabel = css({
   display: 'inline-flex',
@@ -123,16 +123,6 @@ export function ListToolbar({
     <div className={toolbar}>
       <div className={titleRow}>
         <h1 className={title}>{shelfTitle(search)}</h1>
-        <StyledLink
-          to='/bookmarks/new'
-          search={detailSearchFromList(search)}
-          visual='accent'>
-          <Plus
-            size={16}
-            aria-hidden
-          />{' '}
-          新規
-        </StyledLink>
       </div>
 
       <form

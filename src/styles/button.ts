@@ -25,6 +25,12 @@ export const button = cva({
     columnGap: '[0.25em]',
     alignItems: 'center',
     justifyContent: 'center',
+    transitionProperty: 'transform, background-color, border-color, color, opacity',
+    transitionDuration: 'press',
+    transitionTimingFunction: 'press',
+    _active: {
+      transform: 'scale(0.98)'
+    },
     _disabled: {
       opacity: '0.6',
       cursor: 'wait'
