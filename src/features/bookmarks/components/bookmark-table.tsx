@@ -79,7 +79,7 @@ export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTablePro
                   ))}
                 </ul>
               ) : (
-                <span className={tagsEmpty}>—</span>
+                <span className={tagsEmpty}>-</span>
               )}
             </td>
             <td className={tableCell}>

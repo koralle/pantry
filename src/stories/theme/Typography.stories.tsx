@@ -38,7 +38,7 @@ function TypographyCatalog() {
               <p
                 className={sizeSpecimen}
                 style={{ fontSize: tokenValue(entry) }}>
-                {entry.label} — あいうえお Aa Bb 123
+                {entry.label} - あいうえお Aa Bb 123
               </p>
               <TokenMeta
                 path={entry.path}
@@ -79,7 +79,7 @@ function TypographyCatalog() {
               <p
                 className={weightSpecimen}
                 style={{ fontWeight: tokenValue(entry) }}>
-                {entry.label} — Pantry
+                {entry.label} - Pantry
               </p>
               <TokenMeta
                 path={entry.path}

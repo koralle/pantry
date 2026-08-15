@@ -27,6 +27,7 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "catalog:authentication",
     "@cloudflare/vite-plugin": "catalog:build",
+    "@fontsource/noto-sans-jp": "catalog:ui",
     "@formisch/react": "catalog:form",
     "@libsql/client": "catalog:database",
     "@praha/error-factory": "catalog:errors",

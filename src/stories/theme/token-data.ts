@@ -198,7 +198,8 @@ export const durationTokens = [
   { path: 'durations.skeleton', label: 'skeleton' },
   { path: 'durations.spin', label: 'spin' },
   { path: 'durations.fadeUp', label: 'fadeUp' },
-  { path: 'durations.crossfade', label: 'crossfade' }
+  { path: 'durations.crossfade', label: 'crossfade' },
+  { path: 'durations.press', label: 'press' }
 ] as const satisfies readonly TokenEntry[]
 
 export const easingTokens = [
@@ -206,7 +207,8 @@ export const easingTokens = [
   { path: 'easings.linear', label: 'linear' },
   { path: 'easings.in', label: 'in' },
   { path: 'easings.out', label: 'out' },
-  { path: 'easings.in-out', label: 'in-out' }
+  { path: 'easings.in-out', label: 'in-out' },
+  { path: 'easings.press', label: 'press' }
 ] as const satisfies readonly TokenEntry[]
 
 export const aspectRatioTokens = [

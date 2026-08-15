@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Package, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { css, cx } from 'styled-system/css'
 
 import { StyledLink } from '../../../shared/components/styled-link'
@@ -55,14 +55,6 @@ const entranceBoxCount = css({
   fontVariantNumeric: 'tabular-nums'
 })
 
-const entranceEmptyActions = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  rowGap: '3',
-  columnGap: '5',
-  justifyContent: 'center'
-})
-
 export function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
   const sorted = sortTagsForEntrance(tags)
 
@@ -71,26 +63,15 @@ export function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
       <UiEmpty
         title='まだ箱がありません'
         action={
-          <div className={entranceEmptyActions}>
-            <StyledLink
-              to='/tags/new'
-              visual='accent'>
-              <Plus
-                size={16}
-                aria-hidden
-              />{' '}
-              タグを作成
-            </StyledLink>
-            <StyledLink
-              to='/bookmarks/new'
-              visual='accent'>
-              <Plus
-                size={16}
-                aria-hidden
-              />{' '}
-              新規ブックマーク
-            </StyledLink>
-          </div>
+          <StyledLink
+            to='/tags/new'
+            visual='accent'>
+            <Plus
+              size={16}
+              aria-hidden
+            />{' '}
+            タグを作成
+          </StyledLink>
         }
       />
     )
@@ -112,13 +93,7 @@ export function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
               style={tag.color != null ? { backgroundColor: tag.color } : undefined}
               aria-hidden='true'
             />
-            <span className={entranceBoxName}>
-              <Package
-                size={16}
-                aria-hidden
-              />{' '}
-              {tag.name}
-            </span>
+            <span className={entranceBoxName}>{tag.name}</span>
             <span className={entranceBoxCount}>{tag.bookmarkCount}件</span>
           </Link>
         </li>
