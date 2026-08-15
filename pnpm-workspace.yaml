@@ -9,6 +9,8 @@ catalog:
 
 catalogMode: strict
 
+enableGlobalVirtualStore: true
+
 catalogs:
   authentication:
     '@better-auth/drizzle-adapter': 1.6.25
@@ -103,6 +105,26 @@ overrides:
   chokidar: 5.0.0
   kysely: 0.28.17
   esbuild: 0.28.1
+
+packageExtensions:
+  '@formisch/react@*':
+    peerDependencies:
+      '@types/react': '*'
+  '@storybook/react@*':
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+  '@storybook/tanstack-react@*':
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+  'react-aria-components@*':
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+  'react-error-boundary@*':
+    peerDependencies:
+      '@types/react': '*'
 
 saveExact: true
 
