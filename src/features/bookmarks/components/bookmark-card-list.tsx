@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { css, cx } from 'styled-system/css'
 
-import { surface } from '../../../styles/surface'
+import { interactiveSurface, surface } from '../../../styles/surface'
 import { tagChip } from '../../../styles/tag-chip'
 import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
 import { shortenUrl } from '../lib/shorten-url'
@@ -9,7 +9,7 @@ import { shortenUrl } from '../lib/shorten-url'
 export const bookmarkCards = css({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: '3',
+  gap: '4',
   margin: '0',
   padding: '0',
   listStyle: 'none',
@@ -66,7 +66,7 @@ export function BookmarkCardList({
             to='/bookmarks/$id'
             params={{ id: bookmark.id }}
             search={detailSearch}
-            className={cx(surface, bookmarkCard)}>
+            className={cx(surface, interactiveSurface, bookmarkCard)}>
             <span className={cardTitle}>{bookmark.title}</span>
             <span className={cardUrl}>{shortenUrl(bookmark.url)}</span>
             {bookmark.note ? <span className={cardNote}>{bookmark.note}</span> : null}

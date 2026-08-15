@@ -14,7 +14,7 @@ const shelfRail = css({
     flexDirection: 'column',
     gap: '4',
     paddingBlock: '4',
-    paddingInline: '3',
+    paddingInline: '4',
     borderInlineEndWidth: 'thin',
     borderInlineEndStyle: 'solid',
     borderInlineEndColor: 'border.default',

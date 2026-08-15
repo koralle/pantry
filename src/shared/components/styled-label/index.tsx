@@ -6,8 +6,8 @@ const RawLabel = styled('label', {
     display: 'inline-flex',
     alignContent: 'center',
     color: 'fg.default',
-    fontWeight: 'bold',
-    fontSize: '0.825rem',
+    fontWeight: 'semibold',
+    fontSize: 'xs',
     gap: '0.25rem'
   }
 })

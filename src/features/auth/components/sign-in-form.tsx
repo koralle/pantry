@@ -80,7 +80,7 @@ export const SignInWithEmailAndPasswordForm = ({
       <fieldset
         className={workbenchFields}
         disabled={isPending}>
-        <legend className={srOnly}>ログイン</legend>
+        <legend className={srOnly}>サインイン</legend>
 
         <Field
           of={signInFormInstance}

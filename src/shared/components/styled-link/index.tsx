@@ -48,6 +48,8 @@ const linkStyles = cva({
     borderRadius: 'box',
     cursor: 'pointer',
     transitionProperty: '[color, text-decoration]',
+    transitionDuration: 'hover',
+    transitionTimingFunction: 'press',
     touchAction: 'manipulation',
     '@media (any-hover: hover)': {
       '&:hover': {

@@ -1,6 +1,7 @@
 import { css } from 'styled-system/css'
 
 import { StyledLink } from '../../../shared/components/styled-link'
+import { pageLead } from '../../../styles/type'
 
 const signUpPage = css({
   minBlockSize: '100dvh',
@@ -18,19 +19,15 @@ const signUpPanel = css({
   maxInlineSize: 'full',
   display: 'flex',
   flexDirection: 'column',
-  gap: '4'
+  gap: '5'
 })
 
 const signUpBrand = css({
   margin: '0',
   fontSize: '3xl',
   fontWeight: 'bold',
-  letterSpacing: 'wide'
-})
-
-const signUpLead = css({
-  margin: '0',
-  color: 'fg.muted'
+  letterSpacing: 'wide',
+  lineHeight: 'tight'
 })
 
 export function SignUpScreen() {
@@ -38,7 +35,7 @@ export function SignUpScreen() {
     <div className={signUpPage}>
       <div className={signUpPanel}>
         <p className={signUpBrand}>Pantry</p>
-        <p className={signUpLead}>
+        <p className={pageLead}>
           新規登録は受け付けていません。棚に入るにはサインインしてください。
         </p>
         <StyledLink

@@ -28,7 +28,9 @@ export const semanticColors = [
   { path: 'colors.border.accent', label: 'border.accent' },
   { path: 'colors.border.danger', label: 'border.danger' },
   { path: 'colors.accent.solid', label: 'accent.solid' },
+  { path: 'colors.accent.solidHover', label: 'accent.solidHover' },
   { path: 'colors.accent.subtle', label: 'accent.subtle' },
+  { path: 'colors.accent.hover', label: 'accent.hover' },
   { path: 'colors.accent.fg', label: 'accent.fg' },
   { path: 'colors.danger.solid', label: 'danger.solid' },
   { path: 'colors.danger.surface', label: 'danger.surface' },
@@ -199,7 +201,8 @@ export const durationTokens = [
   { path: 'durations.spin', label: 'spin' },
   { path: 'durations.fadeUp', label: 'fadeUp' },
   { path: 'durations.crossfade', label: 'crossfade' },
-  { path: 'durations.press', label: 'press' }
+  { path: 'durations.press', label: 'press' },
+  { path: 'durations.hover', label: 'hover' }
 ] as const satisfies readonly TokenEntry[]
 
 export const easingTokens = [

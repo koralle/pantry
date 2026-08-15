@@ -7,20 +7,21 @@ import { StyledButton } from '../../../shared/components/styled-button'
 import { formControl } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { tagChip } from '../../../styles/tag-chip'
+import { pageTitle } from '../../../styles/type'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { BookmarkSearchPatch } from '../../navigation/lib/bookmark-search-builders'
 import { buildListSearch } from '../../navigation/lib/bookmark-search-builders'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
 import type { ListLayout } from '../lib/list-layout-preference'
 
-const toolbar = css({ display: 'flex', flexDirection: 'column', gap: '3.5', marginBlockEnd: '5' })
+const toolbar = css({ display: 'flex', flexDirection: 'column', gap: '4', marginBlockEnd: '5' })
 const titleRow = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: '3'
 })
-const title = css({ margin: '0', fontSize: 'lg', fontWeight: 'bold' })
+const title = pageTitle
 const searchForm = css({ display: 'flex', gap: '2', flexWrap: 'wrap' })
 const searchInput = cx(formControl, css({ flex: '1', minInlineSize: '12rem' }))
 const controls = css({
@@ -53,11 +54,18 @@ const toggleButton = css({
   alignItems: 'center',
   justifyContent: 'center',
   fontWeight: 'semibold',
-  transitionProperty: 'transform, background-color, border-color, color',
-  transitionDuration: 'press',
+  scale: '1',
+  transitionProperty: 'scale, background-color, border-color, color',
+  transitionDuration: 'hover',
   transitionTimingFunction: 'press',
+  '@media (any-hover: hover)': {
+    '&:hover:not([aria-pressed="true"])': {
+      borderColor: 'border.accent',
+      background: 'accent.hover'
+    }
+  },
   _pressed: { borderColor: 'accent.solid', background: 'accent.subtle', color: 'accent.solid' },
-  _active: { transform: 'scale(0.98)' }
+  _active: { scale: '0.98' }
 })
 const sortLabel = css({
   display: 'inline-flex',

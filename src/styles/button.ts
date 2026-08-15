@@ -25,11 +25,18 @@ export const button = cva({
     columnGap: '[0.25em]',
     alignItems: 'center',
     justifyContent: 'center',
-    transitionProperty: 'transform, background-color, border-color, color, opacity',
-    transitionDuration: 'press',
+    scale: '1',
+    transitionProperty: 'scale, background-color, border-color, color, opacity',
+    transitionDuration: 'hover',
     transitionTimingFunction: 'press',
+    '@media (any-hover: hover)': {
+      '&:hover:not(:disabled)': {
+        borderColor: 'border.accent',
+        background: 'accent.subtle'
+      }
+    },
     _active: {
-      transform: 'scale(0.98)'
+      scale: '0.98'
     },
     _disabled: {
       opacity: '0.6',
@@ -42,12 +49,26 @@ export const button = cva({
       accent: {
         borderColor: 'accent.solid',
         background: 'accent.solid',
-        color: 'accent.fg'
+        color: 'accent.fg',
+        '@media (any-hover: hover)': {
+          '&:hover:not(:disabled)': {
+            borderColor: 'accent.solidHover',
+            background: 'accent.solidHover',
+            color: 'accent.fg'
+          }
+        }
       },
       danger: {
         borderColor: 'border.danger',
         color: 'danger.solid',
-        background: 'bg.surface'
+        background: 'bg.surface',
+        '@media (any-hover: hover)': {
+          '&:hover:not(:disabled)': {
+            background: 'danger.surface',
+            borderColor: 'border.danger',
+            color: 'danger.solid'
+          }
+        }
       }
     },
     size: {

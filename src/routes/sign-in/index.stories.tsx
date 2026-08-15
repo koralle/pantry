@@ -93,6 +93,6 @@ export const Pending = meta.story({
     await waitFor(async () => {
       await expect(canvas.getByRole('button', { name: 'サインイン中...' })).toBeDisabled()
     })
-    await expect(canvas.getByRole('group', { name: 'ログイン' })).toBeDisabled()
+    await expect(canvas.getByRole('group', { name: 'サインイン' })).toBeDisabled()
   }
 })

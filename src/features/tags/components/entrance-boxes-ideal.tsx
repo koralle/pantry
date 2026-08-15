@@ -4,7 +4,8 @@ import { css, cx } from 'styled-system/css'
 
 import { StyledLink } from '../../../shared/components/styled-link'
 import { UiEmpty } from '../../../shared/components/ui-empty'
-import { surface } from '../../../styles/surface'
+import { interactiveSurface, surface } from '../../../styles/surface'
+import { metaCount } from '../../../styles/type'
 import { tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
 import { touchTagLastUsed } from '../functions/touch-tag-last-used'
 import { sortTagsForEntrance } from '../lib/tag-shelf'
@@ -13,7 +14,7 @@ import type { ShelfTag } from '../lib/tag-shelf'
 export const entranceGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  gap: '3',
+  gap: '4',
   margin: '0',
   padding: '0',
   listStyle: 'none'
@@ -21,6 +22,7 @@ export const entranceGrid = css({
 
 const entranceBox = cx(
   surface,
+  interactiveSurface,
   css({
     display: 'flex',
     flexDirection: 'column',
@@ -49,11 +51,7 @@ const entranceBoxName = css({
   whiteSpace: 'nowrap'
 })
 
-const entranceBoxCount = css({
-  color: 'fg.muted',
-  fontSize: 'xs',
-  fontVariantNumeric: 'tabular-nums'
-})
+const entranceBoxCount = metaCount
 
 export function EntranceBoxesIdeal({ tags }: { readonly tags: ShelfTag[] }) {
   const sorted = sortTagsForEntrance(tags)

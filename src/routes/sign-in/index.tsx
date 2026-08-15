@@ -6,6 +6,7 @@ import { SignInWithEmailAndPasswordForm } from '../../features/auth/components/s
 import { authClient } from '../../features/auth/lib/auth-client'
 import { SignInError } from '../../features/auth/lib/sign-in-error'
 import type { SignInSchema } from '../../features/auth/lib/sign-in-schema'
+import { pageLead } from '../../styles/type'
 
 const searchSchema = v.object({
   redirect: v.optional(v.string())
@@ -38,19 +39,15 @@ const signInPanel = css({
   maxInlineSize: 'full',
   display: 'flex',
   flexDirection: 'column',
-  gap: '4'
+  gap: '5'
 })
 
 const signInBrand = css({
   margin: '0',
   fontSize: '3xl',
   fontWeight: 'bold',
-  letterSpacing: 'wide'
-})
-
-const signInTagline = css({
-  margin: '0',
-  color: 'fg.muted'
+  letterSpacing: 'wide',
+  lineHeight: 'tight'
 })
 
 function SignInScreen({ redirect }: { readonly redirect: string | undefined }) {
@@ -75,7 +72,7 @@ function SignInScreen({ redirect }: { readonly redirect: string | undefined }) {
     <div className={signInPage}>
       <div className={signInPanel}>
         <p className={signInBrand}>Pantry</p>
-        <p className={signInTagline}>自分の棚に入る</p>
+        <p className={pageLead}>自分の棚に入る</p>
         <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
       </div>
     </div>

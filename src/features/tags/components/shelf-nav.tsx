@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { css, cx } from 'styled-system/css'
 
+import { metaCount } from '../../../styles/type'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { allShelfSearch, tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
 import { sortTagsForNav } from '../lib/tag-shelf'
@@ -24,6 +25,15 @@ const shelfItem = css({
   borderInlineStartColor: 'transparent',
   color: 'fg.default',
   textDecoration: 'none',
+  borderRadius: 'box',
+  transitionProperty: 'background-color, border-color',
+  transitionDuration: 'hover',
+  transitionTimingFunction: 'press',
+  '@media (any-hover: hover)': {
+    '&:hover:not([data-selected="true"])': {
+      background: 'accent.hover'
+    }
+  },
   '&[data-selected="true"]': {
     borderInlineStartColor: 'accent.solid',
     background: 'accent.subtle'
@@ -39,11 +49,7 @@ const shelfItemLabel = css({
   fontWeight: 'semibold'
 })
 
-const shelfItemCount = css({
-  color: 'fg.muted',
-  fontSize: 'xs',
-  fontVariantNumeric: 'tabular-nums'
-})
+const shelfItemCount = metaCount
 
 const shelfDot = css({
   inlineSize: '2.5',

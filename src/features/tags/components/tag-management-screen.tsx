@@ -6,6 +6,7 @@ import { css } from 'styled-system/css'
 
 import { createErrorFallback } from '../../../shared/components/error-fallback'
 import { button } from '../../../styles/button'
+import { pageLead, pageTitle } from '../../../styles/type'
 import type { ShelfTag } from '../lib/tag-shelf'
 import { InlineAddTag } from './inline-add-tag'
 import { TagTable } from './tag-table'
@@ -21,22 +22,17 @@ const tagAdmin = css({
 const tagAdminHeader = css({
   display: 'flex',
   flexWrap: 'wrap',
-  alignItems: 'baseline',
-  rowGap: '3',
-  columnGap: '5'
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '4'
 })
 
-const tagAdminTitle = css({
-  margin: '0',
-  fontSize: 'lg',
-  fontWeight: 'bold'
-})
-
-const tagAdminLead = css({
-  margin: '0',
-  color: 'fg.muted',
-  flex: '1',
-  minInlineSize: '12rem'
+const tagAdminIntro = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+  minInlineSize: '12rem',
+  flex: '1'
 })
 
 const TagsError = createErrorFallback('タグの読み込みに失敗しました')
@@ -49,8 +45,10 @@ export function TagManagementScreen({
   return (
     <div className={tagAdmin}>
       <header className={tagAdminHeader}>
-        <h1 className={tagAdminTitle}>タグ管理</h1>
-        <p className={tagAdminLead}>箱のラベル・ピン・色を整える裏方です</p>
+        <div className={tagAdminIntro}>
+          <h1 className={pageTitle}>タグ管理</h1>
+          <p className={pageLead}>箱のラベル・ピン・色を整える裏方です</p>
+        </div>
         <Link
           to='/tags/new'
           className={button({ visual: 'accent' })}>

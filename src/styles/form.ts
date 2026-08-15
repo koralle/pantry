@@ -39,7 +39,8 @@ export const field = css({
 })
 
 export const fieldLabel = css({
-  fontWeight: 'semibold'
+  fontWeight: 'semibold',
+  fontSize: 'xs'
 })
 
 export const fieldInput = css({

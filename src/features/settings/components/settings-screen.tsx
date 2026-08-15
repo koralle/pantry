@@ -1,8 +1,9 @@
 import { ArrowLeft, LogOut } from 'lucide-react'
-import { css } from 'styled-system/css'
+import { css, cx } from 'styled-system/css'
 
 import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
+import { pageLead, pageTitle, sectionLabel } from '../../../styles/type'
 import type { ensureSession } from '../../auth/functions/ensure-session'
 import { useSignOut } from '../../auth/hooks/use-sign-out'
 import { defaultBookmarkSearch } from '../../navigation/lib/bookmark-search'
@@ -11,25 +12,10 @@ const settings = css({
   maxInlineSize: '28rem',
   display: 'flex',
   flexDirection: 'column',
-  gap: '6'
-})
-
-const settingsTitle = css({
-  margin: '0',
-  fontSize: 'lg',
-  fontWeight: 'bold'
-})
-
-const settingsLead = css({
-  margin: '0',
-  color: 'fg.muted'
+  gap: '5'
 })
 
 const settingsHeading = css({
-  margin: '0',
-  color: 'fg.muted',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
   marginBlockEnd: '3'
 })
 
@@ -70,11 +56,11 @@ export function SettingsScreen({ user }: SettingsScreenProps) {
 
   return (
     <div className={settings}>
-      <h1 className={settingsTitle}>設定</h1>
-      <p className={settingsLead}>アカウントと出口</p>
+      <h1 className={pageTitle}>設定</h1>
+      <p className={pageLead}>アカウントと出口</p>
 
       <section className={settingsSection}>
-        <h2 className={settingsHeading}>アカウント</h2>
+        <h2 className={cx(sectionLabel, settingsHeading)}>アカウント</h2>
         <dl className={settingsAccount}>
           <div className={settingsAccountRow}>
             <dt className={settingsAccountDt}>名前</dt>
@@ -88,7 +74,7 @@ export function SettingsScreen({ user }: SettingsScreenProps) {
       </section>
 
       <section className={settingsSection}>
-        <h2 className={settingsHeading}>セッション</h2>
+        <h2 className={cx(sectionLabel, settingsHeading)}>セッション</h2>
         <StyledButton
           visual='accent'
           onPress={handleSignOut}

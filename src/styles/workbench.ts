@@ -1,5 +1,7 @@
 import { css } from 'styled-system/css'
 
+import { pageLead, pageTitle } from './type'
+
 export const workbench = css({
   maxInlineSize: '36rem',
   display: 'flex',
@@ -14,17 +16,9 @@ export const workbenchNav = css({
   columnGap: '5'
 })
 
-export const workbenchTitle = css({
-  margin: '0',
-  fontSize: 'title',
-  fontWeight: 'bold',
-  lineHeight: 'tight'
-})
+export const workbenchTitle = pageTitle
 
-export const workbenchLead = css({
-  margin: '0',
-  color: 'fg.muted'
-})
+export const workbenchLead = pageLead
 
 export const workbenchForm = css({
   display: 'flex',

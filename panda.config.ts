@@ -15,7 +15,9 @@ const globalCss = defineGlobalStyles({
     WebkitTextSizeAdjust: '100%',
     textSizeAdjust: '100%',
     scrollbarGutter: 'stable',
-    WebkitTapHighlightColor: 'transparent'
+    WebkitTapHighlightColor: 'transparent',
+    colorScheme: 'light',
+    accentColor: 'accent.solid'
   },
   body: {
     minBlockSize: '100dvb',
@@ -23,12 +25,12 @@ const globalCss = defineGlobalStyles({
     background: 'bg.canvas',
     color: 'fg.default'
   },
-  'h1:lang(en)': {
-    textWrap: 'pretty'
-  },
   h1: {
-    marginBlock: '0.67em',
-    fontSize: '2em'
+    marginBlock: 'unset',
+    fontSize: 'title',
+    fontWeight: 'bold',
+    lineHeight: 'tight',
+    textWrap: 'pretty'
   },
   'h2, h3, h4, h5, h6': {
     marginBlock: 'unset'
@@ -180,9 +182,8 @@ const globalCss = defineGlobalStyles({
   },
   '@media (prefers-reduced-motion: reduce)': {
     '*, *::before, *::after': {
-      animationDuration: '0.01ms !important',
-      animationIterationCount: '1 !important',
-      transitionDuration: '0.01ms !important'
+      animation: 'none !important',
+      transition: 'none !important'
     }
   }
 })
@@ -266,7 +267,8 @@ export default defineConfig({
           spin: { value: '1s' },
           fadeUp: { value: '200ms' },
           crossfade: { value: '160ms' },
-          press: { value: '120ms' }
+          press: { value: '120ms' },
+          hover: { value: '180ms' }
         },
         easings: {
           press: { value: 'cubic-bezier(0.16, 1, 0.3, 1)' }
@@ -303,15 +305,21 @@ export default defineConfig({
           },
           accent: {
             solid: { value: '{colors.pantry.accent}' },
+            solidHover: {
+              value: 'color-mix(in oklab, {colors.pantry.accent} 82%, {colors.pantry.ink})'
+            },
             subtle: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 14%, white)'
+              value: 'color-mix(in oklab, {colors.pantry.accent} 14%, {colors.pantry.canvas})'
+            },
+            hover: {
+              value: 'color-mix(in oklab, {colors.pantry.accent} 10%, {colors.pantry.canvas})'
             },
             fg: { value: '{colors.pantry.surface}' }
           },
           danger: {
             solid: { value: '{colors.pantry.danger}' },
             surface: {
-              value: 'color-mix(in oklab, {colors.pantry.danger} 8%, white)'
+              value: 'color-mix(in oklab, {colors.pantry.danger} 8%, {colors.pantry.canvas})'
             },
             border: {
               value: 'color-mix(in oklab, {colors.pantry.danger} 35%, {colors.pantry.line})'
@@ -319,13 +327,13 @@ export default defineConfig({
           },
           surface: {
             header: {
-              value: 'color-mix(in oklab, {colors.pantry.canvas} 88%, white)'
+              value: '{colors.pantry.canvas}'
             },
             rail: {
-              value: 'color-mix(in oklab, {colors.pantry.canvas} 92%, white)'
+              value: '{colors.pantry.canvas}'
             },
             tag: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 8%, white)'
+              value: 'color-mix(in oklab, {colors.pantry.accent} 8%, {colors.pantry.canvas})'
             }
           },
           overlay: {
@@ -335,10 +343,10 @@ export default defineConfig({
           },
           skeleton: {
             start: {
-              value: 'color-mix(in oklab, {colors.pantry.line} 35%, white)'
+              value: 'color-mix(in oklab, {colors.pantry.line} 35%, {colors.pantry.canvas})'
             },
             middle: {
-              value: 'color-mix(in oklab, {colors.pantry.line} 15%, white)'
+              value: 'color-mix(in oklab, {colors.pantry.line} 15%, {colors.pantry.canvas})'
             }
           }
         }
