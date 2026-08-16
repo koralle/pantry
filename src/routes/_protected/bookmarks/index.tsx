@@ -1,12 +1,14 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import * as v from 'valibot'
 
-import { defaultBookmarkSearch } from '../../../features/navigation/lib/bookmark-search'
+import { bookmarkSearchSchema } from '../../../features/navigation/lib/bookmark-search'
 
 export const Route = createFileRoute('/_protected/bookmarks/')({
-  beforeLoad: () => {
+  validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
+  beforeLoad: ({ search }) => {
     throw redirect({
       to: '/',
-      search: defaultBookmarkSearch,
+      search,
       statusCode: 301
     })
   }

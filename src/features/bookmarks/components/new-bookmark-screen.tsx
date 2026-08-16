@@ -29,7 +29,7 @@ export function NewBookmarkScreen({ searchTags }: { readonly searchTags: string[
         </StyledLink>
       </nav>
 
-      <h1 className={workbenchTitle}>ブックマークをしまう</h1>
+      <h1 className={workbenchTitle}>ブックマークを追加</h1>
       <p className={workbenchLead}>URLを入れて、必要ならタイトルを取得してから保存します。</p>
 
       <BookmarkWorkbenchForm

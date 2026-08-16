@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, PackageOpen } from 'lucide-react'
+import { ArrowLeft, CircleDashed } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
 import * as v from 'valibot'
 
@@ -84,7 +84,7 @@ function RouteComponent() {
       <section
         className={workbench}
         aria-label='ブックマーク編集'>
-        <PackageOpen
+        <CircleDashed
           size={20}
           aria-hidden
         />
@@ -132,7 +132,7 @@ function RouteComponent() {
         </StyledLink>
       </nav>
 
-      <h1 className={workbenchTitle}>ブックマークを並べ替える</h1>
+      <h1 className={workbenchTitle}>ブックマークを編集</h1>
       <p className={workbenchLead}>内容を直し、主ボタンで保存します。</p>
 
       <ErrorBoundary FallbackComponent={EditError}>

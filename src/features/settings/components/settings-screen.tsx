@@ -57,7 +57,7 @@ export function SettingsScreen({ user }: SettingsScreenProps) {
   return (
     <div className={settings}>
       <h1 className={pageTitle}>設定</h1>
-      <p className={pageLead}>アカウントと出口</p>
+      <p className={pageLead}>アカウントとログアウト</p>
 
       <section className={settingsSection}>
         <h2 className={cx(sectionLabel, settingsHeading)}>アカウント</h2>
@@ -95,7 +95,7 @@ export function SettingsScreen({ user }: SettingsScreenProps) {
           size={16}
           aria-hidden
         />{' '}
-        玄関へ戻る
+        一覧へ戻る
       </StyledLink>
     </div>
   )

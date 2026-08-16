@@ -4,7 +4,6 @@ import { defaultBookmarkSearch } from './bookmark-search'
 const listDefaults = {
   limit: 50,
   offset: 0,
-  view: 'list' as const,
   tagMode: 'and' as const,
   sort: 'newest' as const
 }
@@ -39,7 +38,6 @@ export function buildListSearch(
   const next: BookmarkSearchSchema = {
     limit: current.limit,
     offset: 0,
-    view: 'list',
     tagMode: patch.tagMode ?? current.tagMode,
     sort: patch.sort ?? current.sort
   }
@@ -59,8 +57,7 @@ export function buildListSearch(
 
 export function buildListBackSearch(tags?: readonly string[]): BookmarkSearchSchema {
   const search: BookmarkSearchSchema = {
-    ...defaultBookmarkSearch,
-    view: 'list'
+    ...defaultBookmarkSearch
   }
 
   if (tags !== undefined && tags.length > 0) {
@@ -77,10 +74,48 @@ export function detailSearchFromList(search: BookmarkSearchSchema): { tags?: str
   return {}
 }
 
-export function allShelfSearch(): BookmarkSearchSchema {
-  return { ...listDefaults }
+export function allShelfSearch(current?: BookmarkSearchSchema): BookmarkSearchSchema {
+  return buildListSearch(current ?? listDefaults, { clearTags: true })
 }
 
-export function tagShelfSearch(tagName: string): BookmarkSearchSchema {
-  return { ...listDefaults, tags: [tagName] }
+export function tagShelfSearch(
+  tagName: string,
+  current?: BookmarkSearchSchema
+): BookmarkSearchSchema {
+  return buildListSearch(current ?? listDefaults, { tags: [tagName] })
+}
+
+export function chromeListSearch(
+  indexSearch: BookmarkSearchSchema | undefined,
+  tagCarriers: ReadonlyArray<{ tags?: readonly string[] | undefined } | undefined>
+): BookmarkSearchSchema | undefined {
+  if (indexSearch !== undefined) {
+    return indexSearch
+  }
+
+  for (const carrier of tagCarriers) {
+    const tags = carrier?.tags
+    if (tags !== undefined && tags.length > 0) {
+      return {
+        ...defaultBookmarkSearch,
+        tags: [...tags]
+      }
+    }
+  }
+
+  return undefined
+}
+
+export function resolveChromeListSearch(
+  indexSearch: BookmarkSearchSchema | undefined,
+  remembered: BookmarkSearchSchema | undefined,
+  tagCarriers: ReadonlyArray<{ tags?: readonly string[] | undefined } | undefined>
+): BookmarkSearchSchema | undefined {
+  if (indexSearch !== undefined) {
+    return indexSearch
+  }
+  if (remembered !== undefined) {
+    return remembered
+  }
+  return chromeListSearch(undefined, tagCarriers)
 }

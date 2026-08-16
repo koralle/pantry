@@ -103,7 +103,7 @@ export function TagDetail({
             size={16}
             aria-hidden
           />{' '}
-          この棚のブックマークを見る
+          このタグのブックマークを見る
         </Link>
         <Link
           to='/tags/$id/edit'

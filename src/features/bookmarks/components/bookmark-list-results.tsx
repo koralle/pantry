@@ -76,7 +76,7 @@ export function BookmarkListResults({
 
     return (
       <UiEmpty
-        title='この棚はまだ空です'
+        title='まだブックマークがありません'
         action={
           <StyledLink
             to='/bookmarks/new'

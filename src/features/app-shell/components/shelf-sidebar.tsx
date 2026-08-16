@@ -3,6 +3,7 @@ import { css } from 'styled-system/css'
 
 import { StyledLink } from '../../../shared/components/styled-link'
 import { defaultBookmarkSearch } from '../../navigation/lib/bookmark-search'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { ShelfNavSelection } from '../../tags/components/shelf-nav'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
 import { ShelfNavPanel } from './shelf-nav-panel'
@@ -40,13 +41,17 @@ const shelfRailMeta = css({
 
 export function ShelfSidebar({
   shelfTagsPromise,
-  selection
+  selection,
+  listSearch
 }: {
   readonly shelfTagsPromise: Promise<ShelfTag[]>
   readonly selection: ShelfNavSelection
+  readonly listSearch: BookmarkSearchSchema | undefined
 }) {
   return (
-    <aside className={shelfRail}>
+    <aside
+      className={shelfRail}
+      aria-label='サイドバー'>
       <div>
         <StyledLink
           to='/'
@@ -59,6 +64,7 @@ export function ShelfSidebar({
         <ShelfNavPanel
           shelfTagsPromise={shelfTagsPromise}
           selection={selection}
+          listSearch={listSearch}
         />
       </div>
       <div className={shelfRailMeta}>

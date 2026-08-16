@@ -10,7 +10,6 @@ import { ensureSession } from '../../features/auth/functions/ensure-session'
 import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
 import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmarks'
 import { bookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
-import { EntranceBoxes } from '../../features/tags/components/entrance-boxes'
 import { PantryMotion } from '../../shared/components/pantry-motion'
 import { bookmarkListLoaderDeps } from './-lib/bookmark-list-loader-deps'
 
@@ -21,13 +20,6 @@ export const Route = createFileRoute('/_protected/')({
   loaderDeps: ({ search }) => bookmarkListLoaderDeps(search),
   loader: async ({ deps }) => {
     const { user } = await ensureSession()
-
-    if (deps.view === 'entrance') {
-      return {
-        user,
-        bookmarksPromise: undefined
-      }
-    }
 
     const bookmarksPromise = fetchBookmarks({
       data: {
@@ -57,14 +49,6 @@ function RouteComponent() {
   const search = Route.useSearch()
   const { bookmarksPromise } = Route.useLoaderData()
   const { shelfTagsPromise } = protectedRouteApi.useLoaderData()
-
-  if (search.view === 'entrance') {
-    return (
-      <PantryMotion kind='fade-up'>
-        <EntranceBoxes shelfTagsPromise={shelfTagsPromise} />
-      </PantryMotion>
-    )
-  }
 
   return (
     <PantryMotion kind='fade-up'>

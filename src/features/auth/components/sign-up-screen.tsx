@@ -35,9 +35,7 @@ export function SignUpScreen() {
     <div className={signUpPage}>
       <div className={signUpPanel}>
         <p className={signUpBrand}>Pantry</p>
-        <p className={pageLead}>
-          新規登録は受け付けていません。棚に入るにはサインインしてください。
-        </p>
+        <p className={pageLead}>新規登録は受け付けていません。使うにはサインインしてください。</p>
         <StyledLink
           to='/sign-in'
           visual='accent'>

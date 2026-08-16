@@ -13,8 +13,12 @@ export function ListLoading({ layout }: { readonly layout: ListLayout }) {
         className={bookmarkCards}
         aria-busy='true'>
         <UiLoading label='一覧を読み込み中' />
-        <UiLoading label='一覧を読み込み中' />
-        <UiLoading label='一覧を読み込み中' />
+        <div aria-hidden='true'>
+          <UiLoading label='一覧を読み込み中' />
+        </div>
+        <div aria-hidden='true'>
+          <UiLoading label='一覧を読み込み中' />
+        </div>
       </div>
     )
   }
@@ -24,8 +28,12 @@ export function ListLoading({ layout }: { readonly layout: ListLayout }) {
       className={tableSkeleton}
       aria-busy='true'>
       <UiLoading label='一覧を読み込み中' />
-      <UiLoading label='一覧を読み込み中' />
-      <UiLoading label='一覧を読み込み中' />
+      <div aria-hidden='true'>
+        <UiLoading label='一覧を読み込み中' />
+      </div>
+      <div aria-hidden='true'>
+        <UiLoading label='一覧を読み込み中' />
+      </div>
     </div>
   )
 }

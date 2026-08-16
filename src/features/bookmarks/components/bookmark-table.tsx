@@ -1,23 +1,20 @@
-import { Globe } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { css, cx } from 'styled-system/css'
 
-import { StyledLink } from '../../../shared/components/styled-link'
+import {
+  dataTable,
+  dataTableCell,
+  dataTableHeadCell,
+  dataTableRow,
+  dataTableRowLink,
+  dataTableWrap
+} from '../../../styles/data-table'
+import { srOnly } from '../../../styles/sr-only'
 import { tagChip } from '../../../styles/tag-chip'
 import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
-import { formatDateTime } from '../lib/format-date-time'
+import { formatListDateTime } from '../lib/format-date-time'
 import { shortenUrl } from '../lib/shorten-url'
 
-const table = css({ width: 'full', borderCollapse: 'collapse' })
-const tableCell = css({
-  borderBlockEndWidth: 'thin',
-  borderBlockEndStyle: 'solid',
-  borderBlockEndColor: 'border.default',
-  paddingBlock: '3',
-  paddingInline: '2',
-  textAlign: 'start',
-  verticalAlign: 'top'
-})
-const tableHeader = css({ color: 'fg.muted', fontSize: 'xs2', fontWeight: 'semibold' })
 const bookmarkTags = css({
   display: 'flex',
   flexWrap: 'wrap',
@@ -27,73 +24,112 @@ const bookmarkTags = css({
   listStyle: 'none'
 })
 const tagsEmpty = css({ color: 'fg.muted', fontSize: 'xs' })
+const titleStack = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5',
+  minInlineSize: '0',
+  overflowWrap: 'anywhere'
+})
+const urlMeta = css({
+  color: 'fg.muted',
+  fontSize: '2xs',
+  minInlineSize: '0',
+  maxInlineSize: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+})
+const titleCell = css({
+  minInlineSize: '0',
+  width: '50%'
+})
+const tagsCell = css({
+  minInlineSize: '0',
+  width: '30%'
+})
+const dateCell = css({
+  color: 'fg.muted',
+  fontSize: 'xs',
+  fontVariantNumeric: 'tabular-nums',
+  minInlineSize: '0',
+  overflowWrap: 'anywhere',
+  whiteSpace: 'normal',
+  width: '20%'
+})
+
+const EMPTY_DETAIL_SEARCH: { tags?: string[] } = {}
 
 interface BookmarkTableProps {
   readonly bookmarks: BookmarkListItem[]
   readonly detailSearch?: { tags?: string[] }
 }
 
-export function BookmarkTable({ bookmarks, detailSearch = {} }: BookmarkTableProps) {
+export function BookmarkTable({
+  bookmarks,
+  detailSearch = EMPTY_DETAIL_SEARCH
+}: BookmarkTableProps) {
   return (
-    <table className={table}>
-      <thead>
-        <tr>
-          <th className={cx(tableCell, tableHeader)}>タイトル</th>
-          <th className={cx(tableCell, tableHeader)}>URL</th>
-          <th className={cx(tableCell, tableHeader)}>タグ</th>
-          <th className={cx(tableCell, tableHeader)}>最終更新</th>
-        </tr>
-      </thead>
-      <tbody>
-        {bookmarks.map((bookmark) => (
-          <tr key={bookmark.id}>
-            <td className={tableCell}>
-              <StyledLink
-                to='/bookmarks/$id'
-                params={{ id: bookmark.id }}
-                search={detailSearch}
-                visual='plain'>
-                {bookmark.title}
-              </StyledLink>
-            </td>
-            <td className={tableCell}>
-              <StyledLink
-                to='/bookmarks/$id'
-                params={{ id: bookmark.id }}
-                search={detailSearch}
-                visual='muted'>
-                <Globe
-                  size={14}
-                  aria-hidden
-                />{' '}
-                {shortenUrl(bookmark.url, 48)}
-              </StyledLink>
-            </td>
-            <td className={tableCell}>
-              {bookmark.tags.length > 0 ? (
-                <ul className={bookmarkTags}>
-                  {bookmark.tags.map((tag) => (
-                    <li key={tag.id}>
-                      <span className={tagChip({ visual: 'label' })}>{tag.name}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <span className={tagsEmpty}>-</span>
-              )}
-            </td>
-            <td className={tableCell}>
-              <StyledLink
-                to='/bookmarks/$id'
-                params={{ id: bookmark.id }}
-                search={detailSearch}
-                visual='muted'>
-                {formatDateTime(bookmark.updatedAt)}
-              </StyledLink>
-            </td>
+    <div className={dataTableWrap}>
+      <table className={dataTable}>
+        <caption className={srOnly}>ブックマーク</caption>
+        <thead>
+          <tr>
+            <th
+              scope='col'
+              className={cx(dataTableCell, dataTableHeadCell, titleCell)}>
+              タイトル
+            </th>
+            <th
+              scope='col'
+              className={cx(dataTableCell, dataTableHeadCell, tagsCell)}>
+              タグ
+            </th>
+            <th
+              scope='col'
+              className={cx(dataTableCell, dataTableHeadCell, dateCell)}>
+              最終更新
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {bookmarks.map((bookmark) => (
+            <tr
+              key={bookmark.id}
+              className={dataTableRow}>
+              <td className={cx(dataTableCell, titleCell)}>
+                <div className={titleStack}>
+                  <Link
+                    to='/bookmarks/$id'
+                    params={{ id: bookmark.id }}
+                    search={detailSearch}
+                    aria-label={bookmark.title}
+                    className={dataTableRowLink}>
+                    {bookmark.title}
+                  </Link>
+                  <span className={urlMeta}>{shortenUrl(bookmark.url, 48)}</span>
+                </div>
+              </td>
+              <td className={cx(dataTableCell, tagsCell)}>
+                {bookmark.tags.length > 0 ? (
+                  <ul className={bookmarkTags}>
+                    {bookmark.tags.map((tag) => (
+                      <li key={tag.id}>
+                        <span className={tagChip({ visual: 'label' })}>{tag.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className={tagsEmpty}>-</span>
+                )}
+              </td>
+              <td className={cx(dataTableCell, dateCell)}>
+                {formatListDateTime(bookmark.updatedAt)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }

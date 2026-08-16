@@ -8,12 +8,15 @@ import { shortenUrl } from '../lib/shorten-url'
 
 export const bookmarkCards = css({
   display: 'grid',
-  gridTemplateColumns: '1fr',
+  gridTemplateColumns: 'minmax(0, 1fr)',
   gap: '4',
   margin: '0',
   padding: '0',
   listStyle: 'none',
   sm: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }
+})
+const cardItem = css({
+  minInlineSize: '0'
 })
 const bookmarkCard = css({
   display: 'flex',
@@ -22,13 +25,25 @@ const bookmarkCard = css({
   textDecoration: 'none',
   color: 'fg.default',
   minBlockSize: '5.5rem',
+  minInlineSize: '0',
   paddingBlock: '4',
-  paddingInline: '4.5'
+  paddingInline: '4.5',
+  _focusVisible: {
+    outlineWidth: 'medium',
+    outlineStyle: 'solid',
+    outlineColor: 'accent.solid',
+    outlineOffset: '-2px'
+  }
 })
-const cardTitle = css({ fontWeight: 'bold' })
+const cardTitle = css({
+  fontWeight: 'bold',
+  minInlineSize: '0',
+  overflowWrap: 'anywhere'
+})
 const cardUrl = css({
   color: 'fg.muted',
   fontSize: 'xs',
+  minInlineSize: '0',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap'
@@ -36,6 +51,7 @@ const cardUrl = css({
 const cardNote = css({
   color: 'fg.muted',
   fontSize: 'xs',
+  minInlineSize: '0',
   display: '-webkit-box',
   WebkitLineClamp: '2',
   WebkitBoxOrient: 'vertical',
@@ -61,7 +77,9 @@ export function BookmarkCardList({
   return (
     <ul className={bookmarkCards}>
       {bookmarks.map((bookmark) => (
-        <li key={bookmark.id}>
+        <li
+          key={bookmark.id}
+          className={cardItem}>
           <Link
             to='/bookmarks/$id'
             params={{ id: bookmark.id }}
@@ -71,13 +89,15 @@ export function BookmarkCardList({
             <span className={cardUrl}>{shortenUrl(bookmark.url)}</span>
             {bookmark.note ? <span className={cardNote}>{bookmark.note}</span> : null}
             {bookmark.tags.length > 0 ? (
-              <ul className={cardTags}>
+              <div className={cardTags}>
                 {bookmark.tags.map((tag) => (
-                  <li key={tag.id}>
-                    <span className={tagChip({ visual: 'label' })}>{tag.name}</span>
-                  </li>
+                  <span
+                    key={tag.id}
+                    className={tagChip({ visual: 'label' })}>
+                    {tag.name}
+                  </span>
                 ))}
-              </ul>
+              </div>
             ) : null}
           </Link>
         </li>

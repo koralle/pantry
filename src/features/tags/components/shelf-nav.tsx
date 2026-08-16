@@ -64,29 +64,30 @@ const shelfDotNeutral = css({
 })
 
 export type ShelfNavSelection = {
-  view?: BookmarkSearchSchema['view'] | undefined
+  listActive: boolean
   tags?: BookmarkSearchSchema['tags'] | undefined
 }
 
 type ShelfNavProps = {
   readonly tags: ShelfTag[]
   readonly selection: ShelfNavSelection
+  readonly listSearch: BookmarkSearchSchema | undefined
   readonly onNavigate?: (() => void) | undefined
 }
 
-export function ShelfNav({ tags, selection, onNavigate }: ShelfNavProps) {
+export function ShelfNav({ tags, selection, listSearch, onNavigate }: ShelfNavProps) {
   const sorted = sortTagsForNav(tags)
-  const selectedTag = selection.view === 'list' ? selection.tags?.[0] : undefined
+  const selectedTag = selection.listActive ? selection.tags?.[0] : undefined
   const allSelected =
-    selection.view === 'list' && (selection.tags === undefined || selection.tags.length === 0)
+    selection.listActive && (selection.tags === undefined || selection.tags.length === 0)
 
   return (
     <nav
       className={shelfNav}
-      aria-label='棚'>
+      aria-label='タグ'>
       <Link
         to='/'
-        search={allShelfSearch()}
+        search={allShelfSearch(listSearch)}
         className={shelfItem}
         data-selected={allSelected ? 'true' : 'false'}
         onClick={onNavigate}>
@@ -104,7 +105,7 @@ export function ShelfNav({ tags, selection, onNavigate }: ShelfNavProps) {
           <Link
             key={tag.id}
             to='/'
-            search={tagShelfSearch(tag.name)}
+            search={tagShelfSearch(tag.name, listSearch)}
             className={shelfItem}
             data-selected={selected ? 'true' : 'false'}
             onClick={onNavigate}>
