@@ -69,6 +69,31 @@ export const button = cva({
             color: 'danger.solid'
           }
         }
+      },
+      toggle: {
+        background: 'transparent',
+        color: 'fg.muted',
+        fontSize: 'xs',
+        paddingInline: '3',
+        '&[aria-pressed="true"]': {
+          borderColor: 'accent.solid',
+          background: 'accent.subtle',
+          color: 'accent.solid'
+        },
+        '@media (any-hover: hover)': {
+          '&:hover:not(:disabled):not([aria-pressed="true"])': {
+            color: 'fg.default',
+            borderColor: 'border.accent',
+            background: 'transparent'
+          }
+        }
+      },
+      chip: {
+        borderColor: 'border.accent',
+        background: 'surface.tag',
+        fontSize: 'xs',
+        paddingInline: '3',
+        columnGap: '1'
       }
     },
     size: {

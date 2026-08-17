@@ -1,11 +1,12 @@
 import { Field, getInput, useForm } from '@formisch/react'
 import { CircleAlert } from 'lucide-react'
 import { useActionState, useState } from 'react'
-import { Input } from 'react-aria-components'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { field, fieldInput, fieldLabel, formSummary } from '../../../styles/form'
+import { StyledInput } from '../../../shared/components/styled-input'
+import { StyledLabel } from '../../../shared/components/styled-label'
+import { field, formSummary } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../styles/workbench'
 import { TagEditFields } from './tag-edit-fields'
@@ -88,13 +89,8 @@ export function TagForm({
           path={['name']}>
           {(fieldProps) => (
             <div className={field}>
-              <label
-                className={fieldLabel}
-                htmlFor={fieldProps.props.name}>
-                タグ名
-              </label>
-              <Input
-                className={fieldInput}
+              <StyledLabel htmlFor={fieldProps.props.name}>タグ名</StyledLabel>
+              <StyledInput
                 id={fieldProps.props.name}
                 value={fieldProps.input}
                 type='text'

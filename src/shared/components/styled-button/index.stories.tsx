@@ -12,7 +12,7 @@ const meta = {
   },
   argTypes: {
     visual: {
-      options: ['default', 'accent', 'danger'],
+      options: ['default', 'accent', 'danger', 'toggle', 'chip'],
       control: {
         type: 'select'
       }
@@ -52,6 +52,31 @@ export const Danger = {
     size: 'md'
   },
   render: (args) => <StyledButton {...args}>削除</StyledButton>
+} as const satisfies Story
+
+export const Toggle = {
+  args: {
+    visual: 'toggle',
+    size: 'md',
+    'aria-pressed': true
+  },
+  render: (args) => <StyledButton {...args}>AND</StyledButton>
+} as const satisfies Story
+
+export const Chip = {
+  args: {
+    visual: 'chip',
+    size: 'md'
+  },
+  render: (args) => (
+    <StyledButton {...args}>
+      reading
+      <Settings
+        size={14}
+        aria-hidden
+      />
+    </StyledButton>
+  )
 } as const satisfies Story
 
 export const Sizes = {
@@ -118,6 +143,17 @@ export const VisualMatrix = {
           size='sm'>
           danger / sm
         </StyledButton>
+        <StyledButton
+          visual='toggle'
+          size='sm'
+          aria-pressed>
+          toggle / sm
+        </StyledButton>
+        <StyledButton
+          visual='chip'
+          size='sm'>
+          chip / sm
+        </StyledButton>
       </styled.div>
       <styled.div
         display='flex'
@@ -138,6 +174,17 @@ export const VisualMatrix = {
           size='md'>
           danger / md
         </StyledButton>
+        <StyledButton
+          visual='toggle'
+          size='md'
+          aria-pressed>
+          toggle / md
+        </StyledButton>
+        <StyledButton
+          visual='chip'
+          size='md'>
+          chip / md
+        </StyledButton>
       </styled.div>
       <styled.div
         display='flex'
@@ -157,6 +204,17 @@ export const VisualMatrix = {
           visual='danger'
           size='lg'>
           danger / lg
+        </StyledButton>
+        <StyledButton
+          visual='toggle'
+          size='lg'
+          aria-pressed>
+          toggle / lg
+        </StyledButton>
+        <StyledButton
+          visual='chip'
+          size='lg'>
+          chip / lg
         </StyledButton>
       </styled.div>
     </styled.div>

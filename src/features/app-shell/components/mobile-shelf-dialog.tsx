@@ -1,8 +1,9 @@
 import { Menu, Settings, Tags, X } from 'lucide-react'
 import { useState } from 'react'
-import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components'
+import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components'
 import { css } from 'styled-system/css'
 
+import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { ShelfNavSelection } from '../../tags/components/shelf-nav'
@@ -18,8 +19,15 @@ const shelfChanger = css({
   paddingBlock: '1.5',
   paddingInline: '2',
   borderWidth: 'none',
+  borderColor: 'transparent',
   background: 'transparent',
   cursor: 'pointer',
+  '@media (any-hover: hover)': {
+    '&:hover:not(:disabled)': {
+      background: 'transparent',
+      borderColor: 'transparent'
+    }
+  },
   md: {
     display: 'none'
   }
@@ -76,8 +84,15 @@ const shelfSheetClose = css({
   paddingBlock: '1.5',
   paddingInline: '2',
   borderWidth: 'none',
+  borderColor: 'transparent',
   background: 'transparent',
-  cursor: 'pointer'
+  cursor: 'pointer',
+  '@media (any-hover: hover)': {
+    '&:hover:not(:disabled)': {
+      background: 'transparent',
+      borderColor: 'transparent'
+    }
+  }
 })
 
 const shelfSheetMeta = css({
@@ -110,7 +125,7 @@ export function MobileShelfDialog({
     <DialogTrigger
       isOpen={shelfOpen}
       onOpenChange={setShelfOpen}>
-      <Button
+      <StyledButton
         className={shelfChanger}
         aria-label='タグを選ぶ'>
         <Menu
@@ -118,7 +133,7 @@ export function MobileShelfDialog({
           aria-hidden
         />{' '}
         タグ
-      </Button>
+      </StyledButton>
       <ModalOverlay
         className={shelfSheetBackdrop}
         isDismissable>
@@ -130,7 +145,7 @@ export function MobileShelfDialog({
                 className={shelfSheetTitle}>
                 タグを選ぶ
               </Heading>
-              <Button
+              <StyledButton
                 slot='close'
                 className={shelfSheetClose}>
                 <X
@@ -138,7 +153,7 @@ export function MobileShelfDialog({
                   aria-hidden
                 />{' '}
                 閉じる
-              </Button>
+              </StyledButton>
             </div>
             <ShelfNavPanel
               shelfTagsPromise={shelfTagsPromise}

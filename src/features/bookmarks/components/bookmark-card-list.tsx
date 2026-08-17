@@ -8,6 +8,7 @@ import { shortenUrl } from '../lib/shorten-url'
 
 export const bookmarkCards = css({
   display: 'grid',
+  alignItems: 'stretch',
   gridTemplateColumns: 'minmax(0, 1fr)',
   gap: '4',
   margin: '0',
@@ -16,16 +17,20 @@ export const bookmarkCards = css({
   sm: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }
 })
 const cardItem = css({
-  minInlineSize: '0'
+  display: 'flex',
+  minInlineSize: '0',
+  blockSize: 'full'
 })
 const bookmarkCard = css({
   display: 'flex',
   flexDirection: 'column',
+  flex: '1',
   gap: '1.5',
   textDecoration: 'none',
   color: 'fg.default',
   minBlockSize: '5.5rem',
   minInlineSize: '0',
+  inlineSize: 'full',
   paddingBlock: '4',
   paddingInline: '4.5',
   _focusVisible: {
@@ -65,7 +70,7 @@ const bookmarkTags = css({
   padding: '0',
   listStyle: 'none'
 })
-const cardTags = cx(bookmarkTags, css({ marginBlockStart: '0.5' }))
+const cardTags = cx(bookmarkTags, css({ marginBlockStart: 'auto' }))
 
 export function BookmarkCardList({
   bookmarks,

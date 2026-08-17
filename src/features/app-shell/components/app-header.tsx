@@ -1,13 +1,14 @@
 import type { LinkProps, RegisteredRouter } from '@tanstack/react-router'
 import { useNavigate } from '@tanstack/react-router'
 import { LogOut, Plus, Search, Settings, Tags } from 'lucide-react'
-import { useEffect, useId, useState } from 'react';
-import type { ReactNode } from 'react';
-import { css, cx } from 'styled-system/css'
+import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import { Label, SearchField } from 'react-aria-components'
+import { css } from 'styled-system/css'
 
+import { StyledButton } from '../../../shared/components/styled-button'
+import { StyledInput } from '../../../shared/components/styled-input'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { button } from '../../../styles/button'
-import { formControl } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { useSignOut } from '../../auth/hooks/use-sign-out'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
@@ -78,30 +79,15 @@ const searchForm = css({
   }
 })
 
-const searchInput = cx(
-  formControl,
-  css({
-    flex: '1',
-    minInlineSize: '0',
-    minBlockSize: 'touch'
-  })
-)
-
-const searchSubmit = css(button.raw({ size: 'md' }), {
-  flexShrink: '0',
-  paddingInline: '3'
+const searchField = css({
+  display: 'flex',
+  flex: '1',
+  minInlineSize: '0'
 })
 
-const signOut = css(button.raw(), {
-  display: 'none',
-  color: 'fg.default',
-  borderColor: 'transparent',
-  background: 'transparent',
-  paddingBlock: '1.5',
-  paddingInline: '2',
-  md: {
-    display: 'inline-flex'
-  }
+const searchSubmit = css({
+  flexShrink: '0',
+  paddingInline: '3'
 })
 
 export function AppHeader({
@@ -117,12 +103,23 @@ export function AppHeader({
 }) {
   const { handleSignOut, isPending } = useSignOut()
   const navigate = useNavigate()
-  const qInputId = useId()
   const [draftQ, setDraftQ] = useState(listSearch?.q ?? '')
 
   useEffect(() => {
     setDraftQ(listSearch?.q ?? '')
   }, [listSearch?.q])
+
+  const commitSearch = (raw: string) => {
+    const nextQ = raw.trim()
+    const current = listSearch ?? defaultBookmarkSearch
+    void navigate({
+      to: '/',
+      search:
+        nextQ === ''
+          ? buildListSearch(current, { clearQ: true })
+          : buildListSearch(current, { q: nextQ })
+    })
+  }
 
   return (
     <header className={shellHeader}>
@@ -138,45 +135,31 @@ export function AppHeader({
         {shelfTrigger}
       </div>
 
-      <form
-        className={searchForm}
-        onSubmit={(event) => {
-          event.preventDefault()
-          const nextQ = draftQ.trim()
-          const current = listSearch ?? defaultBookmarkSearch
-          void navigate({
-            to: '/',
-            search:
-              nextQ === ''
-                ? buildListSearch(current, { clearQ: true })
-                : buildListSearch(current, { q: nextQ })
-          })
-        }}>
-        <label
-          htmlFor={qInputId}
-          className={srOnly}>
-          検索
-        </label>
-        <input
-          id={qInputId}
-          type='search'
-          className={searchInput}
+      <div className={searchForm}>
+        <SearchField
+          className={searchField}
           value={draftQ}
-          onChange={(event) => {
-            setDraftQ(event.target.value)
-          }}
-          placeholder='タイトル・URL・メモ'
-        />
-        <button
-          type='submit'
+          onChange={setDraftQ}
+          onSubmit={commitSearch}>
+          <Label className={srOnly}>検索</Label>
+          <StyledInput
+            type='search'
+            placeholder='タイトル・URL・メモ'
+            enterKeyHint='search'
+          />
+        </SearchField>
+        <StyledButton
           className={searchSubmit}
-          aria-label='検索'>
+          aria-label='検索'
+          onPress={() => {
+            commitSearch(draftQ)
+          }}>
           <Search
             size={16}
             aria-hidden
           />
-        </button>
-      </form>
+        </StyledButton>
+      </div>
 
       <div className={headerActions}>
         <StyledLink
@@ -210,17 +193,21 @@ export function AppHeader({
             aria-hidden
           />
         </StyledLink>
-        <button
-          type='button'
-          className={signOut}
-          onClick={handleSignOut}
-          disabled={isPending}>
+        <StyledButton
+          display={{ base: 'none', md: 'inline-flex' }}
+          color='fg.default'
+          borderColor='transparent'
+          background='transparent'
+          paddingBlock='1.5'
+          paddingInline='2'
+          onPress={handleSignOut}
+          isDisabled={isPending}>
           <LogOut
             size={16}
             aria-hidden
           />{' '}
           ログアウト
-        </button>
+        </StyledButton>
       </div>
     </header>
   )

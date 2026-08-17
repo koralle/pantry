@@ -1,12 +1,12 @@
 import { ChevronDown } from 'lucide-react'
 import { use } from 'react'
-import { css, cx } from 'styled-system/css'
+import { css } from 'styled-system/css'
 
 import { PantryMotion } from '../../../shared/components/pantry-motion'
+import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { UiEmpty } from '../../../shared/components/ui-empty'
 import { UiError } from '../../../shared/components/ui-error'
-import { button } from '../../../styles/button'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import {
   buildListSearch,
@@ -19,16 +19,12 @@ import { BookmarkCardList } from './bookmark-card-list'
 import { BookmarkTable } from './bookmark-table'
 
 const partialSection = css({ marginBlockStart: '5', display: 'flex', justifyContent: 'center' })
-const loadMoreButton = cx(
-  button(),
-  css({
-    borderColor: 'accent.solid',
-    color: 'accent.solid',
-    fontWeight: 'semibold',
-    minInlineSize: '12rem',
-    _disabled: { opacity: '0.6', cursor: 'wait' }
-  })
-)
+const loadMoreButton = css({
+  borderColor: 'accent.solid',
+  color: 'accent.solid',
+  fontWeight: 'semibold',
+  minInlineSize: '12rem'
+})
 
 function hasActiveConditions(search: BookmarkSearchSchema): boolean {
   return Boolean(search.q?.trim()) || (search.tags !== undefined && search.tags.length > 0)
@@ -117,17 +113,16 @@ export function BookmarkListResults({
               onRetry={loadMore}
             />
           ) : (
-            <button
-              type='button'
+            <StyledButton
               className={loadMoreButton}
-              disabled={isLoadingMore}
-              onClick={loadMore}>
+              isDisabled={isLoadingMore}
+              onPress={loadMore}>
               <ChevronDown
                 size={16}
                 aria-hidden
               />{' '}
               {isLoadingMore ? '読み込み中…' : 'さらに読み込む'}
-            </button>
+            </StyledButton>
           )}
         </div>
       ) : null}

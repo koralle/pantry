@@ -8,7 +8,7 @@
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx (stories for new/changed variants)
  *
- * Last synced props: visual, size, type, className, css, plus every Panda style prop
+ * Last synced props: visual (default | accent | danger | toggle | chip), size, type, className, css, plus every Panda style prop
  */
 
 import { Button as AriaButton } from 'react-aria-components'

@@ -1,8 +1,10 @@
 import { Minus, Plus } from 'lucide-react'
-import { css, cx } from 'styled-system/css'
+import { Group, Label, NumberField } from 'react-aria-components'
+import { css } from 'styled-system/css'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { field, fieldLabel, formControl } from '../../../styles/form'
+import { StyledInput } from '../../../shared/components/styled-input'
+import { field, fieldLabel } from '../../../styles/form'
 
 const sortOrderRow = css({
   display: 'flex',
@@ -10,14 +12,6 @@ const sortOrderRow = css({
   gap: '2',
   alignItems: 'center'
 })
-
-const sortOrderInput = cx(
-  formControl,
-  css({
-    inlineSize: '20',
-    fontVariantNumeric: 'tabular-nums'
-  })
-)
 
 type TagSortOrderFieldProps = {
   readonly sortOrder: number
@@ -31,51 +25,37 @@ export function TagSortOrderField({
   disabled = false
 }: TagSortOrderFieldProps) {
   return (
-    <div className={field}>
-      <label
-        className={fieldLabel}
-        htmlFor='tag-sort-order'>
-        並び順
-      </label>
-      <div className={sortOrderRow}>
+    <NumberField
+      className={field}
+      value={sortOrder}
+      onChange={(value) => {
+        onSortOrderChange(Number.isFinite(value) ? value : 0)
+      }}
+      isDisabled={disabled}>
+      <Label className={fieldLabel}>並び順</Label>
+      <Group className={sortOrderRow}>
         <StyledButton
-          aria-label='並び順を下げる'
-          isDisabled={disabled}
-          onPress={() => {
-            onSortOrderChange(sortOrder - 1)
-          }}>
+          slot='decrement'
+          aria-label='並び順を下げる'>
           <Minus
             size={16}
             aria-hidden
           />
         </StyledButton>
-        <input
-          className={sortOrderInput}
-          id='tag-sort-order'
-          type='number'
-          value={String(sortOrder)}
-          disabled={disabled}
-          onChange={(event) => {
-            const next = Number(event.target.value)
-            if (Number.isFinite(next)) {
-              onSortOrderChange(next)
-              return
-            }
-            onSortOrderChange(0)
-          }}
+        <StyledInput
+          width='auto'
+          inlineSize='20'
+          fontVariantNumeric='tabular-nums'
         />
         <StyledButton
-          aria-label='並び順を上げる'
-          isDisabled={disabled}
-          onPress={() => {
-            onSortOrderChange(sortOrder + 1)
-          }}>
+          slot='increment'
+          aria-label='並び順を上げる'>
           <Plus
             size={16}
             aria-hidden
           />
         </StyledButton>
-      </div>
-    </div>
+      </Group>
+    </NumberField>
   )
 }

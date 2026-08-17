@@ -1,10 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { LayoutGrid, List, X } from 'lucide-react'
-import { css, cx } from 'styled-system/css'
+import { css } from 'styled-system/css'
 
-import { formControl } from '../../../styles/form'
+import { StyledButton } from '../../../shared/components/styled-button'
+import { StyledSelect } from '../../../shared/components/styled-select'
 import { srOnly } from '../../../styles/sr-only'
-import { tagChip } from '../../../styles/tag-chip'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { BookmarkSearchPatch } from '../../navigation/lib/bookmark-search-builders'
 import { buildListSearch } from '../../navigation/lib/bookmark-search-builders'
@@ -27,58 +27,7 @@ const groupFieldset = css({
   borderWidth: 'none',
   minInlineSize: '0'
 })
-const toggleButton = css({
-  minBlockSize: 'touch',
-  borderWidth: 'thin',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'box',
-  background: 'transparent',
-  color: 'fg.muted',
-  cursor: 'pointer',
-  paddingBlock: '2',
-  paddingInline: '3',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontWeight: 'semibold',
-  fontSize: 'xs',
-  scale: '1',
-  transitionProperty: 'scale, background-color, border-color, color',
-  transitionDuration: 'hover',
-  transitionTimingFunction: 'press',
-  '@media (any-hover: hover)': {
-    '&:hover:not([aria-pressed="true"])': {
-      color: 'fg.default',
-      borderColor: 'border.accent'
-    }
-  },
-  _pressed: { borderColor: 'accent.solid', background: 'accent.subtle', color: 'accent.solid' },
-  _active: { scale: '0.98' }
-})
-const sortLabel = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1.5',
-  color: 'fg.muted',
-  fontSize: 'xs'
-})
-const sortSelect = cx(
-  formControl,
-  css({ paddingBlock: '1.5', paddingInline: '2', color: 'fg.default', minBlockSize: 'touch' })
-)
 const tagsRow = css({ display: 'flex', flexWrap: 'wrap', gap: '2', alignItems: 'center' })
-const addTagLabel = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1.5',
-  color: 'fg.muted',
-  fontSize: 'xs'
-})
-const addTagSelect = cx(
-  formControl,
-  css({ paddingBlock: '1.5', paddingInline: '2', color: 'fg.default' })
-)
 
 function listHeading(search: BookmarkSearchSchema): string {
   if (search.q !== undefined && search.q.trim() !== '') {
@@ -120,47 +69,42 @@ export function ListToolbar({
       <div className={controls}>
         <fieldset className={groupFieldset}>
           <legend className={srOnly}>タグ条件</legend>
-          <button
-            type='button'
-            className={toggleButton}
+          <StyledButton
+            visual='toggle'
             aria-pressed={search.tagMode === 'and'}
-            onClick={() => {
+            onPress={() => {
               patchSearch({ tagMode: 'and' })
             }}>
             AND
-          </button>
-          <button
-            type='button'
-            className={toggleButton}
+          </StyledButton>
+          <StyledButton
+            visual='toggle'
             aria-pressed={search.tagMode === 'or'}
-            onClick={() => {
+            onPress={() => {
               patchSearch({ tagMode: 'or' })
             }}>
             OR
-          </button>
+          </StyledButton>
         </fieldset>
 
-        <label className={sortLabel}>
-          並び
-          <select
-            className={sortSelect}
-            value={search.sort}
-            onChange={(event) => {
-              const sort = event.target.value === 'updated' ? 'updated' : 'newest'
-              patchSearch({ sort })
-            }}>
-            <option value='newest'>新しい順</option>
-            <option value='updated'>更新順</option>
-          </select>
-        </label>
+        <StyledSelect
+          label='並び'
+          selectedKey={search.sort}
+          onSelectionChange={(key) => {
+            if (key === 'newest' || key === 'updated') {
+              patchSearch({ sort: key })
+            }
+          }}>
+          <StyledSelect.Item id='newest'>新しい順</StyledSelect.Item>
+          <StyledSelect.Item id='updated'>更新順</StyledSelect.Item>
+        </StyledSelect>
 
         <fieldset className={groupFieldset}>
           <legend className={srOnly}>表示切替</legend>
-          <button
-            type='button'
-            className={toggleButton}
+          <StyledButton
+            visual='toggle'
             aria-pressed={layout === 'table'}
-            onClick={() => {
+            onPress={() => {
               onLayoutChange('table')
             }}>
             <List
@@ -168,12 +112,11 @@ export function ListToolbar({
               aria-hidden
             />{' '}
             テーブル
-          </button>
-          <button
-            type='button'
-            className={toggleButton}
+          </StyledButton>
+          <StyledButton
+            visual='toggle'
             aria-pressed={layout === 'card'}
-            onClick={() => {
+            onPress={() => {
               onLayoutChange('card')
             }}>
             <LayoutGrid
@@ -181,18 +124,18 @@ export function ListToolbar({
               aria-hidden
             />{' '}
             カード
-          </button>
+          </StyledButton>
         </fieldset>
       </div>
 
       {selectedTags.length > 0 || addableTags.length > 0 ? (
         <div className={tagsRow}>
           {selectedTags.map((tagName) => (
-            <button
+            <StyledButton
               key={tagName}
-              type='button'
-              className={tagChip({ visual: 'interactive' })}
-              onClick={() => {
+              visual='chip'
+              aria-label={`${tagName}を外す`}
+              onPress={() => {
                 const next = selectedTags.filter((name) => name !== tagName)
                 if (next.length === 0) {
                   patchSearch({ clearTags: true })
@@ -205,33 +148,29 @@ export function ListToolbar({
                 size={14}
                 aria-hidden
               />
-              <span className={srOnly}>を外す</span>
-            </button>
+            </StyledButton>
           ))}
 
           {addableTags.length > 0 ? (
-            <label className={addTagLabel}>
-              タグを追加
-              <select
-                className={addTagSelect}
-                value=''
-                onChange={(event) => {
-                  const name = event.target.value
-                  if (name === '') {
-                    return
-                  }
-                  patchSearch({ tags: [...selectedTags, name] })
-                }}>
-                <option value=''>選択…</option>
-                {addableTags.map((tag) => (
-                  <option
-                    key={tag.id}
-                    value={tag.name}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <StyledSelect.Filterable
+              label='タグを追加'
+              placeholder='選択…'
+              searchPlaceholder='タグを検索'
+              selectedKey={null}
+              onSelectionChange={(key) => {
+                if (typeof key !== 'string' || key === '') {
+                  return
+                }
+                patchSearch({ tags: [...selectedTags, key] })
+              }}>
+              {addableTags.map((tag) => (
+                <StyledSelect.Item
+                  key={tag.id}
+                  id={tag.name}>
+                  {tag.name}
+                </StyledSelect.Item>
+              ))}
+            </StyledSelect.Filterable>
           ) : null}
         </div>
       ) : null}

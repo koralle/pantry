@@ -1,18 +1,12 @@
 import { Field, getErrors, getInput, useForm, validate } from '@formisch/react'
 import { CircleAlert, Download } from 'lucide-react'
 import { useActionState, useState } from 'react'
-import { Input } from 'react-aria-components'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import {
-  field,
-  fieldError,
-  fieldInput,
-  fieldLabel,
-  fieldUrlRow,
-  formSummary
-} from '../../../styles/form'
+import { StyledInput } from '../../../shared/components/styled-input'
+import { StyledLabel } from '../../../shared/components/styled-label'
+import { field, fieldError, fieldUrlRow, formSummary } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../styles/workbench'
 import { useBookmarkTitleFetch } from '../hooks/use-bookmark-title-fetch'
@@ -122,15 +116,10 @@ export function BookmarkWorkbenchForm({
           path={['url']}>
           {(f) => (
             <div className={field}>
-              <label
-                htmlFor={f.props.name}
-                className={fieldLabel}>
-                URL
-              </label>
+              <StyledLabel htmlFor={f.props.name}>URL</StyledLabel>
               <div className={fieldUrlRow}>
-                <Input
+                <StyledInput
                   id={f.props.name}
-                  className={fieldInput}
                   value={f.input}
                   type='url'
                   onChange={(event) => {
@@ -161,14 +150,9 @@ export function BookmarkWorkbenchForm({
           path={['title']}>
           {(f) => (
             <div className={field}>
-              <label
-                htmlFor={f.props.name}
-                className={fieldLabel}>
-                タイトル
-              </label>
-              <Input
+              <StyledLabel htmlFor={f.props.name}>タイトル</StyledLabel>
+              <StyledInput
                 id={f.props.name}
-                className={fieldInput}
                 value={f.input}
                 type='text'
                 onChange={(event) => {
@@ -187,14 +171,9 @@ export function BookmarkWorkbenchForm({
           path={['note']}>
           {(f) => (
             <div className={field}>
-              <label
-                htmlFor={f.props.name}
-                className={fieldLabel}>
-                メモ
-              </label>
-              <Input
+              <StyledLabel htmlFor={f.props.name}>メモ</StyledLabel>
+              <StyledInput
                 id={f.props.name}
-                className={fieldInput}
                 value={f.input ?? ''}
                 type='text'
                 onChange={(event) => {

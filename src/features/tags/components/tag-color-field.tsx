@@ -1,8 +1,11 @@
 import { Check } from 'lucide-react'
+import { Label, Radio, RadioGroup } from 'react-aria-components'
 import { css, cx } from 'styled-system/css'
 
 import { field } from '../../../styles/form'
 import { TAG_COLOR_PALETTE } from '../lib/tag-color-palette'
+
+const NONE_COLOR = 'none'
 
 const colorPalette = css({
   display: 'flex',
@@ -22,9 +25,19 @@ const colorSwatch = css({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  _pressed: {
+  _selected: {
     borderColor: 'accent.solid',
     boxShadow: 'accentRing'
+  },
+  _focusVisible: {
+    outlineWidth: 'medium',
+    outlineStyle: 'solid',
+    outlineColor: 'accent.solid',
+    outlineOffset: '2px'
+  },
+  _disabled: {
+    opacity: '0.6',
+    cursor: 'wait'
   }
 })
 
@@ -33,13 +46,6 @@ const colorSwatchClear = css({
   borderColor: 'border.default',
   backgroundImage:
     'linear-gradient(135deg, transparent 46%, {colors.danger.solid} 46%, {colors.danger.solid} 54%, transparent 54%)'
-})
-
-const colorPaletteField = css({
-  borderWidth: 'none',
-  margin: '0',
-  padding: '0',
-  minInlineSize: '0'
 })
 
 const colorPaletteLegend = css({
@@ -55,47 +61,40 @@ type TagColorFieldProps = {
 }
 
 export function TagColorField({ color, onColorChange, disabled = false }: TagColorFieldProps) {
-  const clearSelected = color === null
-
   return (
-    <fieldset
-      className={cx(field, colorPaletteField)}
-      disabled={disabled}>
-      <legend className={colorPaletteLegend}>色</legend>
+    <RadioGroup
+      className={field}
+      value={color ?? NONE_COLOR}
+      onChange={(value) => {
+        onColorChange(value === NONE_COLOR ? null : value)
+      }}
+      isDisabled={disabled}>
+      <Label className={colorPaletteLegend}>色</Label>
       <div className={colorPalette}>
-        <button
-          type='button'
+        <Radio
+          value={NONE_COLOR}
           className={cx(colorSwatch, colorSwatchClear)}
-          aria-pressed={clearSelected}
           aria-label='色なし'
-          onClick={() => {
-            onColorChange(null)
-          }}
         />
-        {TAG_COLOR_PALETTE.map((swatch) => {
-          const selected = color === swatch
-          return (
-            <button
-              key={swatch}
-              type='button'
-              className={colorSwatch}
-              style={{ backgroundColor: swatch }}
-              aria-pressed={selected}
-              aria-label={`色 ${swatch}`}
-              onClick={() => {
-                onColorChange(swatch)
-              }}>
-              {selected ? (
+        {TAG_COLOR_PALETTE.map((swatch) => (
+          <Radio
+            key={swatch}
+            value={swatch}
+            className={colorSwatch}
+            style={{ backgroundColor: swatch }}
+            aria-label={`色 ${swatch}`}>
+            {({ isSelected }) =>
+              isSelected ? (
                 <Check
                   size={16}
                   color='#fff'
                   aria-hidden
                 />
-              ) : null}
-            </button>
-          )
-        })}
+              ) : null
+            }
+          </Radio>
+        ))}
       </div>
-    </fieldset>
+    </RadioGroup>
   )
 }
