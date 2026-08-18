@@ -4,6 +4,7 @@ import { css, cx } from 'styled-system/css'
 import { metaCount } from '../../../styles/type'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { allShelfSearch, tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
+import { tagNamesMatch } from '../domain/tag-values'
 import { sortTagsForNav } from '../lib/tag-shelf'
 import type { ShelfTag } from '../lib/tag-shelf'
 
@@ -99,7 +100,7 @@ export function ShelfNav({ tags, selection, listSearch, onNavigate }: ShelfNavPr
       </Link>
 
       {sorted.map((tag) => {
-        const selected = selectedTag === tag.name
+        const selected = selectedTag !== undefined ? tagNamesMatch(selectedTag, tag.name) : false
 
         return (
           <Link

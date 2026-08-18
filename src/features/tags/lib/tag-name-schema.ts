@@ -1,1 +1,1 @@
-export { tagNameSchema, type TagName } from '../domain/tag-values'
+export { tagNameSchema, toTagName, type TagName } from '../domain/tag-values'

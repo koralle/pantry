@@ -1,3 +1,5 @@
+import { uniqueNormalizedTagNames } from '../../tags/domain/tag-values'
+
 export type FetchBookmarksInput = {
   q?: string
   tagNames?: string[]
@@ -9,9 +11,7 @@ export type FetchBookmarksInput = {
 
 export function normalizeListQuery(input: FetchBookmarksInput): FetchBookmarksInput {
   const q = input.q?.trim()
-  const tagNames = [
-    ...new Set((input.tagNames ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean))
-  ]
+  const tagNames = uniqueNormalizedTagNames(input.tagNames ?? [])
 
   const normalized: FetchBookmarksInput = {
     tagMode: input.tagMode,

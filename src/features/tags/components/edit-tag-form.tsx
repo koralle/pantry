@@ -39,7 +39,12 @@ export function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
           sortOrder
         })
       }}
-      mapError={(error) => (error instanceof Error ? error.message : 'タグの更新に失敗しました')}
+      mapError={(error) => {
+        if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
+          return 'そのタグ名は既に存在します'
+        }
+        return error instanceof Error ? error.message : 'タグの更新に失敗しました'
+      }}
     />
   )
 }

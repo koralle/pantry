@@ -52,12 +52,16 @@ export const fetchBookmarks = createServerFn({ method: 'GET' })
         .select({ bookmarkId: bookmarkTagsTable.bookmarkId })
         .from(bookmarkTagsTable)
         .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
-        .where(and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.name, tagNames)))
+        .where(
+          and(eq(tagsTable.userId, session.user.id), inArray(tagsTable.normalizedName, tagNames))
+        )
         .groupBy(bookmarkTagsTable.bookmarkId)
 
       const matchingIds =
         tagMode === 'and'
-          ? taggedBookmarks.having(sql`count(distinct ${tagsTable.name}) = ${tagNames.length}`)
+          ? taggedBookmarks.having(
+              sql`count(distinct ${tagsTable.normalizedName}) = ${tagNames.length}`
+            )
           : taggedBookmarks
 
       conditions.push(inArray(bookmarkTable.id, matchingIds))
