@@ -27,8 +27,8 @@ describe('shelf filter search', () => {
     })
   })
 
-  test('tag keeps q and replaces tags with the selected name', () => {
-    const next = tagShelfSearch('backend', {
+  test('tag keeps q and writes the normalized name into search', () => {
+    const next = tagShelfSearch('TypeScript', {
       ...defaultBookmarkSearch,
       q: 'react',
       tags: ['frontend', 'docs'],
@@ -39,7 +39,7 @@ describe('shelf filter search', () => {
       limit: 50,
       offset: 0,
       q: 'react',
-      tags: ['backend'],
+      tags: ['typescript'],
       tagMode: 'and',
       sort: 'updated'
     })

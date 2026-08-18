@@ -1,3 +1,4 @@
+import { uniqueNormalizedTagNames } from '../../tags/domain/tag-values'
 import type { BookmarkSearchSchema } from './bookmark-search'
 import { defaultBookmarkSearch } from './bookmark-search'
 
@@ -49,7 +50,10 @@ export function buildListSearch(
     next.q = q
   }
   if (tags !== undefined && tags.length > 0) {
-    next.tags = tags
+    const canonicalTags = uniqueNormalizedTagNames(tags)
+    if (canonicalTags.length > 0) {
+      next.tags = canonicalTags
+    }
   }
 
   return next
@@ -61,7 +65,10 @@ export function buildListBackSearch(tags?: readonly string[]): BookmarkSearchSch
   }
 
   if (tags !== undefined && tags.length > 0) {
-    search.tags = [...tags]
+    const canonicalTags = uniqueNormalizedTagNames(tags)
+    if (canonicalTags.length > 0) {
+      search.tags = canonicalTags
+    }
   }
 
   return search
@@ -96,9 +103,12 @@ export function chromeListSearch(
   for (const carrier of tagCarriers) {
     const tags = carrier?.tags
     if (tags !== undefined && tags.length > 0) {
-      return {
-        ...defaultBookmarkSearch,
-        tags: [...tags]
+      const canonicalTags = uniqueNormalizedTagNames([...tags])
+      if (canonicalTags.length > 0) {
+        return {
+          ...defaultBookmarkSearch,
+          tags: canonicalTags
+        }
       }
     }
   }

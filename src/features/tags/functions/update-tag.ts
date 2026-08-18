@@ -5,6 +5,8 @@ import * as v from 'valibot'
 import { getDB } from '../../../db/get-db.server'
 import { tagsTable } from '../../../db/schema/tag'
 import { requireRequestSession } from '../../auth/functions/request-session.server'
+import { isSqliteUniqueConstraintError } from '../lib/is-sqlite-unique-constraint-error'
+import { TagNameAlreadyExistsError } from '../lib/tag-name-already-exists-error'
 import { tagNameSchema } from '../lib/tag-name-schema'
 
 const updateTagInputSchema = v.pipe(
@@ -38,30 +40,41 @@ export const updateTag = createServerFn({ method: 'POST' })
         .select({ id: tagsTable.id })
         .from(tagsTable)
         .where(
-          and(eq(tagsTable.name, name), eq(tagsTable.userId, session.user.id), ne(tagsTable.id, id))
+          and(
+            eq(tagsTable.normalizedName, name.normalized),
+            eq(tagsTable.userId, session.user.id),
+            ne(tagsTable.id, id)
+          )
         )
         .limit(1)
 
       if (duplicate != null) {
-        throw new Error('Tag name already exists')
+        throw new TagNameAlreadyExistsError()
       }
     }
 
-    const [updated] = await db
-      .update(tagsTable)
-      .set({
-        ...(name !== undefined ? { name } : {}),
-        ...(pinned !== undefined ? { pinned } : {}),
-        ...(sortOrder !== undefined ? { sortOrder } : {}),
-        ...(color !== undefined ? { color } : {}),
-        updatedAt: sql`(cast(unixepoch('subsecond') * 1000 as integer))`
-      })
-      .where(and(eq(tagsTable.id, id), eq(tagsTable.userId, session.user.id)))
-      .returning({ id: tagsTable.id })
+    try {
+      const [updated] = await db
+        .update(tagsTable)
+        .set({
+          ...(name !== undefined ? { name: name.display, normalizedName: name.normalized } : {}),
+          ...(pinned !== undefined ? { pinned } : {}),
+          ...(sortOrder !== undefined ? { sortOrder } : {}),
+          ...(color !== undefined ? { color } : {}),
+          updatedAt: sql`(cast(unixepoch('subsecond') * 1000 as integer))`
+        })
+        .where(and(eq(tagsTable.id, id), eq(tagsTable.userId, session.user.id)))
+        .returning({ id: tagsTable.id })
 
-    if (updated == null) {
-      throw new Error('Tag not found')
+      if (updated == null) {
+        throw new Error('Tag not found')
+      }
+
+      return { id: updated.id }
+    } catch (error) {
+      if (isSqliteUniqueConstraintError(error)) {
+        throw new TagNameAlreadyExistsError()
+      }
+      throw error
     }
-
-    return { id: updated.id }
   })

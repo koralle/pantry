@@ -27,9 +27,8 @@ export function InlineAddTag() {
     event.preventDefault()
     setTagError(null)
 
-    let parsedName: string
     try {
-      parsedName = v.parse(tagNameSchema, name)
+      v.parse(tagNameSchema, name)
     } catch {
       setTagError('タグ名を入力してください（32文字以内）')
       return
@@ -37,7 +36,7 @@ export function InlineAddTag() {
 
     setIsPending(true)
     try {
-      await addTag({ data: { name: parsedName } })
+      await addTag({ data: { name } })
       setName('')
       await navigate({ to: '/tags', search: { limit: 50, offset: 0 } })
     } catch (error) {

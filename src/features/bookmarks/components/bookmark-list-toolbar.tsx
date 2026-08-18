@@ -8,6 +8,7 @@ import { srOnly } from '../../../styles/sr-only'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { BookmarkSearchPatch } from '../../navigation/lib/bookmark-search-builders'
 import { buildListSearch } from '../../navigation/lib/bookmark-search-builders'
+import { tagNamesMatch } from '../../tags/domain/tag-values'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
 import type { ListLayout } from '../lib/list-layout-preference'
 
@@ -29,14 +30,18 @@ const groupFieldset = css({
 })
 const tagsRow = css({ display: 'flex', flexWrap: 'wrap', gap: '2', alignItems: 'center' })
 
-function listHeading(search: BookmarkSearchSchema): string {
+function listHeading(search: BookmarkSearchSchema, shelfTags: ShelfTag[]): string {
   if (search.q !== undefined && search.q.trim() !== '') {
     return `「${search.q.trim()}」の検索結果`
   }
   if (search.tags !== undefined && search.tags.length > 0) {
-    return search.tags.join(' / ')
+    return search.tags.map((tag) => displayTagName(tag, shelfTags)).join(' / ')
   }
   return 'ブックマーク'
+}
+
+function displayTagName(searchKey: string, shelfTags: ShelfTag[]): string {
+  return shelfTags.find((tag) => tagNamesMatch(tag.name, searchKey))?.name ?? searchKey
 }
 
 export function ListToolbar({
@@ -53,7 +58,9 @@ export function ListToolbar({
   const navigate = useNavigate({ from: '/' })
 
   const selectedTags = search.tags ?? []
-  const addableTags = shelfTags.filter((tag) => !selectedTags.includes(tag.name))
+  const addableTags = shelfTags.filter(
+    (tag) => !selectedTags.some((selected) => tagNamesMatch(selected, tag.name))
+  )
 
   const patchSearch = (patch: BookmarkSearchPatch) => {
     void navigate({
@@ -64,7 +71,7 @@ export function ListToolbar({
 
   return (
     <div className={toolbar}>
-      <h1 className={srOnly}>{listHeading(search)}</h1>
+      <h1 className={srOnly}>{listHeading(search, shelfTags)}</h1>
 
       <div className={controls}>
         <fieldset className={groupFieldset}>
@@ -134,7 +141,7 @@ export function ListToolbar({
             <StyledButton
               key={tagName}
               visual='chip'
-              aria-label={`${tagName}を外す`}
+              aria-label={`${displayTagName(tagName, shelfTags)}を外す`}
               onPress={() => {
                 const next = selectedTags.filter((name) => name !== tagName)
                 if (next.length === 0) {
@@ -143,7 +150,7 @@ export function ListToolbar({
                 }
                 patchSearch({ tags: next })
               }}>
-              {tagName}
+              {displayTagName(tagName, shelfTags)}
               <X
                 size={14}
                 aria-hidden

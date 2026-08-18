@@ -60,7 +60,8 @@ const main = async (): Promise<void> => {
       count: COUNTS.tags,
       columns: {
         userId: funcs.valuesFromArray({ values: [user.id] }),
-        name: funcs.valuesFromArray({ values: tagNames, isUnique: true })
+        name: funcs.valuesFromArray({ values: tagNames, isUnique: true }),
+        normalizedName: funcs.valuesFromArray({ values: tagNames, isUnique: true })
       }
     },
     bookmarkTable: {

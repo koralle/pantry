@@ -18,12 +18,24 @@ describe('normalizeListQuery', () => {
   test('normalizes tag names', () => {
     expect(
       normalizeListQuery({
-        tagNames: [' React ', 'react', 'TS'],
+        tagNames: [' React ', 'react', 'TS', 'TypeScript'],
         tagMode: 'or',
         sort: 'updated',
         limit: 50,
         offset: 0
       }).tagNames
-    ).toEqual(['react', 'ts'])
+    ).toEqual(['react', 'ts', 'typescript'])
+  })
+
+  test('collapses tag names that differ only by Unicode composition', () => {
+    expect(
+      normalizeListQuery({
+        tagNames: ['ハ\u309A', 'パ'],
+        tagMode: 'or',
+        sort: 'updated',
+        limit: 50,
+        offset: 0
+      }).tagNames
+    ).toEqual(['パ'])
   })
 })

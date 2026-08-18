@@ -15,6 +15,7 @@ export const tagsTable = sqliteTable(
       })
       .notNull(),
     name: text().notNull(),
+    normalizedName: text('normalized_name').notNull(),
     pinned: integer('pinned', { mode: 'boolean' }).notNull().default(false),
     sortOrder: integer('sort_order', { mode: 'number' }).notNull().default(0),
     color: text('color'),
@@ -28,7 +29,7 @@ export const tagsTable = sqliteTable(
     version: integer({ mode: 'number' }).notNull().default(1)
   },
   (t) => [
-    unique().on(t.userId, t.name),
+    unique().on(t.userId, t.normalizedName),
     index('user_id_idx').on(t.userId),
     index('tags_user_id_pinned_sort_order_idx').on(t.userId, t.pinned, t.sortOrder),
     index('tags_user_id_last_used_at_idx').on(t.userId, t.lastUsedAt)

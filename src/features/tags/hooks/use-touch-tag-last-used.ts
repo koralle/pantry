@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
+import { tagNamesMatch } from '../domain/tag-values'
 import { touchTagLastUsed } from '../functions/touch-tag-last-used'
 import type { ShelfTag } from '../lib/tag-shelf'
 
@@ -23,7 +24,10 @@ export function useTouchTagLastUsedOnce(
         return
       }
       const primaryName = tagKey.split('\0')[0]
-      const primary = tags.find((tag) => tag.name === primaryName)
+      if (primaryName === undefined || primaryName === '') {
+        return
+      }
+      const primary = tags.find((tag) => tagNamesMatch(tag.name, primaryName))
       if (primary != null) {
         void touchTagLastUsed({ data: { id: primary.id } })
       }
