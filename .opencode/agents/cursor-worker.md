@@ -1,7 +1,7 @@
 ---
 description: Cursorから委譲された実装タスクを完遂するワーカー
 mode: primary
-model: provider/model
+model: openai/gpt-5.6-luna
 permission:
   edit: allow
   bash:

@@ -1,7 +1,7 @@
 ---
 name: opencode-worker
 description: OpenCodeの別モデルに実装タスクを委譲する。独立して実装・テストできるタスクで使用する。
-model: composer-2.5
+model: cursor-grok-4.6-medium
 readonly: false
 is_background: false
 ---
