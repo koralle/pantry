@@ -47,7 +47,7 @@ export function TagManagementScreen({
       <header className={tagAdminHeader}>
         <div className={tagAdminIntro}>
           <h1 className={pageTitle}>タグ管理</h1>
-          <p className={pageLead}>箱のラベル・ピン・色を整える裏方です</p>
+          <p className={pageLead}>名前・ピン・色を整えます</p>
         </div>
         <Link
           to='/tags/new'

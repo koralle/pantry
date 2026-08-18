@@ -18,7 +18,7 @@ function TypographyCatalog() {
               <p
                 className={fontSpecimen}
                 style={{ fontFamily: tokenValue(entry) }}>
-                Pantry のブックマークを、タグで棚に並べる。The quick brown fox.
+                Pantry のブックマークを、タグで絞り込む。The quick brown fox.
               </p>
               <TokenMeta
                 path={entry.path}

@@ -1,18 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Trash2, X } from 'lucide-react'
 import { useState, useTransition } from 'react'
-import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  Heading,
-  Modal,
-  ModalOverlay,
-  Text
-} from 'react-aria-components'
+import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay, Text } from 'react-aria-components'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { button } from '../../../styles/button'
 import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../styles/dialog'
 import { fieldError } from '../../../styles/form'
 import type { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
@@ -55,15 +46,15 @@ export function BookmarkDeleteDialog({
           setDeleteError(null)
         }
       }}>
-      <Button
-        className={button({ visual: 'danger' })}
+      <StyledButton
+        visual='danger'
         isDisabled={isDeleting}>
         <Trash2
           size={16}
           aria-hidden
         />{' '}
         削除
-      </Button>
+      </StyledButton>
       <ModalOverlay
         className={dialogBackdrop}
         isDismissable={!isDeleting}>
@@ -85,16 +76,15 @@ export function BookmarkDeleteDialog({
               </p>
             ) : null}
             <div className={dialogActions}>
-              <Button
+              <StyledButton
                 slot='close'
-                className={button()}
                 isDisabled={isDeleting}>
                 <X
                   size={16}
                   aria-hidden
                 />{' '}
                 キャンセル
-              </Button>
+              </StyledButton>
               <StyledButton
                 visual='danger'
                 onPress={handleDelete}

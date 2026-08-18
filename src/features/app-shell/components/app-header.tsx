@@ -1,33 +1,58 @@
 import type { LinkProps, RegisteredRouter } from '@tanstack/react-router'
-import { LogOut, Plus, Settings } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { LogOut, Plus, Search, Settings, Tags } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { Label, SearchField } from 'react-aria-components'
 import { css } from 'styled-system/css'
 
+import { StyledButton } from '../../../shared/components/styled-button'
+import { StyledInput } from '../../../shared/components/styled-input'
 import { StyledLink } from '../../../shared/components/styled-link'
-import { button } from '../../../styles/button'
+import { srOnly } from '../../../styles/sr-only'
 import { useSignOut } from '../../auth/hooks/use-sign-out'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { defaultBookmarkSearch } from '../../navigation/lib/bookmark-search'
+import { buildListSearch } from '../../navigation/lib/bookmark-search-builders'
 
 const shellHeader = css({
   display: 'flex',
+  flexWrap: 'wrap',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '3',
+  gap: '2',
   minBlockSize: '4rem',
   paddingBlock: '2',
   paddingInline: '4',
   borderBlockEndWidth: 'thin',
   borderBlockEndStyle: 'solid',
   borderBlockEndColor: 'border.default',
-  background: 'surface.header'
+  background: 'surface.header',
+  md: {
+    flexWrap: 'nowrap',
+    gap: '3'
+  }
 })
 
-const headerRow = css({
+const headerLead = css({
   display: 'flex',
   alignItems: 'center',
   gap: '2',
-  flexWrap: 'nowrap',
-  minInlineSize: '0'
+  order: 1,
+  md: {
+    order: 0
+  }
+})
+
+const headerActions = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  order: 2,
+  marginInlineStart: 'auto',
+  md: {
+    order: 0,
+    marginInlineStart: '0'
+  }
 })
 
 const brandMobile = css({
@@ -36,34 +61,69 @@ const brandMobile = css({
   }
 })
 
-const settingsAction = css({
+const mobileChromeAction = css({
   md: {
     display: 'none'
   }
 })
 
-const signOut = css(button.raw(), {
-  color: 'fg.default',
-  borderColor: 'transparent',
-  background: 'transparent',
-  paddingBlock: '1.5',
-  paddingInline: '2'
+const searchForm = css({
+  display: 'flex',
+  flex: '1 1 100%',
+  minInlineSize: '0',
+  gap: '2',
+  order: 3,
+  md: {
+    flex: '1 1 auto',
+    order: 0
+  }
+})
+
+const searchField = css({
+  display: 'flex',
+  flex: '1',
+  minInlineSize: '0'
+})
+
+const searchSubmit = css({
+  flexShrink: '0',
+  paddingInline: '3'
 })
 
 export function AppHeader({
   newBookmarkSearch,
+  listSearch,
   shelfTrigger
 }: {
   readonly newBookmarkSearch: NonNullable<
     LinkProps<'a', RegisteredRouter, string, '/bookmarks/new'>['search']
   >
+  readonly listSearch: BookmarkSearchSchema | undefined
   readonly shelfTrigger: ReactNode
 }) {
   const { handleSignOut, isPending } = useSignOut()
+  const navigate = useNavigate()
+  const [draftQ, setDraftQ] = useState(listSearch?.q ?? '')
+
+  useEffect(() => {
+    setDraftQ(listSearch?.q ?? '')
+  }, [listSearch?.q])
+
+  const commitSearch = (raw: string) => {
+    const nextQ = raw.trim()
+    const current = listSearch ?? defaultBookmarkSearch
+    void navigate({
+      to: '/',
+      search:
+        nextQ === ''
+          ? buildListSearch(current, { clearQ: true })
+          : buildListSearch(current, { q: nextQ })
+    })
+  }
 
   return (
     <header className={shellHeader}>
-      <div className={headerRow}>
+      <div className={headerLead}>
         <StyledLink
           to='/'
           search={defaultBookmarkSearch}
@@ -75,7 +135,33 @@ export function AppHeader({
         {shelfTrigger}
       </div>
 
-      <div className={headerRow}>
+      <div className={searchForm}>
+        <SearchField
+          className={searchField}
+          value={draftQ}
+          onChange={setDraftQ}
+          onSubmit={commitSearch}>
+          <Label className={srOnly}>検索</Label>
+          <StyledInput
+            type='search'
+            placeholder='タイトル・URL・メモ'
+            enterKeyHint='search'
+          />
+        </SearchField>
+        <StyledButton
+          className={searchSubmit}
+          aria-label='検索'
+          onPress={() => {
+            commitSearch(draftQ)
+          }}>
+          <Search
+            size={16}
+            aria-hidden
+          />
+        </StyledButton>
+      </div>
+
+      <div className={headerActions}>
         <StyledLink
           to='/bookmarks/new'
           visual='plain'
@@ -87,26 +173,41 @@ export function AppHeader({
           新規
         </StyledLink>
         <StyledLink
+          to='/tags'
+          search={{ limit: 50, offset: 0 }}
+          visual='plain'
+          className={mobileChromeAction}
+          aria-label='タグ管理'>
+          <Tags
+            size={16}
+            aria-hidden
+          />
+        </StyledLink>
+        <StyledLink
           to='/settings'
           visual='plain'
-          className={settingsAction}>
+          className={mobileChromeAction}
+          aria-label='設定'>
           <Settings
             size={16}
             aria-hidden
-          />{' '}
-          設定
+          />
         </StyledLink>
-        <button
-          type='button'
-          className={signOut}
-          onClick={handleSignOut}
-          disabled={isPending}>
+        <StyledButton
+          display={{ base: 'none', md: 'inline-flex' }}
+          color='fg.default'
+          borderColor='transparent'
+          background='transparent'
+          paddingBlock='1.5'
+          paddingInline='2'
+          onPress={handleSignOut}
+          isDisabled={isPending}>
           <LogOut
             size={16}
             aria-hidden
           />{' '}
           ログアウト
-        </button>
+        </StyledButton>
       </div>
     </header>
   )

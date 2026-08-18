@@ -1,9 +1,10 @@
 import { Field, setErrors } from '@formisch/react'
 import { Download } from 'lucide-react'
-import { Input } from 'react-aria-components'
 
 import { StyledButton } from '../../../../../shared/components/styled-button'
-import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../../../styles/form'
+import { StyledInput } from '../../../../../shared/components/styled-input'
+import { StyledLabel } from '../../../../../shared/components/styled-label'
+import { field, fieldError, fieldUrlRow } from '../../../../../styles/form'
 import type { BookmarkFormFieldKey, BookmarkFormServerError, BookmarkFormStore } from './types'
 
 export type BookmarkFormFieldIds = {
@@ -65,19 +66,14 @@ export function BookmarkFormFields({
 
           return (
             <div className={field}>
-              <label
-                htmlFor={ids.url}
-                className={fieldLabel}>
-                URL
-              </label>
+              <StyledLabel htmlFor={ids.url}>URL</StyledLabel>
               <div className={fieldUrlRow}>
-                <Input
+                <StyledInput
                   id={ids.url}
                   name={fieldProps.props.name}
                   ref={(element) => {
                     fieldProps.props.ref(element as HTMLInputElement | null)
                   }}
-                  className={fieldInput}
                   value={fieldProps.input ?? ''}
                   type='url'
                   autoComplete='url'
@@ -121,18 +117,13 @@ export function BookmarkFormFields({
 
           return (
             <div className={field}>
-              <label
-                htmlFor={ids.title}
-                className={fieldLabel}>
-                タイトル
-              </label>
-              <Input
+              <StyledLabel htmlFor={ids.title}>タイトル</StyledLabel>
+              <StyledInput
                 id={ids.title}
                 name={fieldProps.props.name}
                 ref={(element) => {
                   fieldProps.props.ref(element as HTMLInputElement | null)
                 }}
-                className={fieldInput}
                 value={fieldProps.input ?? ''}
                 type='text'
                 autoComplete='off'
@@ -164,18 +155,13 @@ export function BookmarkFormFields({
 
           return (
             <div className={field}>
-              <label
-                htmlFor={ids.note}
-                className={fieldLabel}>
-                メモ
-              </label>
-              <Input
+              <StyledLabel htmlFor={ids.note}>メモ</StyledLabel>
+              <StyledInput
                 id={ids.note}
                 name={fieldProps.props.name}
                 ref={(element) => {
                   fieldProps.props.ref(element as HTMLInputElement | null)
                 }}
-                className={fieldInput}
                 value={fieldProps.input ?? ''}
                 type='text'
                 autoComplete='off'

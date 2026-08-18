@@ -72,7 +72,7 @@ function SignInScreen({ redirect }: { readonly redirect: string | undefined }) {
     <div className={signInPage}>
       <div className={signInPanel}>
         <p className={signInBrand}>Pantry</p>
-        <p className={pageLead}>自分の棚に入る</p>
+        <p className={pageLead}>自分のブックマークに入る</p>
         <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
       </div>
     </div>

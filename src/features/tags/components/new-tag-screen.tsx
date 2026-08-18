@@ -25,7 +25,7 @@ export function NewTagScreen() {
       </nav>
 
       <h1 className={workbenchTitle}>タグ新規作成</h1>
-      <p className={workbenchLead}>箱の名前を付け、必要ならピンと色も決めます</p>
+      <p className={workbenchLead}>名前を付け、必要ならピンと色も決めます</p>
 
       <TagForm
         initialValues={{ name: '', pinned: false, color: null, sortOrder: 0 }}

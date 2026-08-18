@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 
-import { UiLoading } from '../../../shared/components/ui-loading'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { useTouchTagLastUsedOnce } from '../../tags/hooks/use-touch-tag-last-used'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
@@ -12,7 +11,7 @@ import { ListToolbar } from './bookmark-list-toolbar'
 
 type BookmarkListProps = {
   readonly search: BookmarkSearchSchema
-  readonly bookmarksPromise: Promise<BookmarkListItem[]> | undefined
+  readonly bookmarksPromise: Promise<BookmarkListItem[]>
   readonly shelfTagsPromise: Promise<ShelfTag[]>
 }
 
@@ -21,12 +20,8 @@ export function BookmarkList({ search, bookmarksPromise, shelfTagsPromise }: Boo
 
   useTouchTagLastUsedOnce(search, shelfTagsPromise)
 
-  if (bookmarksPromise === undefined) {
-    return <UiLoading label='一覧を読み込み中' />
-  }
-
   return (
-    <section aria-label='ブックマーク一覧'>
+    <section>
       <Suspense
         fallback={
           <>

@@ -202,12 +202,12 @@ export default defineConfig({
       tokens: {
         colors: {
           pantry: {
-            canvas: { value: '#f7f6f3' },
-            ink: { value: '#1c1b19' },
-            muted: { value: '#5c5955' },
-            line: { value: '#d9d4cc' },
+            canvas: { value: '#f3f4f6' },
+            ink: { value: '#1f2328' },
+            muted: { value: '#5b616a' },
+            line: { value: '#d1d5db' },
             accent: { value: '#2f6f6a' },
-            surface: { value: '#fff' },
+            surface: { value: '#f7f8f9' },
             danger: { value: '#8a2f2f' }
           }
         },
@@ -330,7 +330,7 @@ export default defineConfig({
               value: '{colors.pantry.canvas}'
             },
             rail: {
-              value: '{colors.pantry.canvas}'
+              value: 'color-mix(in oklab, {colors.pantry.line} 22%, {colors.pantry.canvas})'
             },
             tag: {
               value: 'color-mix(in oklab, {colors.pantry.accent} 8%, {colors.pantry.canvas})'

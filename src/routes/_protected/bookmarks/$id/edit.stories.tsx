@@ -55,9 +55,7 @@ const meta = preview.meta({
 export const Default = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(
-      canvas.getByRole('heading', { name: 'ブックマークを並べ替える' })
-    ).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: 'ブックマークを編集' })).toBeInTheDocument()
     await expect(canvas.getByLabelText('URL')).toHaveValue(String(editorData.url))
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
   }
@@ -70,7 +68,7 @@ export const InitialLoading = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(
-      canvas.queryByRole('heading', { name: 'ブックマークを並べ替える' })
+      canvas.queryByRole('heading', { name: 'ブックマークを編集' })
     ).not.toBeInTheDocument()
   }
 })

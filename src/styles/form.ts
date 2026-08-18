@@ -1,16 +1,5 @@
 import { css } from 'styled-system/css'
 
-export const formControl = css({
-  minBlockSize: 'touch',
-  borderWidth: 'thin',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'box',
-  paddingBlock: '2',
-  paddingInline: '3',
-  background: 'bg.surface'
-})
-
 export const formSummary = css({
   borderWidth: 'thin',
   borderStyle: 'solid',
@@ -41,19 +30,6 @@ export const field = css({
 export const fieldLabel = css({
   fontWeight: 'semibold',
   fontSize: 'xs'
-})
-
-export const fieldInput = css({
-  minBlockSize: 'touch',
-  borderWidth: 'thin',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'box',
-  paddingBlock: '2',
-  paddingInline: '3',
-  background: 'bg.surface',
-  width: 'full',
-  boxSizing: 'border-box'
 })
 
 export const fieldUrlRow = css({

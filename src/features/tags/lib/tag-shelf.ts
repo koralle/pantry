@@ -23,29 +23,3 @@ export function sortTagsForNav(tags: ShelfTag[]): ShelfTag[] {
     return compareName(a, b)
   })
 }
-
-export function sortTagsForEntrance(tags: ShelfTag[]): ShelfTag[] {
-  return [...tags].toSorted((a, b) => {
-    if (a.pinned !== b.pinned) {
-      return a.pinned ? -1 : 1
-    }
-
-    const aUsed = a.lastUsedAt?.getTime() ?? null
-    const bUsed = b.lastUsedAt?.getTime() ?? null
-    if (aUsed !== bUsed) {
-      if (aUsed == null) {
-        return 1
-      }
-      if (bUsed == null) {
-        return -1
-      }
-      return bUsed - aUsed
-    }
-
-    if (a.bookmarkCount !== b.bookmarkCount) {
-      return b.bookmarkCount - a.bookmarkCount
-    }
-
-    return compareName(a, b)
-  })
-}

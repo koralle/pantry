@@ -1,8 +1,11 @@
-import { Menu, X } from 'lucide-react'
+import { Menu, Settings, Tags, X } from 'lucide-react'
 import { useState } from 'react'
-import { Button, Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components'
+import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components'
 import { css } from 'styled-system/css'
 
+import { StyledButton } from '../../../shared/components/styled-button'
+import { StyledLink } from '../../../shared/components/styled-link'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { ShelfNavSelection } from '../../tags/components/shelf-nav'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
 import { ShelfNavPanel } from './shelf-nav-panel'
@@ -16,8 +19,15 @@ const shelfChanger = css({
   paddingBlock: '1.5',
   paddingInline: '2',
   borderWidth: 'none',
+  borderColor: 'transparent',
   background: 'transparent',
   cursor: 'pointer',
+  '@media (any-hover: hover)': {
+    '&:hover:not(:disabled)': {
+      background: 'transparent',
+      borderColor: 'transparent'
+    }
+  },
   md: {
     display: 'none'
   }
@@ -74,16 +84,36 @@ const shelfSheetClose = css({
   paddingBlock: '1.5',
   paddingInline: '2',
   borderWidth: 'none',
+  borderColor: 'transparent',
   background: 'transparent',
-  cursor: 'pointer'
+  cursor: 'pointer',
+  '@media (any-hover: hover)': {
+    '&:hover:not(:disabled)': {
+      background: 'transparent',
+      borderColor: 'transparent'
+    }
+  }
+})
+
+const shelfSheetMeta = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+  marginBlockStart: '4',
+  borderBlockStartWidth: 'thin',
+  borderBlockStartStyle: 'solid',
+  borderBlockStartColor: 'border.default',
+  paddingBlockStart: '3'
 })
 
 export function MobileShelfDialog({
   shelfTagsPromise,
-  selection
+  selection,
+  listSearch
 }: {
   readonly shelfTagsPromise: Promise<ShelfTag[]>
   readonly selection: ShelfNavSelection
+  readonly listSearch: BookmarkSearchSchema | undefined
 }) {
   const [shelfOpen, setShelfOpen] = useState(false)
 
@@ -95,13 +125,15 @@ export function MobileShelfDialog({
     <DialogTrigger
       isOpen={shelfOpen}
       onOpenChange={setShelfOpen}>
-      <Button className={shelfChanger}>
+      <StyledButton
+        className={shelfChanger}
+        aria-label='タグを選ぶ'>
         <Menu
           size={16}
           aria-hidden
         />{' '}
-        棚を変える
-      </Button>
+        タグ
+      </StyledButton>
       <ModalOverlay
         className={shelfSheetBackdrop}
         isDismissable>
@@ -111,9 +143,9 @@ export function MobileShelfDialog({
               <Heading
                 slot='title'
                 className={shelfSheetTitle}>
-                棚を選ぶ
+                タグを選ぶ
               </Heading>
-              <Button
+              <StyledButton
                 slot='close'
                 className={shelfSheetClose}>
                 <X
@@ -121,13 +153,37 @@ export function MobileShelfDialog({
                   aria-hidden
                 />{' '}
                 閉じる
-              </Button>
+              </StyledButton>
             </div>
             <ShelfNavPanel
               shelfTagsPromise={shelfTagsPromise}
               selection={selection}
+              listSearch={listSearch}
               onNavigate={closeShelf}
             />
+            <div className={shelfSheetMeta}>
+              <StyledLink
+                to='/tags'
+                search={{ limit: 50, offset: 0 }}
+                visual='plain'
+                onClick={closeShelf}>
+                <Tags
+                  size={16}
+                  aria-hidden
+                />{' '}
+                タグ管理
+              </StyledLink>
+              <StyledLink
+                to='/settings'
+                visual='plain'
+                onClick={closeShelf}>
+                <Settings
+                  size={16}
+                  aria-hidden
+                />{' '}
+                設定
+              </StyledLink>
+            </div>
           </Dialog>
         </Modal>
       </ModalOverlay>

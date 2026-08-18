@@ -1,12 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
-import { Input } from 'react-aria-components'
 import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
-import { field, fieldError, fieldInput, fieldLabel, fieldUrlRow } from '../../../styles/form'
+import { StyledInput } from '../../../shared/components/styled-input'
+import { StyledLabel } from '../../../shared/components/styled-label'
+import { field, fieldError, fieldUrlRow } from '../../../styles/form'
 import { addTag } from '../functions/add-tag'
 import { tagNameSchema } from '../lib/tag-name-schema'
 
@@ -55,14 +56,9 @@ export function InlineAddTag() {
       className={inlineAddTag}
       onSubmit={handleSubmit}>
       <div className={field}>
-        <label
-          className={fieldLabel}
-          htmlFor='inline-add-tag-name'>
-          クイック追加
-        </label>
+        <StyledLabel htmlFor='inline-add-tag-name'>クイック追加</StyledLabel>
         <div className={fieldUrlRow}>
-          <Input
-            className={fieldInput}
+          <StyledInput
             id='inline-add-tag-name'
             value={name}
             type='text'
