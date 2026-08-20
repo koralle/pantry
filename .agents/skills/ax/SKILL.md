@@ -2,7 +2,7 @@
 description: Use the ax CLI instead of curl + throwaway parsing scripts whenever you fetch a URL, explore an unknown web page, or extract structured data from HTML. Trigger whenever you are about to write an inline script (python3 heredoc, node -e, regex over HTML) or a bare curl for one-off web fetching, scraping, or page exploration.
 metadata:
   github-path: skills/ax
-  github-ref: refs/tags/v0.1.22
+  github-ref: refs/tags/v0.1.25
   github-repo: https://github.com/yusukebe/ax
   github-tree-sha: be4e42e6b11bf79f26ddd5585b6c49f5a9219aa4
 name: ax

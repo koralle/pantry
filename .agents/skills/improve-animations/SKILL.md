@@ -4,7 +4,7 @@ metadata:
   github-path: skills/improve-animations
   github-ref: refs/heads/main
   github-repo: https://github.com/emilkowalski/skills
-  github-tree-sha: ec57cb65ea60a23af278d305d1425ce4f998f510
+  github-tree-sha: 2ff93ddb9833df45f5e83080de838bb668530820
 name: improve-animations
 ---
 
