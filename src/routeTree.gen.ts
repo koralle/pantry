@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteImport } from './routes/_protected'
-import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as ProtectedBookmarksIndexRouteImport } from './routes/_protected/bookmarks/index'
@@ -26,11 +25,6 @@ import { Route as ProtectedTagsIdEditRouteImport } from './routes/_protected/tag
 
 const ProtectedRoute = ProtectedRouteImport.update({
   id: '/_protected',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignUpRoute = SignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
@@ -99,7 +93,6 @@ const ProtectedTagsIdEditRoute = ProtectedTagsIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
-  '/sign-up': typeof SignUpRoute
   '/sign-in/': typeof SignInIndexRoute
   '/tags/new': typeof ProtectedTagsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -113,7 +106,6 @@ export interface FileRoutesByFullPath {
   '/tags/$id/': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/sign-up': typeof SignUpRoute
   '/': typeof ProtectedIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/tags/new': typeof ProtectedTagsNewRoute
@@ -130,7 +122,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
-  '/sign-up': typeof SignUpRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/_protected/tags/new': typeof ProtectedTagsNewRoute
@@ -148,7 +139,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/sign-up'
     | '/sign-in/'
     | '/tags/new'
     | '/api/auth/$'
@@ -162,7 +152,6 @@ export interface FileRouteTypes {
     | '/tags/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/sign-up'
     | '/'
     | '/sign-in'
     | '/tags/new'
@@ -178,7 +167,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_protected'
-    | '/sign-up'
     | '/_protected/'
     | '/sign-in/'
     | '/_protected/tags/new'
@@ -195,7 +183,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   ProtectedRoute: typeof ProtectedRouteWithChildren
-  SignUpRoute: typeof SignUpRoute
   SignInIndexRoute: typeof SignInIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -207,13 +194,6 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ProtectedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sign-up': {
-      id: '/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof SignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_protected/': {
@@ -335,7 +315,6 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,
-  SignUpRoute: SignUpRoute,
   SignInIndexRoute: SignInIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
