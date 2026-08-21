@@ -1,9 +1,9 @@
 import { useRouter } from '@tanstack/react-router'
 import { Suspense, use } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { css } from 'styled-system/css'
 
 import { createErrorFallback } from '../../../shared/components/error-fallback'
-import { PantryMotion } from '../../../shared/components/pantry-motion'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import type { ShelfTag } from '../../tags/lib/tag-shelf'
 import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
@@ -13,6 +13,7 @@ import { BookmarkListResults } from './bookmark-list-results'
 import { ListToolbar } from './bookmark-list-toolbar'
 
 const ListError = createErrorFallback('一覧の読み込みに失敗しました')
+const crossfade = css({ animationStyle: 'crossfade' })
 
 export function BookmarkListFrame({
   search,
@@ -52,16 +53,16 @@ export function BookmarkListFrame({
           void router.invalidate()
         }}>
         <Suspense fallback={<ListLoading layout={layout} />}>
-          <PantryMotion
+          <div
             key={listKey}
-            kind='crossfade'>
+            className={crossfade}>
             <BookmarkListResults
               bookmarkPromise={bookmarksPromise}
               layout={layout}
               search={search}
               pageLimit={search.limit}
             />
-          </PantryMotion>
+          </div>
         </Suspense>
       </ErrorBoundary>
     </>
