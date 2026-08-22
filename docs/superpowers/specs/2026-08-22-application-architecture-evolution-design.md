@@ -16,7 +16,7 @@ Pantry のバックエンド境界を、現在の TanStack Start Server Function
 8. **単純な read projection は無理に UseCase / Repository 化せず query service として分離してよい**
 9. **SSR は `createRouterClient` を使い、同一 Worker 内の HTTP round trip を避ける**
 10. **Unexpected Error の logging は HTTP と SSR で共有できる server-side interceptor に置く**
-11. **ブラウザでセッション切れが起きた場合は RPC client interceptor で共通処理し、各フォームに 401 処理を散らさない**
+11. **ブラウザでセッション切れが起きた場合は RPC client interceptor で共通処理し、フォーム側では 401 を画面固有のエラー文言へ変換しない**
 12. **CreateTag 成功後は、直後に同じデータを再取得せず mutation output から TanStack Query cache を更新する**
 13. **oRPC は stable 版を関連3パッケージで同一versionに exact pin し、pilot 中に v2 beta へ追従しない**
 14. **Hono は現時点では導入しない**
@@ -987,9 +987,13 @@ const getClient = createIsomorphicFn()
 export const client: RouterClient<typeof router> = getClient()
 ```
 
-401 を各フォームで個別処理しない。
+401 を各フォームで個別に redirect しない。
 
 セッション切れはフォーム固有の失敗ではないため、現在位置を `redirect` に保存して sign-in へ戻す。
+
+ここで重要なのは、interceptor が `UNAUTHORIZED` を「成功」に変えたり握り潰したりしないことである。
+
+mutation は rejected のままにして型と状態を壊さず、UI の error mapping 側で 401 を表示対象から除外する。
 
 `window.location.replace` を使うことで、認証切れ画面へブラウザ Back で戻って再度 401 を踏みやすい履歴を増やさない。
 
@@ -998,6 +1002,8 @@ Browser
   -> RPCLink
   -> 401 client interceptor
   -> /sign-in/?redirect=current-url
+  -> rejected mutation は維持
+  -> UI error mapping は 401 を表示しない
 
 SSR
   -> createRouterClient
@@ -1231,24 +1237,81 @@ if (
 }
 ```
 
-移行後。
+移行後は、**表示すべきフォームエラーがない場合を `null` で表現する**。
 
 ```ts
 import { isDefinedError } from '@orpc/client'
 
-export function getCreateTagErrorMessage(error: unknown): string {
-  if (
-    isDefinedError(error) &&
-    error.code === 'tag-name-already-exists'
-  ) {
-    return 'そのタグ名は既に存在します'
+export function getCreateTagErrorMessage(error: unknown): string | null {
+  if (isDefinedError(error)) {
+    switch (error.code) {
+      case 'UNAUTHORIZED':
+        return null
+
+      case 'tag-name-already-exists':
+        return 'そのタグ名は既に存在します'
+    }
   }
 
   return 'タグの作成に失敗しました'
 }
 ```
 
-401 は RPC client interceptor が sign-in へ遷移するため、フォーム固有の「タグ作成失敗」として扱わない。
+`UNAUTHORIZED` は §13 の共通 `.errors()` で定義されているため、CreateTag client でも `isDefinedError` による型付き判定の対象になる。
+
+401 を interceptor 側で握り潰す案は採用しない。
+
+そうすると mutation が失敗したのに成功値のように扱われる余地ができ、TanStack Query の `error` state や戻り値の型を壊しやすいからである。
+
+代わりに、フォーム共通部の `mapError` 自体を `string | null` にする。
+
+```ts
+type TagFormProps = {
+  // ...
+  readonly mapError: (error: unknown) => string | null
+}
+```
+
+`catch` では `null` を表示しない。
+
+```ts
+try {
+  await onSubmit(values)
+} catch (error) {
+  const message = mapError(error)
+
+  if (message !== null) {
+    setFormError(message)
+  }
+}
+```
+
+`InlineAddTag` も同じルールにする。
+
+```ts
+try {
+  await createTag(input)
+} catch (error) {
+  const message = getCreateTagErrorMessage(error)
+
+  if (message !== null) {
+    setTagError(message)
+  }
+}
+```
+
+これにより session expiry の順序は次になる。
+
+```text
+UNAUTHORIZED
+  -> RPC client interceptor が sign-in 遷移を開始
+  -> mutation は rejected のまま
+  -> form catch に到達
+  -> getCreateTagErrorMessage は null
+  -> 「タグの作成に失敗しました」は表示しない
+```
+
+一方、500 など本当に作成処理として失敗したケースは generic message を表示する。
 
 `new-tag-screen.tsx` と `inline-add-tag.tsx` は同じ helper を使う。
 
@@ -1381,7 +1444,9 @@ unknown Error detail
 
 - client RPC が `UNAUTHORIZED` を受ける
 - `/sign-in/?redirect=<現在URL>` へ遷移する
-- tag form の generic error を主要表示として残さない
+- mutation は rejected state を維持する
+- `getCreateTagErrorMessage(UNAUTHORIZED)` は `null` を返す
+- `TagForm` / `InlineAddTag` は 401 で generic な「タグの作成に失敗しました」を表示しない
 
 ### Query / UI test
 
@@ -1391,6 +1456,7 @@ unknown Error detail
 - CreateTag 成功後に追加 fetch なしで shelf cache が更新される
 - cache 未取得時に `[created]` だけの不完全な一覧を作らない
 - duplicate error のメッセージを維持する
+- 401 を generic create error として表示しない
 - 500 系 error を duplicate と誤表示しない
 - SSR hydration 後も `lastUsedAt` が `Date | null` を維持する
 
@@ -1530,11 +1596,12 @@ feature locality は維持し、共通 RPC 基盤だけ `src/rpc/` に置く。
 19. `new-tag-screen.tsx` を新 mutation へ移す
 20. `inline-add-tag.tsx` を新 mutation へ移す
 21. `Error.name` 判定を typed `code` 判定へ変更する
-22. Application / Infrastructure / RPC / UI test を追加する
-23. SSR hydration で `Date` が保たれることを確認する
-24. client bundle に server code が入っていないことを確認する
-25. bundle size / latency / cold start / auth cost を比較する
-26. 旧 `addTag` Server Function を削除する
+22. CreateTag error mapping を `string | null` にし、401 ではフォームエラーを設定しない
+23. Application / Infrastructure / RPC / UI test を追加する
+24. SSR hydration で `Date` が保たれることを確認する
+25. client bundle に server code が入っていないことを確認する
+26. bundle size / latency / cold start / auth cost を比較する
+27. 旧 `addTag` Server Function を削除する
 
 ---
 
@@ -1552,6 +1619,8 @@ CreateTag pilot は次をすべて満たして完了とする。
 - unique constraint race が正しく conflict になる
 - 未認証が 401 になる
 - browser で 401 を受けたら redirect 付き sign-in へ戻る
+- 401 の mutation rejection を success に偽装しない
+- 401 で generic な「タグの作成に失敗しました」を表示しない
 - duplicate が 409 になる
 - unknown error が 500 になる
 - unknown error の詳細が client へ漏れない
@@ -1621,6 +1690,7 @@ Hono を追加すると request lifecycle と middleware の配置候補が増�
 - Expected Error が型で読める
 - auth failure を 500 と誤分類しにくい
 - session expiry の UX を各フォームで重複実装しない
+- session expiry をフォーム固有の作成失敗として一瞬表示しない
 - UI が Error class serialization に依存しない
 - CreateTag の正常系 DB round trip を減らせる
 - CreateTag 後の不要な refetch をなくせる
@@ -1637,6 +1707,7 @@ Hono を追加すると request lifecycle と middleware の配置候補が増�
 - `Result` と oRPC defined error の2段階を理解する必要がある
 - mutation と read query の構造が完全対称ではない
 - cache の直接更新と invalidation の使い分け規約が必要になる
+- `mapError` が「表示しない」を `null` で表現する規約を持つ
 - migration 中は Server Function と oRPC が共存する
 
 このコストを許容するのは、テスト容易性・UX・性能が実際に改善する場合だけである。
@@ -1678,12 +1749,15 @@ Browser RPCHandler ------┐
 SSR createRouterClient --┘
 ```
 
-ブラウザの session expiry は RPC client の横断処理にする。
+ブラウザの session expiry は RPC client の横断処理にし、フォーム側は表示抑制だけを担う。
 
 ```text
 RPCLink
   -> UNAUTHORIZED
   -> /sign-in/?redirect=current-url
+  -> mutation remains rejected
+  -> UI mapping returns null
+  -> no generic form error
 ```
 
 CreateTag の cache 更新は再取得ではなく mutation output を使う。
@@ -1708,7 +1782,7 @@ CreateTag pilot では特に次を実証する。
 4. TanStack Query で shelf query の ownership を整理できる
 5. SSR server-side client で Worker 内部 HTTP を避けられる
 6. HTTP と SSR で同じ error observability を成立させられる
-7. browser の session expiry を共通 UX として扱える
+7. browser の session expiry を共通 UX として扱い、フォーム固有エラーを誤表示しない
 
 これらに実益がなければ、アーキテクチャを増やしたこと自体を成果とはみなさない。
 
