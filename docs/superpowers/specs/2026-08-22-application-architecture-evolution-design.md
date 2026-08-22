@@ -123,10 +123,11 @@ procedure は transport adapter として薄くする。
 - 入力 schema
 - 認証済み context の受け取り
 - UseCase の呼び出し
-- UseCase の `Result` を RPC error contract / response へ変換
-- Unexpected Error を共通 error handler へ委譲
+- UseCase の Expected Error (`Result.err`) を RPC error へ網羅的に変換
+- Unexpected Error は procedure 内で try/catch せず、RPC middleware へ委譲する
 
 procedure 内に SQL や主要なビジネスルールを書かない。
+procedure は unexpected を Result から throw へ変換しない。Unexpected は UseCase が throw しており、Result には含まれない。
 
 ### 5.3 UseCase
 
@@ -178,24 +179,29 @@ Unexpected Error の例:
 - 実装上ありえない状態
 - ライブラリの予期しない例外
 
-Unexpected Error は従来どおり `throw` してよい。
+UseCase は Expected Error だけを `Result.err` で返す。未知の失敗は throw し、Result に折り畳まない。エラー union に `{ code: 'unexpected-error' }` を含めない。
 
-### 6.2 最小の Result 型
+UseCase が catch してよいのは次の2つに限る。
 
-外部ライブラリは最初から追加せず、必要十分な discriminated union を定義する。
+1. **Expected への分類** — 例: unique constraint を `{ code: 'tag-name-already-exists' }` へ写す。既知の infrastructure 信号を Expected Error に写す操作であり、unexpected を飲み込むことではない。
+2. **Transaction rollback** — transaction 内で throw して rollback し、外側で **再 throw** する。これを `Result.err` に変換しない。
 
-```ts
-export type Result<TValue, TError> =
-  | { ok: true; value: TValue }
-  | { ok: false; error: TError }
-```
+throw された Unexpected Error の catch は RPC middleware の1箇所に限る。middleware は request context 付きでログし、cause を剥がし、クライアント安全な 500 相当を返す。procedure は Expected Error の網羅変換だけを行い、unexpected を try/catch しない。ビジネス分岐は middleware に置かない。
+
+Bookmark の現行 `{ code: 'unexpected-error' }` Result は Server Function 時代の中間形であり、移行時の残りである。UseCase を新経路へ移すときにその union から unexpected を外す。共通エラー処理として両方のモデルを残さない。
+
+### 6.2 既存の Result 型を再利用する
+
+新しい Result 型は追加しない。`src/shared/domain/result.ts` の `Result` / `ok` / `err` を使う。
+
+形状は `{ ok: true, value }` / `{ ok: false, error }` である。`map` / `match` / `andThen` は意図的に置いておらず、呼び出し側は `if (!result.ok)` で分岐する。
+
+Expected Error の判別子は既存 Application 層に合わせ、`code` + kebab-case にする。`type` や PascalCase は使わない。
 
 UseCase の例:
 
 ```ts
-type CreateTagError =
-  | { type: 'TagNameAlreadyExists' }
-  | { type: 'TagLimitExceeded' }
+type CreateTagError = { code: 'tag-name-already-exists' } | { code: 'tag-limit-exceeded' }
 
 type CreateTagResult = Result<{ id: number }, CreateTagError>
 ```
@@ -208,14 +214,15 @@ flowchart LR
   OK[Result: ok]
   EXPECTED[Result: expected error]
   THROW[throw unexpected error]
-  RPC[oRPC boundary]
+  PROC[oRPC procedure]
+  MW[RPC middleware]
 
   UC --> OK
   UC --> EXPECTED
   UC --> THROW
-  OK --> RPC
-  EXPECTED --> RPC
-  THROW --> RPC
+  OK --> PROC
+  EXPECTED --> PROC
+  THROW --> MW
 ```
 
 ### 6.3 Expected Error を class にしない理由
@@ -240,7 +247,7 @@ RPC 境界へ集約する対象:
 - request ID
 - structured logging
 - duration / tracing
-- Unexpected Error の記録
+- Unexpected Error の catch・ログ・cause の除去・クライアント安全な 500 相当への変換（RPC middleware）
 - Expected Error から RPC error への変換補助
 - 将来的な rate limit
 
@@ -261,6 +268,8 @@ flowchart TD
 ```
 
 各 UseCase や procedure が個別に同じ処理を実装し始めたら設計上の失敗とみなす。
+
+Unexpected Error の共通処理は RPC middleware であり、第二の Result variant ではない。procedure は unexpected を try/catch しない。
 
 ## 8. Hono を今は導入しない理由
 
@@ -354,11 +363,9 @@ type CreateTagInput = {
   color?: string | null
 }
 
-type CreateTagError = { type: 'TagNameAlreadyExists' }
+type CreateTagError = { code: 'tag-name-already-exists' }
 
-type CreateTag = (
-  input: CreateTagInput
-) => Promise<Result<{ id: number }, CreateTagError>>
+type CreateTag = (input: CreateTagInput) => Promise<Result<{ id: number }, CreateTagError>>
 ```
 
 認証済み `userId` は RPC middleware / context から procedure が取り出して UseCase に明示的に渡す。
@@ -376,6 +383,7 @@ UseCase 内で global request context を参照しない。
 - Cloudflare Workers runtime 不要
 - Turso 不要
 - Expected Error を `Result` として直接 assert
+- Unexpected Error は `rejects.toThrow`（または同等）で assert する。`err({ code: 'unexpected-error' })` では assert しない
 
 ### Infrastructure test
 
@@ -399,8 +407,8 @@ UseCase 内で global request context を参照しない。
 一括置換はしない。
 
 1. oRPC の server/client 基盤を追加する
-2. 共通 auth context と error handling を構築する
-3. `Result` 型を application 共通型として追加する
+2. 共通 auth context と、Unexpected Error を catch する RPC middleware を構築する
+3. 既存の `src/shared/domain/result.ts` を使う。第二の `Result` 型は追加しない
 4. 小さい mutation である `CreateTag` を pilot として移行する
 5. TanStack Query mutation から新しい RPC を呼ぶ
 6. テストの書きやすさ、bundle、実装量を評価する
@@ -412,6 +420,7 @@ UseCase 内で global request context を参照しない。
 ### 移行中のルール
 
 - 新旧経路を同じ操作で二重に持つ期間を長くしない
+- UseCase を新経路へ移すとき、エラー union から `{ code: 'unexpected-error' }` を外す
 - 1 PR で全 feature を移行しない
 - framework migration とドメイン仕様変更を同じ PR に混ぜない
 - performance / bundle size の悪化を計測せずに受け入れない
