@@ -370,12 +370,11 @@ export function getCreateTagErrorMessage(
 
 ---
 
-## SSR / performance guardrails
+## Performance guardrails
 
 pilot では機能だけでなく性能も確認する。
 
-- SSR では可能な限り server-side router client を使い、同一 Worker への不要な HTTP round trip を作らない
-- RPC handler / client を request ごとに不要に再生成しない
+- SSR で同一 Worker への不要な HTTP round trip を作らない
 - browser bundle に DB / auth の server-only code を混入させない
 - CreateTag 正常系の DB query は `INSERT` 1回を目標にする
 - CreateTag 成功直後の不要な refetch を増やさない
@@ -386,7 +385,6 @@ pilot では機能だけでなく性能も確認する。
 - Worker bundle size
 - CreateTag latency
 - DB query count
-- SSR 時の不要な HTTP request 数
 
 明確な性能劣化があり、保守性改善がそれに見合わない場合は設計を縮小する。
 
@@ -421,32 +419,18 @@ unknown exception は `Result.err` に変換せず、そのまま reject する�
 
 ### Adapter integration test
 
-最低限、次を確認する。
-
 - 同一 user + 同一 normalized name は conflict
 - 別 user なら同名を作成できる
-- display name を保持する
 - 正常系は事前 duplicate SELECT を要求しない
 - unknown DB error は throw する
 
-### RPC integration test
-
-最低限、次を確認する。
+### RPC / UI test
 
 - invalid input -> 4xx
 - unauthenticated -> 401
 - duplicate name -> 409
-- success -> created tag
 - unknown exception -> 500
-- internal error detail を client へ漏らさない
-
-### UI test
-
-最低限、次を確認する。
-
-- duplicate name の既存メッセージを維持する
 - 401 で generic な「タグの作成に失敗しました」を表示しない
-- 500 を duplicate name と誤認しない
 - success 時に cache が更新される
 
 ---
@@ -463,11 +447,7 @@ unknown exception は `Result.err` に変換せず、そのまま reject する�
 6. request latency に明確な劣化がない
 7. port / adapter / procedure の追加量が保守性改善に見合う
 
-pilot 完了後に次のどれかを選ぶ。
-
-- **Adopt**: Simple Command の標準パターンとして再利用する
-- **Modify**: 問題点を修正して再評価する
-- **Reject**: 既存構成またはより単純な構成へ戻す
+pilot 完了後に `Adopt / Modify / Reject` を判断する。
 
 ---
 
