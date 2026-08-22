@@ -8,29 +8,23 @@ Pantry のバックエンド境界を、現在の TanStack Start Server Function
 
 1. **oRPC を型付き RPC 境界として導入する**
 2. **TanStack Query をサーバー状態へアクセスする標準経路として使う**
-3. **Application / UseCase 層を設け、アプリケーションロジックを TanStack Start と oRPC から分離する**
-4. **業務上予想できる失敗は、既存の `src/shared/domain/result.ts` の `Result` で表現する**
-5. **認証失敗や入力不正は UseCase の `Result` に混ぜず、RPC 境界の失敗として扱う**
-6. **予期しない例外は `throw` のまま oRPC へ渡し、500 への変換を oRPC に任せる**
-7. **Application から Drizzle を追い出すため、必要な箇所では狭い outbound port を使う**
-8. **ただし汎用的な `TagRepository` のような CRUD interface は作らない**
-9. **read-only projection は無理に UseCase / Repository 化せず、query service として分離してよい**
-10. **SSR では oRPC の server-side client を使い、同一 Worker 内で HTTP を往復しない**
+3. **Application / UseCase 層を設け、業務処理を TanStack Start と oRPC から分離する**
+4. **Expected Error は既存の `src/shared/domain/result.ts` の `Result` で表現する**
+5. **未認証・入力不正は Application Error に混ぜず、RPC 境界の失敗として扱う**
+6. **Unexpected Error は `throw` のまま oRPC に渡し、500 変換を自前実装しない**
+7. **Application から Drizzle を追い出す箇所では、汎用 Repository ではなく狭い function port を使う**
+8. **単純な read projection は無理に UseCase / Repository 化せず query service として分離してよい**
+9. **SSR は `createRouterClient` を使い、同一 Worker 内の HTTP round trip を避ける**
+10. **Unexpected Error の logging は HTTP と SSR で共有できる server-side interceptor に置く**
 11. **Hono は現時点では導入しない**
 
-今回の再検討で、前案の「CreateTag は `AppDb` を Application に直接注入する」という判断は撤回する。
+今回の設計では、既存実装との一貫性よりも **今後のテスタビリティ・依存方向・性能**を優先する。
 
-理由は、既存実装に合わせることよりも **テスタビリティを改善するという今回の目的**を優先するためである。
+既存の Bookmark Application は `AppDb` を直接注入しているが、その unit test では Drizzle の fluent API を模倣するために `createThenableChain` と `as unknown as AppDb` を使っている。
 
-既存の Bookmark Application test では Drizzle の fluent API を模倣するために `createThenableChain` と `as unknown as AppDb` を使っている。
+この状態は「Application を DB 実装から切り離してテストしたい」という今回の目的には合わない。
 
-これはテストが業務仕様ではなく query builder の呼び出し方に依存している状態であり、新しい設計の標準にはしない。
-
-一方で、すべてを Repository Pattern にするのも過剰である。
-
-そのため Pantry では、**UseCase が本当に必要とする1つの能力だけを関数型の port として渡す**。
-
-CreateTag なら `TagRepository` ではなく `InsertTag` だけを定義する。
+そのため CreateTag pilot では、既存パターンを踏襲せず **UseCase が本当に必要とする能力だけを port として渡す**。
 
 ---
 
@@ -42,8 +36,8 @@ CreateTag なら `TagRepository` ではなく `InsertTag` だけを定義する�
 - DB を取得する
 - 同名タグを事前に検索する
 - タグを INSERT する
-- SQLite の unique constraint error を業務エラーへ変換する
-- UI に返す値を作る
+- SQLite unique constraint error を業務エラーへ変換する
+- transport へ返す値を作る
 
 概念的には次の形である。
 
@@ -90,19 +84,19 @@ export const addTag = createServerFn({ method: 'POST' })
   })
 ```
 
-この構成では、次の変更理由が1つの関数に混ざる。
+この形だと、次の変更理由が同じ関数に混ざる。
 
 - 認証方式を変える
 - RPC framework を変える
-- 業務エラーの表現を変える
+- 業務エラーの型を変える
 - SQL / Drizzle query を変える
-- UI へ返す transport error を変える
+- transport error を変える
 
-Application boundary を設ける目的は、これらを別々に変更できるようにすることである。
+Application boundary を置く目的は、これらを別々に変更できるようにすることである。
 
 ---
 
-## 3. CreateTag の DB round trip を減らす
+## 3. CreateTag の事前 SELECT を削除する
 
 `tags` table にはすでに次の unique constraint がある。
 
@@ -110,36 +104,40 @@ Application boundary を設ける目的は、これらを別々に変更でき�
 unique().on(t.userId, t.normalizedName)
 ```
 
-そのため CreateTag の正常系で毎回
+現在は正常系でも毎回、
 
 ```text
 SELECT duplicate
 INSERT tag
 ```
 
-の2 query を発行する必要はない。
+の2 query を発行する。
 
-事前 SELECT をしても、並行 request が来れば SELECT と INSERT の間で race condition が発生する。
+しかし事前 SELECT をしても、並行 request が来れば SELECT と INSERT の間に race condition がある。
 
-最終的には DB の unique constraint が正本になる。
+最終的な正本は DB の unique constraint である。
 
-pilot では次の形に変更する。
+pilot では次の形にする。
 
 ```text
 INSERT tag
   ├─ success
   │    -> created
-  ├─ (user_id, normalized_name) unique violation
+  ├─ unique violation
   │    -> name-conflict
   └─ other error
        -> throw
 ```
 
-これにより正常系の DB round trip を1回減らす。
+正常系の DB round trip を1回減らせる。
+
+現在 `tags` で CreateTag が触れる値のうち、auto increment の primary key 以外の unique constraint は `(user_id, normalized_name)` である。
+
+将来別の unique constraint を追加する場合は、`name-conflict` への変換条件を再検討する。
 
 ---
 
-## 4. shelf tag の二重取得も pilot で解消する
+## 4. shelf tags の所有者を1つにする
 
 現在の protected layout は `fetchShelfTags()` を呼んでいる。
 
@@ -151,7 +149,7 @@ loader: async () => {
 }
 ```
 
-一方、`/tags` の route も同じ `fetchShelfTags()` を呼んでいる。
+一方 `/tags` route も同じ `fetchShelfTags()` を呼んでいる。
 
 ```ts
 // src/routes/_protected/tags/index.tsx
@@ -166,11 +164,9 @@ loader: async () => {
 }
 ```
 
-タグ管理画面は protected layout の配下なので、同じ shelf projection を親と子が別々に要求している。
+`/tags` は protected layout 配下なので、同じ projection を親と子が別々に要求している。
 
-TanStack Query 移行後は、shelf tags を **protected layout が所有する共通 query** にする。
-
-子 route は同じ fetch を持たない。
+TanStack Query 移行後は shelf tags を **protected layout が所有する共通 query** にする。
 
 ```text
 /_protected loader
@@ -186,21 +182,13 @@ MobileShelfDialog
   -> same query cache
 ```
 
-CreateTag mutation 後は、この query key だけを invalidate する。
-
-これにより TanStack Query を単なる mutation wrapper として導入するのではなく、実際に
-
-- cache
-- query ownership
-- deduplication
-- invalidation
-- SSR hydration / streaming
-
-まで検証できる。
+CreateTag 成功後はこの query key を invalidate する。
 
 ---
 
 ## 5. 目標アーキテクチャ
+
+Mutation / workflow は次の形を基本とする。
 
 ```mermaid
 flowchart LR
@@ -208,17 +196,17 @@ flowchart LR
   TQ[TanStack Query]
   CLIENT[oRPC Client]
   RPC[oRPC Procedure]
-  MW[oRPC Middleware]
+  AUTH[Auth Middleware]
   UC[Application / UseCase]
-  PORT[Narrow Outbound Port]
+  PORT[Narrow Function Port]
   INFRA[Drizzle Adapter]
   DB[(Turso)]
 
   UI --> TQ
   TQ --> CLIENT
   CLIENT --> RPC
-  RPC --> MW
-  MW --> UC
+  RPC --> AUTH
+  AUTH --> UC
   UC --> PORT
   INFRA --> PORT
   INFRA --> DB
@@ -239,15 +227,23 @@ flowchart TD
   Infrastructure --> Domain
 ```
 
-重要なのは、Infrastructure が Application の port 契約を実装することである。
+Application は次を知らない。
 
-Application が Drizzle の型を import する構成にはしない。
+- TanStack Start
+- oRPC
+- HTTP status
+- Cookie
+- Drizzle
+- `AppDb`
+- Turso
+- React
+- TanStack Query
 
 ---
 
 ## 6. `AppDb` 直接注入と narrow port の比較
 
-### 案A: Application に `AppDb` を直接渡す
+### 案A: `AppDb` を Application に直接渡す
 
 ```ts
 export async function executeCreateTag(params: {
@@ -262,19 +258,18 @@ export async function executeCreateTag(params: {
 #### Pros
 
 - ファイル数が少ない
-- interface が増えない
-- 実装を追いやすい
+- 実装が直接的
 
 #### Cons
 
 - Application が Drizzle に依存する
-- unit test が Drizzle の fluent API に依存する
-- `select().from().where()` や `insert().values().returning()` の mock が必要になる
-- DB implementation の変更が Application test を壊しやすい
+- unit test が query builder の呼び出し方に依存する
+- `insert().values().returning()` などの mock が必要になる
+- DB 実装の変更で Application test まで壊れやすい
 
-既存 Bookmark Application test で `createThenableChain` が必要になっていることは、この欠点がすでに現れている例である。
+今回の主目的がテスタビリティ改善なので採用しない。
 
-### 案B: 汎用 `TagRepository` を作る
+### 案B: 汎用 `TagRepository`
 
 ```ts
 interface TagRepository {
@@ -282,24 +277,23 @@ interface TagRepository {
   update(...): Promise<...>
   findById(...): Promise<...>
   list(...): Promise<...>
-  // ...
 }
 ```
 
 #### Pros
 
-- Drizzle から切り離せる
+- Drizzle を隠せる
 
 #### Cons
 
-- 今使わないメソッドまで1つの abstraction に集まりやすい
+- 今使わない能力まで interface に入りやすい
+- read model と write model が混ざりやすい
+- fake の実装量が増える
 - Repository が巨大化しやすい
-- read model と write model の要求が混ざりやすい
-- fake の実装量も増える
 
-Pantry では採用しない。
+採用しない。
 
-### 案C: UseCase が必要な能力だけを port にする
+### 案C: 必要な能力だけ function port にする
 
 ```ts
 export type InsertTag = (
@@ -309,25 +303,23 @@ export type InsertTag = (
 
 #### Pros
 
-- Drizzle を Application から追い出せる
-- unit test が単純な関数 stub だけで書ける
-- UseCase が依存する能力が型から読める
-- generic repository より abstraction surface が小さい
+- Application が Drizzle を知らない
+- unit test は単純な function stub だけでよい
+- 依存している能力が型から読める
+- generic Repository より surface が小さい
 
 #### Cons
 
 - port と adapter のファイルは増える
-- CreateTag のような小さい処理では UseCase が薄く見える
+- 小さい UseCase では層が薄く見える
 
 **案Cを採用する。**
 
-テスタビリティ改善が今回の主要目的なので、追加される小さな abstraction cost は許容する。
-
 ---
 
-## 7. CreateTag Application の具体形
+## 7. CreateTag Application
 
-`src/features/tags/application/create-tag.ts` を次の形にする。
+`src/features/tags/application/create-tag.ts` のイメージ。
 
 ```ts
 import { err, ok } from '../../../shared/domain/result'
@@ -405,19 +397,17 @@ export async function executeCreateTag(params: {
 }
 ```
 
-この UseCase はまだ小さいが、少なくとも次を Application の責務として持つ。
+この UseCase は小さいが、少なくとも次を Application の責務として持つ。
 
 - default 値を確定する
-- persistence の `name-conflict` を業務エラーへ変換する
+- persistence の conflict を業務エラーへ変換する
 - transport から独立した成功値を作る
-
-将来ルールが増えても oRPC procedure や Drizzle adapter へ散らばらない。
 
 ---
 
-## 8. Drizzle adapter の具体形
+## 8. Drizzle adapter
 
-`src/features/tags/infrastructure/insert-tag.server.ts` のイメージは次のとおり。
+`src/features/tags/infrastructure/insert-tag.server.ts` のイメージ。
 
 ```ts
 import * as v from 'valibot'
@@ -470,17 +460,11 @@ export const insertTag: InsertTag = (input) =>
   })
 ```
 
-ここでは事前 SELECT を行わない。
-
-SQLite / libSQL 固有の error 判定も Application へ持ち込まない。
-
-`isSqliteUniqueConstraintError` は `tags/lib` より infrastructure 配下へ移す方が責務として自然である。
+SQLite / libSQL 固有の error 判定は infrastructure に閉じ込める。
 
 ---
 
 ## 9. UseCase test は Drizzle を mock しない
-
-Application test は次の程度でよい。
 
 ```ts
 import { expect, test } from 'vitest'
@@ -488,9 +472,7 @@ import { expect, test } from 'vitest'
 import type { InsertTag } from './create-tag'
 import { executeCreateTag } from './create-tag'
 
-// test helper で brand 済み UserId / TagName / TagId を生成するとする
-
-test('未指定の値を default 化して tag を作成する', async () => {
+test('未指定値を default 化する', async () => {
   let received: Parameters<InsertTag>[0] | undefined
 
   const insertTag: InsertTag = async (input) => {
@@ -523,7 +505,7 @@ test('未指定の値を default 化して tag を作成する', async () => {
   })
 })
 
-test('name conflict を業務エラーへ変換する', async () => {
+test('name conflict を Expected Error へ変換する', async () => {
   const insertTag: InsertTag = async () => ({
     kind: 'name-conflict'
   })
@@ -545,37 +527,86 @@ test('name conflict を業務エラーへ変換する', async () => {
 })
 ```
 
-このテストは Drizzle の query builder を一切知らない。
-
-これを UseCase 層導入の重要な成功条件とする。
+Application test に Drizzle fluent mock を持ち込まないことを成功条件にする。
 
 ---
 
 ## 10. Infrastructure test は DB の事実を確認する
 
-一方、次は Application unit test ではなく infrastructure test で確認する。
+Infrastructure test では次を確認する。
 
-- `(user_id, normalized_name)` unique constraint が実際に効く
+- unique constraint が実際に効く
 - unique violation が `name-conflict` へ変換される
-- その他の DB error は握り潰さず throw される
+- その他の DB error は throw される
 
-ここでは Drizzle fluent API を細かく mock するより、可能なら一時的な libSQL / SQLite compatible DB を使う。
+ここでは fluent API の細かい mock より、可能なら一時的な libSQL / SQLite compatible DB を使う。
 
 Application test は速く純粋に保ち、DB adapter の correctness は integration test で確認する。
 
 ---
 
-## 11. エラーを3種類に分ける
+## 11. read projection は query service でよい
+
+`shelfTags` は画面表示用 projection で、現時点では業務上の分岐をほとんど持たない。
+
+これを mutation と同じ形に揃えるためだけに `ShelfTagRepository` や `ListShelfTagsUseCase` を作る価値は低い。
+
+read-only projection は server-only query service として分離する。
+
+```ts
+export async function listShelfTags(params: {
+  readonly db: AppDb
+  readonly actorId: UserId
+}): Promise<ShelfTag[]> {
+  return params.db
+    .select({
+      id: tagsTable.id,
+      name: tagsTable.name,
+      pinned: tagsTable.pinned,
+      sortOrder: tagsTable.sortOrder,
+      color: tagsTable.color,
+      lastUsedAt: tagsTable.lastUsedAt,
+      bookmarkCount: sql<number>`count(${bookmarkTable.id})`.mapWith(Number)
+    })
+    .from(tagsTable)
+    .leftJoin(bookmarkTagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+    .leftJoin(
+      bookmarkTable,
+      and(
+        eq(bookmarkTable.id, bookmarkTagsTable.bookmarkId),
+        isNull(bookmarkTable.deletedAt)
+      )
+    )
+    .where(eq(tagsTable.userId, params.actorId))
+    .groupBy(tagsTable.id)
+}
+```
+
+非対称性は意図したものである。
+
+```text
+mutation / workflow
+  -> UseCase + narrow port
+
+simple read projection
+  -> query service
+```
+
+全処理を同じ形に揃えること自体を目的にしない。
+
+---
+
+## 12. Error model
+
+失敗を次の3種類に分ける。
 
 | 種類 | 例 | 表現 | 責務 |
 | --- | --- | --- | --- |
-| 業務上予想できる失敗 | 同名タグ、重複URL、対象なし | `Result.err` | Application |
-| RPC 境界で拒否する失敗 | 未認証、入力不正、rate limit | oRPC defined error | RPC / middleware |
-| 予期しない例外 | DB障害、invariant violation、実装バグ | `throw` | oRPC まで伝播 |
+| Expected Application Error | 同名タグ、重複URL、対象なし | `Result.err` | Application |
+| Boundary Rejection | 未認証、入力不正、rate limit | oRPC error | RPC boundary |
+| Unexpected Error | DB障害、invariant violation、実装バグ | `throw` | oRPC まで伝播 |
 
-この3種類を1つの巨大な error union にまとめない。
-
-### 業務エラー
+### Expected Error
 
 ```ts
 export type CreateTagError = {
@@ -583,13 +614,13 @@ export type CreateTagError = {
 }
 ```
 
-### 未認証
+### Boundary Rejection
 
 未認証は CreateTag という業務の失敗ではない。
 
-UseCase が実行される前に request を拒否する。
+UseCase が実行される前に拒否する。
 
-### 予期しない例外
+### Unexpected Error
 
 次のようにはしない。
 
@@ -598,28 +629,16 @@ UseCase が実行される前に request を拒否する。
 return err({ code: 'unexpected-error' })
 ```
 
-未知の障害を業務エラーへ潰すと、UI からも observability からも障害の意味が見えにくくなる。
+未知の障害を Expected Error に潰さない。
 
 ---
 
-## 12. oRPC 共通 middleware
+## 13. Auth middleware
 
-### 12.1 auth と unexpected error logging
-
-重要な点として、**500 への変換を自前 middleware では行わない**。
-
-oRPC が通常の JavaScript `Error` を `INTERNAL_SERVER_ERROR` へ変換する。
-
-ただし予期しない例外のログは1回だけ残したい。
-
-さらに SSR 最適化で `createRouterClient` を使うと HTTP の `RPCHandler` を通らない。
-
-したがって error logging を `RPCHandler` の interceptor だけに置くと SSR direct call を取りこぼす。
-
-ログは router middleware に置き、**ログした後は同じ error をそのまま rethrow** する。
+共通 auth middleware は actorId を context へ追加する。
 
 ```ts
-import { ORPCError, os } from '@orpc/server'
+import { os } from '@orpc/server'
 import * as v from 'valibot'
 
 import { userIdSchema } from '../features/auth/domain/auth-values'
@@ -635,21 +654,7 @@ const base = os
     UNAUTHORIZED: {}
   })
 
-const logUnexpectedError = base.middleware(async ({ next }) => {
-  try {
-    return await next()
-  } catch (error) {
-    if (!(error instanceof ORPCError)) {
-      console.error('Unexpected RPC error', error)
-    }
-
-    throw error
-  }
-})
-
-const observed = base.use(logUnexpectedError)
-
-const requireAuth = observed.middleware(
+const requireAuth = base.middleware(
   async ({ context, next, errors }) => {
     const session = await getAuth().api.getSession({
       headers: context.headers
@@ -667,31 +672,70 @@ const requireAuth = observed.middleware(
   }
 )
 
-export const authed = observed.use(requireAuth)
+export const authed = base.use(requireAuth)
 ```
 
-この順序なら次のようになる。
-
-```text
-plain Error
-  -> log once
-  -> rethrow
-  -> oRPC が INTERNAL_SERVER_ERROR / 500 へ変換
-
-UNAUTHORIZED
-  -> ORPCError なので unexpected log しない
-  -> 401
-
-application defined error
-  -> ORPCError なので unexpected log しない
-  -> 指定した 4xx
-```
+UseCase は Cookie や session API を知らない。
 
 ---
 
-## 13. CreateTag procedure
+## 14. Unexpected Error logging は server-side interceptor で共通化する
 
-procedure は transport adapter に限定する。
+ここは重要である。
+
+前案では router middleware で Unexpected Error を記録する案も検討したが、oRPC の lifecycle を確認すると **server-side client interceptor の方が適切**である。
+
+理由は次の2つ。
+
+1. HTTP の `RPCHandler` だけに logging を置くと、SSR の `createRouterClient` が HTTP handler を通らないため取りこぼす
+2. router middleware は登録位置によって input / output validation との実行順が変わる
+
+そこで同じ interceptor を、
+
+- browser request を受ける `RPCHandler`
+- SSR direct call の `createRouterClient`
+
+の両方へ渡す。
+
+```ts
+import { onError, ORPCError } from '@orpc/server'
+
+export const serverInterceptors = [
+  onError((error) => {
+    if (error instanceof ORPCError && error.status < 500) {
+      return
+    }
+
+    console.error('Unexpected RPC error', error)
+  })
+]
+```
+
+この interceptor は error を変換しない。
+
+```text
+validation error / 4xx
+  -> log しない
+
+UNAUTHORIZED / 401
+  -> log しない
+
+defined conflict / 409
+  -> log しない
+
+plain Error
+  -> log
+  -> oRPC にそのまま処理させる
+
+output validation failure / 5xx
+  -> log
+```
+
+同じ例外を repository / UseCase / procedure で重複 logging しない。
+
+---
+
+## 15. CreateTag procedure
 
 ```ts
 import * as v from 'valibot'
@@ -699,7 +743,7 @@ import * as v from 'valibot'
 import { executeCreateTag } from '../application/create-tag'
 import { tagNameSchema } from '../domain/tag-values'
 import { insertTag } from '../infrastructure/insert-tag.server'
-import { authed } from '../../../rpc/base'
+import { authed } from '../../../rpc/base.server'
 
 const createTagInputSchema = v.object({
   name: tagNameSchema,
@@ -739,49 +783,15 @@ export const createTagProcedure = authed
   })
 ```
 
-procedure に SQL、SQLite error 判定、Cookie 読み取りを書かない。
+procedure は transport adapter に限定する。
+
+SQL、Cookie 読み取り、SQLite error 判定を書かない。
 
 ---
 
-## 14. read query は無理に UseCase 化しない
+## 16. shelfTags procedure
 
-`shelfTags` は画面表示用 projection であり、現在は業務上の分岐をほとんど持たない。
-
-これを CreateTag と同じ形にするためだけに `ShelfTagRepository` や `ListShelfTagsUseCase` を増やす価値は低い。
-
-read-only projection は server-only query service として分ける。
-
-```ts
-// src/features/tags/infrastructure/list-shelf-tags.server.ts
-export async function listShelfTags(params: {
-  readonly db: AppDb
-  readonly actorId: UserId
-}): Promise<ShelfTag[]> {
-  return params.db
-    .select({
-      id: tagsTable.id,
-      name: tagsTable.name,
-      pinned: tagsTable.pinned,
-      sortOrder: tagsTable.sortOrder,
-      color: tagsTable.color,
-      lastUsedAt: tagsTable.lastUsedAt,
-      bookmarkCount: sql<number>`count(${bookmarkTable.id})`.mapWith(Number)
-    })
-    .from(tagsTable)
-    .leftJoin(bookmarkTagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
-    .leftJoin(
-      bookmarkTable,
-      and(
-        eq(bookmarkTable.id, bookmarkTagsTable.bookmarkId),
-        isNull(bookmarkTable.deletedAt)
-      )
-    )
-    .where(eq(tagsTable.userId, params.actorId))
-    .groupBy(tagsTable.id)
-}
-```
-
-RPC procedure は認証済み actorId を渡すだけにする。
+read query は query service を呼ぶだけにする。
 
 ```ts
 export const shelfTagsProcedure = authed.handler(({ context }) =>
@@ -792,84 +802,22 @@ export const shelfTagsProcedure = authed.handler(({ context }) =>
 )
 ```
 
-この非対称性は意図したものである。
-
-- **mutation / workflow**: UseCase + narrow port
-- **単純な read projection**: query service
-
-すべてを同じ形に揃えることより、変更理由に合った境界を選ぶ。
+SQL は procedure に直接書かない。
 
 ---
 
-## 15. SSR では HTTP を往復しない
-
-ブラウザでは通常の RPCLink を使う。
-
-SSR では同じ Worker の `/api/rpc` へ `fetch` し直さず、`createRouterClient` で router を直接呼ぶ。
-
-```ts
-import { createORPCClient } from '@orpc/client'
-import { RPCLink } from '@orpc/client/fetch'
-import { createRouterClient } from '@orpc/server'
-import type { RouterClient } from '@orpc/server'
-import { createIsomorphicFn } from '@tanstack/react-start'
-import { getRequestHeaders } from '@tanstack/react-start/server'
-
-import { router } from './router.server'
-
-const getClient = createIsomorphicFn()
-  .server(() =>
-    createRouterClient(router, {
-      context: async () => ({
-        headers: getRequestHeaders()
-      })
-    })
-  )
-  .client((): RouterClient<typeof router> => {
-    const link = new RPCLink({
-      url: `${window.location.origin}/api/rpc`
-    })
-
-    return createORPCClient(link)
-  })
-
-export const client: RouterClient<typeof router> = getClient()
-```
-
-これにより SSR の data fetch は次になる。
-
-```text
-SSR
-  -> TanStack Query
-  -> server-side oRPC client
-  -> router
-  -> middleware
-  -> procedure
-```
-
-次の余計な経路を作らない。
-
-```text
-SSR
-  -> fetch(http://same-worker/api/rpc)
-  -> HTTP parse
-  -> RPCHandler
-  -> router
-```
-
----
-
-## 16. HTTP RPC handler
-
-ブラウザからの RPC request は TanStack Start Server Route で受ける。
+## 17. Browser RPC handler
 
 ```ts
 import { RPCHandler } from '@orpc/server/fetch'
 import { createFileRoute } from '@tanstack/react-router'
 
 import { router } from '../../rpc/router.server'
+import { serverInterceptors } from '../../rpc/server-interceptors'
 
-const handler = new RPCHandler(router)
+const handler = new RPCHandler(router, {
+  interceptors: serverInterceptors
+})
 
 export const Route = createFileRoute('/api/rpc/$')({
   server: {
@@ -889,11 +837,78 @@ export const Route = createFileRoute('/api/rpc/$')({
 })
 ```
 
-Unexpected Error の application logging は router middleware で行うので、ここで同じ error を重複 logging しない。
+---
+
+## 18. SSR は `createRouterClient` で直接呼ぶ
+
+SSR では同じ Worker の `/api/rpc` に fetch し直さない。
+
+```ts
+import { createORPCClient } from '@orpc/client'
+import { RPCLink } from '@orpc/client/fetch'
+import { createRouterClient } from '@orpc/server'
+import type { RouterClient } from '@orpc/server'
+import { createIsomorphicFn } from '@tanstack/react-start'
+import { getRequestHeaders } from '@tanstack/react-start/server'
+
+import { router } from './router.server'
+import { serverInterceptors } from './server-interceptors'
+
+const getClient = createIsomorphicFn()
+  .server(() =>
+    createRouterClient(router, {
+      context: async () => ({
+        headers: getRequestHeaders()
+      }),
+      interceptors: serverInterceptors
+    })
+  )
+  .client((): RouterClient<typeof router> => {
+    const link = new RPCLink({
+      url: `${window.location.origin}/api/rpc`
+    })
+
+    return createORPCClient(link)
+  })
+
+export const client: RouterClient<typeof router> = getClient()
+```
+
+これで HTTP と SSR direct call の両方が同じ server interceptor を使う。
+
+```text
+Browser
+  -> HTTP RPCHandler
+  -> serverInterceptors
+  -> procedure
+
+SSR
+  -> createRouterClient
+  -> serverInterceptors
+  -> procedure
+```
 
 ---
 
-## 17. TanStack Query integration
+## 19. server code が client bundle に漏れないことを確認する
+
+SSR 最適化では server router を参照するため、client build に server 実装が混ざらないことを確認する。
+
+特に browser bundle に次が入っていないことを確認する。
+
+- `drizzle-orm` の server query 実装
+- `@libsql/client`
+- `getDB`
+- Better Auth の server 実装
+- Turso credentials 関連コード
+
+`createIsomorphicFn` の server branch と type-only import を使い、build 後に実際の bundle を確認する。
+
+「型上は server-only」だけで判断しない。
+
+---
+
+## 20. TanStack Query integration
 
 ```ts
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
@@ -911,17 +926,13 @@ export const shelfTagsQueryOptions = orpc.tags.shelf.queryOptions({
 })
 ```
 
-`staleTime` を少し持たせる理由は、SSR hydration 直後の不要な refetch を避けるためである。
+短い `staleTime` を持たせ、SSR hydration 直後の不要な refetch を避ける。
 
 Tag mutation は明示的に invalidate するので、同一画面内の変更反映に staleTime を待つ必要はない。
 
 ---
 
-## 18. protected loader で shelf query を1回だけ開始する
-
-現在の Promise prop plumbing は TanStack Query cache へ置き換える。
-
-`/_protected` loader で prefetch を開始する。
+## 21. protected loader が shelf query を所有する
 
 ```ts
 export const Route = createFileRoute('/_protected')({
@@ -935,17 +946,15 @@ export const Route = createFileRoute('/_protected')({
 
 ここでは `await` しない。
 
-現在と同様、shelf tags の取得で document 全体の SSR を不必要に block せず、Suspense boundary から stream できる形を維持する。
+現在と同様に shelf tags 取得で document 全体の SSR を block せず、Suspense boundary から stream できる形を維持する。
 
-`/tags` の子 loader からは `fetchShelfTags()` を削除する。
+`/tags` 子 route からは同じ shelf fetch を削除する。
 
 ---
 
-## 19. component は Promise ではなく query cache を読む
+## 22. Promise prop を Query cache へ置き換える
 
-現在の `ShelfSidebar -> ShelfNavPanel -> ShelfNavAsync` の Promise prop を減らす。
-
-たとえば query を読む component を Suspense boundary の内側へ置く。
+現在の `shelfTagsPromise` の prop drilling を減らす。
 
 ```tsx
 function ShelfNavQuery(props: ShelfNavQueryProps) {
@@ -972,7 +981,7 @@ function TagTableQuery() {
 }
 ```
 
-`TagTable` 自体は pure component にできる。
+`TagTable` は pure component にできる。
 
 ```tsx
 export function TagTable({ tags }: { readonly tags: readonly ShelfTag[] }) {
@@ -982,13 +991,9 @@ export function TagTable({ tags }: { readonly tags: readonly ShelfTag[] }) {
 }
 ```
 
-これにより同じデータを Promise prop で複数経路へ配る必要がなくなる。
-
 ---
 
-## 20. CreateTag mutation の invalidation
-
-CreateTag を呼ぶ UI は共通 hook を使う。
+## 23. CreateTag mutation
 
 ```ts
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -1010,19 +1015,19 @@ export function useCreateTagMutation() {
 }
 ```
 
-最初の pilot では invalidation の完了を待つ。
+pilot では invalidation 完了を待つ。
 
-理由は、新規タグ作成直後に sidebar とタグ一覧へ必ず反映される現在の UX を維持するためである。
+理由は、新規タグ作成直後に sidebar とタグ一覧へ反映される UX を維持するためである。
 
-この1回の shelf query が latency 上問題になる場合は、次の段階で mutation output を使った `setQueryData` を検討する。
+この再取得が latency 上問題になる場合は `setQueryData` を次の最適化候補にする。
 
-先に optimistic / manual cache update を導入して複雑性を増やさない。
+最初から optimistic cache update を入れて複雑性を増やさない。
 
 ---
 
-## 21. UI は Error class name を見ない
+## 24. UI は Error class name を見ない
 
-現在は次のような判定がある。
+現在の判定例。
 
 ```ts
 if (
@@ -1033,7 +1038,7 @@ if (
 }
 ```
 
-これを oRPC の typed error contract へ変更する。
+移行後。
 
 ```ts
 import { isDefinedError } from '@orpc/client'
@@ -1052,41 +1057,62 @@ export function getCreateTagErrorMessage(error: unknown): string {
 
 `new-tag-screen.tsx` と `inline-add-tag.tsx` は同じ helper を使う。
 
-`edit-tag-form.tsx` は UpdateTag の移行時に同じ方針へ変更する。
+`edit-tag-form.tsx` は UpdateTag 移行時に変更する。
 
 ---
 
-## 22. テスト戦略
+## 25. 認証コストについて
 
-### 22.1 Application unit test
+`/_protected` の route guard と RPC auth middleware は役割が違う。
 
-目的:
+- route guard: 未認証ユーザーを sign-in へ redirect する
+- RPC auth: data operation 自体を保護する
 
-- business flow
+そのため oRPC 導入後も、route guard があるから RPC auth を省略してはいけない。
+
+ブラウザから `actorId` を渡して auth を省略する案も採用しない。
+
+一方で SSR では同一 request 内で session lookup が複数回起きる可能性がある。
+
+これは pilot で計測する。
+
+もし Better Auth の session lookup が無視できないコストなら、次の順で検討する。
+
+1. request-scoped session memoization
+2. 同一 request 内 middleware の dedupe
+3. query のまとめ方の見直し
+
+セキュリティ境界を弱めて最適化しない。
+
+---
+
+## 26. テスト戦略
+
+### Application unit test
+
+確認する。
+
 - default 値
 - Expected Error mapping
+- business flow
 
-特徴:
+依存しないもの。
 
-- TanStack Start 不要
-- oRPC 不要
-- Drizzle 不要
-- Turso 不要
-- Cloudflare Workers runtime 不要
+- TanStack Start
+- oRPC
+- Drizzle
+- Turso
+- Cloudflare Workers runtime
 
-### 22.2 Infrastructure integration test
+### Infrastructure integration test
 
-目的:
+確認する。
 
-- SQL / Drizzle query の correctness
+- SQL / Drizzle query
 - unique constraint
-- SQLite / libSQL error classification
+- error classification
 
-ここは実 DB compatible environment で確認する。
-
-fluent API の細かい mock を中心にしない。
-
-### 22.3 RPC integration test
+### RPC integration test
 
 最低限次を確認する。
 
@@ -1107,31 +1133,34 @@ unknown Error detail
   -> client へ漏れない
 ```
 
-特に SSR direct client と HTTP RPC handler の両方で auth middleware が機能することを確認する。
+さらに、
 
-### 22.4 Query / UI test
+- HTTP `RPCHandler`
+- SSR `createRouterClient`
+
+の両方で auth と server interceptor が動くことを確認する。
+
+### Query / UI test
 
 確認する。
 
-- parent loader が shelf query を prefetch する
-- タグ管理画面が同じ query key を使う
+- protected loader が shelf query を prefetch する
+- `/tags` が重複 fetch を持たない
+- sidebar / mobile / tag table が同じ query key を使う
 - CreateTag 成功後に shelf query が invalidate される
-- 新しいタグが sidebar / table に反映される
-- duplicate error が既存メッセージになる
+- duplicate error のメッセージを維持する
 - 500 系 error を duplicate と誤表示しない
 
 ---
 
-## 23. パフォーマンス上の期待値
+## 27. パフォーマンス上の期待値
 
-今回の変更は abstraction を増やすので、パフォーマンス面では利益を明示的に取りに行く。
-
-### CreateTag
+### CreateTag DB query
 
 現在:
 
 ```text
-duplicate SELECT
+SELECT duplicate
 + INSERT
 ```
 
@@ -1143,33 +1172,38 @@ INSERT
 
 正常系 DB round trip を1回削減する。
 
-### `/tags` shelf query
+### shelf tags
 
-現在は親 route と子 route が同じ `fetchShelfTags()` を要求している。
+現在は親 route と子 route が同じ projection を要求している。
 
-移行後は protected layout が1つの TanStack Query を所有し、すべての consumer が同じ cache を読む。
+移行後は protected layout の1 query を全 consumer が共有する。
 
 ### SSR
 
-server-side oRPC client を使い、同一 Worker 内の HTTP round trip を避ける。
+`createRouterClient` で Worker 内部 HTTP を避ける。
 
-### client hydration
+### hydration
 
-`shelfTags` に短い `staleTime` を持たせ、SSR 直後の意味のない refetch を避ける。
+短い `staleTime` で hydration 直後の不要な refetch を避ける。
 
 ### logging
 
-同じ error を repository / UseCase / procedure / handler の全層で重複 logging しない。
+Unexpected Error を1回だけ記録する。
+
+### client bundle
+
+server router / Drizzle / Turso driver が browser bundle に入らないことを確認する。
 
 ---
 
-## 24. ディレクトリ構成案
+## 28. ディレクトリ構成案
 
 ```text
 src/
   rpc/
     base.server.ts
     router.server.ts
+    server-interceptors.ts
     client.ts
     query-utils.ts
 
@@ -1204,108 +1238,110 @@ src/
       rpc.$.ts
 ```
 
-feature locality は維持する。
-
-ただし shared RPC 基盤だけは `src/rpc/` に置く。
+feature locality は維持し、共通 RPC 基盤だけ `src/rpc/` に置く。
 
 ---
 
-## 25. CreateTag pilot の移行手順
+## 29. CreateTag pilot の移行手順
 
 1. oRPC server / client 基盤を追加する
-2. `logUnexpectedError` middleware を追加する
-3. auth middleware を追加する
-4. browser は RPCLink、SSR は `createRouterClient` を使う
-5. `InsertTag` narrow port を定義する
-6. `executeCreateTag` を追加する
-7. Drizzle adapter `insertTag` を追加する
-8. CreateTag の事前 duplicate SELECT を廃止する
-9. CreateTag procedure を追加する
-10. `shelfTags` read query を oRPC procedure へ移す
-11. protected layout で shelf query を prefetch する
-12. `/tags` 側の重複 fetch を削除する
-13. Promise prop を `useSuspenseQuery` へ置き換える
-14. CreateTag mutation hook を追加する
-15. 成功後に shelf query を invalidate する
-16. `new-tag-screen.tsx` を新 mutation へ移す
-17. `inline-add-tag.tsx` を新 mutation へ移す
-18. `Error.name` 判定を typed error `code` 判定へ変更する
-19. Application / Infrastructure / RPC / UI test を追加する
-20. bundle size、request latency、cold start を比較する
-21. 旧 `addTag` Server Function を削除する
+2. auth middleware を追加する
+3. 共通 `serverInterceptors` を追加する
+4. browser `RPCHandler` に interceptor を設定する
+5. SSR `createRouterClient` に同じ interceptor を設定する
+6. `InsertTag` narrow port を定義する
+7. `executeCreateTag` を追加する
+8. Drizzle adapter `insertTag` を追加する
+9. CreateTag の事前 duplicate SELECT を廃止する
+10. CreateTag procedure を追加する
+11. `shelfTags` query service / procedure を追加する
+12. protected layout で shelf query を prefetch する
+13. `/tags` 側の重複 fetch を削除する
+14. Promise prop を `useSuspenseQuery` へ置き換える
+15. CreateTag mutation hook を追加する
+16. 成功後に shelf query を invalidate する
+17. `new-tag-screen.tsx` を新 mutation へ移す
+18. `inline-add-tag.tsx` を新 mutation へ移す
+19. `Error.name` 判定を typed `code` 判定へ変更する
+20. Application / Infrastructure / RPC / UI test を追加する
+21. client bundle に server code が入っていないことを確認する
+22. bundle size / latency / cold start / auth cost を比較する
+23. 旧 `addTag` Server Function を削除する
 
 ---
 
-## 26. Definition of Done
+## 30. Definition of Done
 
 CreateTag pilot は次をすべて満たして完了とする。
 
-- Application が TanStack Start に依存していない
-- Application が oRPC に依存していない
-- Application が Drizzle / `AppDb` に依存していない
+- Application が TanStack Start に依存しない
+- Application が oRPC に依存しない
+- Application が Drizzle / `AppDb` に依存しない
 - Application unit test に Drizzle fluent mock がない
 - 既存 `Result` を再利用している
-- CreateTag の業務エラーは `tag-name-already-exists` のみ
+- CreateTag の Expected Error は `tag-name-already-exists` のみ
 - duplicate check の事前 SELECT がない
-- unique constraint race が正しく `tag-name-already-exists` になる
+- unique constraint race が正しく conflict になる
 - 未認証が 401 になる
 - duplicate が 409 になる
 - unknown error が 500 になる
 - unknown error の詳細が client へ漏れない
-- SSR direct call でも auth / logging middleware が動く
-- browser RPC でも同じ middleware が動く
+- validation 4xx を Unexpected Error として logging しない
+- HTTP RPC と SSR direct call が同じ Unexpected Error logging 規約を使う
 - `/tags` で shelf query を親子が二重取得しない
 - CreateTag 後に sidebar / table が更新される
 - UI が Error class name に依存しない
+- browser bundle に Drizzle / Turso server code が混ざっていない
 - client bundle / Worker bundle の増分を確認している
 - cold start / request latency に目立つ悪化がない
+- session lookup の回数とコストを確認している
 
 ---
 
-## 27. 今後 Repository / Port を増やす基準
+## 31. Port を追加する基準
 
 Port は「Clean Architecture だから」では追加しない。
 
 次のどれかを満たす場合に追加する。
 
-1. Application test で infrastructure の mock が複雑になっている
+1. Application test で infrastructure mock が複雑になっている
 2. 同じ外部能力を複数 UseCase が使う
-3. DB / external service の error を業務上の意味へ変換する必要がある
-4. transaction の中で複数の infrastructure 操作を協調させたい
+3. infrastructure error を業務上の意味へ変換する必要がある
+4. transaction 内で複数の外部操作を協調させたい
 5. implementation detail が Application の型へ漏れている
 
-逆に、単純な read projection のように Application logic が存在しない場合は、無理に port を作らない。
+単純な read projection のように Application logic がない場合は、無理に port を作らない。
 
 ---
 
-## 28. Hono を今は導入しない
+## 32. Hono を今は導入しない
 
-oRPC + Hono の組み合わせ自体に問題はない。
+oRPC + Hono の組み合わせ自体には問題がない。
 
-しかし今回必要なのは
+今回必要なのは、
 
 - typed RPC
-- middleware
-- auth context
-- error contract
+- auth middleware
+- typed error contract
+- server-side interceptor
 - TanStack Query integration
 
 であり、oRPC + TanStack Start で満たせる。
 
-Hono を加えると request lifecycle と middleware の配置候補が増える。
+Hono を追加すると request lifecycle と middleware の配置候補が増える。
 
-次が必要になったら再評価する。
+次の要件が出たら再評価する。
 
 - RPC 以外の HTTP endpoint が多数増える
 - webhook / callback / streaming response を共通 router で扱いたい
-- oRPC adapter では routing 要件が不足する
-- API surface を TanStack Start から独立させる
+- oRPC adapter だけでは routing 要件が不足する
+- API surface を TanStack Start から独立させたい
 
 現段階では導入しない。
 
 ---
 
-## 29. Pros / Cons
+## 33. Pros / Cons
 
 ### Pros
 
@@ -1317,38 +1353,38 @@ Hono を加えると request lifecycle と middleware の配置候補が増え�
 - CreateTag の DB round trip を減らせる
 - shelf query の ownership が明確になる
 - SSR 内部 HTTP を避けられる
+- HTTP / SSR の Unexpected Error logging を同じ規約にできる
 - read projection に不要な abstraction を増やさない
 
 ### Cons
 
 - ファイル数は増える
-- `InsertTag` のような port という概念が増える
+- narrow port という概念が増える
 - CreateTag 単体では UseCase が薄く見える
 - `Result` と oRPC defined error の2段階を理解する必要がある
+- mutation と read query の構造が完全対称ではない
 - migration 中は Server Function と oRPC が共存する
 
-このコストを許容するのは、**テスト容易性と責務境界が実際に改善する場合だけ**である。
-
-pilot 後に改善が確認できなければ、抽象化を縮小する。
+このコストを許容するのは、テスト容易性と責務境界が実際に改善する場合だけである。
 
 ---
 
-## 30. 最終判断
+## 34. 最終判断
 
-採用する構成は次である。
+Mutation / workflow は次の構成を採用する。
 
 ```text
 React UI
   -> TanStack Query
   -> oRPC
-  -> auth / logging middleware
+  -> auth middleware
   -> Application UseCase
-  -> narrow outbound port
+  -> narrow function port
   -> Drizzle adapter
   -> Turso
 ```
 
-ただし read-only projection は次でよい。
+単純な read projection は次でよい。
 
 ```text
 React UI
@@ -1360,23 +1396,32 @@ React UI
   -> Turso
 ```
 
-つまり Pantry では、レイヤーを揃えること自体を目的にしない。
+Unexpected Error の観測は procedure の内側へ混ぜない。
+
+```text
+Browser RPCHandler ------┐
+                         ├-> shared server-side interceptor -> procedure
+SSR createRouterClient --┘
+```
+
+Pantry では、レイヤーを揃えること自体を目的にしない。
 
 **変更理由を分離できるか、テストが簡単になるか、性能を悪化させないか**で境界を決める。
 
-CreateTag pilot では、特に次の4点を実証する。
+CreateTag pilot では特に次を実証する。
 
-1. narrow port により UseCase test が Drizzle から独立する
-2. unique constraint を正本にして正常系 query を1回減らす
-3. TanStack Query で shelf query の二重取得と invalidation を整理する
-4. SSR server-side client で Worker 内部 HTTP を避ける
+1. narrow port で UseCase test を Drizzle から独立できる
+2. unique constraint を正本にして正常系 query を1回減らせる
+3. TanStack Query で shelf query の ownership と invalidation を整理できる
+4. SSR server-side client で Worker 内部 HTTP を避けられる
+5. HTTP と SSR で同じ error observability を成立させられる
 
-この4点に実益がなければ、アーキテクチャを増やしたこと自体を成果とはみなさない。
+これらに実益がなければ、アーキテクチャを増やしたこと自体を成果とはみなさない。
 
 ## 参考
 
 - oRPC TanStack Start Adapter: https://orpc.dev/docs/adapters/tanstack-start
-- oRPC Optimize SSR: https://orpc.dev/docs/best-practices/optimize-ssr
+- oRPC Server-Side Clients: https://orpc.dev/docs/client/server-side
 - oRPC Error Handling: https://orpc.dev/docs/error-handling
 - oRPC TanStack Query Integration: https://orpc.dev/docs/integrations/tanstack-query
 - TanStack Router + Query Integration: https://tanstack.com/router/latest/docs/integrations/query
