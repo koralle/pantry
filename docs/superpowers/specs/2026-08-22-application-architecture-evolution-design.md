@@ -70,8 +70,6 @@ flowchart LR
 
 Application は oRPC、HTTP、Cookie、Drizzle、Turso、React を知らない。
 
----
-
 ## Error model
 
 | 種類 | 例 | 扱い |
@@ -96,26 +94,13 @@ export type Result<T, E> =
 
 `unexpected-error` は `Result` に入れない。
 
----
-
 ## Application boundary
 
 汎用 `TagRepository` は作らない。CreateTag が必要とする能力だけを port にする。
 
 ```ts
-export type InsertTagInput = {
-  readonly actorId: UserId
-  readonly name: TagName
-  readonly pinned?: boolean
-  readonly sortOrder?: number
-  readonly color?: string | null
-}
-
 export type InsertTagOutcome =
-  | {
-      readonly kind: 'created'
-      readonly tag: CreatedTag
-    }
+  | { readonly kind: 'created'; readonly tag: CreatedTag }
   | { readonly kind: 'name-conflict' }
 
 export type InsertTag = (
@@ -123,7 +108,7 @@ export type InsertTag = (
 ) => Promise<InsertTagOutcome>
 ```
 
-UseCase は transport と persistence outcome の間を変換する。
+UseCase は persistence outcome を Application Result へ変換する。
 
 ```ts
 export function createCreateTagUseCase(insertTag: InsertTag) {
@@ -145,11 +130,7 @@ export function createCreateTagUseCase(insertTag: InsertTag) {
 }
 ```
 
-UseCase が薄いこと自体は問題にしない。
-
-pilot では、**Drizzle から切り離した unit test の価値が追加ファイル数に見合うか**を評価する。
-
----
+UseCase が薄いこと自体は問題にしない。**Drizzle から切り離した unit test の価値が追加ファイル数に見合うか**を pilot で評価する。
 
 ## Persistence
 
@@ -162,41 +143,24 @@ pilot: INSERT
 
 事前 `SELECT` は race condition を防げず、正常系の DB round trip を1回増やすため削除する。
 
+Adapter はタグ名の known unique violation だけを `name-conflict` へ変換し、その他は throw する。
+
 ```ts
-export function createDrizzleInsertTag(db: AppDb): InsertTag {
-  return async (input) => {
-    try {
-      const [created] = await db
-        .insert(tagsTable)
-        .values({
-          userId: input.actorId,
-          name: input.name.display,
-          normalizedName: input.name.normalized,
-          ...(input.pinned !== undefined ? { pinned: input.pinned } : {}),
-          ...(input.sortOrder !== undefined ? { sortOrder: input.sortOrder } : {}),
-          ...(input.color !== undefined ? { color: input.color } : {})
-        })
-        .returning()
+try {
+  const [created] = await db
+    .insert(tagsTable)
+    .values(values)
+    .returning()
 
-      if (created == null) {
-        throw new Error('Tag insert returned no row')
-      }
-
-      return { kind: 'created', tag: toCreatedTag(created) }
-    } catch (error) {
-      if (isTagNameUniqueConstraintError(error)) {
-        return { kind: 'name-conflict' }
-      }
-
-      throw error
-    }
+  return { kind: 'created', tag: toCreatedTag(created) }
+} catch (error) {
+  if (isTagNameUniqueConstraintError(error)) {
+    return { kind: 'name-conflict' }
   }
+
+  throw error
 }
 ```
-
-`isTagNameUniqueConstraintError` は libSQL / Drizzle の実際の error shape を確認して実装する。
-
----
 
 ## RPC boundary
 
@@ -244,8 +208,6 @@ export const createTagProcedure = authed
 
 Unexpected Error を独自の 500 error に包み直さない。logging も server-side entry point で一度だけ行う。
 
----
-
 ## Client boundary
 
 TanStack Query から oRPC mutation を呼ぶ。
@@ -256,18 +218,17 @@ CreateTag 成功時に UI へ必要な値が mutation output だけで確定す�
 onSuccess: (created) => {
   queryClient.setQueryData<ShelfTag[]>(
     shelfTagsQueryOptions.queryKey,
-    (current) => {
-      if (current === undefined) return current
-
-      return [
-        ...current,
-        {
-          ...created,
-          bookmarkCount: 0,
-          lastUsedAt: null
-        }
-      ]
-    }
+    (current) =>
+      current === undefined
+        ? current
+        : [
+            ...current,
+            {
+              ...created,
+              bookmarkCount: 0,
+              lastUsedAt: null
+            }
+          ]
   )
 }
 ```
@@ -281,10 +242,7 @@ export function getCreateTagErrorMessage(
   error: unknown
 ): string | null {
   if (isDefinedError(error)) {
-    if (error.code === 'UNAUTHORIZED') {
-      return null
-    }
-
+    if (error.code === 'UNAUTHORIZED') return null
     if (error.code === 'tag-name-already-exists') {
       return 'そのタグ名は既に存在します'
     }
@@ -295,8 +253,6 @@ export function getCreateTagErrorMessage(
 ```
 
 401 は共通の sign-in 遷移で扱い、mutation は rejected のまま維持する。
-
----
 
 ## Performance guardrails
 
@@ -316,29 +272,11 @@ export function getCreateTagErrorMessage(
 
 性能劣化が保守性改善に見合わなければ設計を縮小する。
 
----
-
 ## Tests
 
-Application unit test は Drizzle mock を使わず function stub だけで書けることを確認する。
+最低限、次を確認する。
 
-```ts
-it('name conflict を expected error に変換する', async () => {
-  const insertTag: InsertTag = async () => ({
-    kind: 'name-conflict'
-  })
-
-  const createTag = createCreateTagUseCase(insertTag)
-  const result = await createTag({ actorId, command })
-
-  expect(result).toEqual(
-    err({ code: 'tag-name-already-exists' })
-  )
-})
-```
-
-最低限の確認項目:
-
+- Application unit test を Drizzle mock なしで書ける
 - 同一 user + 同一 normalized name -> conflict
 - 別 user -> 同名作成可能
 - invalid input -> 4xx
@@ -347,8 +285,6 @@ it('name conflict を expected error に変換する', async () => {
 - unknown exception -> 500
 - 401 で generic な作成失敗を表示しない
 - success 時に cache が更新される
-
----
 
 ## Pilot success criteria
 
