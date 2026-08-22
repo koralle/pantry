@@ -56,23 +56,23 @@ flowchart LR
   ADAPTER --> DB
 ```
 
-| 層 | 責務 |
-| --- | --- |
-| UI / TanStack Query | submit、loading、表示用エラー、cache 更新 |
-| oRPC | input validation、認証、transport error |
-| Application | Expected Error を `Result` で表現 |
-| Port | UseCase が必要とする永続化能力だけを定義 |
-| Drizzle Adapter | SQL、constraint の解釈、Turso access |
+| 層                  | 責務                                     |
+| ------------------- | ---------------------------------------- |
+| UI / TanStack Query | submit、loading、表示用エラー            |
+| oRPC                | input validation、認証、transport error  |
+| Application         | Expected Error を `Result` で表現        |
+| Port                | UseCase が必要とする永続化能力だけを定義 |
+| Drizzle Adapter     | SQL、constraint の解釈、Turso access     |
 
 Application は oRPC、HTTP、Cookie、Drizzle、Turso、React を知らない。
 
 ## Error model
 
-| 種類 | 例 | 扱い |
-| --- | --- | --- |
-| Application Expected Error | 同名タグが既に存在 | `Result.err` |
-| Boundary Rejection | 未認証、input 不正 | oRPC error |
-| Unexpected Error | DB 障害、未知の例外 | `throw` |
+| 種類                       | 例                  | 扱い         |
+| -------------------------- | ------------------- | ------------ |
+| Application Expected Error | 同名タグが既に存在  | `Result.err` |
+| Boundary Rejection         | 未認証、input 不正  | oRPC error   |
+| Unexpected Error           | DB 障害、未知の例外 | `throw`      |
 
 ```ts
 export type CreateTagError = {
@@ -88,12 +88,9 @@ export type CreateTagError = {
 
 ```ts
 export type InsertTagOutcome =
-  | { readonly kind: 'created'; readonly tag: CreatedTag }
-  | { readonly kind: 'name-conflict' }
+  { readonly kind: 'created'; readonly tag: CreatedTag } | { readonly kind: 'name-conflict' }
 
-export type InsertTag = (
-  input: InsertTagInput
-) => Promise<InsertTagOutcome>
+export type InsertTag = (input: InsertTagInput) => Promise<InsertTagOutcome>
 ```
 
 UseCase は persistence outcome を Application Result へ変換する。
@@ -135,10 +132,7 @@ Adapter はタグ名の known unique violation だけを `name-conflict` へ変�
 
 ```ts
 try {
-  const [created] = await db
-    .insert(tagsTable)
-    .values(values)
-    .returning()
+  const [created] = await db.insert(tagsTable).values(values).returning()
 
   return { kind: 'created', tag: toCreatedTag(created) }
 } catch (error) {
@@ -172,6 +166,33 @@ const requireAuth = base.middleware(async ({ context, next }) => {
 })
 ```
 
+`context.headers` は各 server-side entry point から request ごとに渡す。Cookie を含む request headers を module-level の固定値として保持しない。
+
+HTTP 経路では `request.headers` を渡す。
+
+```ts
+const handler = new RPCHandler(router)
+
+const { response } = await handler.handle(request, {
+  prefix: '/api/rpc',
+  context: {
+    headers: request.headers
+  }
+})
+```
+
+SSR direct client では現在の SSR request headers を関数で取得する。
+
+```ts
+const serverClient = createRouterClient(router, {
+  context: async () => ({
+    headers: getRequestHeaders()
+  })
+})
+```
+
+これにより HTTP と SSR のどちらでも session Cookie が auth middleware へ届く。
+
 Procedure は Application Error を transport error へ変換する。
 
 ```ts
@@ -198,37 +219,30 @@ Unexpected Error を独自の 500 error に包み直さない。logging も serv
 
 ## Client boundary
 
-TanStack Query から oRPC mutation を呼ぶ。
+TanStack Query は CreateTag mutation の状態管理に使う。
 
-CreateTag 成功時に UI へ必要な値が mutation output だけで確定する場合は、直後に Turso へ同じデータを取り直さず cache を更新する。
+現在の shelf tags は TanStack Query ではなく TanStack Router loader の `fetchShelfTags()` が正本である。この pilot では read query architecture を移行しないため、存在しない `shelfTagsQueryOptions` は導入しない。
+
+CreateTag 成功後は既存 loader data を stale のまま残さず、TanStack Router を invalidate して現在の read 経路から再取得する。
 
 ```ts
-onSuccess: (created) => {
-  queryClient.setQueryData<ShelfTag[]>(
-    shelfTagsQueryOptions.queryKey,
-    (current) =>
-      current === undefined
-        ? current
-        : [
-            ...current,
-            {
-              ...created,
-              bookmarkCount: 0,
-              lastUsedAt: null
-            }
-          ]
-  )
-}
+const router = useRouter()
+
+const mutation = useMutation(
+  orpc.tags.create.mutationOptions({
+    onSuccess: async () => {
+      await router.invalidate({ sync: true })
+    }
+  })
+)
 ```
 
-この RFC は shelf tags query 自体の read architecture は扱わない。
+この refetch は pilot で意図的に許容する。shelf tags を TanStack Query へ移行して `setQueryData` する最適化は read query migration の検討時に行う。
 
 UI error mapping は error code で行う。
 
 ```ts
-export function getCreateTagErrorMessage(
-  error: unknown
-): string | null {
+export function getCreateTagErrorMessage(error: unknown): string | null {
   if (isDefinedError(error)) {
     if (error.code === 'UNAUTHORIZED') return null
     if (error.code === 'tag-name-already-exists') {
@@ -248,14 +262,15 @@ export function getCreateTagErrorMessage(
 
 - client / Worker bundle size
 - CreateTag latency
-- DB query count
+- CreateTag write の DB query count
 
 守ること:
 
 - browser bundle に server-only code を混入させない
-- 正常系 DB query は `INSERT` 1回を目標にする
-- 成功直後の不要な refetch を増やさない
+- CreateTag の正常系 write query は `INSERT` 1回を目標にする
 - SSR で同一 Worker への不要な HTTP round trip を作らない
+
+既存 Router loader を再取得するコストは測定する。read architecture を同時に変更して最適化しない。
 
 性能劣化が保守性改善に見合わなければ設計を縮小する。
 
@@ -268,17 +283,20 @@ export function getCreateTagErrorMessage(
 - 別 user -> 同名作成可能
 - invalid input -> 4xx
 - unauthenticated -> 401
+- HTTP の認証済み request headers / Cookie が auth middleware へ届く
+- SSR direct client の request headers / Cookie が auth middleware へ届く
 - duplicate name -> 409
 - unknown exception -> 500
 - 401 で generic な作成失敗を表示しない
-- success 時に cache が更新される
+- success 後に Router loader が invalidate される
+- `pnpm run format:check` が通る
 
 ## Pilot success criteria
 
 1. Application unit test から Drizzle fluent API mock を排除できる
 2. Expected / Boundary / Unexpected Error の責務が明確になる
 3. UI の Error class name 依存を削除できる
-4. 正常系の DB round trip が増えない
+4. CreateTag の正常系 write DB round trip が増えない
 5. bundle / latency に許容できない劣化がない
 6. 追加された port / adapter / procedure が保守性改善に見合う
 
