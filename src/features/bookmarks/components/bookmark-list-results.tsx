@@ -2,7 +2,6 @@ import { ChevronDown } from 'lucide-react'
 import { use } from 'react'
 import { css } from 'styled-system/css'
 
-import { PantryMotion } from '../../../shared/components/pantry-motion'
 import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { UiEmpty } from '../../../shared/components/ui-empty'
@@ -18,6 +17,7 @@ import type { ListLayout } from '../lib/list-layout-preference'
 import { BookmarkCardList } from './bookmark-card-list'
 import { BookmarkTable } from './bookmark-table'
 
+const crossfade = css({ animationStyle: 'crossfade' })
 const partialSection = css({ marginBlockStart: '5', display: 'flex', justifyContent: 'center' })
 const loadMoreButton = css({
   borderColor: 'accent.solid',
@@ -89,9 +89,9 @@ export function BookmarkListResults({
 
   return (
     <div>
-      <PantryMotion
+      <div
         key={layout}
-        kind='crossfade'>
+        className={crossfade}>
         {layout === 'card' ? (
           <BookmarkCardList
             bookmarks={items}
@@ -103,7 +103,7 @@ export function BookmarkListResults({
             detailSearch={detailSearch}
           />
         )}
-      </PantryMotion>
+      </div>
 
       {hasMore ? (
         <div className={partialSection}>
