@@ -10,8 +10,6 @@ Draft。
 
 pilot 完了後に `Adopt / Modify / Reject` を判断する。
 
----
-
 ## Goal
 
 現在の CreateTag は TanStack Start Server Function の中に、認証・DB 操作・重複判定・エラー変換が集まっている。
@@ -39,8 +37,6 @@ pilot 完了後に `Adopt / Modify / Reject` を判断する。
 - 汎用 Repository / UnitOfWork
 
 これらは pilot 成功後、実際に必要になった時点で設計する。
-
----
 
 ## Decision
 
@@ -82,14 +78,6 @@ Application は oRPC、HTTP、Cookie、Drizzle、Turso、React を知らない�
 export type CreateTagError = {
   readonly code: 'tag-name-already-exists'
 }
-```
-
-既存の `Result` を使う。
-
-```ts
-export type Result<T, E> =
-  | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly error: E }
 ```
 
 `unexpected-error` は `Result` に入れない。
@@ -256,16 +244,15 @@ export function getCreateTagErrorMessage(
 
 ## Performance guardrails
 
-実装 PR で before / after を比較する。
+実装 PR で比較する。
 
-- client bundle size
-- Worker bundle size
+- client / Worker bundle size
 - CreateTag latency
 - DB query count
 
 守ること:
 
-- browser bundle に DB / auth の server-only code を混入させない
+- browser bundle に server-only code を混入させない
 - 正常系 DB query は `INSERT` 1回を目標にする
 - 成功直後の不要な refetch を増やさない
 - SSR で同一 Worker への不要な HTTP round trip を作らない
@@ -292,9 +279,8 @@ export function getCreateTagErrorMessage(
 2. Expected / Boundary / Unexpected Error の責務が明確になる
 3. UI の Error class name 依存を削除できる
 4. 正常系の DB round trip が増えない
-5. client / Worker bundle に許容できない増加がない
-6. request latency に明確な劣化がない
-7. 追加された port / adapter / procedure が保守性改善に見合う
+5. bundle / latency に許容できない劣化がない
+6. 追加された port / adapter / procedure が保守性改善に見合う
 
 pilot 完了後に `Adopt / Modify / Reject` を判断する。
 
