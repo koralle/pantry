@@ -29,6 +29,92 @@ Pantry のバックエンド境界を、現在の TanStack Start Server Function
 
 そのため CreateTag pilot では、既存パターンを踏襲せず **UseCase が本当に必要とする能力だけを port として渡す**。
 
+## 図で読む
+
+細部に入る前に、変更の意味を3枚で示す。
+
+### 変更の全体像
+
+```mermaid
+flowchart LR
+  subgraph current["いま"]
+    currentUi["画面"]
+    currentFn["1つの Server Function<br/>認証・業務・DB・返却"]
+    currentDb[("Turso")]
+    currentUi --> currentFn --> currentDb
+  end
+
+  subgraph target["これから"]
+    targetUi["画面"]
+    targetQuery["TanStack Query"]
+    targetRpc["oRPC"]
+    targetAuth["認証"]
+    targetUseCase["UseCase<br/>業務ルール"]
+    targetPort["小さな port"]
+    targetAdapter["Drizzle adapter"]
+    targetDb[("Turso")]
+    targetUi --> targetQuery --> targetRpc --> targetAuth --> targetUseCase --> targetPort --> targetAdapter --> targetDb
+  end
+
+  classDef ui fill:#e8f1ff,stroke:#4267a8
+  classDef boundary fill:#fff3d6,stroke:#a87500
+  classDef application fill:#e8f7e8,stroke:#3d8245
+  classDef data fill:#f4e8ff,stroke:#7a4fa3
+  class currentUi,targetUi ui
+  class currentFn,targetQuery,targetRpc,targetAuth,targetAdapter boundary
+  class targetUseCase,targetPort application
+  class currentDb,targetDb data
+```
+
+いまは1つの関数に集まっている処理を、変更理由ごとに分ける。
+
+### CreateTag の流れ
+
+```mermaid
+flowchart TD
+  start["タグを作る"] --> insert["DBへ INSERT"]
+  insert -->|成功| created["created"]
+  created --> setCache["mutation output<br/>から cache 更新"]
+  setCache --> screens["sidebar / table<br/>すぐ更新"]
+  insert -->|同じ名前| conflict["name-conflict"]
+  conflict --> expected["409<br/>名前が重複"]
+  insert -->|その他| thrown["throw"]
+  thrown --> logged["server interceptor<br/>が記録"]
+  logged --> unexpected["500"]
+
+  classDef action fill:#e8f1ff,stroke:#4267a8
+  classDef success fill:#e8f7e8,stroke:#3d8245
+  classDef expected fill:#fff3d6,stroke:#a87500
+  classDef unexpected fill:#ffe8e8,stroke:#a33a3a
+  class start,insert,setCache,screens action
+  class created success
+  class conflict,expected expected
+  class thrown,logged,unexpected unexpected
+```
+
+先に重複検索はしない。
+DB の unique constraint が重複を判断する。
+
+### shelf tags の共有
+
+```mermaid
+flowchart TB
+  loader["/_protected<br/>親 loader"] --> prefetch["shelfTags query<br/>prefetch"]
+  prefetch --> cache[("1つの<br/>TanStack Query cache")]
+  cache --> sidebar["ShelfSidebar"]
+  cache --> mobile["MobileShelfDialog"]
+  cache --> table["/tags<br/>TagTable"]
+
+  classDef owner fill:#fff3d6,stroke:#a87500
+  classDef cache fill:#e8f7e8,stroke:#3d8245
+  classDef consumer fill:#e8f1ff,stroke:#4267a8
+  class loader,prefetch owner
+  class cache cache
+  class sidebar,mobile,table consumer
+```
+
+親 loader が1回始めた query を、sidebar、モバイル画面、タグ一覧が共有する。
+
 ---
 
 ## 2. 現在の問題
