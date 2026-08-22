@@ -16,9 +16,12 @@ Pantry のバックエンド境界を、現在の TanStack Start Server Function
 8. **単純な read projection は無理に UseCase / Repository 化せず query service として分離してよい**
 9. **SSR は `createRouterClient` を使い、同一 Worker 内の HTTP round trip を避ける**
 10. **Unexpected Error の logging は HTTP と SSR で共有できる server-side interceptor に置く**
-11. **Hono は現時点では導入しない**
+11. **ブラウザでセッション切れが起きた場合は RPC client interceptor で共通処理し、各フォームに 401 処理を散らさない**
+12. **CreateTag 成功後は、直後に同じデータを再取得せず mutation output から TanStack Query cache を更新する**
+13. **oRPC は stable 版を関連3パッケージで同一versionに exact pin し、pilot 中に v2 beta へ追従しない**
+14. **Hono は現時点では導入しない**
 
-今回の設計では、既存実装との一貫性よりも **今後のテスタビリティ・依存方向・性能**を優先する。
+今回の設計では、既存実装との一貫性よりも **今後のテスタビリティ・依存方向・ユーザー体験・性能**を優先する。
 
 既存の Bookmark Application は `AppDb` を直接注入しているが、その unit test では Drizzle の fluent API を模倣するために `createThenableChain` と `as unknown as AppDb` を使っている。
 
@@ -131,7 +134,7 @@ INSERT tag
 
 正常系の DB round trip を1回減らせる。
 
-現在 `tags` で CreateTag が触れる値のうち、auto increment の primary key 以外の unique constraint は `(user_id, normalized_name)` である。
+現在 `tags` で CreateTag が触れる値のうち、auto increment primary key 以外の unique constraint は `(user_id, normalized_name)` である。
 
 将来別の unique constraint を追加する場合は、`name-conflict` への変換条件を再検討する。
 
@@ -182,7 +185,7 @@ MobileShelfDialog
   -> same query cache
 ```
 
-CreateTag 成功後はこの query key を invalidate する。
+`/tags` 子 route からは同じ取得処理を削除する。
 
 ---
 
@@ -675,22 +678,17 @@ const requireAuth = base.middleware(
 export const authed = base.use(requireAuth)
 ```
 
+`UNAUTHORIZED` は oRPC の標準的な 401 code である。
+
 UseCase は Cookie や session API を知らない。
 
 ---
 
 ## 14. Unexpected Error logging は server-side interceptor で共通化する
 
-ここは重要である。
+HTTP の `RPCHandler` だけに logging を置くと、SSR の `createRouterClient` が HTTP handler を通らないため取りこぼす。
 
-前案では router middleware で Unexpected Error を記録する案も検討したが、oRPC の lifecycle を確認すると **server-side client interceptor の方が適切**である。
-
-理由は次の2つ。
-
-1. HTTP の `RPCHandler` だけに logging を置くと、SSR の `createRouterClient` が HTTP handler を通らないため取りこぼす
-2. router middleware は登録位置によって input / output validation との実行順が変わる
-
-そこで同じ interceptor を、
+同じ interceptor を、
 
 - browser request を受ける `RPCHandler`
 - SSR direct call の `createRouterClient`
@@ -715,13 +713,13 @@ export const serverInterceptors = [
 
 ```text
 validation error / 4xx
-  -> log しない
+  -> Unexpected Error として log しない
 
 UNAUTHORIZED / 401
-  -> log しない
+  -> Unexpected Error として log しない
 
 defined conflict / 409
-  -> log しない
+  -> Unexpected Error として log しない
 
 plain Error
   -> log
@@ -731,11 +729,17 @@ output validation failure / 5xx
   -> log
 ```
 
-同じ例外を repository / UseCase / procedure で重複 logging しない。
+同じ例外を infrastructure / UseCase / procedure で重複 logging しない。
 
 ---
 
 ## 15. CreateTag procedure
+
+Valibot は Standard Schema として直接利用する。
+
+CreateTag のためだけに `@orpc/valibot` は追加しない。
+
+`tagNameSchema` は文字列を `TagName` へ transform するため、browser 側の入力は `string`、handler 側では validation 済みの `TagName` として扱う。
 
 ```ts
 import * as v from 'valibot'
@@ -837,6 +841,12 @@ export const Route = createFileRoute('/api/rpc/$')({
 })
 ```
 
+`RPCHandler` の Strict GET Method plugin は既定値のまま有効にする。
+
+mutation を GET で呼べるようにするためにこの保護を無効化しない。
+
+pilot では RPCLink の既定 POST を利用し、HTTP cache のための GET 化は行わない。
+
 ---
 
 ## 18. SSR は `createRouterClient` で直接呼ぶ
@@ -844,7 +854,7 @@ export const Route = createFileRoute('/api/rpc/$')({
 SSR では同じ Worker の `/api/rpc` に fetch し直さない。
 
 ```ts
-import { createORPCClient } from '@orpc/client'
+import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createRouterClient } from '@orpc/server'
 import type { RouterClient } from '@orpc/server'
@@ -865,7 +875,24 @@ const getClient = createIsomorphicFn()
   )
   .client((): RouterClient<typeof router> => {
     const link = new RPCLink({
-      url: `${window.location.origin}/api/rpc`
+      url: `${window.location.origin}/api/rpc`,
+      interceptors: [
+        onError((error) => {
+          if (!(error instanceof ORPCError) || error.code !== 'UNAUTHORIZED') {
+            return
+          }
+
+          const redirect =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash
+
+          const signIn = new URL('/sign-in/', window.location.origin)
+          signIn.searchParams.set('redirect', redirect)
+
+          window.location.replace(signIn)
+        })
+      ]
     })
 
     return createORPCClient(link)
@@ -874,37 +901,42 @@ const getClient = createIsomorphicFn()
 export const client: RouterClient<typeof router> = getClient()
 ```
 
-これで HTTP と SSR direct call の両方が同じ server interceptor を使う。
+401 を各フォームで個別処理しない。
+
+セッション切れはフォーム固有の失敗ではないため、現在位置を `redirect` に保存して sign-in へ戻す。
+
+`window.location.replace` を使うことで、認証切れ画面へブラウザ Back で戻って再度 401 を踏みやすい履歴を増やさない。
 
 ```text
 Browser
-  -> HTTP RPCHandler
-  -> serverInterceptors
-  -> procedure
+  -> RPCLink
+  -> 401 client interceptor
+  -> /sign-in/?redirect=current-url
 
 SSR
   -> createRouterClient
-  -> serverInterceptors
-  -> procedure
+  -> auth middleware
 ```
+
+SSR 側では通常、protected route の `beforeLoad` が先に未認証を sign-in へ redirect する。
 
 ---
 
 ## 19. server code が client bundle に漏れないことを確認する
 
-SSR 最適化では server router を参照するため、client build に server 実装が混ざらないことを確認する。
+SSR 最適化では server router を参照するため、client build に server 実装が混ざらないことを実際の build で確認する。
 
 特に browser bundle に次が入っていないことを確認する。
 
-- `drizzle-orm` の server query 実装
+- Drizzle server query 実装
 - `@libsql/client`
 - `getDB`
-- Better Auth の server 実装
+- Better Auth server 実装
 - Turso credentials 関連コード
 
-`createIsomorphicFn` の server branch と type-only import を使い、build 後に実際の bundle を確認する。
+`createIsomorphicFn` の server branch に置いたから安全、と型だけで判断しない。
 
-「型上は server-only」だけで判断しない。
+`pnpm run build` の生成物を確認する。
 
 ---
 
@@ -927,8 +959,6 @@ export const shelfTagsQueryOptions = orpc.tags.shelf.queryOptions({
 ```
 
 短い `staleTime` を持たせ、SSR hydration 直後の不要な refetch を避ける。
-
-Tag mutation は明示的に invalidate するので、同一画面内の変更反映に staleTime を待つ必要はない。
 
 ---
 
@@ -993,35 +1023,112 @@ export function TagTable({ tags }: { readonly tags: readonly ShelfTag[] }) {
 
 ---
 
-## 23. CreateTag mutation
+## 23. CreateTag 成功後は cache を直接更新する
+
+前案では CreateTag 成功後に、
+
+```ts
+await queryClient.invalidateQueries(...)
+```
+
+として shelf tags を再取得する案だった。
+
+これは採用しない。
+
+新規タグについて shelf projection に必要な値は作成直後に確定している。
+
+```ts
+{
+  id: created.id,
+  name: created.name,
+  pinned: created.pinned,
+  sortOrder: created.sortOrder,
+  color: created.color,
+  lastUsedAt: null,
+  bookmarkCount: 0
+}
+```
+
+CreateTag 直後に同じ情報を Turso へ取りに行く価値は低い。
+
+mutation output から cache を即時更新する。
 
 ```ts
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { orpc } from '../../../rpc/query-utils'
+import { shelfTagsQueryOptions } from './shelf-tags-query'
 
 export function useCreateTagMutation() {
   const queryClient = useQueryClient()
 
   return useMutation(
     orpc.tags.create.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: orpc.tags.shelf.key()
-        })
+      onSuccess: (created) => {
+        queryClient.setQueryData<ShelfTag[]>(
+          shelfTagsQueryOptions.queryKey,
+          (current) => {
+            if (current === undefined) {
+              return current
+            }
+
+            const createdShelfTag: ShelfTag = {
+              id: created.id,
+              name: created.name,
+              pinned: created.pinned,
+              sortOrder: created.sortOrder,
+              color: created.color,
+              lastUsedAt: null,
+              bookmarkCount: 0
+            }
+
+            return [
+              ...current.filter((tag) => tag.id !== created.id),
+              createdShelfTag
+            ]
+          }
+        )
       }
     })
   )
 }
 ```
 
-pilot では invalidation 完了を待つ。
+`current === undefined` の場合に `[created]` を作らない。
 
-理由は、新規タグ作成直後に sidebar とタグ一覧へ反映される UX を維持するためである。
+既存一覧を取得できていない状態で新規タグ1件だけを「一覧全体」として cache すると不正確だからである。
 
-この再取得が latency 上問題になる場合は `setQueryData` を次の最適化候補にする。
+通常の protected route では parent loader が shelf query を開始しているため、CreateTag をユーザーが送信する時点では cache が存在する想定である。
 
-最初から optimistic cache update を入れて複雑性を増やさない。
+この前提がテストで成立しない場合だけ fallback refetch を追加する。
+
+### なぜ background invalidate もしないのか
+
+CreateTag が変更する shelf projection は新規1行だけで、必要な値は mutation output と仕様から完全に構築できる。
+
+直後に authoritative refetch をすると、submit latency は待たなくても追加の DB query と network traffic は発生する。
+
+single-user の Pantry では、この追加 query の価値は低い。
+
+したがって CreateTag では cache update のみとする。
+
+一方、次のような mutation は invalidate を使う可能性が高い。
+
+- Bookmark 作成で複数タグの `bookmarkCount` が変わる
+- derived value を client で安全に再構築できない
+- 複数 query の結果が同時に変わる
+
+つまり規約は、
+
+```text
+mutation output だけで正しい cache を構築できる
+  -> setQueryData
+
+正しい結果を client で再構築できない
+  -> invalidateQueries
+```
+
+とする。
 
 ---
 
@@ -1055,6 +1162,8 @@ export function getCreateTagErrorMessage(error: unknown): string {
 }
 ```
 
+401 は RPC client interceptor が sign-in へ遷移するため、フォーム固有の「タグ作成失敗」として扱わない。
+
 `new-tag-screen.tsx` と `inline-add-tag.tsx` は同じ helper を使う。
 
 `edit-tag-form.tsx` は UpdateTag 移行時に変更する。
@@ -1076,17 +1185,59 @@ export function getCreateTagErrorMessage(error: unknown): string {
 
 これは pilot で計測する。
 
-もし Better Auth の session lookup が無視できないコストなら、次の順で検討する。
+Better Auth の cookie cache は session DB lookup を減らせる一方、session 変更の反映遅延という意味変更を伴うため、architecture migration と同時には有効化しない。
 
-1. request-scoped session memoization
-2. 同一 request 内 middleware の dedupe
-3. query のまとめ方の見直し
+まず現在の security semantics を維持して計測する。
 
-セキュリティ境界を弱めて最適化しない。
+必要なら別の最適化として検討する。
 
 ---
 
-## 26. テスト戦略
+## 26. Hydration serializer は追加しすぎない
+
+oRPC の TanStack Query integration は、oRPC native type を広く扱う場合に `StandardRPCJsonSerializer` を使った hydration を案内している。
+
+一方、現在の Pantry の shelf query で JSON を超える型は主に `Date` であり、TanStack Router の SSR serializer は `Date` を標準で扱える。
+
+そのため pilot の最初から custom serializer 設定を増やさない。
+
+代わりに integration test で次を確認する。
+
+```ts
+expect(hydratedShelfTag.lastUsedAt).toBeInstanceOf(Date)
+```
+
+このテストが失敗する、または将来 `Map` / `Set` / `BigInt` などを query data に含める場合に `StandardRPCJsonSerializer` を導入する。
+
+「oRPC を使うから必ず serializer を追加する」とはしない。
+
+---
+
+## 27. oRPC dependency 方針
+
+pilot 中に framework API の変化まで検証対象へ混ぜない。
+
+導入時点の stable 版を次の3パッケージで同一versionに揃え、exact pin する。
+
+```yaml
+catalogs:
+  rpc:
+    '@orpc/client': 1.15.0
+    '@orpc/server': 1.15.0
+    '@orpc/tanstack-query': 1.15.0
+```
+
+2026-08-22 時点の npm stable は3パッケージとも `1.15.0` である。
+
+実装開始時に stable が変わっている場合は、その時点の同一 stable version へ読み替える。
+
+pilot の途中で v2 beta へ移行しない。
+
+また Valibot は Standard Schema として使えるため、OpenAPI schema generation など別の要件が出るまで `@orpc/valibot` は追加しない。
+
+---
+
+## 28. テスト戦略
 
 ### Application unit test
 
@@ -1140,20 +1291,26 @@ unknown Error detail
 
 の両方で auth と server interceptor が動くことを確認する。
 
-### Query / UI test
+### Browser auth expiry test
 
-確認する。
+- client RPC が `UNAUTHORIZED` を受ける
+- `/sign-in/?redirect=<現在URL>` へ遷移する
+- tag form の generic error を主要表示として残さない
+
+### Query / UI test
 
 - protected loader が shelf query を prefetch する
 - `/tags` が重複 fetch を持たない
 - sidebar / mobile / tag table が同じ query key を使う
-- CreateTag 成功後に shelf query が invalidate される
+- CreateTag 成功後に追加 fetch なしで shelf cache が更新される
+- cache 未取得時に `[created]` だけの不完全な一覧を作らない
 - duplicate error のメッセージを維持する
 - 500 系 error を duplicate と誤表示しない
+- SSR hydration 後も `lastUsedAt` が `Date | null` を維持する
 
 ---
 
-## 27. パフォーマンス上の期待値
+## 29. パフォーマンス上の期待値
 
 ### CreateTag DB query
 
@@ -1172,7 +1329,29 @@ INSERT
 
 正常系 DB round trip を1回削減する。
 
-### shelf tags
+### CreateTag 後の shelf 更新
+
+前案:
+
+```text
+INSERT
+-> invalidate
+-> shelf SELECT
+-> UI update
+```
+
+最終案:
+
+```text
+INSERT
+-> mutation output
+-> setQueryData
+-> UI update
+```
+
+CreateTag のためだけの追加 shelf SELECT を発生させない。
+
+### shelf tags 初期取得
 
 現在は親 route と子 route が同じ projection を要求している。
 
@@ -1196,7 +1375,7 @@ server router / Drizzle / Turso driver が browser bundle に入らないこと�
 
 ---
 
-## 28. ディレクトリ構成案
+## 30. ディレクトリ構成案
 
 ```text
 src/
@@ -1242,35 +1421,38 @@ feature locality は維持し、共通 RPC 基盤だけ `src/rpc/` に置く。
 
 ---
 
-## 29. CreateTag pilot の移行手順
+## 31. CreateTag pilot の移行手順
 
-1. oRPC server / client 基盤を追加する
-2. auth middleware を追加する
-3. 共通 `serverInterceptors` を追加する
-4. browser `RPCHandler` に interceptor を設定する
-5. SSR `createRouterClient` に同じ interceptor を設定する
-6. `InsertTag` narrow port を定義する
-7. `executeCreateTag` を追加する
-8. Drizzle adapter `insertTag` を追加する
-9. CreateTag の事前 duplicate SELECT を廃止する
-10. CreateTag procedure を追加する
-11. `shelfTags` query service / procedure を追加する
-12. protected layout で shelf query を prefetch する
-13. `/tags` 側の重複 fetch を削除する
-14. Promise prop を `useSuspenseQuery` へ置き換える
-15. CreateTag mutation hook を追加する
-16. 成功後に shelf query を invalidate する
-17. `new-tag-screen.tsx` を新 mutation へ移す
-18. `inline-add-tag.tsx` を新 mutation へ移す
-19. `Error.name` 判定を typed `code` 判定へ変更する
-20. Application / Infrastructure / RPC / UI test を追加する
-21. client bundle に server code が入っていないことを確認する
-22. bundle size / latency / cold start / auth cost を比較する
-23. 旧 `addTag` Server Function を削除する
+1. oRPC stable packages を同一versionで exact pin する
+2. oRPC server / client 基盤を追加する
+3. auth middleware を追加する
+4. 共通 `serverInterceptors` を追加する
+5. browser `RPCHandler` に server interceptor を設定する
+6. SSR `createRouterClient` に同じ server interceptor を設定する
+7. browser RPCLink に 401 redirect interceptor を設定する
+8. `InsertTag` narrow port を定義する
+9. `executeCreateTag` を追加する
+10. Drizzle adapter `insertTag` を追加する
+11. CreateTag の事前 duplicate SELECT を廃止する
+12. CreateTag procedure を追加する
+13. `shelfTags` query service / procedure を追加する
+14. protected layout で shelf query を prefetch する
+15. `/tags` 側の重複 fetch を削除する
+16. Promise prop を `useSuspenseQuery` へ置き換える
+17. CreateTag mutation hook を追加する
+18. 成功後に `setQueryData` で shelf cache を更新する
+19. `new-tag-screen.tsx` を新 mutation へ移す
+20. `inline-add-tag.tsx` を新 mutation へ移す
+21. `Error.name` 判定を typed `code` 判定へ変更する
+22. Application / Infrastructure / RPC / UI test を追加する
+23. SSR hydration で `Date` が保たれることを確認する
+24. client bundle に server code が入っていないことを確認する
+25. bundle size / latency / cold start / auth cost を比較する
+26. 旧 `addTag` Server Function を削除する
 
 ---
 
-## 30. Definition of Done
+## 32. Definition of Done
 
 CreateTag pilot は次をすべて満たして完了とする。
 
@@ -1283,14 +1465,17 @@ CreateTag pilot は次をすべて満たして完了とする。
 - duplicate check の事前 SELECT がない
 - unique constraint race が正しく conflict になる
 - 未認証が 401 になる
+- browser で 401 を受けたら redirect 付き sign-in へ戻る
 - duplicate が 409 になる
 - unknown error が 500 になる
 - unknown error の詳細が client へ漏れない
 - validation 4xx を Unexpected Error として logging しない
 - HTTP RPC と SSR direct call が同じ Unexpected Error logging 規約を使う
+- Strict GET Method plugin を無効化していない
 - `/tags` で shelf query を親子が二重取得しない
-- CreateTag 後に sidebar / table が更新される
+- CreateTag 後に追加 DB query なしで sidebar / table が更新される
 - UI が Error class name に依存しない
+- hydration 後も `Date` が壊れない
 - browser bundle に Drizzle / Turso server code が混ざっていない
 - client bundle / Worker bundle の増分を確認している
 - cold start / request latency に目立つ悪化がない
@@ -1298,7 +1483,7 @@ CreateTag pilot は次をすべて満たして完了とする。
 
 ---
 
-## 31. Port を追加する基準
+## 33. Port を追加する基準
 
 Port は「Clean Architecture だから」では追加しない。
 
@@ -1314,7 +1499,7 @@ Port は「Clean Architecture だから」では追加しない。
 
 ---
 
-## 32. Hono を今は導入しない
+## 34. Hono を今は導入しない
 
 oRPC + Hono の組み合わせ自体には問題がない。
 
@@ -1323,7 +1508,7 @@ oRPC + Hono の組み合わせ自体には問題がない。
 - typed RPC
 - auth middleware
 - typed error contract
-- server-side interceptor
+- server/client interceptor
 - TanStack Query integration
 
 であり、oRPC + TanStack Start で満たせる。
@@ -1341,7 +1526,7 @@ Hono を追加すると request lifecycle と middleware の配置候補が増�
 
 ---
 
-## 33. Pros / Cons
+## 35. Pros / Cons
 
 ### Pros
 
@@ -1349,8 +1534,10 @@ Hono を追加すると request lifecycle と middleware の配置候補が増�
 - transport / application / infrastructure の変更理由を分けられる
 - Expected Error が型で読める
 - auth failure を 500 と誤分類しにくい
+- session expiry の UX を各フォームで重複実装しない
 - UI が Error class serialization に依存しない
-- CreateTag の DB round trip を減らせる
+- CreateTag の正常系 DB round trip を減らせる
+- CreateTag 後の不要な refetch をなくせる
 - shelf query の ownership が明確になる
 - SSR 内部 HTTP を避けられる
 - HTTP / SSR の Unexpected Error logging を同じ規約にできる
@@ -1363,13 +1550,14 @@ Hono を追加すると request lifecycle と middleware の配置候補が増�
 - CreateTag 単体では UseCase が薄く見える
 - `Result` と oRPC defined error の2段階を理解する必要がある
 - mutation と read query の構造が完全対称ではない
+- cache の直接更新と invalidation の使い分け規約が必要になる
 - migration 中は Server Function と oRPC が共存する
 
-このコストを許容するのは、テスト容易性と責務境界が実際に改善する場合だけである。
+このコストを許容するのは、テスト容易性・UX・性能が実際に改善する場合だけである。
 
 ---
 
-## 34. 最終判断
+## 36. 最終判断
 
 Mutation / workflow は次の構成を採用する。
 
@@ -1400,28 +1588,51 @@ Unexpected Error の観測は procedure の内側へ混ぜない。
 
 ```text
 Browser RPCHandler ------┐
-                         ├-> shared server-side interceptor -> procedure
+                         ├-> shared server interceptor -> procedure
 SSR createRouterClient --┘
+```
+
+ブラウザの session expiry は RPC client の横断処理にする。
+
+```text
+RPCLink
+  -> UNAUTHORIZED
+  -> /sign-in/?redirect=current-url
+```
+
+CreateTag の cache 更新は再取得ではなく mutation output を使う。
+
+```text
+CreateTag
+  -> INSERT
+  -> created output
+  -> setQueryData
+  -> sidebar / table update
 ```
 
 Pantry では、レイヤーを揃えること自体を目的にしない。
 
-**変更理由を分離できるか、テストが簡単になるか、性能を悪化させないか**で境界を決める。
+**変更理由を分離できるか、テストが簡単になるか、ユーザー体験が改善するか、性能を悪化させないか**で境界を決める。
 
 CreateTag pilot では特に次を実証する。
 
 1. narrow port で UseCase test を Drizzle から独立できる
 2. unique constraint を正本にして正常系 query を1回減らせる
-3. TanStack Query で shelf query の ownership と invalidation を整理できる
-4. SSR server-side client で Worker 内部 HTTP を避けられる
-5. HTTP と SSR で同じ error observability を成立させられる
+3. mutation output で不要な post-mutation refetch をなくせる
+4. TanStack Query で shelf query の ownership を整理できる
+5. SSR server-side client で Worker 内部 HTTP を避けられる
+6. HTTP と SSR で同じ error observability を成立させられる
+7. browser の session expiry を共通 UX として扱える
 
 これらに実益がなければ、アーキテクチャを増やしたこと自体を成果とはみなさない。
 
 ## 参考
 
 - oRPC TanStack Start Adapter: https://orpc.dev/docs/adapters/tanstack-start
-- oRPC Server-Side Clients: https://orpc.dev/docs/client/server-side
+- oRPC Server-Side Clients / SSR: https://orpc.dev/docs/best-practices/optimize-ssr
 - oRPC Error Handling: https://orpc.dev/docs/error-handling
+- oRPC Client Error Handling: https://orpc.dev/docs/client/error-handling
+- oRPC RPC Handler: https://orpc.dev/docs/rpc-handler
 - oRPC TanStack Query Integration: https://orpc.dev/docs/integrations/tanstack-query
+- TanStack Router SSR Serialization: https://tanstack.com/router/v1/docs/guide/ssr
 - TanStack Router + Query Integration: https://tanstack.com/router/latest/docs/integrations/query
