@@ -10,7 +10,7 @@ import type { AppRouter } from './create-app-router'
  */
 function redirectToSignIn(): void {
   const redirect = `${window.location.pathname}${window.location.search}${window.location.hash}`,
-   signIn = new URL('/sign-in/', window.location.origin)
+    signIn = new URL('/sign-in/', window.location.origin)
   signIn.searchParams.set('redirect', redirect)
   window.location.replace(signIn)
 }

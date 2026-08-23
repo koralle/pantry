@@ -22,20 +22,20 @@ const inlineAddTag = css({
 
 /**
  * 一覧上の短い作成経路。専用画面と同じ error code 契約に載せ、
- * `TagNameAlreadyExistsError` の class 名分岐を残さない。
+ * Error の class 名では分岐しない。
  */
 export function InlineAddTag() {
   const navigate = useNavigate(),
-   router = useRouter(),
-   [name, setName] = useState(''),
-   [tagError, setTagError] = useState<string | null>(null),
-   mutation = useMutation(
-    orpc.tags.create.mutationOptions({
-      onSuccess: () => {
-        refreshAfterCreateTag(router)
-      }
-    })
-  )
+    router = useRouter(),
+    [name, setName] = useState(''),
+    [tagError, setTagError] = useState<string | null>(null),
+    mutation = useMutation(
+      orpc.tags.create.mutationOptions({
+        onSuccess: () => {
+          refreshAfterCreateTag(router)
+        }
+      })
+    )
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()

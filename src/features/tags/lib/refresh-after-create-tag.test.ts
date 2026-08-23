@@ -5,7 +5,7 @@ import { refreshAfterCreateTag } from './refresh-after-create-tag'
 describe('refreshAfterCreateTag', () => {
   test('does not reject when route invalidation fails', async () => {
     const invalidate = vi.fn(() => Promise.reject(new Error('loader failed'))),
-     consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     expect(() => {
       refreshAfterCreateTag({ invalidate })

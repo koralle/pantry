@@ -4,12 +4,11 @@ import { cloudflareTest } from '@cloudflare/vitest-pool-workers'
 import { defineConfig } from 'vitest/config'
 
 const tanstackEntryStub = path.resolve(import.meta.dirname, 'vitest/tanstack-entry-stub.ts'),
-
- aliases = {
-  '#tanstack-router-entry': tanstackEntryStub,
-  '#tanstack-start-entry': tanstackEntryStub,
-  '#tanstack-start-plugin-adapters': tanstackEntryStub
-} as const
+  aliases = {
+    '#tanstack-router-entry': tanstackEntryStub,
+    '#tanstack-start-entry': tanstackEntryStub,
+    '#tanstack-start-plugin-adapters': tanstackEntryStub
+  } as const
 
 /**
  * 既定の `pnpm test` には載せない。warmup と 50 サンプルが Turso 相当の DB を書き換えるため。

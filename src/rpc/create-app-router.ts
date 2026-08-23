@@ -33,47 +33,45 @@ export type AppRouterDeps = {
  */
 export function createAppRouter(deps: AppRouterDeps) {
   const base = os.$context<{ headers: Headers }>().errors({
-    UNAUTHORIZED: {
-      status: 401
-    }
-  }),
-
-   requireAuth = base.middleware(async ({ context, next, errors }) => {
-    const session = await deps.getSession(context.headers)
-    if (session == null) {
-      throw errors.UNAUTHORIZED()
-    }
-
-    return next({
-      context: {
-        userId: v.parse(userIdSchema, session.user.id)
+      UNAUTHORIZED: {
+        status: 401
       }
-    })
-  }),
-
-   createTag = base
-    .use(requireAuth)
-    .input(createTagInputSchema)
-    .errors({
-      'tag-name-already-exists': {
-        status: 409
+    }),
+    requireAuth = base.middleware(async ({ context, next, errors }) => {
+      const session = await deps.getSession(context.headers)
+      if (session == null) {
+        throw errors.UNAUTHORIZED()
       }
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeCreateTag({
-        insertTag: deps.insertTag,
-        userId: context.userId as UserId,
-        command: toCreateTagCommand(input)
+
+      return next({
+        context: {
+          userId: v.parse(userIdSchema, session.user.id)
+        }
       })
+    }),
+    createTag = base
+      .use(requireAuth)
+      .input(createTagInputSchema)
+      .errors({
+        'tag-name-already-exists': {
+          status: 409
+        }
+      })
+      .handler(async ({ input, context, errors }) => {
+        const result = await executeCreateTag({
+          insertTag: deps.insertTag,
+          userId: context.userId as UserId,
+          command: toCreateTagCommand(input)
+        })
 
-      if (!result.ok) {
-        throw errors['tag-name-already-exists']()
-      }
+        if (!result.ok) {
+          throw errors['tag-name-already-exists']()
+        }
 
-      return {
-        id: result.value.id
-      }
-    })
+        return {
+          id: result.value.id
+        }
+      })
 
   return {
     tags: {

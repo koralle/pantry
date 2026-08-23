@@ -22,18 +22,18 @@ import { handleRpcRequest } from '../src/rpc/handle-request.server'
  * warmup と本測定が Turso 相当の DB を書き換えるため、計測用 config からの起動に限る。
  */
 const WARMUP = 10,
- SAMPLES = 50,
- benchUserId = v.parse(userIdSchema, `bench-create-tag-${crypto.randomUUID()}`)
+  SAMPLES = 50,
+  benchUserId = v.parse(userIdSchema, `bench-create-tag-${crypto.randomUUID()}`)
 
 function percentile(values: readonly number[], p: number): number {
   const sorted = [...values].toSorted((a, b) => a - b),
-   index = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))
+    index = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))
   return sorted[index]!
 }
 
 function summarize(label: string, samples: readonly number[]): { median: number; p95: number } {
   const median = percentile(samples, 50),
-   p95 = percentile(samples, 95)
+    p95 = percentile(samples, 95)
   console.log(`${label}: n=${samples.length} median=${median.toFixed(2)}ms p95=${p95.toFixed(2)}ms`)
   return { median, p95 }
 }
@@ -44,24 +44,26 @@ const db = drizzle({
 
 function createBenchClient() {
   const router = createAppRouter({
-    getSession: async () => ({ user: { id: benchUserId } }),
-    insertTag: async (input) => insertTag(db, input)
-  }),
-   link = new RPCLink({
-    url: 'https://pantry.test/api/rpc',
-    fetch: async (request) => handleRpcRequest(request, router)
-  }),
-   client: RouterClient<AppRouter> = createORPCClient(link)
+      getSession: async () => ({ user: { id: benchUserId } }),
+      insertTag: async (input) => insertTag(db, input)
+    }),
+    link = new RPCLink({
+      url: 'https://pantry.test/api/rpc',
+      fetch: async (request) => handleRpcRequest(request, router)
+    }),
+    client: RouterClient<AppRouter> = createORPCClient(link)
   return client
 }
 
 async function legacyCreateTag(name: string): Promise<void> {
   const parsed = v.parse(tagNameSchema, name),
-   existing = await db
-    .select({ id: tagsTable.id })
-    .from(tagsTable)
-    .where(and(eq(tagsTable.userId, benchUserId), eq(tagsTable.normalizedName, parsed.normalized)))
-    .limit(1)
+    existing = await db
+      .select({ id: tagsTable.id })
+      .from(tagsTable)
+      .where(
+        and(eq(tagsTable.userId, benchUserId), eq(tagsTable.normalizedName, parsed.normalized))
+      )
+      .limit(1)
 
   if (existing[0] != null) {
     throw new Error('legacy name conflict')
@@ -114,24 +116,21 @@ describe('CreateTag latency vs legacy SELECT+INSERT', () => {
 
   test('warm oRPC CreateTag stays within RFC limits vs SELECT+INSERT', async () => {
     const firstLegacy = await measure('legacy-a', legacyCreateTag),
-     firstLegacyStats = summarize('legacy-a', firstLegacy),
-
-     secondLegacy = await measure('legacy-b', legacyCreateTag),
-     secondLegacyStats = summarize('legacy-b', secondLegacy),
-
-     medianDrift =
-      Math.abs(secondLegacyStats.median - firstLegacyStats.median) / firstLegacyStats.median
+      firstLegacyStats = summarize('legacy-a', firstLegacy),
+      secondLegacy = await measure('legacy-b', legacyCreateTag),
+      secondLegacyStats = summarize('legacy-b', secondLegacy),
+      medianDrift =
+        Math.abs(secondLegacyStats.median - firstLegacyStats.median) / firstLegacyStats.median
     console.log(`legacy median drift=${(medianDrift * 100).toFixed(2)}%`)
     expect(medianDrift).toBeLessThanOrEqual(0.05)
 
     const client = createBenchClient(),
-     orpcSamples = await measure('orpc', async (name) => {
-      await client.tags.create({ name })
-    }),
-     orpcStats = summarize('orpc', orpcSamples),
-
-     medianLimit = firstLegacyStats.median * 1.1,
-     p95Limit = firstLegacyStats.p95 * 1.15
+      orpcSamples = await measure('orpc', async (name) => {
+        await client.tags.create({ name })
+      }),
+      orpcStats = summarize('orpc', orpcSamples),
+      medianLimit = firstLegacyStats.median * 1.1,
+      p95Limit = firstLegacyStats.p95 * 1.15
     console.log(`limits median<=${medianLimit.toFixed(2)}ms p95<=${p95Limit.toFixed(2)}ms`)
 
     expect(orpcStats.median).toBeLessThanOrEqual(medianLimit)

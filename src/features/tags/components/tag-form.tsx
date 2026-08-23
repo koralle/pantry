@@ -40,32 +40,30 @@ export function TagForm({
   mapError
 }: TagFormProps) {
   const [pinned, setPinned] = useState(initialValues.pinned),
-   [color, setColor] = useState<string | null>(initialValues.color),
-   [sortOrder, setSortOrder] = useState(initialValues.sortOrder),
-   [formError, setFormError] = useState<string | null>(null),
+    [color, setColor] = useState<string | null>(initialValues.color),
+    [sortOrder, setSortOrder] = useState(initialValues.sortOrder),
+    [formError, setFormError] = useState<string | null>(null),
+    form = useForm({
+      initialInput: {
+        name: initialValues.name
+      },
+      schema: v.object({
+        name: v.string()
+      })
+    }),
+    [, submit, isPending] = useActionState(async () => {
+      setFormError(null)
+      const name = getInput(form, { path: ['name'] }) ?? ''
 
-   form = useForm({
-    initialInput: {
-      name: initialValues.name
-    },
-    schema: v.object({
-      name: v.string()
-    })
-  }),
-
-   [, submit, isPending] = useActionState(async () => {
-    setFormError(null)
-    const name = getInput(form, { path: ['name'] }) ?? ''
-
-    try {
-      await onSubmit({ name, pinned, color, sortOrder })
-    } catch (error) {
-      const message = mapError(error)
-      if (message !== null) {
-        setFormError(message)
+      try {
+        await onSubmit({ name, pinned, color, sortOrder })
+      } catch (error) {
+        const message = mapError(error)
+        if (message !== null) {
+          setFormError(message)
+        }
       }
-    }
-  }, null)
+    }, null)
 
   return (
     <form

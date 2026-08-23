@@ -15,14 +15,14 @@ import { TagForm } from './tag-form'
  */
 export function NewTagScreen() {
   const navigate = useNavigate(),
-   router = useRouter(),
-   mutation = useMutation(
-    orpc.tags.create.mutationOptions({
-      onSuccess: () => {
-        refreshAfterCreateTag(router)
-      }
-    })
-  )
+    router = useRouter(),
+    mutation = useMutation(
+      orpc.tags.create.mutationOptions({
+        onSuccess: () => {
+          refreshAfterCreateTag(router)
+        }
+      })
+    )
 
   return (
     <div className={workbench}>

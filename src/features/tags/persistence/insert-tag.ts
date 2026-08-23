@@ -13,21 +13,20 @@ import { tagIdSchema } from '../domain/tag-values'
  */
 export async function insertTag(db: AppDb, input: InsertTagInput): Promise<InsertTagOutput> {
   const inserted = await db
-    .insert(tagsTable)
-    .values({
-      userId: input.userId,
-      name: input.name.display,
-      normalizedName: input.name.normalized,
-      pinned: input.pinned,
-      sortOrder: input.sortOrder,
-      color: input.color
-    })
-    .onConflictDoNothing({
-      target: [tagsTable.userId, tagsTable.normalizedName]
-    })
-    .returning({ id: tagsTable.id }),
-
-   [created] = inserted
+      .insert(tagsTable)
+      .values({
+        userId: input.userId,
+        name: input.name.display,
+        normalizedName: input.name.normalized,
+        pinned: input.pinned,
+        sortOrder: input.sortOrder,
+        color: input.color
+      })
+      .onConflictDoNothing({
+        target: [tagsTable.userId, tagsTable.normalizedName]
+      })
+      .returning({ id: tagsTable.id }),
+    [created] = inserted
   if (created === undefined) {
     return { kind: 'name-conflict' }
   }

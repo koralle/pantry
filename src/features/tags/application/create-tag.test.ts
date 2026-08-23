@@ -58,11 +58,11 @@ describe('toCreateTagCommand', () => {
 describe('executeCreateTag', () => {
   test('returns created tag id without touching drizzle', async () => {
     const id = parseTagId(12),
-     result = await executeCreateTag({
-      insertTag: fakeInsertTag({ kind: 'created', id }),
-      userId: parseUserId('user-1'),
-      command: toCreateTagCommand(parseInput({ name: 'Inbox' }))
-    })
+      result = await executeCreateTag({
+        insertTag: fakeInsertTag({ kind: 'created', id }),
+        userId: parseUserId('user-1'),
+        command: toCreateTagCommand(parseInput({ name: 'Inbox' }))
+      })
 
     expect(result).toEqual({
       ok: true,
@@ -86,14 +86,14 @@ describe('executeCreateTag', () => {
   test('passes explicit command values to insertTag', async () => {
     let received: InsertTagInput | undefined
     const id = parseTagId(3),
-     command = toCreateTagCommand(
-      parseInput({
-        name: 'Later',
-        pinned: false,
-        sortOrder: 0,
-        color: null
-      })
-    )
+      command = toCreateTagCommand(
+        parseInput({
+          name: 'Later',
+          pinned: false,
+          sortOrder: 0,
+          color: null
+        })
+      )
 
     await executeCreateTag({
       insertTag: async (input) => {
