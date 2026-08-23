@@ -57,6 +57,8 @@ export default defineConfig({
     'import/no-relative-parent-imports': 'off',
 
     // Style
+    // 既定の always は const をカンマ結合する。1変数1宣言のままにする。
+    'one-var': 'off',
     'func-style': 'off',
     'id-length': 'off',
     'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],

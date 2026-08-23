@@ -24,7 +24,11 @@ type TagFormProps = {
   readonly submitLabel: string
   readonly pendingLabel: string
   readonly onSubmit: (values: TagFormValues) => Promise<void>
-  readonly mapError: (error: unknown) => string
+  /**
+   * Null のときはフォームエラーを出さない。
+   * セッション期限切れはリダイレクト側の仕事で、ここが汎用失敗文を重ねないため。
+   */
+  readonly mapError: (error: unknown) => string | null
 }
 
 export function TagForm({
@@ -39,7 +43,6 @@ export function TagForm({
   const [color, setColor] = useState<string | null>(initialValues.color)
   const [sortOrder, setSortOrder] = useState(initialValues.sortOrder)
   const [formError, setFormError] = useState<string | null>(null)
-
   const form = useForm({
     initialInput: {
       name: initialValues.name
@@ -48,7 +51,6 @@ export function TagForm({
       name: v.string()
     })
   })
-
   const [, submit, isPending] = useActionState(async () => {
     setFormError(null)
     const name = getInput(form, { path: ['name'] }) ?? ''
@@ -56,7 +58,10 @@ export function TagForm({
     try {
       await onSubmit({ name, pinned, color, sortOrder })
     } catch (error) {
-      setFormError(mapError(error))
+      const message = mapError(error)
+      if (message !== null) {
+        setFormError(message)
+      }
     }
   }, null)
 
