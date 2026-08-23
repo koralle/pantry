@@ -72,7 +72,7 @@ describe('executeUpdateTag', () => {
   })
 
   test('全command値とuserIdをportへ渡す', async () => {
-    let received: UpdateTagInput | undefined
+    let received: UpdateTagInput | undefined = undefined
 
     await executeUpdateTag({
       updateTag: async (input) => {
