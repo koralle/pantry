@@ -33,6 +33,9 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
     findTagById: async () => null,
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
     fetchPageTitle: async () => ({ kind: 'unavailable' }),
+    listBookmarks: async () => [],
+    getBookmarkDetail: async () => null,
+    softDeleteBookmark: async () => ({ kind: 'bookmark-not-found' }),
     updateBookmark: async () => ({
       kind: 'updated',
       id: '019fae92-3bb0-78cd-b488-65ce0e26a939'
