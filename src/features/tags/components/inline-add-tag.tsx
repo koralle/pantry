@@ -1,14 +1,17 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
+import { orpc } from '../../../rpc/query'
 import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledInput } from '../../../shared/components/styled-input'
 import { StyledLabel } from '../../../shared/components/styled-label'
 import { field, fieldError, fieldUrlRow } from '../../../styles/form'
-import { addTag } from '../functions/add-tag'
+import { getCreateTagErrorMessage } from '../lib/get-create-tag-error-message'
+import { refreshAfterCreateTag } from '../lib/refresh-after-create-tag'
 import { tagNameSchema } from '../lib/tag-name-schema'
 
 const inlineAddTag = css({
@@ -17,11 +20,22 @@ const inlineAddTag = css({
   gap: '2'
 })
 
+/**
+ * 一覧上の短い作成経路。専用画面と同じ error code 契約に載せ、
+ * `TagNameAlreadyExistsError` の class 名分岐を残さない。
+ */
 export function InlineAddTag() {
-  const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [tagError, setTagError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
+  const navigate = useNavigate(),
+   router = useRouter(),
+   [name, setName] = useState(''),
+   [tagError, setTagError] = useState<string | null>(null),
+   mutation = useMutation(
+    orpc.tags.create.mutationOptions({
+      onSuccess: () => {
+        refreshAfterCreateTag(router)
+      }
+    })
+  )
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -34,19 +48,15 @@ export function InlineAddTag() {
       return
     }
 
-    setIsPending(true)
     try {
-      await addTag({ data: { name } })
+      await mutation.mutateAsync({ name })
       setName('')
       await navigate({ to: '/tags', search: { limit: 50, offset: 0 } })
     } catch (error) {
-      if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
-        setTagError('そのタグ名は既に存在します')
-      } else {
-        setTagError('タグの作成に失敗しました')
+      const message = getCreateTagErrorMessage(error)
+      if (message !== null) {
+        setTagError(message)
       }
-    } finally {
-      setIsPending(false)
     }
   }
 
@@ -64,16 +74,16 @@ export function InlineAddTag() {
             onChange={(event) => {
               setName(event.target.value)
             }}
-            disabled={isPending}
+            disabled={mutation.isPending}
           />
           <StyledButton
             type='submit'
-            isDisabled={isPending}>
+            isDisabled={mutation.isPending}>
             <Plus
               size={16}
               aria-hidden
             />{' '}
-            {isPending ? '追加中...' : '追加'}
+            {mutation.isPending ? '追加中...' : '追加'}
           </StyledButton>
         </div>
       </div>

@@ -1,13 +1,28 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 
+import { orpc } from '../../../rpc/query'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { workbench, workbenchLead, workbenchNav, workbenchTitle } from '../../../styles/workbench'
-import { addTag } from '../functions/add-tag'
+import { getCreateTagErrorMessage } from '../lib/get-create-tag-error-message'
+import { refreshAfterCreateTag } from '../lib/refresh-after-create-tag'
 import { TagForm } from './tag-form'
 
+/**
+ * CreateTag の画面経路。Server Function の Error.name 判定を捨て、
+ * typed error code と best-effort な loader 再取得だけに揃える。
+ */
 export function NewTagScreen() {
-  const navigate = useNavigate()
+  const navigate = useNavigate(),
+   router = useRouter(),
+   mutation = useMutation(
+    orpc.tags.create.mutationOptions({
+      onSuccess: () => {
+        refreshAfterCreateTag(router)
+      }
+    })
+  )
 
   return (
     <div className={workbench}>
@@ -33,13 +48,11 @@ export function NewTagScreen() {
         submitLabel='登録'
         pendingLabel='登録中...'
         onSubmit={async ({ name, pinned, color, sortOrder }) => {
-          const { id } = await addTag({
-            data: {
-              name,
-              pinned,
-              color,
-              sortOrder
-            }
+          const { id } = await mutation.mutateAsync({
+            name,
+            pinned,
+            color,
+            sortOrder
           })
 
           await navigate({
@@ -48,12 +61,7 @@ export function NewTagScreen() {
             state: { newTagCreated: true }
           })
         }}
-        mapError={(error) => {
-          if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
-            return 'そのタグ名は既に存在します'
-          }
-          return error instanceof Error ? error.message : 'タグの作成に失敗しました'
-        }}
+        mapError={getCreateTagErrorMessage}
       />
     </div>
   )

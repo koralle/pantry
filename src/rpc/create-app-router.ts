@@ -1,0 +1,89 @@
+import { os } from '@orpc/server'
+import * as v from 'valibot'
+
+import { userIdSchema } from '../features/auth/domain/auth-values'
+import type { UserId } from '../features/auth/domain/auth-values'
+import {
+  createTagInputSchema,
+  executeCreateTag,
+  toCreateTagCommand
+} from '../features/tags/application/create-tag'
+import type { InsertTag } from '../features/tags/application/create-tag'
+
+type RpcSession = {
+  readonly user: {
+    readonly id: string
+  }
+}
+
+type GetSession = (headers: Headers) => Promise<RpcSession | null>
+
+/**
+ * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
+ * RPC テストは session と insert を差し替え、Turso を立てずに契約だけを叩く。
+ */
+export type AppRouterDeps = {
+  readonly getSession: GetSession
+  readonly insertTag: InsertTag
+}
+
+/**
+ * 認証失敗は Result に入れない。回復できない拒否は oRPC の `UNAUTHORIZED` として投げる。
+ * 同名衝突だけ Application の Result から 409 へ写す。想定外は包み直さず 500 に抜ける。
+ */
+export function createAppRouter(deps: AppRouterDeps) {
+  const base = os.$context<{ headers: Headers }>().errors({
+    UNAUTHORIZED: {
+      status: 401
+    }
+  }),
+
+   requireAuth = base.middleware(async ({ context, next, errors }) => {
+    const session = await deps.getSession(context.headers)
+    if (session == null) {
+      throw errors.UNAUTHORIZED()
+    }
+
+    return next({
+      context: {
+        userId: v.parse(userIdSchema, session.user.id)
+      }
+    })
+  }),
+
+   createTag = base
+    .use(requireAuth)
+    .input(createTagInputSchema)
+    .errors({
+      'tag-name-already-exists': {
+        status: 409
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeCreateTag({
+        insertTag: deps.insertTag,
+        userId: context.userId as UserId,
+        command: toCreateTagCommand(input)
+      })
+
+      if (!result.ok) {
+        throw errors['tag-name-already-exists']()
+      }
+
+      return {
+        id: result.value.id
+      }
+    })
+
+  return {
+    tags: {
+      create: createTag
+    }
+  }
+}
+
+/**
+ * 本番 router の実装モジュールは import しない。
+ * 型だけ共有し、client bundle に getDB / getAuth が混ざらないようにする。
+ */
+export type AppRouter = ReturnType<typeof createAppRouter>
