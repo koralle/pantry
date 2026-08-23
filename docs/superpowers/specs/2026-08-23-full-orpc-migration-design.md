@@ -34,7 +34,7 @@ Server Function と oRPC の共存期間を、独立してレビュー可能な 
 
 ## 棚卸し
 
-PR #224 merge 後に残る `createServerFn` は次の 13 件である。
+PR #224 merge 後に残る `createServerFn` は次の 14 件である。
 
 | Topic     | Server Function                                                                                                                 |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -78,13 +78,17 @@ flowchart LR
   CLIENT[Runtime-selected oRPC client]
   PROC[oRPC procedure]
   AUTH[requireAuth]
-  UC[UseCase or query service]
+  UC[Mutation UseCase]
+  QUERY[Read query service]
   PORT[Narrow function port]
   INFRA[Drizzle / HTTP adapter]
   DB[(Turso)]
 
-  UI --> TQ --> CLIENT --> PROC --> AUTH --> UC
+  UI --> TQ --> CLIENT --> PROC --> AUTH
+  AUTH --> UC
+  AUTH --> QUERY
   UC --> PORT --> INFRA --> DB
+  QUERY --> DB
 ```
 
 Application は `AppDb`、Drizzle、oRPC、HTTP、Cookie、React、TanStack Query を import しない。
