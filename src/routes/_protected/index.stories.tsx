@@ -6,7 +6,6 @@ import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmar
 import type { BookmarkListItem } from '../../features/bookmarks/lib/attach-bookmark-tags'
 import { writeListLayout } from '../../features/bookmarks/lib/list-layout-preference'
 import type { BookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
-import { touchTagLastUsed } from '../../features/tags/functions/touch-tag-last-used'
 import type { ShelfTag } from '../../features/tags/lib/tag-shelf'
 import preview from '../../storybook/preview'
 import { Route as ProtectedLayoutRoute } from '../_protected'
@@ -197,10 +196,8 @@ function neverPromise<T>(): Promise<T> {
 
 function stubListApis() {
   mocked(fetchBookmarks).mockReset()
-  mocked(touchTagLastUsed).mockReset()
 
   mocked(fetchBookmarks).mockResolvedValue(bookmarks)
-  mocked(touchTagLastUsed).mockResolvedValue({ ok: true as const })
 }
 
 function stubPagedBookmarks(next: BookmarkListItem[] | Promise<BookmarkListItem[]> | Error) {

@@ -26,6 +26,7 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
     getSession,
     insertTag,
     updateTag,
+    touchTag: async () => ({ kind: 'touched' }),
     listShelfTags: async () => [],
     listTags: async () => [],
     findTagById: async () => null
@@ -87,6 +88,7 @@ describe('CreateTag RPC', () => {
       getSession: async () => null,
       insertTag: async () => ({ kind: 'name-conflict' }),
       updateTag,
+      touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
       findTagById: async () => null
@@ -111,6 +113,7 @@ describe('CreateTag RPC', () => {
       getSession,
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
       updateTag,
+      touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
       findTagById: async () => null

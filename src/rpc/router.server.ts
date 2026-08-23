@@ -9,6 +9,7 @@ import { insertTag } from '../features/tags/persistence/insert-tag'
 import { selectShelfTags } from '../features/tags/persistence/select-shelf-tags'
 import { selectTagById } from '../features/tags/persistence/select-tag-by-id'
 import { selectTags } from '../features/tags/persistence/select-tags'
+import { touchTag } from '../features/tags/persistence/touch-tag'
 import { updateTag } from '../features/tags/persistence/update-tag'
 import { createAppRouter } from './create-app-router'
 
@@ -27,6 +28,7 @@ export const appRouter = createAppRouter({
   },
   insertTag: async (input) => insertTag(getDB(), input),
   updateTag: async (input) => updateTag(getDB(), input),
+  touchTag: async (input) => touchTag(getDB(), input),
   listShelfTags: async (userId) => selectShelfTags(getDB(), userId),
   listTags: async (userId, page) => selectTags(getDB(), userId, page),
   findTagById: async (userId, id) => selectTagById(getDB(), userId, id)
