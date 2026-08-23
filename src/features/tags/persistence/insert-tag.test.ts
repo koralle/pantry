@@ -92,7 +92,7 @@ async function insertUser(db: Awaited<ReturnType<typeof createMemoryDb>>, id: st
 }
 
 describe('insertTag', () => {
-  test('same user and normalized name returns name-conflict', async () => {
+  test('同一ユーザーの正規化名が重なると name-conflict を返す', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
 
@@ -103,7 +103,7 @@ describe('insertTag', () => {
     expect(second).toEqual({ kind: 'name-conflict' })
   })
 
-  test('a different user can create the same tag name', async () => {
+  test('別ユーザーなら同じタグ名を作成できる', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
     await insertUser(db, 'user-b')
@@ -115,7 +115,7 @@ describe('insertTag', () => {
     expect(second.kind).toBe('created')
   })
 
-  test('concurrent inserts for the same user and name yield created and name-conflict', async () => {
+  test('同一ユーザー・同一名の同時 INSERT は created と name-conflict になる', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
 
@@ -130,7 +130,7 @@ describe('insertTag', () => {
     expect(rows).toHaveLength(1)
   })
 
-  test('does not import the generic unique-error classifier', () => {
+  test('汎用 UNIQUE 判定は import しない', () => {
     const source = readFileSync(join(persistenceDir, 'insert-tag.ts'), 'utf8')
     expect(source).not.toContain('isSqliteUniqueConstraintError')
   })

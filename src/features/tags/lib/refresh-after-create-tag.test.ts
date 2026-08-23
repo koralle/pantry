@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from 'vitest'
 import { refreshAfterCreateTag } from './refresh-after-create-tag'
 
 describe('refreshAfterCreateTag', () => {
-  test('does not reject when route invalidation fails', async () => {
+  test('route の再取得が失敗しても reject しない', async () => {
     const invalidate = vi.fn(() => Promise.reject(new Error('loader failed'))),
       consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 

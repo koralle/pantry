@@ -1,9 +1,10 @@
 import { createORPCClient, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import type { RouterClient } from '@orpc/server'
-import { describe, expect, test, vi } from 'vitest'
+import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
 import type { InsertTag } from '../features/tags/application/create-tag'
+import type { TagId } from '../features/tags/domain/tag-values'
 import { createAppRouter } from './create-app-router'
 import type { AppRouter } from './create-app-router'
 import { handleRpcRequest } from './handle-request.server'
@@ -45,7 +46,14 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
 }
 
 describe('CreateTag RPC', () => {
-  test('invalid input returns 4xx', async () => {
+  test('create の戻り値 id は TagId ではなく number である', () => {
+    type CreateOutput = Awaited<ReturnType<RouterClient<AppRouter>['tags']['create']>>
+
+    expectTypeOf<CreateOutput['id']>().toEqualTypeOf<number>()
+    expectTypeOf<CreateOutput['id']>().not.toEqualTypeOf<TagId>()
+  })
+
+  test('不正な入力は 4xx を返す', async () => {
     const router = authenticatedRouter(async () => ({ kind: 'name-conflict' })),
       { client, getResponse } = createTestClient(router)
 
@@ -54,7 +62,7 @@ describe('CreateTag RPC', () => {
     expect(getResponse().status).toBeLessThan(500)
   })
 
-  test('unauthenticated request returns 401 UNAUTHORIZED', async () => {
+  test('未認証のリクエストは 401 UNAUTHORIZED を返す', async () => {
     const router = createAppRouter({
         getSession: async () => null,
         insertTag: async () => ({ kind: 'name-conflict' })
@@ -70,7 +78,7 @@ describe('CreateTag RPC', () => {
     expect((rejected as ORPCError<string, unknown>).code).toBe('UNAUTHORIZED')
   })
 
-  test('Cookie headers reach the auth middleware', async () => {
+  test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
         expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
         return { user: { id: userId } }
@@ -86,7 +94,7 @@ describe('CreateTag RPC', () => {
     expect(getSession).toHaveBeenCalledOnce()
   })
 
-  test('duplicate name returns 409 tag-name-already-exists', async () => {
+  test('同名は 409 tag-name-already-exists を返す', async () => {
     const router = authenticatedRouter(async () => ({ kind: 'name-conflict' })),
       { client, getResponse } = createTestClient(router),
       rejected = await client.tags.create({ name: 'Work' }).then(
@@ -99,7 +107,7 @@ describe('CreateTag RPC', () => {
     expect((rejected as ORPCError<string, unknown>).code).toBe('tag-name-already-exists')
   })
 
-  test('unknown exception returns 500', async () => {
+  test('想定外の例外は 500 を返す', async () => {
     const router = authenticatedRouter(async () => {
         throw new Error('disk exploded')
       }),
@@ -109,7 +117,7 @@ describe('CreateTag RPC', () => {
     expect(getResponse().status).toBe(500)
   })
 
-  test('handleRpcRequest returns the handler.handle() Response', async () => {
+  test('handleRpcRequest は handler.handle() の Response を返す', async () => {
     const router = authenticatedRouter(async () => ({ kind: 'created', id: 7 as never })),
       { client, getResponse } = createTestClient(router)
 

@@ -27,7 +27,7 @@ function fakeInsertTag(output: InsertTagOutput): InsertTag {
 }
 
 describe('toCreateTagCommand', () => {
-  test('omitted pinned, sortOrder, and color become false, 0, and null', () => {
+  test('省略した pinned / sortOrder / color は false / 0 / null になる', () => {
     const command = toCreateTagCommand(parseInput({ name: 'Work' }))
 
     expect(command.name).toEqual(v.parse(tagNameSchema, 'Work'))
@@ -36,7 +36,7 @@ describe('toCreateTagCommand', () => {
     expect(command.color).toBeNull()
   })
 
-  test('explicit pinned=false, sortOrder=0, and color=null are kept as command values', () => {
+  test('明示した pinned=false / sortOrder=0 / color=null はコマンド値として残る', () => {
     const command = toCreateTagCommand(
       parseInput({
         name: 'Work',
@@ -56,7 +56,7 @@ describe('toCreateTagCommand', () => {
 })
 
 describe('executeCreateTag', () => {
-  test('returns created tag id without touching drizzle', async () => {
+  test('Drizzle に触れずに作成したタグ ID を返す', async () => {
     const id = parseTagId(12),
       result = await executeCreateTag({
         insertTag: fakeInsertTag({ kind: 'created', id }),
@@ -70,7 +70,7 @@ describe('executeCreateTag', () => {
     })
   })
 
-  test('maps name-conflict to tag-name-already-exists', async () => {
+  test('name-conflict を tag-name-already-exists に写す', async () => {
     const result = await executeCreateTag({
       insertTag: fakeInsertTag({ kind: 'name-conflict' }),
       userId: parseUserId('user-1'),
@@ -83,7 +83,7 @@ describe('executeCreateTag', () => {
     })
   })
 
-  test('passes explicit command values to insertTag', async () => {
+  test('明示したコマンド値を insertTag へ渡す', async () => {
     let received: InsertTagInput | undefined
     const id = parseTagId(3),
       command = toCreateTagCommand(

@@ -28,6 +28,15 @@ export type AppRouterDeps = {
 }
 
 /**
+ * HTTP 上の CreateTag 成功形。Application の branded `TagId` は載せない。
+ * brand は型システムの印で、JSON には残らない。client へ TagId を出すと、
+ * 画面が Domain の組み立てを知っていることになってしまう。
+ */
+export type CreateTagOutput = {
+  readonly id: number
+}
+
+/**
  * 認証失敗は Result に入れない。回復できない拒否は oRPC の `UNAUTHORIZED` として投げる。
  * 同名衝突だけ Application の Result から 409 へ写す。想定外は包み直さず 500 に抜ける。
  */
@@ -68,9 +77,11 @@ export function createAppRouter(deps: AppRouterDeps) {
           throw errors['tag-name-already-exists']()
         }
 
-        return {
-          id: result.value.id
+        const output: CreateTagOutput = {
+          id: Number(result.value.id)
         }
+
+        return output
       })
 
   return {
