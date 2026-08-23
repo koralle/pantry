@@ -10,6 +10,18 @@ Draft。
 
 pilot 完了後に `Adopt / Modify / Reject` を判断する。
 
+## 既存文書との整合
+
+`docs/architecture.md` の設計原則は、ブラウザのデータ操作を TanStack Start Server Function に限定し、独立した HTTP API を持たないと定めている。
+
+この pilot が導入する `/api/rpc` は第一のクライアントであるブラウザ向けの HTTP 経路であり、この原則と矛盾する。pilot のあいだは、architecture.md を現行の Server Function 構成の正本とし、本 RFC は試行の提案として扱う。なお architecture.md §8 の「MVP外：外部クライアント向けのHTTP API」には抵触しない。`/api/rpc` は自前のブラウザクライアント専用であり、外部向け API にはしないためである。
+
+pilot 結果と文書更新の対応は次のとおり。
+
+- `Adopt`: `docs/architecture.md` の §2 設計原則、§3 システム構成、および AGENTS.md の設計方針を、Command 経路の HTTP RPC 化を前提に改訂する
+- `Modify`: 採用した範囲に合わせて、上記と同じ箇所を改訂する
+- `Reject`: 既存文書は変更しない
+
 ## 目的
 
 現在の CreateTag は TanStack Start Server Function の中に、認証、DB 操作、重複判定、エラー変換が集まっている。
@@ -56,7 +68,7 @@ flowchart LR
   DB[(Turso)]
 
   UI --> TQ --> CLIENT --> RPC --> AUTH --> UC --> PORT
-  ADAPTER --> PORT
+  ADAPTER -. implements .-> PORT
   ADAPTER --> DB
 ```
 
@@ -399,7 +411,13 @@ UpdateTag の `edit-tag-form.tsx` はこの pilot の対象外である。
 
 DB commit と route loader refresh は別々の成功条件として扱う。**作成が成功したあとの invalidate 失敗を、CreateTag mutation の失敗へ変換しない。**
 
-TanStack Query の `onSuccess` では、invalidate の Promise を return / await しない。
+TanStack Query の `onSuccess` では、invalidate の Promise を return / await しない。mutation options の出所は、Client 境界で定義した client から生成する TanStack Query 用の `orpc` utils である。
+
+```ts
+import { createORPCReactQueryUtils } from '@orpc/react-query'
+
+export const orpc = createORPCReactQueryUtils(client)
+```
 
 ```ts
 const router = useRouter()
@@ -469,6 +487,8 @@ production build の client output に次を含めない。
 `AppRouter` は type-only import のままにし、runtime import しない。
 
 ## 性能の基準
+
+この pilot で新規に依存するのは `@orpc/server`、`@orpc/client`、および TanStack Query 統合パッケージ（oRPC v1 では `@orpc/react-query`）である。client bundle の増分上限は、主にこれらの client 側コードで消える前提の閾値である。
 
 実装 PR では **変更前の `main` と pilot head を同じ環境・同じ計測手順で測る**。baseline のない「体感で問題なし」を採用理由にしない。
 
