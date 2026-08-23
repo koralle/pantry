@@ -11,9 +11,10 @@ import type { AppRouter } from './create-app-router'
 import { handleRpcRequest } from './handle-request.server'
 
 const userId = 'user-1'
-const updateTag: UpdateTag = async () => ({ kind: 'not-found' })
+const input = { id: 7, name: 'Work', pinned: false, sortOrder: 0, color: null }
+const insertTag: InsertTag = async () => ({ kind: 'name-conflict' })
 
-function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
+function authenticatedRouter(updateTag: UpdateTag, getSession = vi.fn()) {
   getSession.mockResolvedValue({ user: { id: userId } })
   return createAppRouter({
     getSession,
@@ -22,18 +23,15 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
   })
 }
 
-/**
- * 本物の RPCLink を、process 内の handleRpcRequest へ繋ぐ。
- * HTTP サーバーや Turso を立てず、クライアント契約とステータスだけを見るため。
- */
 function createTestClient(router: AppRouter, headers?: HeadersInit) {
-  let lastResponse: Response | undefined
+  let lastResponse: Response | undefined = undefined
   const link = new RPCLink({
     url: 'https://pantry.test/api/rpc',
     headers: () => new Headers(headers),
     fetch: async (request) => {
-      lastResponse = await handleRpcRequest(request, router)
-      return lastResponse
+      const response = await handleRpcRequest(request, router)
+      lastResponse = response.clone()
+      return response
     }
   })
   const client: RouterClient<AppRouter> = createORPCClient(link)
@@ -48,19 +46,19 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
   }
 }
 
-describe('CreateTag RPC', () => {
-  test('create の戻り値 id は TagId ではなく number である', () => {
-    type CreateOutput = Awaited<ReturnType<RouterClient<AppRouter>['tags']['create']>>
+describe('UpdateTag RPC', () => {
+  test('update の戻り値 id は TagId ではなく number である', () => {
+    type UpdateOutput = Awaited<ReturnType<RouterClient<AppRouter>['tags']['update']>>
 
-    expectTypeOf<CreateOutput['id']>().toEqualTypeOf<number>()
-    expectTypeOf<CreateOutput['id']>().not.toEqualTypeOf<TagId>()
+    expectTypeOf<UpdateOutput['id']>().toEqualTypeOf<number>()
+    expectTypeOf<UpdateOutput['id']>().not.toEqualTypeOf<TagId>()
   })
 
-  test('不正な入力は 4xx を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'name-conflict' }))
+  test('空の name は 4xx を返す', async () => {
+    const router = authenticatedRouter(async () => ({ kind: 'not-found' }))
     const { client, getResponse } = createTestClient(router)
 
-    await expect(client.tags.create({ name: '' })).rejects.toBeInstanceOf(Error)
+    await expect(client.tags.update({ ...input, name: '' })).rejects.toBeInstanceOf(Error)
     expect(getResponse().status).toBeGreaterThanOrEqual(400)
     expect(getResponse().status).toBeLessThan(500)
   })
@@ -68,11 +66,11 @@ describe('CreateTag RPC', () => {
   test('未認証のリクエストは 401 UNAUTHORIZED を返す', async () => {
     const router = createAppRouter({
       getSession: async () => null,
-      insertTag: async () => ({ kind: 'name-conflict' }),
-      updateTag
+      insertTag,
+      updateTag: async () => ({ kind: 'not-found' })
     })
     const { client, getResponse } = createTestClient(router)
-    const rejected = await client.tags.create({ name: 'Work' }).then(
+    const rejected = await client.tags.update(input).then(
       () => null,
       (error: unknown) => error
     )
@@ -82,19 +80,19 @@ describe('CreateTag RPC', () => {
     expect((rejected as ORPCError<string, unknown>).code).toBe('UNAUTHORIZED')
   })
 
-  test('Cookie ヘッダーが認証 middleware に届く', async () => {
+  test('Cookie ヘッダーが認証 middleware に一度だけ届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
       return { user: { id: userId } }
     })
     const router = createAppRouter({
       getSession,
-      insertTag: async () => ({ kind: 'created', id: 1 as never }),
-      updateTag
+      insertTag,
+      updateTag: async () => ({ kind: 'updated', id: 7 as never })
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 
-    await client.tags.create({ name: 'Work' })
+    await client.tags.update(input)
 
     expect(getSession).toHaveBeenCalledOnce()
   })
@@ -102,7 +100,7 @@ describe('CreateTag RPC', () => {
   test('同名は 409 tag-name-already-exists を返す', async () => {
     const router = authenticatedRouter(async () => ({ kind: 'name-conflict' }))
     const { client, getResponse } = createTestClient(router)
-    const rejected = await client.tags.create({ name: 'Work' }).then(
+    const rejected = await client.tags.update(input).then(
       () => null,
       (error: unknown) => error
     )
@@ -112,22 +110,35 @@ describe('CreateTag RPC', () => {
     expect((rejected as ORPCError<string, unknown>).code).toBe('tag-name-already-exists')
   })
 
-  test('想定外の例外は 500 を返す', async () => {
+  test('存在しないタグは 404 tag-not-found を返す', async () => {
+    const router = authenticatedRouter(async () => ({ kind: 'not-found' }))
+    const { client, getResponse } = createTestClient(router)
+    const rejected = await client.tags.update(input).then(
+      () => null,
+      (error: unknown) => error
+    )
+
+    expect(getResponse().status).toBe(404)
+    expect(rejected).toBeInstanceOf(ORPCError)
+    expect((rejected as ORPCError<string, unknown>).code).toBe('tag-not-found')
+  })
+
+  test('想定外の例外は 500 を返し秘密のメッセージを漏らさない', async () => {
+    const secret = 'do-not-leak-update-secret'
     const router = authenticatedRouter(async () => {
-      throw new Error('disk exploded')
+      throw new Error(secret)
     })
     const { client, getResponse } = createTestClient(router)
 
-    await expect(client.tags.create({ name: 'Work' })).rejects.toBeInstanceOf(Error)
+    await expect(client.tags.update(input)).rejects.toBeInstanceOf(Error)
     expect(getResponse().status).toBe(500)
+    await expect(getResponse().text()).resolves.not.toContain(secret)
   })
 
-  test('handleRpcRequest は handler.handle() の Response を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'created', id: 7 as never }))
-    const { client, getResponse } = createTestClient(router)
+  test('成功時は plain な id を返す', async () => {
+    const router = authenticatedRouter(async () => ({ kind: 'updated', id: 7 as never }))
+    const { client } = createTestClient(router)
 
-    await expect(client.tags.create({ name: 'Work' })).resolves.toEqual({ id: 7 })
-    expect(getResponse()).toBeInstanceOf(Response)
-    expect(getResponse().status).toBe(200)
+    await expect(client.tags.update(input)).resolves.toEqual({ id: 7 })
   })
 })

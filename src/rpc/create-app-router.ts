@@ -9,6 +9,12 @@ import {
   toCreateTagCommand
 } from '../features/tags/application/create-tag'
 import type { InsertTag } from '../features/tags/application/create-tag'
+import {
+  executeUpdateTag,
+  toUpdateTagCommand,
+  updateTagInputSchema
+} from '../features/tags/application/update-tag'
+import type { UpdateTag } from '../features/tags/application/update-tag'
 
 type RpcSession = {
   readonly user: {
@@ -20,11 +26,12 @@ type GetSession = (headers: Headers) => Promise<RpcSession | null>
 
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
- * RPC テストは session と insert を差し替え、Turso を立てずに契約だけを叩く。
+ * RPC テストは session と永続化処理を差し替え、Turso を立てずに契約だけを叩く。
  */
 export type AppRouterDeps = {
   readonly getSession: GetSession
   readonly insertTag: InsertTag
+  readonly updateTag: UpdateTag
 }
 
 /**
@@ -36,9 +43,13 @@ export type CreateTagOutput = {
   readonly id: number
 }
 
+export type UpdateTagOutput = {
+  readonly id: number
+}
+
 /**
  * 認証失敗は Result に入れない。回復できない拒否は oRPC の `UNAUTHORIZED` として投げる。
- * 同名衝突だけ Application の Result から 409 へ写す。想定外は包み直さず 500 に抜ける。
+ * Application の既知エラーだけ 409 / 404 へ写す。想定外は包み直さず 500 に抜ける。
  */
 export function createAppRouter(deps: AppRouterDeps) {
   const base = os.$context<{ headers: Headers }>().errors({
@@ -83,10 +94,42 @@ export function createAppRouter(deps: AppRouterDeps) {
 
       return output
     })
+  const updateTag = base
+    .use(requireAuth)
+    .input(updateTagInputSchema)
+    .errors({
+      'tag-name-already-exists': {
+        status: 409
+      },
+      'tag-not-found': {
+        status: 404
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeUpdateTag({
+        updateTag: deps.updateTag,
+        userId: context.userId as UserId,
+        command: toUpdateTagCommand(input)
+      })
+
+      if (!result.ok) {
+        if (result.error.code === 'tag-name-already-exists') {
+          throw errors['tag-name-already-exists']()
+        }
+        throw errors['tag-not-found']()
+      }
+
+      const output: UpdateTagOutput = {
+        id: Number(result.value.id)
+      }
+
+      return output
+    })
 
   return {
     tags: {
-      create: createTag
+      create: createTag,
+      update: updateTag
     }
   }
 }
