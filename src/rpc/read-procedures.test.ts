@@ -71,12 +71,12 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
 }
 
 async function rejection(promise: Promise<unknown>): Promise<ORPCError<string, unknown>> {
-  const error = await promise.then(
+  const caught = await promise.then(
     () => null,
     (error: unknown) => error
   )
-  expect(error).toBeInstanceOf(Error)
-  return error as ORPCError<string, unknown>
+  expect(caught).toBeInstanceOf(Error)
+  return caught as ORPCError<string, unknown>
 }
 
 describe('auth.session RPC', () => {
