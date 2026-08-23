@@ -1,10 +1,9 @@
 import { useState } from 'react'
 
-import type { ExecuteUpdateBookmark } from '../../application/execute-update-bookmark'
-import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
-import type { BookmarkId } from '../../domain/bookmark-values'
+import type { BookmarkUrl } from '../../domain/bookmark-values'
+import type { UpdateBookmarkFailureCode } from '../../lib/update-bookmark-failure'
 import { buildUpdateBookmarkCommand } from './bookmark-editor-command'
-import { mapUpdateBookmarkError } from './bookmark-editor-error'
+import { mapUpdateBookmarkFailure } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
 import type {
   BookmarkEditorError,
@@ -13,19 +12,42 @@ import type {
   BookmarkTitleFetchAction
 } from './bookmark-form'
 
-export type { ExecuteUpdateBookmark }
 export type { BookmarkTitleFetchAction } from './bookmark-form'
+
+/**
+ * 編集画面に必要な projection。wire 上の plain な形を保ち、
+ * Domain の branded 型はこの画面では再組み立てしない。
+ */
+export type BookmarkEditorData = {
+  readonly bookmarkId: string
+  readonly url: string
+  readonly title: string
+  readonly note: string | null
+  readonly tagIds: readonly number[]
+}
+
+export type UpdateBookmarkCommand = {
+  readonly bookmarkId: string
+  readonly url: BookmarkUrl
+  readonly title: BookmarkFormSubmitValues['title']
+  readonly note: BookmarkFormSubmitValues['note']
+  readonly tagIds: readonly number[]
+}
+
+export type BookmarkEditorSubmitResult =
+  | { readonly ok: true; readonly bookmarkId: string }
+  | { readonly ok: false; readonly failureCode: UpdateBookmarkFailureCode | null }
 
 export type BookmarkEditorProps = {
   readonly initialData: BookmarkEditorData
-  readonly onUpdateBookmark: ExecuteUpdateBookmark
-  readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
+  readonly onUpdateBookmark: (command: UpdateBookmarkCommand) => Promise<BookmarkEditorSubmitResult>
+  readonly onCompleted: (bookmarkId: string) => Promise<void>
   readonly fetchTitleAction: BookmarkTitleFetchAction
 }
 
 /**
  * BookmarkEditor は編集操作のオーケストレーター。
- * Server Function / Router / DB を直接 import せず、依存を props で注入する。
+ * oRPC / Router / DB を直接 import せず、依存を props で注入する。
  * Storybook では fake port に差し替えて画面状態を再現できる。
  */
 export function BookmarkEditor({
@@ -72,21 +94,18 @@ export function BookmarkEditor({
     // それは「保存失敗」ではない (実データは保存済み)。
     // 保存済みであることを伝える安全なメッセージへ変換し、Formisch の submit
     // Handler へ rejection を返して raw error を validation error にしない。
-    let updateResult: Awaited<ReturnType<ExecuteUpdateBookmark>>
-    try {
-      updateResult = await onUpdateBookmark(buildUpdateBookmarkCommand(initialData, values))
-    } catch {
-      setEditorError(mapUpdateBookmarkError({ code: 'unexpected-error' }))
-      return
-    }
+    const updateResult = await onUpdateBookmark(buildUpdateBookmarkCommand(initialData, values))
 
     if (!updateResult.ok) {
-      setEditorError(mapUpdateBookmarkError(updateResult.error))
+      // FailureCode null は UNAUTHORIZED。redirect が進行中のため表示は何も出さない。
+      if (updateResult.failureCode !== null) {
+        setEditorError(mapUpdateBookmarkFailure(updateResult.failureCode))
+      }
       return
     }
 
     try {
-      await onCompleted(updateResult.value.bookmarkId)
+      await onCompleted(updateResult.bookmarkId)
     } catch {
       setEditorError({
         form: {

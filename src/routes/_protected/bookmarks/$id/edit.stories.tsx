@@ -1,33 +1,84 @@
-import { expect, mocked, userEvent, waitFor, within } from 'storybook/test'
+import { ORPCError } from '@orpc/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 import * as v from 'valibot'
 
-import {
-  bookmarkIdSchema,
-  bookmarkNoteSchema,
-  bookmarkTitleSchema,
-  bookmarkUrlSchema
-} from '../../../../features/bookmarks/domain/bookmark-values'
-import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
-import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
-import { err, ok } from '../../../../shared/domain/result'
+import type { UpdateBookmark } from '../../../../features/bookmarks/application/update-bookmark'
+import { bookmarkIdSchema } from '../../../../features/bookmarks/domain/bookmark-values'
+import { createAppRouter } from '../../../../rpc/create-app-router'
+import type { AppRouter } from '../../../../rpc/create-app-router'
+import { handleRpcRequest } from '../../../../rpc/handle-request.server'
+import { orpc } from '../../../../rpc/query'
 import preview from '../../../../storybook/preview'
 import { Route } from './edit'
 
+const editorStaleTime = 5000
 const bookmarkId = '019fae92-3bb0-78cd-b488-65ce0e26a939'
 
-const editorData = {
-  bookmarkId: v.parse(bookmarkIdSchema, bookmarkId),
-  url: v.parse(bookmarkUrlSchema, 'https://zenn.dev/mizchi/books/0c55c230f5cc754c38b9'),
-  title: v.parse(
-    bookmarkTitleSchema,
-    '2020年版: なぜ仮想 DOM / 宣言的 UI という概念が、あのときの俺達の魂を震えさせたのか'
-  ),
-  note: v.parse(bookmarkNoteSchema, ''),
+const editorRecord = {
+  id: bookmarkId,
+  url: 'https://zenn.dev/mizchi/books/0c55c230f5cc754c38b9',
+  title: '2020年版: なぜ仮想 DOM / 宣言的 UI という概念が、あのときの俺達の魂を震えさせたのか',
+  note: null,
   tagIds: []
 }
 
-function neverBookmark() {
-  return new Promise<never>(() => undefined)
+type RouterDeps = Parameters<typeof createAppRouter>[0]
+
+let findBookmarkEditorDep: RouterDeps['findBookmarkEditor']
+let updateBookmarkDep: UpdateBookmark
+
+function buildRpcRouter(): AppRouter {
+  return createAppRouter({
+    getSession: async () => ({ user: { id: 'story-user' } }),
+    insertTag: async () => ({ kind: 'created', id: 1 as never }),
+    updateBookmark: updateBookmarkDep,
+    findBookmarkEditor: findBookmarkEditorDep
+  })
+}
+
+/**
+ * Storybook には RPC 受け口がないため、/api/rpc への fetch だけを
+ * process 内の handleRpcRequest に繋ぎ替える。client 契約ごと exercise する。
+ * browser client は呼び出し毎に globalThis.fetch を解決するので、差し替えが効く。
+ */
+let originalFetch: typeof globalThis.fetch | undefined = undefined
+
+function installRpcFetchStub(): void {
+  if (originalFetch === undefined) {
+    originalFetch = globalThis.fetch.bind(globalThis)
+  }
+  const passthroughFetch = originalFetch
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : (input instanceof URL ? input.href : input.url)
+    if (new URL(url, window.location.origin).pathname === '/api/rpc') {
+      return handleRpcRequest(new Request(url, init), buildRpcRouter())
+    }
+    return passthroughFetch(input, init)
+  }) as typeof globalThis.fetch
+}
+
+const storyQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false
+    }
+  }
+})
+
+async function loadEditorForStory(id: string): Promise<{ kind: 'ok' } | { kind: 'not-found' }> {
+  try {
+    await storyQueryClient.ensureQueryData(
+      orpc.bookmarks.editor.queryOptions({ input: { id }, staleTime: editorStaleTime })
+    )
+    return { kind: 'ok' }
+  } catch (error: unknown) {
+    // 本物の loader と同じ判定。404 だけ not-found 表示へ落とし、他は error boundary へ投げる。
+    if (error instanceof ORPCError && error.defined && error.code === 'bookmark-not-found') {
+      return { kind: 'not-found' }
+    }
+    throw error
+  }
 }
 
 const meta = preview.meta({
@@ -41,14 +92,30 @@ const meta = preview.meta({
           id: bookmarkId
         },
         routeOverrides: {
-          '/_protected': {}
+          '/_protected': {},
+          '/_protected/bookmarks/$id/edit': {
+            loader: (context: { params: { id: string } }) => loadEditorForStory(context.params.id)
+          }
         }
       }
     }
   },
+  decorators: [
+    (Story) => (
+      <QueryClientProvider client={storyQueryClient}>
+        <Story />
+      </QueryClientProvider>
+    )
+  ],
   beforeEach: async () => {
-    mocked(loadBookmarkForEdit).mockResolvedValue(ok(editorData))
-    mocked(updateBookmark).mockResolvedValue(ok({ bookmarkId: editorData.bookmarkId }))
+    findBookmarkEditorDep = async () =>
+      Promise.resolve({
+        ...editorRecord,
+        id: v.parse(bookmarkIdSchema, editorRecord.id)
+      })
+    updateBookmarkDep = async () => ({ kind: 'updated', id: v.parse(bookmarkIdSchema, bookmarkId) })
+    installRpcFetchStub()
+    await storyQueryClient.clear()
   }
 })
 
@@ -56,14 +123,14 @@ export const Default = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { name: 'ブックマークを編集' })).toBeInTheDocument()
-    await expect(canvas.getByLabelText('URL')).toHaveValue(String(editorData.url))
+    await expect(canvas.getByLabelText('URL')).toHaveValue(editorRecord.url)
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
   }
 })
 
 export const InitialLoading = meta.story({
   beforeEach: async () => {
-    mocked(loadBookmarkForEdit).mockImplementation(() => neverBookmark())
+    findBookmarkEditorDep = () => new Promise<never>(() => undefined)
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -75,7 +142,7 @@ export const InitialLoading = meta.story({
 
 export const BookmarkIsNotFound = meta.story({
   beforeEach: async () => {
-    mocked(loadBookmarkForEdit).mockResolvedValue(err({ code: 'bookmark-not-found' }))
+    findBookmarkEditorDep = async () => null
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -88,7 +155,7 @@ export const BookmarkIsNotFound = meta.story({
 
 export const UpdateHasDuplicateUrl = meta.story({
   beforeEach: async () => {
-    mocked(updateBookmark).mockResolvedValue(err({ code: 'duplicate-url' }))
+    updateBookmarkDep = async () => ({ kind: 'duplicate-url' })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -104,7 +171,9 @@ export const UpdateHasDuplicateUrl = meta.story({
 
 export const UpdateHasUnexpectedError = meta.story({
   beforeEach: async () => {
-    mocked(updateBookmark).mockRejectedValue(new Error('server boom'))
+    updateBookmarkDep = async () => {
+      throw new Error('server boom')
+    }
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

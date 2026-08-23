@@ -1,18 +1,24 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { ORPCError } from '@orpc/client'
+import { createTanstackQueryUtils } from '@orpc/tanstack-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, CircleDashed } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
 import * as v from 'valibot'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
-import type { BookmarkTitleFetchAction } from '../../../../features/bookmarks/components/bookmark-editor'
-import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
-import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
+import type {
+  BookmarkEditorData,
+  BookmarkEditorSubmitResult,
+  BookmarkTitleFetchAction
+} from '../../../../features/bookmarks/components/bookmark-editor'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
+import { toUpdateBookmarkFailureCode } from '../../../../features/bookmarks/lib/update-bookmark-failure'
 import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
-import { rpcClient } from '../../../../rpc/client'
+import { orpc } from '../../../../rpc/query'
+import { getRpcClient } from '../../../../rpc/runtime-client'
 import { createErrorFallback } from '../../../../shared/components/error-fallback'
 import { StyledLink } from '../../../../shared/components/styled-link'
-import { err } from '../../../../shared/domain/result'
 import {
   workbench,
   workbenchLead,
@@ -23,6 +29,8 @@ import {
 const bookmarkEditSearchSchema = v.object({
   tags: v.optional(v.array(v.string()))
 })
+
+const editorStaleTime = 5000
 
 // タイトル取得失敗時のフォールバック文言 (null / 非 Error の throw で表示)
 const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんでした。手入力で続けられます'
@@ -52,33 +60,52 @@ const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url 
 // 想定外エラー (action の reject など) の最終防衛線。想定内エラーは action の state 経由で表示される。
 const EditError = createErrorFallback('編集画面の表示に失敗しました')
 
+function isBookmarkNotFound(error: unknown): boolean {
+  return error instanceof ORPCError && error.defined && error.code === 'bookmark-not-found'
+}
+
 /**
  * RouteComponent は編集画面の Screen 境界であり、Storybook の Route Story 起点でもある。
  * params / search / loader / not-found / 画面固有リンク / navigation をここで閉じ、
- * Domain・DB・Server Function 実装詳細は注入された port の向こう側に置く。
+ * Domain・DB・oRPC 実装詳細は注入された port の向こう側に置く。
  */
 export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
   validateSearch: bookmarkEditSearchSchema,
-  loader: async ({ params }) => {
-    const bookmarkResult = await loadBookmarkForEdit({ data: { id: params.id } })
-
-    if (!bookmarkResult.ok) {
-      return { kind: 'not-found' as const }
+  loader: async ({ params, context }) => {
+    const client = await getRpcClient()
+    try {
+      // Loader が cache を埋め、component は同じ query key を読む。
+      // Server では request headers 付き direct client、browser では rpcClient が使われる。
+      await context.queryClient.ensureQueryData(
+        createTanstackQueryUtils(client).bookmarks.editor.queryOptions({
+          input: { id: params.id },
+          staleTime: editorStaleTime
+        })
+      )
+    } catch (error: unknown) {
+      if (isBookmarkNotFound(error)) {
+        return { kind: 'not-found' as const }
+      }
+      throw error
     }
 
-    return {
-      kind: 'ok' as const,
-      initialData: bookmarkResult.value
-    }
+    return { kind: 'ok' as const }
   },
   component: RouteComponent
 })
 
-function RouteComponent() {
+export function RouteComponent() {
   const data = Route.useLoaderData()
   const search = Route.useSearch()
+  const params = Route.useParams()
   const navigate = useNavigate()
+  const router = useRouter()
   const listSearch = buildListBackSearch(search?.tags)
+
+  const updateMutation = useMutation(orpc.bookmarks.update.mutationOptions())
+  const editorQuery = useQuery(
+    orpc.bookmarks.editor.queryOptions({ input: { id: params.id }, staleTime: editorStaleTime })
+  )
 
   if (data.kind === 'not-found') {
     return (
@@ -102,7 +129,20 @@ function RouteComponent() {
     )
   }
 
-  const { initialData } = data
+  // Loader の ensureQueryData が成功しているため、cache は原則ここで埋まっている。
+  if (!editorQuery.data) {
+    return null
+  }
+
+  const record = editorQuery.data
+  const initialData: BookmarkEditorData = {
+    bookmarkId: record.id,
+    url: record.url,
+    title: record.title,
+    note: record.note,
+    tagIds: record.tagIds
+  }
+
   const detailSearch = search?.tags !== undefined ? { tags: search.tags } : {}
 
   return (
@@ -140,23 +180,27 @@ function RouteComponent() {
         <BookmarkEditor
           key={initialData.bookmarkId}
           initialData={initialData}
-          onUpdateBookmark={async (command) => {
+          onUpdateBookmark={async (command): Promise<BookmarkEditorSubmitResult> => {
             try {
-              return await updateBookmark({
-                data: {
-                  id: command.bookmarkId,
-                  url: command.url,
-                  title: command.title,
-                  note: command.note,
-                  tags: [...command.tagIds]
-                }
+              const output = await updateMutation.mutateAsync({
+                id: command.bookmarkId,
+                url: command.url,
+                title: command.title,
+                note: command.note,
+                tags: [...command.tagIds]
               })
-            } catch {
-              return err({ code: 'unexpected-error' })
+              return { ok: true, bookmarkId: output.id }
+            } catch (error: unknown) {
+              return { ok: false, failureCode: toUpdateBookmarkFailureCode(error) }
             }
           }}
           fetchTitleAction={fetchTitleAction}
           onCompleted={async (bookmarkId) => {
+            // DB commit 済みの成功を refresh failure で覆さない。invalidate は best-effort。
+            void router.invalidate().catch((error: unknown) => {
+              console.error('Failed to refresh route data after UpdateBookmark', error)
+            })
+
             await navigate({
               to: '/bookmarks/$id',
               params: { id: bookmarkId },
