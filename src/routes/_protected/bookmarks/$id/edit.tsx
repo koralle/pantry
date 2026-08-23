@@ -5,10 +5,11 @@ import * as v from 'valibot'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
 import type { BookmarkTitleFetchAction } from '../../../../features/bookmarks/components/bookmark-editor'
-import { fetchBookmarkTitle } from '../../../../features/bookmarks/functions/fetch-bookmark-title'
 import { loadBookmarkForEdit } from '../../../../features/bookmarks/functions/load-bookmark-for-edit'
 import { updateBookmark } from '../../../../features/bookmarks/functions/update-bookmark'
+import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
 import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
+import { rpcClient } from '../../../../rpc/client'
 import { createErrorFallback } from '../../../../shared/components/error-fallback'
 import { StyledLink } from '../../../../shared/components/styled-link'
 import { err } from '../../../../shared/domain/result'
@@ -28,11 +29,11 @@ const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんで
 
 /**
  * タイトル取得 action。BookmarkForm 側のラッパーを経て useActionState に渡り、
- * fetchBookmarkTitle の null / throw を表示用メッセージへ変換する。
+ * bookmarks.title procedure の null / throw を code 契約だけで表示用メッセージへ変換する。
  */
 const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url }) => {
   try {
-    const fetchedTitle = await fetchBookmarkTitle({ data: { url } })
+    const fetchedTitle = await rpcClient.bookmarks.title({ url })
     if (fetchedTitle === null) {
       return {
         status: 'error',
@@ -43,7 +44,7 @@ const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url 
   } catch (error: unknown) {
     return {
       status: 'error',
-      message: error instanceof Error ? error.message : bookmarkTitleFetchFailedMessage
+      message: getTitleFetchErrorMessage(error)
     }
   }
 }
