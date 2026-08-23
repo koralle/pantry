@@ -1,6 +1,7 @@
 import { use } from 'react'
 
 import type { getTag } from '../functions/get-tag'
+import { getUpdateTagErrorMessage } from '../lib/get-update-tag-error-message'
 import { TagForm } from './tag-form'
 
 type TagRecord = Awaited<ReturnType<typeof getTag>>
@@ -39,12 +40,7 @@ export function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
           sortOrder
         })
       }}
-      mapError={(error) => {
-        if (error instanceof Error && error.name === 'TagNameAlreadyExistsError') {
-          return 'そのタグ名は既に存在します'
-        }
-        return error instanceof Error ? error.message : 'タグの更新に失敗しました'
-      }}
+      mapError={getUpdateTagErrorMessage}
     />
   )
 }
