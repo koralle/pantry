@@ -54,13 +54,19 @@ describe('UpdateTag RPC', () => {
     expectTypeOf<UpdateOutput['id']>().not.toEqualTypeOf<TagId>()
   })
 
-  test('空の name は 4xx を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'not-found' }))
+  test('空の name は persistence を呼ばず 400 BAD_REQUEST を返す', async () => {
+    const updateTag = vi.fn<UpdateTag>(async () => ({ kind: 'not-found' }))
+    const router = authenticatedRouter(updateTag)
     const { client, getResponse } = createTestClient(router)
+    const rejected = await client.tags.update({ ...input, name: '' }).then(
+      () => null,
+      (error: unknown) => error
+    )
 
-    await expect(client.tags.update({ ...input, name: '' })).rejects.toBeInstanceOf(Error)
-    expect(getResponse().status).toBeGreaterThanOrEqual(400)
-    expect(getResponse().status).toBeLessThan(500)
+    expect(getResponse().status).toBe(400)
+    expect(rejected).toBeInstanceOf(ORPCError)
+    expect(updateTag).not.toHaveBeenCalled()
+    expect((rejected as ORPCError<string, unknown>).code).toBe('BAD_REQUEST')
   })
 
   test('未認証のリクエストは 401 UNAUTHORIZED を返す', async () => {

@@ -27,13 +27,14 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
  * HTTP サーバーや Turso を立てず、クライアント契約とステータスだけを見るため。
  */
 function createTestClient(router: AppRouter, headers?: HeadersInit) {
-  let lastResponse: Response | undefined
+  let lastResponse: Response | undefined = undefined
   const link = new RPCLink({
     url: 'https://pantry.test/api/rpc',
     headers: () => new Headers(headers),
     fetch: async (request) => {
-      lastResponse = await handleRpcRequest(request, router)
-      return lastResponse
+      const response = await handleRpcRequest(request, router)
+      lastResponse = response.clone()
+      return response
     }
   })
   const client: RouterClient<AppRouter> = createORPCClient(link)
@@ -56,13 +57,19 @@ describe('CreateTag RPC', () => {
     expectTypeOf<CreateOutput['id']>().not.toEqualTypeOf<TagId>()
   })
 
-  test('不正な入力は 4xx を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'name-conflict' }))
+  test('不正な入力は persistence を呼ばず 400 BAD_REQUEST を返す', async () => {
+    const insertTag = vi.fn<InsertTag>(async () => ({ kind: 'name-conflict' }))
+    const router = authenticatedRouter(insertTag)
     const { client, getResponse } = createTestClient(router)
+    const rejected = await client.tags.create({ name: '' }).then(
+      () => null,
+      (error: unknown) => error
+    )
 
-    await expect(client.tags.create({ name: '' })).rejects.toBeInstanceOf(Error)
-    expect(getResponse().status).toBeGreaterThanOrEqual(400)
-    expect(getResponse().status).toBeLessThan(500)
+    expect(getResponse().status).toBe(400)
+    expect(rejected).toBeInstanceOf(ORPCError)
+    expect(insertTag).not.toHaveBeenCalled()
+    expect((rejected as ORPCError<string, unknown>).code).toBe('BAD_REQUEST')
   })
 
   test('未認証のリクエストは 401 UNAUTHORIZED を返す', async () => {
