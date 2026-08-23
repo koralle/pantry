@@ -9,11 +9,9 @@ import { createErrorFallback } from '../../../shared/components/error-fallback'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { UiLoading } from '../../../shared/components/ui-loading'
 import { workbench, workbenchLead, workbenchNav, workbenchTitle } from '../../../styles/workbench'
-import type { getTag } from '../functions/get-tag'
 import { refreshAfterUpdateTag } from '../lib/refresh-after-update-tag'
+import type { TagRecord } from '../lib/tag-shelf'
 import { EditTagForm } from './edit-tag-form'
-
-type TagRecord = Awaited<ReturnType<typeof getTag>>
 
 type EditTagScreenProps = {
   readonly tagPromise: Promise<TagRecord>

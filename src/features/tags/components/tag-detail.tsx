@@ -6,7 +6,7 @@ import { css, cx } from 'styled-system/css'
 import { button } from '../../../styles/button'
 import { workbenchTitle } from '../../../styles/workbench'
 import { tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
-import type { getTag } from '../functions/get-tag'
+import type { TagRecord } from '../lib/tag-shelf'
 
 const shelfDot = css({
   inlineSize: '2.5',
@@ -56,7 +56,7 @@ export function TagDetail({
   tagPromise
 }: {
   readonly id: string
-  readonly tagPromise: Promise<Awaited<ReturnType<typeof getTag>>>
+  readonly tagPromise: Promise<TagRecord>
 }) {
   const tag = use(tagPromise)
 

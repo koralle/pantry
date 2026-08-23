@@ -8,12 +8,12 @@ import { StyledLink } from '../../../shared/components/styled-link'
 import { UiLoading } from '../../../shared/components/ui-loading'
 import { flash } from '../../../styles/flash'
 import { workbench, workbenchNav } from '../../../styles/workbench'
-import type { getTag } from '../functions/get-tag'
+import type { TagRecord } from '../lib/tag-shelf'
 import { TagDetail } from './tag-detail'
 
 type TagDetailScreenProps = {
   readonly id: string
-  readonly tagPromise: Promise<Awaited<ReturnType<typeof getTag>>>
+  readonly tagPromise: Promise<TagRecord>
 }
 
 const DetailError = createErrorFallback('タグの読み込みに失敗しました')
