@@ -10,36 +10,38 @@ Draft。
 
 pilot 完了後に `Adopt / Modify / Reject` を判断する。
 
-## Goal
+## 目的
 
-現在の CreateTag は TanStack Start Server Function の中に、認証・DB 操作・重複判定・エラー変換が集まっている。
+現在の CreateTag は TanStack Start Server Function の中に、認証、DB 操作、重複判定、エラー変換が集まっている。
 
-この pilot では次を検証する。
+この pilot では次の点を検証する。
 
 - oRPC を型付き RPC 境界として使う価値があるか
-- TanStack Query を browser 側の mutation 状態管理に使う価値があるか
+- TanStack Query をブラウザ側の mutation 状態管理に使う価値があるか
 - Application / UseCase を transport と Drizzle から分離するとテストしやすくなるか
 - Expected Error を既存 `Result` で表現すると責務が明確になるか
-- 正常系の DB round trip、bundle size、latency を悪化させずに導入できるか
+- 正常系の DB 往復、バンドルサイズ、レイテンシを悪化させずに導入できるか
 
-## Non-goals
+## スコープ外
 
 この RFC では次を決めない。
 
 - Pantry 全体の最終レイヤリング
-- transaction を伴う workflow
+- トランザクションを伴うワークフロー
 - read query 全体
 - shelf tags の TanStack Query 化
 - SSR 用 oRPC server client / `createRouterClient`
 - 外部 HTTP / Gateway
-- Better Auth endpoint
+- Better Auth エンドポイント
 - 全 Server Function の migration
 - Hono
 - 汎用 Repository / UnitOfWork
 
-CreateTag mutation は browser から `/api/rpc` へ送る HTTP 経路だけを pilot 対象にする。SSR 側は既存の Server Function / Router loader を維持する。
+pilot の対象は、ブラウザから `/api/rpc` へ送る CreateTag mutation の HTTP 経路だけである。SSR 側は既存の Server Function / Router loader を維持する。
 
-## Decision
+## 採用する構成
+
+CreateTag のリクエストは次の経路をたどる。
 
 ```mermaid
 flowchart LR
@@ -58,19 +60,21 @@ flowchart LR
   ADAPTER --> DB
 ```
 
-| 層 | 責務 |
-| --- | --- |
-| UI / TanStack Query | submit、pending、表示用エラー |
+各層の責務は次のとおり。
+
+| 層                      | 責務                                          |
+| ----------------------- | --------------------------------------------- |
+| UI / TanStack Query     | submit、pending、表示用エラー                 |
 | oRPC client / procedure | HTTP、input validation、認証、transport error |
-| Application | CreateTag command と Expected Error |
-| Port | UseCase が必要とする永続化能力だけを定義 |
-| Drizzle Adapter | INSERT、conflict target、Turso access |
+| Application             | CreateTag command と Expected Error           |
+| Port                    | UseCase が必要とする永続化能力だけを定義      |
+| Drizzle Adapter         | INSERT、conflict target、Turso access         |
 
 Application は oRPC、HTTP、Cookie、Drizzle、Turso、React を知らない。
 
-## Input / output contract
+## 入出力の契約
 
-既存 `tagNameSchema` をそのまま入力境界で使う。`tagNameSchema` は raw string を trim + NFC 正規化し、比較用 `normalized` を lower-case で生成する。
+入力境界には既存の `tagNameSchema` をそのまま使う。`tagNameSchema` は raw string を trim して NFC 正規化し、比較用の `normalized` を lower-case で生成する。
 
 ```ts
 const createTagInputSchema = v.object({
@@ -84,9 +88,9 @@ type CreateTagWireInput = v.InferInput<typeof createTagInputSchema>
 type CreateTagValidatedInput = v.InferOutput<typeof createTagInputSchema>
 ```
 
-wire 上の `name` は `string`、validation 後の `name` は既存の `TagName` になる。
+HTTP をまたぐ入力の時点で `name` は `string` であり、validation 後には既存の `TagName` 型になる。
 
-この pilot で新しい validation rule は追加しない。`pinned`、`sortOrder`、`color` の省略時は現行 DB default と同じ値へ procedure で明示的に確定させる。
+この pilot で新しい validation rule は追加しない。`pinned`、`sortOrder`、`color` の省略時は、現行 DB default と同じ値へ procedure が明示的に確定させる。
 
 ```ts
 export type CreateTagCommand = {
@@ -106,7 +110,7 @@ function toCreateTagCommand(input: CreateTagValidatedInput): CreateTagCommand {
 }
 ```
 
-CreateTag の戻り値は現行と同じく、後続 navigation に必要な ID だけにする。
+戻り値は現行と同じく、作成後の navigation に必要な ID だけである。
 
 ```ts
 export type CreatedTag = {
@@ -118,15 +122,17 @@ export type CreateTagOutput = {
 }
 ```
 
-Application の branded `TagId` を procedure で plain number の wire shape に変換する。`normalizedName` は client へ返さない。
+Application の branded `TagId` は procedure の出口で plain number へ変換する。branded 型は型システム上の情報であり、wire 上では保持されないためである。`normalizedName` は client へ返さない。
 
-## Error model
+## エラーモデル
 
-| 種類 | 例 | 扱い |
-| --- | --- | --- |
-| Application Expected Error | 同名タグが既に存在 | `Result.err` |
-| Boundary Rejection | 未認証、input 不正 | oRPC error |
-| Unexpected Error | DB 障害、未知の例外 | `throw` |
+エラーを3種類に分類し、扱いを固定する。Expected Error は業務上起こり得る失敗であり、呼び出し側が処理できる。Boundary Rejection は認証や input validation がリクエストを拒否したものである。Unexpected Error は障害やバグであり、呼び出し側に処理を期待しない。
+
+| 種類                       | 例                  | 扱い         |
+| -------------------------- | ------------------- | ------------ |
+| Application Expected Error | 同名タグが既に存在  | `Result.err` |
+| Boundary Rejection         | 未認証、input 不正  | oRPC error   |
+| Unexpected Error           | DB 障害、未知の例外 | `throw`      |
 
 ```ts
 export type CreateTagError = {
@@ -134,11 +140,11 @@ export type CreateTagError = {
 }
 ```
 
-`unexpected-error` は `Result` に入れない。
+`unexpected-error` を `Result` に入れない。Unexpected Error は呼び出し側が処理できないため、`Result` に入れても無意味な分岐を強いるだけになる。
 
-## Application boundary
+## Application 境界
 
-汎用 `TagRepository` は作らない。CreateTag が必要とする能力だけを port にする。
+汎用 `TagRepository` は作らない。CreateTag が必要とする永続化の能力だけを port として定義する。
 
 ```ts
 export type InsertTagInput = {
@@ -150,11 +156,12 @@ export type InsertTagInput = {
 }
 
 export type InsertTagOutcome =
-  | { readonly kind: 'created'; readonly id: TagId }
-  | { readonly kind: 'name-conflict' }
+  { readonly kind: 'created'; readonly id: TagId } | { readonly kind: 'name-conflict' }
 
 export type InsertTag = (input: InsertTagInput) => Promise<InsertTagOutcome>
 ```
+
+UseCase は port の outcome を Application の `Result` へ変換する。
 
 ```ts
 export async function executeCreateTag(params: {
@@ -175,20 +182,20 @@ export async function executeCreateTag(params: {
 }
 ```
 
-UseCase が薄いこと自体は問題にしない。**Drizzle fluent API mock を Application unit test から排除する価値が追加ファイル数に見合うか**を pilot で評価する。
+UseCase が薄いこと自体は問題にしない。**Drizzle fluent API mock を Application unit test から排除する価値が、追加ファイル数に見合うか**を pilot で評価する。
 
-## Persistence
+## 永続化
 
-`tags` table の `(userId, normalizedName)` unique constraint を重複判定の正本にする。
+重複判定の正本は、`tags` table の `(userId, normalizedName)` unique constraint にする。
 
 ```text
 現在: SELECT duplicate -> INSERT
 pilot: INSERT ... ON CONFLICT (user_id, normalized_name) DO NOTHING
 ```
 
-事前 `SELECT` は race condition を防げず、正常系の DB round trip を1回増やすため削除する。
+事前 `SELECT` をやめる理由は2つある。SELECT と INSERT のあいだに他の insert が割り込むと重複を見逃すため、race condition を防げない。そのうえ、正常系の DB 往復が1回増える。
 
-また、libSQL error code / message から「どの UNIQUE constraint だったか」を後付け推測しない。Drizzle の conflict target を `(userId, normalizedName)` に限定し、INSERT 結果が空なら `name-conflict` とする。
+UNIQUE violation の原因を libSQL の error code / message から後付けで推測しない。Drizzle の conflict target を `(userId, normalizedName)` に限定し、INSERT の結果が空なら `name-conflict` と判定する。
 
 ```ts
 const [created] = await db
@@ -216,18 +223,16 @@ return {
 }
 ```
 
-これにより generic な `isSqliteUniqueConstraintError` を CreateTag の業務エラー分類に使わない。他の constraint / DB 障害は通常どおり throw する。
+これにより、汎用の `isSqliteUniqueConstraintError` を CreateTag の業務エラー分類に使わない。それ以外の constraint 違反や DB 障害は、通常どおり throw する。
 
-## RPC boundary
+## RPC 境界
 
-`UNAUTHORIZED` は共通 error として base procedure に定義する。これにより auth middleware と client の双方で同じ code 契約を使う。
+`UNAUTHORIZED` は共通 error として base procedure に定義する。これにより auth middleware と client が、同じ error code の契約を共有できる。
 
 ```ts
-const base = os
-  .$context<{ readonly headers: Headers }>()
-  .errors({
-    UNAUTHORIZED: { status: 401 }
-  })
+const base = os.$context<{ readonly headers: Headers }>().errors({
+  UNAUTHORIZED: { status: 401 }
+})
 
 const requireAuth = base.middleware(async ({ context, next, errors }) => {
   const session = await getAuth().api.getSession({
@@ -273,7 +278,7 @@ export const createTagProcedure = authed
   })
 ```
 
-Unexpected Error を独自の 500 error に包み直さない。
+Unexpected Error を独自の 500 error に包み直さない。oRPC は捕捉しなかった例外をそのまま 500 として client へ返すため、包み直しても判別に使える情報は増えない。
 
 ## HTTP entry point
 
@@ -302,11 +307,11 @@ export const Route = createFileRoute('/api/rpc/$')({
 })
 ```
 
-CreateTag pilot では SSR direct client を導入しないため、SSR request context の別経路は作らない。
+CreateTag pilot では SSR direct client を導入しないため、SSR request context 用の別経路は作らない。
 
-## Client boundary
+## Client 境界
 
-CreateTag client は HTTP RPC 専用とし、runtime router を browser bundle へ import しない。router は type-only import で client 型に使う。
+CreateTag client は HTTP RPC 専用とし、runtime router を browser bundle へ import しない。router は type-only import で、client の型にのみ使う。
 
 ```ts
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
@@ -328,8 +333,7 @@ const link = new RPCLink({
         return
       }
 
-      const redirect =
-        window.location.pathname + window.location.search + window.location.hash
+      const redirect = window.location.pathname + window.location.search + window.location.hash
       const signIn = new URL('/sign-in/', window.location.origin)
       signIn.searchParams.set('redirect', redirect)
       window.location.replace(signIn)
@@ -340,13 +344,11 @@ const link = new RPCLink({
 export const client: RouterClient<AppRouter> = createORPCClient(link)
 ```
 
-この client は SSR render 中に生成されても network request を行わない。CreateTag mutation を server 側で実行しようとした場合は lazy `url` が明示的に失敗する。
+この client は SSR render 中に生成された場合でも network request を発行しない。CreateTag mutation を server 側で実行しようとした場合は、lazy `url` が明示的に失敗する。
 
-## UI error contract
+## UI エラー契約
 
-現行 UI の `error.name === 'TagNameAlreadyExistsError'` 判定は CreateTag pilot で削除する。
-
-共通 mapping は typed error code を使う。
+現行 UI の `error.name === 'TagNameAlreadyExistsError'` 判定は、CreateTag pilot で削除する。代わりに共通 mapping で typed error code を見る。
 
 ```ts
 export function getCreateTagErrorMessage(error: unknown): string | null {
@@ -364,7 +366,7 @@ export function getCreateTagErrorMessage(error: unknown): string | null {
 }
 ```
 
-`TagForm` は session expiry 時に generic error を出さないため、`mapError` を `string | null` に変更する。
+`TagForm` は session expiry 時に generic error を出さない。そのため `mapError` の戻り値を `string | null` に変更し、null のときはフォームエラーを設定しない。
 
 ```ts
 type TagFormProps = {
@@ -384,20 +386,20 @@ try {
 }
 ```
 
-CreateTag で必須の UI migration は次の2箇所。
+CreateTag で必須の UI migration は次の2箇所である。
 
 - `new-tag-screen.tsx`: `TagForm` の `mapError` に `getCreateTagErrorMessage` を使う
 - `inline-add-tag.tsx`: `Error.name` 判定を削除し、同じ helper を使う
 
-UpdateTag の `edit-tag-form.tsx` はこの pilot の対象外。
+UpdateTag の `edit-tag-form.tsx` はこの pilot の対象外である。
 
-## Post-commit refresh
+## commit 後の画面更新
 
-現在の shelf tags は TanStack Query ではなく TanStack Router loader の `fetchShelfTags()` が正本である。この pilot では read architecture を移行しない。
+現在の shelf tags の表示は TanStack Query ではなく、TanStack Router loader の `fetchShelfTags()` が正本である。この pilot では read architecture を移行しないため、この構成を維持する。
 
-CreateTag の DB commit と route loader refresh は別の成功条件として扱う。**作成が成功した後の invalidate 失敗を CreateTag mutation の失敗へ変換しない。**
+DB commit と route loader refresh は別々の成功条件として扱う。**作成が成功したあとの invalidate 失敗を、CreateTag mutation の失敗へ変換しない。**
 
-TanStack Query の `onSuccess` では invalidate の Promise を return / await しない。
+TanStack Query の `onSuccess` では、invalidate の Promise を return / await しない。
 
 ```ts
 const router = useRouter()
@@ -413,7 +415,7 @@ const mutation = useMutation(
 )
 ```
 
-これにより、
+結果として、mutation の成功と loader の再取得は独立に進む。
 
 ```text
 DB INSERT 成功
@@ -423,11 +425,9 @@ DB INSERT 成功
       -> 失敗: stale 表示は残り得るが「タグ作成失敗」にはしない
 ```
 
-となる。
+shelf tags を TanStack Query 化して mutation output から cache 更新する最適化は、read query migration の検討時に扱う。
 
-shelf tags を TanStack Query 化して mutation output から cache 更新する最適化は read query migration の検討時に扱う。
-
-## Tests
+## テスト
 
 ### Application unit test
 
@@ -438,18 +438,18 @@ shelf tags を TanStack Query 化して mutation output から cache 更新す�
 
 - 同一 user + 同一 normalized name は `name-conflict`
 - 別 user なら同名作成可能
-- 同一 user / 同一 normalized name の2 insertを `Promise.all` で開始し、結果が `created` 1件 + `name-conflict` 1件になる
-- concurrent insert 後の DB row は1件だけ
+- 同一 user / 同一 normalized name の insert を2件 `Promise.all` で開始し、結果が `created` 1件 + `name-conflict` 1件になる
+- concurrent insert 後の DB row は1件だけである
 - CreateTag は generic unique-error classifier に依存しない
 
 ### RPC integration test
 
 - invalid input -> 4xx
 - unauthenticated -> 401 / `UNAUTHORIZED`
-- authenticated request の Cookie が auth middleware へ届く
+- 認証済みリクエストの Cookie が auth middleware へ届く
 - duplicate name -> 409 / `tag-name-already-exists`
 - unknown exception -> 500
-- RPC server route が `handler.handle()` の `response` を browser へ返す
+- RPC server route が `handler.handle()` の `response` をブラウザへ返す
 
 ### UI test
 
@@ -466,34 +466,34 @@ production build の client output に次を含めない。
 - Better Auth server implementation
 - oRPC procedure handler / persistence adapter の runtime code
 
-`AppRouter` の type-only import は runtime import にしてはいけない。
+`AppRouter` は type-only import のままにし、runtime import しない。
 
-## Performance gate
+## 性能の基準
 
-実装 PR では **変更前の `main` と pilot head を同じ環境・同じ計測手順で測る**。baseline のない「体感で問題なし」は採用理由にしない。
+実装 PR では **変更前の `main` と pilot head を同じ環境・同じ計測手順で測る**。baseline のない「体感で問題なし」を採用理由にしない。
 
-| Metric | Baseline | Adopt の上限 |
-| --- | --- | --- |
-| CreateTag 正常系 write DB statements | 現行 `SELECT + INSERT` = 2 | 1 |
-| client production JS gzip 合計 | implementation PR 開始時の `main` | `+15 KiB` 以下 |
-| Worker deployable JS gzip 合計 | 同じ `main` | `+50 KiB` 以下 |
-| warm CreateTag latency median | 同一環境で50回 | baseline の `+10%` 以下 |
-| warm CreateTag latency p95 | 同一環境で50回 | baseline の `+15%` 以下 |
-| server-only code in client bundle | 0 | 0 |
+| Metric                                   | Baseline                   | 採用の上限              |
+| ---------------------------------------- | -------------------------- | ----------------------- |
+| CreateTag 正常系の write DB statement 数 | 現行 `SELECT + INSERT` = 2 | 1                       |
+| client production JS gzip 合計           | 実装 PR 開始時の `main`    | `+15 KiB` 以下          |
+| Worker deployable JS gzip 合計           | 同じ `main`                | `+50 KiB` 以下          |
+| warm CreateTag latency median            | 同一環境で50回             | baseline の `+10%` 以下 |
+| warm CreateTag latency p95               | 同一環境で50回             | baseline の `+15%` 以下 |
+| server-only code in client bundle        | 0                          | 0                       |
 
-latency は同じ Worker runtime / Turso DB を使い、各比較の前に warm-up を行う。baseline 自体の再計測差が 5% を超える場合は benchmark が不安定なので、閾値を緩めず計測方法を先に直す。
+latency は同じ Worker runtime / Turso DB を使い、各比較の前に warm-up を行う。baseline 自体の再計測差が 5% を超えるときは benchmark が不安定である。閾値を緩めず、先に計測方法を修正する。
 
-上限を超えた場合は自動的に Reject ではなく `Modify` とし、増加要因を特定して設計を縮小する。server-only code の browser 混入だけは即 Reject とする。
+上限を超えても、ただちに Reject するわけではない。増加要因を特定して設計を縮小し、`Modify` として扱う。server-only code の browser 混入だけは即 `Reject` とする。
 
-## Pilot success criteria
+## pilot の成功条件
 
 1. CreateTag の input / output / error contract が実装前に一意に決まっている
 2. Application unit test から Drizzle fluent API mock を排除できる
-3. `UNAUTHORIZED` と `tag-name-already-exists` を UI まで code 契約で接続できる
+3. `UNAUTHORIZED` と `tag-name-already-exists` を UI まで error code 契約で接続できる
 4. race condition を DB unique constraint + conflict target で処理できる
-5. DB commit 後の refresh failure が mutation 成功を覆さない
-6. 正常系 write DB statements が2回から1回になる
-7. bundle / latency が Performance gate 内に収まる
+5. DB commit 後の refresh 失敗が mutation 成功を覆さない
+6. 正常系の write DB statements が2回から1回に減る
+7. バンドルサイズとレイテンシが性能の基準内に収まる
 8. browser bundle に server-only code が入らない
 9. `pnpm run format:check`、typecheck、対象 test が通る
 
