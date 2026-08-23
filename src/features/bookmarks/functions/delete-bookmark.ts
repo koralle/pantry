@@ -4,7 +4,7 @@ import * as v from 'valibot'
 
 import { getDB } from '../../../db/get-db.server'
 import { bookmarkTable } from '../../../db/schema/bookmark'
-import { requireRequestSession } from '../../auth/functions/request-session.server'
+import { requireRequestSession } from '../../auth/server/request-session.server'
 
 export const deleteBookmark = createServerFn({ method: 'POST' })
   .validator(v.object({ id: v.string() }))

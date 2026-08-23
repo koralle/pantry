@@ -7,7 +7,7 @@ import { getDB } from '../../../db/get-db.server'
 import { bookmarkTable } from '../../../db/schema/bookmark'
 import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
 import { tagsTable } from '../../../db/schema/tag'
-import { requireRequestSession } from '../../auth/functions/request-session.server'
+import { requireRequestSession } from '../../auth/server/request-session.server'
 
 export const addBookmarkInputSchema = v.object({
   url: v.pipe(v.string(), v.url()),

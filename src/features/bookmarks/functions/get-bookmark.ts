@@ -5,7 +5,7 @@ import * as v from 'valibot'
 import { getDB } from '../../../db/get-db.server'
 import { bookmarkTable } from '../../../db/schema/bookmark'
 import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
-import { requireRequestSession } from '../../auth/functions/request-session.server'
+import { requireRequestSession } from '../../auth/server/request-session.server'
 
 export const getBookmark = createServerFn({ method: 'GET' })
   .validator(v.object({ id: v.string() }))

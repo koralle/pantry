@@ -3,13 +3,31 @@
  * ブラウザから server-only の getDB / getAuth を import できないようにする。
  */
 import { getDB } from '../db/get-db.server'
-import { getAuth } from '../features/auth/functions/get-auth.server'
+import type { SessionUser } from '../features/auth/domain/auth-values'
+import { getAuth } from '../features/auth/server/get-auth.server'
 import { insertTag } from '../features/tags/persistence/insert-tag'
+import { selectShelfTags } from '../features/tags/persistence/select-shelf-tags'
+import { selectTagById } from '../features/tags/persistence/select-tag-by-id'
+import { selectTags } from '../features/tags/persistence/select-tags'
 import { updateTag } from '../features/tags/persistence/update-tag'
 import { createAppRouter } from './create-app-router'
 
 export const appRouter = createAppRouter({
-  getSession: async (headers) => getAuth().api.getSession({ headers }),
+  getSession: async (headers): Promise<SessionUser | null> => {
+    const session = await getAuth().api.getSession({ headers })
+    if (!session) {
+      return null
+    }
+
+    return {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email
+    }
+  },
   insertTag: async (input) => insertTag(getDB(), input),
-  updateTag: async (input) => updateTag(getDB(), input)
+  updateTag: async (input) => updateTag(getDB(), input),
+  listShelfTags: async (userId) => selectShelfTags(getDB(), userId),
+  listTags: async (userId, page) => selectTags(getDB(), userId, page),
+  findTagById: async (userId, id) => selectTagById(getDB(), userId, id)
 })
