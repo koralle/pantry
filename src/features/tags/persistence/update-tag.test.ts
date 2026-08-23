@@ -6,9 +6,8 @@ import { createClient } from '@libsql/client'
 import { eq, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/libsql'
 import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test } from 'vitest'
 
-import type { AppDb } from '../../../db/app-db'
 import { user } from '../../../db/schema/auth-schema'
 import { tagsTable } from '../../../db/schema/tag'
 import { userIdSchema } from '../../auth/domain/auth-values'
@@ -17,6 +16,25 @@ import { tagIdSchema, tagNameSchema } from '../domain/tag-values'
 import { updateTag } from './update-tag'
 
 const persistenceDir = dirname(fileURLToPath(import.meta.url))
+const memoryUrl = 'file::memory:?cache=shared'
+const clients: ReturnType<typeof createClient>[] = []
+
+afterEach(async () => {
+  try {
+    await clients[0]?.executeMultiple('DROP TABLE IF EXISTS tags; DROP TABLE IF EXISTS users')
+  } finally {
+    for (const client of clients) {
+      client.close()
+    }
+    clients.length = 0
+  }
+})
+
+function createMemoryClient() {
+  const client = createClient({ url: memoryUrl })
+  clients.push(client)
+  return client
+}
 
 function parseUserId(value: string) {
   return v.parse(userIdSchema, value)
@@ -30,19 +48,23 @@ function parseName(value: string) {
   return v.parse(tagNameSchema, value)
 }
 
-function createCommand(
-  userId: string,
-  id: number,
-  name: string,
-  extras: Partial<Pick<UpdateTagInput, 'pinned' | 'sortOrder' | 'color'>> = {}
-): UpdateTagInput {
+type TagFields = Partial<Pick<UpdateTagInput, 'pinned' | 'sortOrder' | 'color'>>
+
+function createCommand({
+  userId,
+  id,
+  name,
+  pinned = false,
+  sortOrder = 0,
+  color = null
+}: { userId: string; id: number; name: string } & TagFields): UpdateTagInput {
   return {
     userId: parseUserId(userId),
     id: parseTagId(id),
     name: parseName(name),
-    pinned: extras.pinned ?? false,
-    sortOrder: extras.sortOrder ?? 0,
-    color: extras.color ?? null
+    pinned,
+    sortOrder,
+    color
   }
 }
 
@@ -51,7 +73,7 @@ function createCommand(
  * UNIQUE `(user_id, normalized_name)` を本番スキーマと同じ形で置き、衝突判定を本物の制約に乗せる。
  */
 async function createMemoryDb() {
-  const client = createClient({ url: ':memory:' })
+  const client = createMemoryClient()
   const db = drizzle({ client })
 
   await db.run(sql`
@@ -100,9 +122,13 @@ async function insertUser(db: Awaited<ReturnType<typeof createMemoryDb>>, id: st
 
 async function insertTagRow(
   db: Awaited<ReturnType<typeof createMemoryDb>>,
-  userId: string,
-  name: string,
-  extras: Partial<Pick<UpdateTagInput, 'pinned' | 'sortOrder' | 'color'>> = {}
+  {
+    userId,
+    name,
+    pinned = false,
+    sortOrder = 0,
+    color = null
+  }: { userId: string; name: string } & TagFields
 ) {
   const parsedName = parseName(name)
   const [created] = await db
@@ -111,9 +137,9 @@ async function insertTagRow(
       userId: parseUserId(userId),
       name: parsedName.display,
       normalizedName: parsedName.normalized,
-      pinned: extras.pinned ?? false,
-      sortOrder: extras.sortOrder ?? 0,
-      color: extras.color ?? null
+      pinned,
+      sortOrder,
+      color
     })
     .returning({ id: tagsTable.id })
 
@@ -123,43 +149,35 @@ async function insertTagRow(
   return created.id
 }
 
-function inspectTransaction<T>(
-  db: Awaited<ReturnType<typeof createMemoryDb>>,
-  inspect: (tx: AppDb) => Promise<T>
-) {
-  // LibSQL reconnects after committing a transaction, which resets a `:memory:` database.
-  return db.transaction((tx) => inspect(tx as unknown as AppDb))
-}
-
-describe('updateTag', () => {
+describe.sequential('updateTag', () => {
   test('所有者が全フィールドを更新し TagId を受け取る', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
-    const id = await insertTagRow(db, 'user-a', 'Old')
+    const id = await insertTagRow(db, { userId: 'user-a', name: 'Old' })
 
-    const { result, row } = await inspectTransaction(db, async (tx) => {
-      const output = await updateTag(
-        tx,
-        createCommand('user-a', id, ' Work ', {
-          pinned: true,
-          sortOrder: 4,
-          color: '#123456'
-        })
-      )
-      const [stored] = await tx
-        .select({
-          name: tagsTable.name,
-          normalizedName: tagsTable.normalizedName,
-          pinned: tagsTable.pinned,
-          sortOrder: tagsTable.sortOrder,
-          color: tagsTable.color
-        })
-        .from(tagsTable)
-        .where(eq(tagsTable.id, id))
-      return { result: output, row: stored }
-    })
+    const result = await updateTag(
+      db,
+      createCommand({
+        userId: 'user-a',
+        id,
+        name: ' Work ',
+        pinned: true,
+        sortOrder: 4,
+        color: '#123456'
+      })
+    )
 
     expect(result).toEqual({ kind: 'updated', id: parseTagId(id) })
+    const [row] = await db
+      .select({
+        name: tagsTable.name,
+        normalizedName: tagsTable.normalizedName,
+        pinned: tagsTable.pinned,
+        sortOrder: tagsTable.sortOrder,
+        color: tagsTable.color
+      })
+      .from(tagsTable)
+      .where(eq(tagsTable.id, id))
     expect(row).toEqual({
       name: 'Work',
       normalizedName: 'work',
@@ -173,7 +191,10 @@ describe('updateTag', () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
 
-    const result = await updateTag(db, createCommand('user-a', 999, 'Missing'))
+    const result = await updateTag(
+      db,
+      createCommand({ userId: 'user-a', id: 999, name: 'Missing' })
+    )
 
     expect(result).toEqual({ kind: 'not-found' })
   })
@@ -182,35 +203,37 @@ describe('updateTag', () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
     await insertUser(db, 'user-b')
-    const id = await insertTagRow(db, 'user-a', 'Private', {
+    const id = await insertTagRow(db, {
+      userId: 'user-a',
+      name: 'Private',
       pinned: false,
       sortOrder: 1,
       color: '#000000'
     })
 
-    const { result, row } = await inspectTransaction(db, async (tx) => {
-      const output = await updateTag(
-        tx,
-        createCommand('user-b', id, 'Stolen', {
-          pinned: true,
-          sortOrder: 9,
-          color: '#ffffff'
-        })
-      )
-      const [stored] = await tx
-        .select({
-          name: tagsTable.name,
-          normalizedName: tagsTable.normalizedName,
-          pinned: tagsTable.pinned,
-          sortOrder: tagsTable.sortOrder,
-          color: tagsTable.color
-        })
-        .from(tagsTable)
-        .where(eq(tagsTable.id, id))
-      return { result: output, row: stored }
-    })
+    const result = await updateTag(
+      db,
+      createCommand({
+        userId: 'user-b',
+        id,
+        name: 'Stolen',
+        pinned: true,
+        sortOrder: 9,
+        color: '#ffffff'
+      })
+    )
 
     expect(result).toEqual({ kind: 'not-found' })
+    const [row] = await db
+      .select({
+        name: tagsTable.name,
+        normalizedName: tagsTable.normalizedName,
+        pinned: tagsTable.pinned,
+        sortOrder: tagsTable.sortOrder,
+        color: tagsTable.color
+      })
+      .from(tagsTable)
+      .where(eq(tagsTable.id, id))
     expect(row).toEqual({
       name: 'Private',
       normalizedName: 'private',
@@ -223,36 +246,38 @@ describe('updateTag', () => {
   test('同一ユーザーの正規化名が衝突すると name-conflict を返し変更しない', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
-    await insertTagRow(db, 'user-a', 'Work')
-    const id = await insertTagRow(db, 'user-a', 'Personal', {
+    await insertTagRow(db, { userId: 'user-a', name: 'Work' })
+    const id = await insertTagRow(db, {
+      userId: 'user-a',
+      name: 'Personal',
       pinned: false,
       sortOrder: 2,
       color: '#111111'
     })
 
-    const { result, row } = await inspectTransaction(db, async (tx) => {
-      const output = await updateTag(
-        tx,
-        createCommand('user-a', id, 'WORK', {
-          pinned: true,
-          sortOrder: 8,
-          color: '#eeeeee'
-        })
-      )
-      const [stored] = await tx
-        .select({
-          name: tagsTable.name,
-          normalizedName: tagsTable.normalizedName,
-          pinned: tagsTable.pinned,
-          sortOrder: tagsTable.sortOrder,
-          color: tagsTable.color
-        })
-        .from(tagsTable)
-        .where(eq(tagsTable.id, id))
-      return { result: output, row: stored }
-    })
+    const result = await updateTag(
+      db,
+      createCommand({
+        userId: 'user-a',
+        id,
+        name: 'WORK',
+        pinned: true,
+        sortOrder: 8,
+        color: '#eeeeee'
+      })
+    )
 
     expect(result).toEqual({ kind: 'name-conflict' })
+    const [row] = await db
+      .select({
+        name: tagsTable.name,
+        normalizedName: tagsTable.normalizedName,
+        pinned: tagsTable.pinned,
+        sortOrder: tagsTable.sortOrder,
+        color: tagsTable.color
+      })
+      .from(tagsTable)
+      .where(eq(tagsTable.id, id))
     expect(row).toEqual({
       name: 'Personal',
       normalizedName: 'personal',
@@ -260,6 +285,26 @@ describe('updateTag', () => {
       sortOrder: 2,
       color: '#111111'
     })
+  })
+
+  test('同一ユーザーの異なるタグを同じ正規化名へ同時更新すると片方だけ成功する', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    const firstId = await insertTagRow(db, { userId: 'user-a', name: 'First' })
+    const secondId = await insertTagRow(db, { userId: 'user-a', name: 'Second' })
+    const otherDb = drizzle({ client: createMemoryClient() })
+
+    const results = await Promise.all([
+      updateTag(db, createCommand({ userId: 'user-a', id: firstId, name: 'Shared' })),
+      updateTag(otherDb, createCommand({ userId: 'user-a', id: secondId, name: 'SHARED' }))
+    ])
+
+    expect(results.map((result) => result.kind).toSorted()).toEqual(['name-conflict', 'updated'])
+    const rows = await db
+      .select({ id: tagsTable.id })
+      .from(tagsTable)
+      .where(eq(tagsTable.normalizedName, 'shared'))
+    expect(rows).toHaveLength(1)
   })
 
   test('汎用 UNIQUE 判定と例外は import しない', () => {
