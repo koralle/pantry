@@ -21,7 +21,8 @@ const nodeTests = [
   'src/features/tags/components/edit-tag-screen.test.ts',
   'src/features/tags/components/edit-tag-form.test.ts',
   'src/features/tags/hooks/use-touch-tag-last-used.test.ts',
-  'src/rpc/source-boundary.test.ts'
+  'src/rpc/source-boundary.test.ts',
+  'src/features/bookmarks/persistence/**/*.test.ts'
 ]
 
 export default defineConfig({
