@@ -167,13 +167,13 @@ export type InsertTagInput = {
   readonly color: string | null
 }
 
-export type InsertTagOutcome =
+export type InsertTagOutput =
   { readonly kind: 'created'; readonly id: TagId } | { readonly kind: 'name-conflict' }
 
-export type InsertTag = (input: InsertTagInput) => Promise<InsertTagOutcome>
+export type InsertTag = (input: InsertTagInput) => Promise<InsertTagOutput>
 ```
 
-UseCase は port の outcome を Application の `Result` へ変換する。
+UseCase は port の output を Application の `Result` へ変換する。
 
 ```ts
 export async function executeCreateTag(params: {
@@ -181,16 +181,16 @@ export async function executeCreateTag(params: {
   readonly actorId: UserId
   readonly command: CreateTagCommand
 }): Promise<Result<CreatedTag, CreateTagError>> {
-  const outcome = await params.insertTag({
+  const output = await params.insertTag({
     actorId: params.actorId,
     ...params.command
   })
 
-  if (outcome.kind === 'name-conflict') {
+  if (output.kind === 'name-conflict') {
     return err({ code: 'tag-name-already-exists' })
   }
 
-  return ok({ id: outcome.id })
+  return ok({ id: output.id })
 }
 ```
 
