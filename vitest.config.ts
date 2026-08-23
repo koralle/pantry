@@ -16,15 +16,17 @@ const aliases = {
  */
 const nodeTests = [
   'src/features/tags/persistence/**/*.test.ts',
+  'src/features/bookmarks/persistence/**/*.test.ts',
   'src/features/tags/components/new-tag-screen.test.ts',
   'src/features/tags/components/inline-add-tag.test.ts',
   'src/features/tags/components/edit-tag-screen.test.ts',
   'src/features/tags/components/edit-tag-form.test.ts',
   'src/features/tags/hooks/use-touch-tag-last-used.test.ts',
   'src/rpc/source-boundary.test.ts',
-  'src/features/bookmarks/persistence/**/*.test.ts',
   'src/features/bookmarks/components/new-bookmark-screen.test.ts',
-  'src/features/bookmarks/orpc-update.source.test.ts'
+  'src/features/bookmarks/orpc-update.source.test.ts',
+  'src/features/bookmarks/components/bookmark-delete-dialog.test.ts',
+  'src/features/bookmarks/lib/query-ownership.test.ts'
 ]
 
 export default defineConfig({

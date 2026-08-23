@@ -1,13 +1,16 @@
+import { ORPCError } from '@orpc/client'
 import { useRouter, useRouterState } from '@tanstack/react-router'
 import { CircleCheck } from 'lucide-react'
 import { Suspense } from 'react'
+import type { FallbackProps } from 'react-error-boundary'
 import { ErrorBoundary } from 'react-error-boundary'
 import { css } from 'styled-system/css'
 
-import { createErrorFallback } from '../../../shared/components/error-fallback'
+import { StyledLink } from '../../../shared/components/styled-link'
+import { UiEmpty } from '../../../shared/components/ui-empty'
+import { UiError } from '../../../shared/components/ui-error'
 import { flash } from '../../../styles/flash'
-import type { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
-import type { loadBookmarkDetail } from '../loaders/load-bookmark-detail'
+import { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
 import { BookmarkDetailResolved } from './bookmark-detail-resolved'
 import { BookmarkDetailSkeleton } from './bookmark-detail-skeleton'
 
@@ -18,13 +21,45 @@ const detailLayout = css({
   gap: '6'
 })
 
-const DetailError = createErrorFallback('詳細の読み込みに失敗しました')
+function isBookmarkNotFound(error: unknown): boolean {
+  return error instanceof ORPCError && error.defined && error.code === 'bookmark-not-found'
+}
+
+function DetailFallback({ error, resetErrorBoundary }: FallbackProps) {
+  if (isBookmarkNotFound(error)) {
+    // 404 は画面の状態として扱う。router state から list search を組み立て直す。
+    const tags = useRouterState({
+      select: (s) => (s.location.search as { tags?: string[] | undefined }).tags
+    })
+
+    return (
+      <UiEmpty
+        title='このブックマークは見つかりません'
+        action={
+          <StyledLink
+            to='/'
+            search={buildListBackSearch(tags)}
+            visual='accent'>
+            一覧へ戻る
+          </StyledLink>
+        }
+      />
+    )
+  }
+
+  return (
+    <UiError
+      message='詳細の読み込みに失敗しました'
+      onRetry={resetErrorBoundary}
+    />
+  )
+}
 
 export function BookmarkDetailScreen({
-  detailPromise,
+  id,
   listSearch
 }: {
-  readonly detailPromise: ReturnType<typeof loadBookmarkDetail>
+  readonly id: string
   readonly listSearch: ReturnType<typeof buildListBackSearch>
 }) {
   const router = useRouter()
@@ -61,13 +96,13 @@ export function BookmarkDetailScreen({
       ) : null}
 
       <ErrorBoundary
-        FallbackComponent={DetailError}
+        FallbackComponent={DetailFallback}
         onReset={() => {
           void router.invalidate()
         }}>
         <Suspense fallback={<BookmarkDetailSkeleton />}>
           <BookmarkDetailResolved
-            detailPromise={detailPromise}
+            id={id}
             listSearch={listSearch}
           />
         </Suspense>

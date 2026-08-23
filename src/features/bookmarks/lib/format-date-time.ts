@@ -17,10 +17,18 @@ const listDateTimeFormatter = new Intl.DateTimeFormat('ja-JP', {
   minute: '2-digit'
 })
 
-export function formatDateTime(date: Date): string {
-  return dateTimeFormatter.format(date)
+/**
+ * Wire 上の timestamp は ISO 文字列で来る。SSR の dehydrate を JSON で通すため、
+ * Date インスタンスは契約に載せない。
+ */
+function toDate(value: string | Date): Date {
+  return typeof value === 'string' ? new Date(value) : value
 }
 
-export function formatListDateTime(date: Date): string {
-  return listDateTimeFormatter.format(date)
+export function formatDateTime(date: string | Date): string {
+  return dateTimeFormatter.format(toDate(date))
+}
+
+export function formatListDateTime(date: string | Date): string {
+  return listDateTimeFormatter.format(toDate(date))
 }

@@ -8,8 +8,8 @@ import { dialogActions } from '../../../styles/dialog'
 import { tagChip } from '../../../styles/tag-chip'
 import { workbenchNav, workbenchTitle } from '../../../styles/workbench'
 import { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
-import type { getBookmark } from '../functions/get-bookmark'
 import { formatDateTime } from '../lib/format-date-time'
+import type { BookmarkDetail } from '../persistence/get-bookmark-detail'
 import { BookmarkDeleteDialog } from './bookmark-delete-dialog'
 
 const detailHeader = css({
@@ -42,11 +42,9 @@ const detailDatesDd = css({ margin: '0', fontVariantNumeric: 'tabular-nums' })
 
 export function BookmarkDetailContent({
   bookmark,
-  tagNames,
   listSearch
 }: {
-  readonly bookmark: Awaited<ReturnType<typeof getBookmark>>
-  readonly tagNames: string[]
+  readonly bookmark: BookmarkDetail
   readonly listSearch: ReturnType<typeof buildListBackSearch>
 }) {
   return (
@@ -81,9 +79,9 @@ export function BookmarkDetailContent({
 
       {bookmark.note ? <p className={detailNote}>{bookmark.note}</p> : null}
 
-      {tagNames.length > 0 ? (
+      {bookmark.tagNames.length > 0 ? (
         <ul className={detailTags}>
-          {tagNames.map((name) => (
+          {bookmark.tagNames.map((name) => (
             <li key={name}>
               <Link
                 to='/'

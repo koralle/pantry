@@ -3,8 +3,8 @@ import { css, cx } from 'styled-system/css'
 
 import { interactiveSurface, surface } from '../../../styles/surface'
 import { tagChip } from '../../../styles/tag-chip'
-import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
 import { shortenUrl } from '../lib/shorten-url'
+import type { BookmarkListItem } from '../persistence/list-bookmarks'
 
 export const bookmarkCards = css({
   display: 'grid',
