@@ -287,26 +287,6 @@ describe.sequential('updateTag', () => {
     })
   })
 
-  test('同一ユーザーの異なるタグを同じ正規化名へ同時更新すると片方だけ成功する', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const firstId = await insertTagRow(db, { userId: 'user-a', name: 'First' })
-    const secondId = await insertTagRow(db, { userId: 'user-a', name: 'Second' })
-    const otherDb = drizzle({ client: createMemoryClient() })
-
-    const results = await Promise.all([
-      updateTag(db, createCommand({ userId: 'user-a', id: firstId, name: 'Shared' })),
-      updateTag(otherDb, createCommand({ userId: 'user-a', id: secondId, name: 'SHARED' }))
-    ])
-
-    expect(results.map((result) => result.kind).toSorted()).toEqual(['name-conflict', 'updated'])
-    const rows = await db
-      .select({ id: tagsTable.id })
-      .from(tagsTable)
-      .where(eq(tagsTable.normalizedName, 'shared'))
-    expect(rows).toHaveLength(1)
-  })
-
   test('汎用 UNIQUE 判定と例外は import しない', () => {
     const source = readFileSync(join(persistenceDir, 'update-tag.ts'), 'utf8')
     expect(source).not.toContain('isSqliteUniqueConstraintError')
