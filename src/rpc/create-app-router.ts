@@ -42,47 +42,47 @@ export type CreateTagOutput = {
  */
 export function createAppRouter(deps: AppRouterDeps) {
   const base = os.$context<{ headers: Headers }>().errors({
-      UNAUTHORIZED: {
-        status: 401
+    UNAUTHORIZED: {
+      status: 401
+    }
+  })
+  const requireAuth = base.middleware(async ({ context, next, errors }) => {
+    const session = await deps.getSession(context.headers)
+    if (session == null) {
+      throw errors.UNAUTHORIZED()
+    }
+
+    return next({
+      context: {
+        userId: v.parse(userIdSchema, session.user.id)
       }
-    }),
-    requireAuth = base.middleware(async ({ context, next, errors }) => {
-      const session = await deps.getSession(context.headers)
-      if (session == null) {
-        throw errors.UNAUTHORIZED()
+    })
+  })
+  const createTag = base
+    .use(requireAuth)
+    .input(createTagInputSchema)
+    .errors({
+      'tag-name-already-exists': {
+        status: 409
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeCreateTag({
+        insertTag: deps.insertTag,
+        userId: context.userId as UserId,
+        command: toCreateTagCommand(input)
+      })
+
+      if (!result.ok) {
+        throw errors['tag-name-already-exists']()
       }
 
-      return next({
-        context: {
-          userId: v.parse(userIdSchema, session.user.id)
-        }
-      })
-    }),
-    createTag = base
-      .use(requireAuth)
-      .input(createTagInputSchema)
-      .errors({
-        'tag-name-already-exists': {
-          status: 409
-        }
-      })
-      .handler(async ({ input, context, errors }) => {
-        const result = await executeCreateTag({
-          insertTag: deps.insertTag,
-          userId: context.userId as UserId,
-          command: toCreateTagCommand(input)
-        })
+      const output: CreateTagOutput = {
+        id: Number(result.value.id)
+      }
 
-        if (!result.ok) {
-          throw errors['tag-name-already-exists']()
-        }
-
-        const output: CreateTagOutput = {
-          id: Number(result.value.id)
-        }
-
-        return output
-      })
+      return output
+    })
 
   return {
     tags: {

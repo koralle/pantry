@@ -4,8 +4,8 @@ import { refreshAfterCreateTag } from './refresh-after-create-tag'
 
 describe('refreshAfterCreateTag', () => {
   test('route の再取得が失敗しても reject しない', async () => {
-    const invalidate = vi.fn(() => Promise.reject(new Error('loader failed'))),
-      consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const invalidate = vi.fn(() => Promise.reject(new Error('loader failed')))
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     expect(() => {
       refreshAfterCreateTag({ invalidate })

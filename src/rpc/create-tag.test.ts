@@ -26,14 +26,14 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
 function createTestClient(router: AppRouter, headers?: HeadersInit) {
   let lastResponse: Response | undefined
   const link = new RPCLink({
-      url: 'https://pantry.test/api/rpc',
-      headers: () => new Headers(headers),
-      fetch: async (request) => {
-        lastResponse = await handleRpcRequest(request, router)
-        return lastResponse
-      }
-    }),
-    client: RouterClient<AppRouter> = createORPCClient(link)
+    url: 'https://pantry.test/api/rpc',
+    headers: () => new Headers(headers),
+    fetch: async (request) => {
+      lastResponse = await handleRpcRequest(request, router)
+      return lastResponse
+    }
+  })
+  const client: RouterClient<AppRouter> = createORPCClient(link)
   return {
     client,
     getResponse: () => {
@@ -54,8 +54,8 @@ describe('CreateTag RPC', () => {
   })
 
   test('不正な入力は 4xx を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'name-conflict' })),
-      { client, getResponse } = createTestClient(router)
+    const router = authenticatedRouter(async () => ({ kind: 'name-conflict' }))
+    const { client, getResponse } = createTestClient(router)
 
     await expect(client.tags.create({ name: '' })).rejects.toBeInstanceOf(Error)
     expect(getResponse().status).toBeGreaterThanOrEqual(400)
@@ -64,14 +64,14 @@ describe('CreateTag RPC', () => {
 
   test('未認証のリクエストは 401 UNAUTHORIZED を返す', async () => {
     const router = createAppRouter({
-        getSession: async () => null,
-        insertTag: async () => ({ kind: 'name-conflict' })
-      }),
-      { client, getResponse } = createTestClient(router),
-      rejected = await client.tags.create({ name: 'Work' }).then(
-        () => null,
-        (error: unknown) => error
-      )
+      getSession: async () => null,
+      insertTag: async () => ({ kind: 'name-conflict' })
+    })
+    const { client, getResponse } = createTestClient(router)
+    const rejected = await client.tags.create({ name: 'Work' }).then(
+      () => null,
+      (error: unknown) => error
+    )
 
     expect(getResponse().status).toBe(401)
     expect(rejected).toBeInstanceOf(ORPCError)
@@ -80,14 +80,14 @@ describe('CreateTag RPC', () => {
 
   test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
-        expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-        return { user: { id: userId } }
-      }),
-      router = createAppRouter({
-        getSession,
-        insertTag: async () => ({ kind: 'created', id: 1 as never })
-      }),
-      { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
+      expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
+      return { user: { id: userId } }
+    })
+    const router = createAppRouter({
+      getSession,
+      insertTag: async () => ({ kind: 'created', id: 1 as never })
+    })
+    const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 
     await client.tags.create({ name: 'Work' })
 
@@ -95,12 +95,12 @@ describe('CreateTag RPC', () => {
   })
 
   test('同名は 409 tag-name-already-exists を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'name-conflict' })),
-      { client, getResponse } = createTestClient(router),
-      rejected = await client.tags.create({ name: 'Work' }).then(
-        () => null,
-        (error: unknown) => error
-      )
+    const router = authenticatedRouter(async () => ({ kind: 'name-conflict' }))
+    const { client, getResponse } = createTestClient(router)
+    const rejected = await client.tags.create({ name: 'Work' }).then(
+      () => null,
+      (error: unknown) => error
+    )
 
     expect(getResponse().status).toBe(409)
     expect(rejected).toBeInstanceOf(ORPCError)
@@ -109,17 +109,17 @@ describe('CreateTag RPC', () => {
 
   test('想定外の例外は 500 を返す', async () => {
     const router = authenticatedRouter(async () => {
-        throw new Error('disk exploded')
-      }),
-      { client, getResponse } = createTestClient(router)
+      throw new Error('disk exploded')
+    })
+    const { client, getResponse } = createTestClient(router)
 
     await expect(client.tags.create({ name: 'Work' })).rejects.toBeInstanceOf(Error)
     expect(getResponse().status).toBe(500)
   })
 
   test('handleRpcRequest は handler.handle() の Response を返す', async () => {
-    const router = authenticatedRouter(async () => ({ kind: 'created', id: 7 as never })),
-      { client, getResponse } = createTestClient(router)
+    const router = authenticatedRouter(async () => ({ kind: 'created', id: 7 as never }))
+    const { client, getResponse } = createTestClient(router)
 
     await expect(client.tags.create({ name: 'Work' })).resolves.toEqual({ id: 7 })
     expect(getResponse()).toBeInstanceOf(Response)

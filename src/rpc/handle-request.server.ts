@@ -11,13 +11,13 @@ export async function handleRpcRequest(
   request: Request,
   router: AppRouter = appRouter
 ): Promise<Response> {
-  const handler = new RPCHandler(router),
-    { matched, response } = await handler.handle(request, {
-      prefix: '/api/rpc',
-      context: {
-        headers: request.headers
-      }
-    })
+  const handler = new RPCHandler(router)
+  const { matched, response } = await handler.handle(request, {
+    prefix: '/api/rpc',
+    context: {
+      headers: request.headers
+    }
+  })
 
   if (!matched) {
     return new Response('Not Found', { status: 404 })

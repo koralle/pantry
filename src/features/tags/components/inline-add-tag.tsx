@@ -25,17 +25,17 @@ const inlineAddTag = css({
  * Error の class 名では分岐しない。
  */
 export function InlineAddTag() {
-  const navigate = useNavigate(),
-    router = useRouter(),
-    [name, setName] = useState(''),
-    [tagError, setTagError] = useState<string | null>(null),
-    mutation = useMutation(
-      orpc.tags.create.mutationOptions({
-        onSuccess: () => {
-          refreshAfterCreateTag(router)
-        }
-      })
-    )
+  const navigate = useNavigate()
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [tagError, setTagError] = useState<string | null>(null)
+  const mutation = useMutation(
+    orpc.tags.create.mutationOptions({
+      onSuccess: () => {
+        refreshAfterCreateTag(router)
+      }
+    })
+  )
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()

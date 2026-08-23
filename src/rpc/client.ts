@@ -9,8 +9,8 @@ import type { AppRouter } from './create-app-router'
  * 今いる URL を `redirect` に載せ、戻ったあと作成し直せるようにする。
  */
 function redirectToSignIn(): void {
-  const redirect = `${window.location.pathname}${window.location.search}${window.location.hash}`,
-    signIn = new URL('/sign-in/', window.location.origin)
+  const redirect = `${window.location.pathname}${window.location.search}${window.location.hash}`
+  const signIn = new URL('/sign-in/', window.location.origin)
   signIn.searchParams.set('redirect', redirect)
   window.location.replace(signIn)
 }

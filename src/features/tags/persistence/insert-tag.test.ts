@@ -44,8 +44,8 @@ function createCommand(
  * UNIQUE `(user_id, normalized_name)` を本番スキーマと同じ形で置き、衝突判定を本物の制約に乗せる。
  */
 async function createMemoryDb() {
-  const client = createClient({ url: ':memory:' }),
-    db = drizzle({ client })
+  const client = createClient({ url: ':memory:' })
+  const db = drizzle({ client })
 
   await db.run(sql`
     CREATE TABLE users (
@@ -96,8 +96,8 @@ describe('insertTag', () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
 
-    const first = await insertTag(db, createCommand('user-a', 'Work')),
-      second = await insertTag(db, createCommand('user-a', 'work'))
+    const first = await insertTag(db, createCommand('user-a', 'Work'))
+    const second = await insertTag(db, createCommand('user-a', 'work'))
 
     expect(first.kind).toBe('created')
     expect(second).toEqual({ kind: 'name-conflict' })
@@ -108,8 +108,8 @@ describe('insertTag', () => {
     await insertUser(db, 'user-a')
     await insertUser(db, 'user-b')
 
-    const first = await insertTag(db, createCommand('user-a', 'Work')),
-      second = await insertTag(db, createCommand('user-b', 'Work'))
+    const first = await insertTag(db, createCommand('user-a', 'Work'))
+    const second = await insertTag(db, createCommand('user-b', 'Work'))
 
     expect(first.kind).toBe('created')
     expect(second.kind).toBe('created')
@@ -120,10 +120,10 @@ describe('insertTag', () => {
     await insertUser(db, 'user-a')
 
     const [left, right] = await Promise.all([
-        insertTag(db, createCommand('user-a', 'Inbox')),
-        insertTag(db, createCommand('user-a', 'Inbox'))
-      ]),
-      kinds = [left.kind, right.kind].toSorted()
+      insertTag(db, createCommand('user-a', 'Inbox')),
+      insertTag(db, createCommand('user-a', 'Inbox'))
+    ])
+    const kinds = [left.kind, right.kind].toSorted()
     expect(kinds).toEqual(['created', 'name-conflict'])
 
     const rows = await db.select({ id: tagsTable.id }).from(tagsTable)

@@ -14,15 +14,15 @@ import { TagForm } from './tag-form'
  * typed error code と best-effort な loader 再取得だけに揃える。
  */
 export function NewTagScreen() {
-  const navigate = useNavigate(),
-    router = useRouter(),
-    mutation = useMutation(
-      orpc.tags.create.mutationOptions({
-        onSuccess: () => {
-          refreshAfterCreateTag(router)
-        }
-      })
-    )
+  const navigate = useNavigate()
+  const router = useRouter()
+  const mutation = useMutation(
+    orpc.tags.create.mutationOptions({
+      onSuccess: () => {
+        refreshAfterCreateTag(router)
+      }
+    })
+  )
 
   return (
     <div className={workbench}>

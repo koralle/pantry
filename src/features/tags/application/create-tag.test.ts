@@ -57,12 +57,12 @@ describe('toCreateTagCommand', () => {
 
 describe('executeCreateTag', () => {
   test('Drizzle に触れずに作成したタグ ID を返す', async () => {
-    const id = parseTagId(12),
-      result = await executeCreateTag({
-        insertTag: fakeInsertTag({ kind: 'created', id }),
-        userId: parseUserId('user-1'),
-        command: toCreateTagCommand(parseInput({ name: 'Inbox' }))
-      })
+    const id = parseTagId(12)
+    const result = await executeCreateTag({
+      insertTag: fakeInsertTag({ kind: 'created', id }),
+      userId: parseUserId('user-1'),
+      command: toCreateTagCommand(parseInput({ name: 'Inbox' }))
+    })
 
     expect(result).toEqual({
       ok: true,
@@ -85,15 +85,15 @@ describe('executeCreateTag', () => {
 
   test('明示したコマンド値を insertTag へ渡す', async () => {
     let received: InsertTagInput | undefined
-    const id = parseTagId(3),
-      command = toCreateTagCommand(
-        parseInput({
-          name: 'Later',
-          pinned: false,
-          sortOrder: 0,
-          color: null
-        })
-      )
+    const id = parseTagId(3)
+    const command = toCreateTagCommand(
+      parseInput({
+        name: 'Later',
+        pinned: false,
+        sortOrder: 0,
+        color: null
+      })
+    )
 
     await executeCreateTag({
       insertTag: async (input) => {
