@@ -1,5 +1,6 @@
 import { getRequestHeaders } from '@tanstack/react-start/server'
 
+import type { AppRouter } from './create-app-router'
 import { handleRpcRequest } from './handle-request.server'
 
 /**
@@ -7,7 +8,7 @@ import { handleRpcRequest } from './handle-request.server'
  * ブラウザの RPCLink と同一の契約（procedure・status・TanStack Query key）を使うため、
  * loader / component は実行環境を意識しない。Cookie は元リクエストから転送する。
  */
-export async function ssrRpcFetch(request: Request): Promise<Response> {
+export async function ssrRpcFetch(request: Request, router?: AppRouter): Promise<Response> {
   const headers = new Headers(request.headers)
   const incomingCookie = getRequestHeaders().get('cookie')
 
@@ -22,6 +23,7 @@ export async function ssrRpcFetch(request: Request): Promise<Response> {
       method: request.method,
       headers,
       ...(body !== undefined ? { body } : {})
-    })
+    }),
+    router
   )
 }
