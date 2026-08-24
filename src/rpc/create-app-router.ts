@@ -4,6 +4,16 @@ import * as v from 'valibot'
 import { userIdSchema } from '../features/auth/domain/auth-values'
 import type { SessionUser, UserId } from '../features/auth/domain/auth-values'
 import {
+  createBookmarkInputSchema,
+  executeCreateBookmark
+} from '../features/bookmarks/application/create-bookmark'
+import type { InsertBookmark } from '../features/bookmarks/application/create-bookmark'
+import {
+  executeFetchPageTitle,
+  fetchPageTitleInputSchema
+} from '../features/bookmarks/application/fetch-page-title'
+import type { FetchPageTitle } from '../features/bookmarks/application/fetch-page-title'
+import {
   createTagInputSchema,
   executeCreateTag,
   toCreateTagCommand
@@ -42,6 +52,8 @@ export type AppRouterDeps = {
     page: v.InferOutput<typeof offsetPaginationQuerySchema>
   ) => Promise<TagsListRow[]>
   readonly findTagById: (userId: UserId, id: number) => Promise<TagRecord | null>
+  readonly insertBookmark: InsertBookmark
+  readonly fetchPageTitle: FetchPageTitle
 }
 
 /**
@@ -58,6 +70,11 @@ export type TouchTagOutput = {
  */
 export type CreateTagOutput = {
   readonly id: number
+}
+
+/** HTTP 上の CreateBookmark 成功形。branded `BookmarkId` は wire output に残さない。 */
+export type CreateBookmarkOutput = {
+  readonly id: string
 }
 
 /**
@@ -192,6 +209,57 @@ export function createAppRouter(deps: AppRouterDeps) {
 
       return output
     })
+  const createBookmark = base
+    .use(requireAuth)
+    .input(createBookmarkInputSchema)
+    .errors({
+      'duplicate-url': {
+        status: 409
+      },
+      'invalid-tag': {
+        status: 409
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeCreateBookmark({
+        insertBookmark: deps.insertBookmark,
+        userId: context.userId as UserId,
+        command: input
+      })
+
+      if (!result.ok) {
+        if (result.error.code === 'duplicate-url') {
+          throw errors['duplicate-url']()
+        }
+        throw errors['invalid-tag']()
+      }
+
+      const output: CreateBookmarkOutput = {
+        id: result.value.id
+      }
+
+      return output
+    })
+  const fetchTitle = base
+    .use(requireAuth)
+    .input(fetchPageTitleInputSchema)
+    .errors({
+      'url-not-allowed': {
+        status: 400
+      }
+    })
+    .handler(async ({ input, errors }) => {
+      const result = await executeFetchPageTitle({
+        fetchPageTitle: deps.fetchPageTitle,
+        url: input.url
+      })
+
+      if (!result.ok) {
+        throw errors['url-not-allowed']()
+      }
+
+      return result.value
+    })
 
   return {
     auth,
@@ -221,6 +289,10 @@ export function createAppRouter(deps: AppRouterDeps) {
           }
           return record
         })
+    },
+    bookmarks: {
+      create: createBookmark,
+      title: fetchTitle
     }
   }
 }

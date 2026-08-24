@@ -5,6 +5,8 @@
 import { getDB } from '../db/get-db.server'
 import type { SessionUser } from '../features/auth/domain/auth-values'
 import { getAuth } from '../features/auth/server/get-auth.server'
+import { insertBookmark } from '../features/bookmarks/persistence/insert-bookmark'
+import { fetchPageTitle } from '../features/bookmarks/server/fetch-page-title.server'
 import { insertTag } from '../features/tags/persistence/insert-tag'
 import { selectShelfTags } from '../features/tags/persistence/select-shelf-tags'
 import { selectTagById } from '../features/tags/persistence/select-tag-by-id'
@@ -31,5 +33,7 @@ export const appRouter = createAppRouter({
   touchTag: async (input) => touchTag(getDB(), input),
   listShelfTags: async (userId) => selectShelfTags(getDB(), userId),
   listTags: async (userId, page) => selectTags(getDB(), userId, page),
-  findTagById: async (userId, id) => selectTagById(getDB(), userId, id)
+  findTagById: async (userId, id) => selectTagById(getDB(), userId, id),
+  insertBookmark: async (input) => insertBookmark(getDB(), input),
+  fetchPageTitle: async (url) => fetchPageTitle(url)
 })

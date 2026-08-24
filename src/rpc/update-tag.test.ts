@@ -16,6 +16,8 @@ const insertTag: InsertTag = async () => ({ kind: 'name-conflict' })
 
 const readDeps = {
   touchTag: async () => ({ kind: 'touched' }) as const,
+  insertBookmark: async () => ({ kind: 'duplicate-url' }) as const,
+  fetchPageTitle: async () => ({ kind: 'unavailable' }) as const,
   listShelfTags: async () => [],
   listTags: async () => [],
   findTagById: async () => null

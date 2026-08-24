@@ -4,6 +4,8 @@ import type { RouterClient } from '@orpc/server'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
 import type { SessionUser } from '../features/auth/domain/auth-values'
+import type { InsertBookmarkOutput } from '../features/bookmarks/application/create-bookmark'
+import type { FetchPageTitleOutput } from '../features/bookmarks/application/fetch-page-title'
 import type { InsertTagOutput } from '../features/tags/application/create-tag'
 import type { TouchTagOutput } from '../features/tags/application/touch-tag'
 import type { UpdateTagOutput } from '../features/tags/application/update-tag'
@@ -31,7 +33,9 @@ function baseDeps(): ReadDeps {
     touchTag: vi.fn(async (): Promise<TouchTagOutput> => ({ kind: 'touched' })),
     listShelfTags: vi.fn(async () => [] satisfies ShelfTag[]),
     listTags: vi.fn(async () => []),
-    findTagById: vi.fn(async () => null)
+    findTagById: vi.fn(async () => null),
+    insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({ kind: 'duplicate-url' })),
+    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({ kind: 'unavailable' }))
   }
 }
 

@@ -12,6 +12,8 @@ const userId = 'user-1'
 
 const readDeps = {
   updateTag: async () => ({ kind: 'not-found' }) as const,
+  insertBookmark: async () => ({ kind: 'duplicate-url' }) as const,
+  fetchPageTitle: async () => ({ kind: 'unavailable' }) as const,
   listShelfTags: async () => [] as never[],
   listTags: async () => [] as never[],
   findTagById: async () => null

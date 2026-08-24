@@ -29,6 +29,11 @@ interface BookmarkWorkbenchFormProps {
   readonly submitLabel: string
   readonly pendingLabel: string
   readonly onSubmit: (values: BookmarkWorkbenchValues) => Promise<void>
+  /**
+   * Null のときはフォームエラーを出さない。
+   * セッション期限切れはリダイレクト側の仕事で、ここが汎用失敗文を重ねないため。
+   */
+  readonly mapError: (error: unknown) => string | null
 }
 
 export function BookmarkWorkbenchForm({
@@ -36,7 +41,8 @@ export function BookmarkWorkbenchForm({
   initialValues,
   submitLabel,
   pendingLabel,
-  onSubmit
+  onSubmit,
+  mapError
 }: BookmarkWorkbenchFormProps) {
   const form = useForm({
     initialInput: {
@@ -67,7 +73,10 @@ export function BookmarkWorkbenchForm({
     try {
       await onSubmit({ url, title, note })
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : '保存に失敗しました')
+      const message = mapError(error)
+      if (message !== null) {
+        setFormError(message)
+      }
     }
   }, null)
 

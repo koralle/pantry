@@ -29,7 +29,9 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
     touchTag: async () => ({ kind: 'touched' }),
     listShelfTags: async () => [],
     listTags: async () => [],
-    findTagById: async () => null
+    findTagById: async () => null,
+    insertBookmark: async () => ({ kind: 'duplicate-url' }),
+    fetchPageTitle: async () => ({ kind: 'unavailable' })
   })
 }
 
@@ -91,7 +93,9 @@ describe('CreateTag RPC', () => {
       touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
-      findTagById: async () => null
+      findTagById: async () => null,
+      insertBookmark: async () => ({ kind: 'duplicate-url' }),
+      fetchPageTitle: async () => ({ kind: 'unavailable' })
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.tags.create({ name: 'Work' }).then(
@@ -116,7 +120,9 @@ describe('CreateTag RPC', () => {
       touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
-      findTagById: async () => null
+      findTagById: async () => null,
+      insertBookmark: async () => ({ kind: 'duplicate-url' }),
+      fetchPageTitle: async () => ({ kind: 'unavailable' })
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 
