@@ -29,7 +29,7 @@ export async function listBookmarks(
   input: { readonly userId: UserId } & BookmarkListQuery
 ): Promise<BookmarkListItem[]> {
   const { q, tagNames, tagMode, sort, limit, offset } = normalizeListQuery(input)
-  const {userId} = input
+  const { userId } = input
 
   const conditions = [eq(bookmarkTable.userId, userId), isNull(bookmarkTable.deletedAt)]
 
