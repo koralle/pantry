@@ -17,7 +17,9 @@ const aliases = {
 const nodeTests = [
   'src/features/tags/persistence/**/*.test.ts',
   'src/features/tags/components/new-tag-screen.test.ts',
-  'src/features/tags/components/inline-add-tag.test.ts'
+  'src/features/tags/components/inline-add-tag.test.ts',
+  'src/features/tags/components/edit-tag-screen.test.ts',
+  'src/features/tags/components/edit-tag-form.test.ts'
 ]
 
 export default defineConfig({

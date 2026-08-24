@@ -1,14 +1,16 @@
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
+import { orpc } from '../../../rpc/query'
 import { createErrorFallback } from '../../../shared/components/error-fallback'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { UiLoading } from '../../../shared/components/ui-loading'
 import { workbench, workbenchLead, workbenchNav, workbenchTitle } from '../../../styles/workbench'
 import type { getTag } from '../functions/get-tag'
-import { updateTag } from '../functions/update-tag'
+import { refreshAfterUpdateTag } from '../lib/refresh-after-update-tag'
 import { EditTagForm } from './edit-tag-form'
 
 type TagRecord = Awaited<ReturnType<typeof getTag>>
@@ -22,6 +24,13 @@ const EditError = createErrorFallback('タグの読み込みに失敗しまし�
 export function EditTagScreen({ tagPromise }: EditTagScreenProps) {
   const navigate = useNavigate()
   const router = useRouter()
+  const mutation = useMutation(
+    orpc.tags.update.mutationOptions({
+      onSuccess: () => {
+        refreshAfterUpdateTag(router)
+      }
+    })
+  )
 
   async function submitAction(input: {
     id: number
@@ -30,17 +39,8 @@ export function EditTagScreen({ tagPromise }: EditTagScreenProps) {
     color: string | null
     sortOrder: number
   }) {
-    const { id: updatedId } = await updateTag({
-      data: {
-        id: input.id,
-        name: input.name,
-        pinned: input.pinned,
-        color: input.color,
-        sortOrder: input.sortOrder
-      }
-    })
+    const { id: updatedId } = await mutation.mutateAsync(input)
 
-    await router.invalidate()
     await navigate({
       to: '/tags/$id',
       params: { id: String(updatedId) },

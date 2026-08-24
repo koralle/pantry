@@ -1,4 +1,4 @@
-import { os } from '@orpc/server'
+import { ORPCError, os } from '@orpc/server'
 import * as v from 'valibot'
 
 import { userIdSchema } from '../features/auth/domain/auth-values'
@@ -9,6 +9,12 @@ import {
   toCreateTagCommand
 } from '../features/tags/application/create-tag'
 import type { InsertTag } from '../features/tags/application/create-tag'
+import {
+  executeUpdateTag,
+  toUpdateTagCommand,
+  updateTagInputSchema
+} from '../features/tags/application/update-tag'
+import type { UpdateTag } from '../features/tags/application/update-tag'
 
 type RpcSession = {
   readonly user: {
@@ -20,11 +26,12 @@ type GetSession = (headers: Headers) => Promise<RpcSession | null>
 
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
- * RPC テストは session と insert を差し替え、Turso を立てずに契約だけを叩く。
+ * RPC テストは session と永続化処理を差し替え、Turso を立てずに契約だけを叩く。
  */
 export type AppRouterDeps = {
   readonly getSession: GetSession
   readonly insertTag: InsertTag
+  readonly updateTag: UpdateTag
 }
 
 /**
@@ -37,8 +44,16 @@ export type CreateTagOutput = {
 }
 
 /**
+ * HTTP 上の UpdateTag 成功形。branded `TagId` は載せない。
+ * brand は型システムの印で、JSON には残らない。
+ */
+export type UpdateTagOutput = {
+  readonly id: number
+}
+
+/**
  * 認証失敗は Result に入れない。回復できない拒否は oRPC の `UNAUTHORIZED` として投げる。
- * 同名衝突だけ Application の Result から 409 へ写す。想定外は包み直さず 500 に抜ける。
+ * Application の既知エラーだけ 409 / 404 へ写す。想定外は包み直さず 500 に抜ける。
  */
 export function createAppRouter(deps: AppRouterDeps) {
   const base = os.$context<{ headers: Headers }>().errors({
@@ -83,10 +98,45 @@ export function createAppRouter(deps: AppRouterDeps) {
 
       return output
     })
+  const updateTag = base
+    .use(requireAuth)
+    .input(updateTagInputSchema)
+    .errors({
+      'tag-name-already-exists': {
+        status: 409
+      },
+      'tag-not-found': {
+        status: 404
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeUpdateTag({
+        updateTag: deps.updateTag,
+        userId: context.userId as UserId,
+        command: toUpdateTagCommand(input)
+      })
+
+      if (!result.ok) {
+        if (result.error.code === 'tag-name-already-exists') {
+          throw errors['tag-name-already-exists']()
+        }
+        if (result.error.code === 'tag-not-found') {
+          throw errors['tag-not-found']()
+        }
+        throw new ORPCError('INTERNAL_SERVER_ERROR')
+      }
+
+      const output: UpdateTagOutput = {
+        id: Number(result.value.id)
+      }
+
+      return output
+    })
 
   return {
     tags: {
-      create: createTag
+      create: createTag,
+      update: updateTag
     }
   }
 }
