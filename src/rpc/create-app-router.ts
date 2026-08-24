@@ -18,6 +18,7 @@ import {
   updateBookmarkInputSchema
 } from '../features/bookmarks/application/update-bookmark'
 import type { UpdateBookmark } from '../features/bookmarks/application/update-bookmark'
+import { bookmarkIdSchema } from '../features/bookmarks/domain/bookmark-values'
 import {
   createTagInputSchema,
   executeCreateTag,
@@ -321,7 +322,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     .use(requireAuth)
     .input(
       v.object({
-        id: v.string()
+        id: bookmarkIdSchema
       })
     )
     .errors({

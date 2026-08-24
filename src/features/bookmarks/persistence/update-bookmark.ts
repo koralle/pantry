@@ -57,7 +57,7 @@ export async function updateBookmark(
           title = ${input.title},
           note = ${input.note},
           updated_at = (cast(unixepoch('subsecond') * 1000 as integer))
-      WHERE id = ${input.bookmarkId} AND user_id = ${input.userId}
+      WHERE id = ${input.bookmarkId} AND user_id = ${input.userId} AND deleted_at IS NULL
       RETURNING id
     `)
 

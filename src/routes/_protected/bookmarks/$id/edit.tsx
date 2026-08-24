@@ -19,6 +19,7 @@ import { orpc } from '../../../../rpc/query'
 import { getRpcClient } from '../../../../rpc/runtime-client'
 import { createErrorFallback } from '../../../../shared/components/error-fallback'
 import { StyledLink } from '../../../../shared/components/styled-link'
+import { UiLoading } from '../../../../shared/components/ui-loading'
 import {
   workbench,
   workbenchLead,
@@ -131,7 +132,13 @@ export function RouteComponent() {
 
   // Loader の ensureQueryData が成功しているため、cache は原則ここで埋まっている。
   if (!editorQuery.data) {
-    return null
+    return (
+      <section
+        className={workbench}
+        aria-label='ブックマーク編集'>
+        <UiLoading label='ブックマークを読み込み中' />
+      </section>
+    )
   }
 
   const record = editorQuery.data
