@@ -1,19 +1,25 @@
+import type { FetchPageTitleOutput } from '../application/fetch-page-title'
+
 const MAX_REDIRECTS = 3
 const MAX_RESPONSE_BYTES = 1_000_000
 const TIMEOUT_MS = 3000
 
 type FetchLike = typeof fetch
 
-export function assertAllowedPageUrl(rawUrl: string): URL {
+/**
+ * 禁止 URL は例外ではなく `url-not-allowed` の戻り値として届ける。
+ * redirect 先の検証も同じ関数に通し、private host への hop を塞ぐ。
+ */
+function parseAllowedPageUrl(rawUrl: string): URL | undefined {
   let url: URL
   try {
     url = new URL(rawUrl)
   } catch {
-    throw new Error('URL is not allowed')
+    return undefined
   }
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Error('URL is not allowed')
+    return undefined
   }
 
   const hostname = url.hostname.toLowerCase()
@@ -23,7 +29,7 @@ export function assertAllowedPageUrl(rawUrl: string): URL {
     hostname === 'metadata.google.internal' ||
     isBlockedIp(hostname)
   ) {
-    throw new Error('URL is not allowed')
+    return undefined
   }
 
   return url
@@ -114,11 +120,21 @@ async function readBodyLimited(response: Response, limit: number): Promise<strin
   return new TextDecoder('utf-8', { fatal: false }).decode(merged)
 }
 
+/**
+ * 取得不能・title なし・対応外 content type は手入力で継続できるよう
+ * `unavailable` 成功に載せる。ここでは未知障害を throw しない。
+ * network error も取得できなかったという事実でしかないためである。
+ */
 export async function fetchPageTitle(
   rawUrl: string,
   fetchImpl: FetchLike = fetch
-): Promise<string | null> {
-  let currentUrl = assertAllowedPageUrl(rawUrl)
+): Promise<FetchPageTitleOutput> {
+  const firstUrl = parseAllowedPageUrl(rawUrl)
+  if (firstUrl === undefined) {
+    return { kind: 'url-not-allowed' }
+  }
+
+  let currentUrl = firstUrl
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
     const controller = new AbortController()
@@ -139,38 +155,43 @@ export async function fetchPageTitle(
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get('location')
         if (location == null || redirectCount === MAX_REDIRECTS) {
-          return null
+          return { kind: 'unavailable' }
         }
-        currentUrl = assertAllowedPageUrl(new URL(location, currentUrl).toString())
+        const nextUrl = parseAllowedPageUrl(new URL(location, currentUrl).toString())
+        if (nextUrl === undefined) {
+          return { kind: 'url-not-allowed' }
+        }
+        currentUrl = nextUrl
         continue
       }
 
       if (!response.ok) {
-        return null
+        return { kind: 'unavailable' }
       }
 
       const contentType = response.headers.get('content-type') ?? ''
       if (!contentType.includes('html') && !contentType.includes('xhtml')) {
         // Some sites omit content-type; still try to parse small bodies.
         if (contentType !== '') {
-          return null
+          return { kind: 'unavailable' }
         }
       }
 
       const body = await readBodyLimited(response, MAX_RESPONSE_BYTES)
       if (body === '') {
-        return null
+        return { kind: 'unavailable' }
       }
-      return extractTitle(body)
-    } catch (error) {
-      if (error instanceof Error && error.message === 'URL is not allowed') {
-        throw error
+      const title = extractTitle(body)
+      if (title === null) {
+        return { kind: 'unavailable' }
       }
-      return null
+      return { kind: 'fetched', title }
+    } catch {
+      return { kind: 'unavailable' }
     } finally {
       clearTimeout(timeout)
     }
   }
 
-  return null
+  return { kind: 'unavailable' }
 }

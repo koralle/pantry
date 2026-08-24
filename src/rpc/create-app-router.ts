@@ -9,6 +9,11 @@ import {
 } from '../features/bookmarks/application/create-bookmark'
 import type { InsertBookmark } from '../features/bookmarks/application/create-bookmark'
 import {
+  executeFetchPageTitle,
+  fetchPageTitleInputSchema
+} from '../features/bookmarks/application/fetch-page-title'
+import type { FetchPageTitle } from '../features/bookmarks/application/fetch-page-title'
+import {
   createTagInputSchema,
   executeCreateTag,
   toCreateTagCommand
@@ -48,6 +53,7 @@ export type AppRouterDeps = {
   ) => Promise<TagsListRow[]>
   readonly findTagById: (userId: UserId, id: number) => Promise<TagRecord | null>
   readonly insertBookmark: InsertBookmark
+  readonly fetchPageTitle: FetchPageTitle
 }
 
 /**
@@ -234,6 +240,26 @@ export function createAppRouter(deps: AppRouterDeps) {
 
       return output
     })
+  const fetchTitle = base
+    .use(requireAuth)
+    .input(fetchPageTitleInputSchema)
+    .errors({
+      'url-not-allowed': {
+        status: 400
+      }
+    })
+    .handler(async ({ input, errors }) => {
+      const result = await executeFetchPageTitle({
+        fetchPageTitle: deps.fetchPageTitle,
+        url: input.url
+      })
+
+      if (!result.ok) {
+        throw errors['url-not-allowed']()
+      }
+
+      return result.value
+    })
 
   return {
     auth,
@@ -265,7 +291,8 @@ export function createAppRouter(deps: AppRouterDeps) {
         })
     },
     bookmarks: {
-      create: createBookmark
+      create: createBookmark,
+      title: fetchTitle
     }
   }
 }

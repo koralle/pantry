@@ -23,7 +23,8 @@ function authenticatedRouter(insertBookmark: InsertBookmark, getSession = vi.fn(
   return createAppRouter({
     getSession,
     insertTag: async () => ({ kind: 'created', id: 1 as never }),
-    insertBookmark
+    insertBookmark,
+    fetchPageTitle: async () => ({ kind: 'unavailable' })
   })
 }
 
@@ -81,7 +82,8 @@ describe('CreateBookmark RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
-      insertBookmark: async () => ({ kind: 'duplicate-url' })
+      insertBookmark: async () => ({ kind: 'duplicate-url' }),
+      fetchPageTitle: async () => ({ kind: 'unavailable' })
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.bookmarks.create(validInput).then(
@@ -105,7 +107,8 @@ describe('CreateBookmark RPC', () => {
       insertBookmark: async () => ({
         kind: 'created',
         id: '01900000-0000-7000-8000-000000000000' as never
-      })
+      }),
+      fetchPageTitle: async () => ({ kind: 'unavailable' })
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 
