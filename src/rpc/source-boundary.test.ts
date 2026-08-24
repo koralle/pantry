@@ -30,6 +30,13 @@ describe('client bundle boundary', () => {
     expect(source).not.toMatch(/from '@tanstack\/react-start\/server'/)
   })
 
+  test('RPC route は POST 専用で、GET handler を持たない', async () => {
+    const source = await readSource('routes/api/rpc/$.ts')
+
+    expect(source).toContain('POST:')
+    expect(source).not.toMatch(/GET:/)
+  })
+
   test('legacy の Server Function と旧位置の helper は存在しない', async () => {
     const removed = [
       'features/auth/functions/get-session.ts',

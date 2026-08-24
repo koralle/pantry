@@ -4,12 +4,15 @@ import * as v from 'valibot'
 
 import { SignInWithEmailAndPasswordForm } from '../../features/auth/components/sign-in-form'
 import { authClient } from '../../features/auth/lib/auth-client'
+import { isInternalPath } from '../../features/auth/lib/is-internal-path'
 import { SignInError } from '../../features/auth/lib/sign-in-error'
 import type { SignInSchema } from '../../features/auth/lib/sign-in-schema'
 import { pageLead } from '../../styles/type'
 
+const internalRedirectSchema = v.pipe(v.string(), v.check(isInternalPath))
+
 const searchSchema = v.object({
-  redirect: v.optional(v.string())
+  redirect: v.optional(internalRedirectSchema)
 })
 
 export const Route = createFileRoute('/sign-in/')({

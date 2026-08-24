@@ -25,7 +25,11 @@ export async function selectShelfTags(db: AppDb, userId: UserId): Promise<ShelfT
     .leftJoin(bookmarkTagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
     .leftJoin(
       bookmarkTable,
-      and(eq(bookmarkTable.id, bookmarkTagsTable.bookmarkId), isNull(bookmarkTable.deletedAt))
+      and(
+        eq(bookmarkTable.id, bookmarkTagsTable.bookmarkId),
+        eq(bookmarkTable.userId, userId),
+        isNull(bookmarkTable.deletedAt)
+      )
     )
     .where(eq(tagsTable.userId, userId))
     .groupBy(tagsTable.id)

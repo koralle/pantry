@@ -35,6 +35,20 @@ describe('selectShelfTags', () => {
     expect(byName.get('inbox')).toMatchObject({ id: inboxId, bookmarkCount: 0 })
   })
 
+  test('他ユーザーのブックマークは bookmarkCount に含めない', async () => {
+    const db = await createMemoryDb()
+    await seedUser(db, 'user-a')
+    await seedUser(db, 'user-b')
+    const workId = await seedTag(db, { userId: 'user-a', name: 'work' })
+    await seedBookmark(db, { id: 'bm-a', userId: 'user-a', tagIds: [workId] })
+    await seedBookmark(db, { id: 'bm-b', userId: 'user-b', tagIds: [workId] })
+
+    const rows = await selectShelfTags(db, parseUserId('user-a'))
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ id: workId, bookmarkCount: 1 })
+  })
+
   test('削除済みブックマークは bookmarkCount に含めない', async () => {
     const db = await createMemoryDb()
     await seedUser(db, 'user-a')

@@ -174,6 +174,15 @@ describe('tags.list RPC', () => {
     expect(getResponse().status).toBeGreaterThanOrEqual(400)
     expect(getResponse().status).toBeLessThan(500)
   })
+
+  test('上限 50 を超える limit は 4xx を返す', async () => {
+    const router = authenticatedRouter()
+    const { client, getResponse } = createTestClient(router)
+
+    await expect(client.tags.list({ limit: 51 })).rejects.toBeInstanceOf(Error)
+    expect(getResponse().status).toBeGreaterThanOrEqual(400)
+    expect(getResponse().status).toBeLessThan(500)
+  })
 })
 
 describe('tags.byId RPC', () => {
