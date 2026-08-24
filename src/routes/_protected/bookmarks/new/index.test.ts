@@ -4,16 +4,19 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, expect, test } from 'vitest'
 
-import { buildNewBookmarkCommand } from './new-bookmark-command'
+import { buildNewBookmarkCommand } from '../../../../features/bookmarks/components/new-bookmark-command'
 
 const dir = dirname(fileURLToPath(import.meta.url))
-const screenSource = readFileSync(join(dir, 'new-bookmark-screen.tsx'), 'utf8')
-const formSource = readFileSync(join(dir, 'bookmark-workbench-form.tsx'), 'utf8')
-const hookSource = readFileSync(join(dir, '../hooks/use-bookmark-title-fetch.ts'), 'utf8')
-const editRouteSource = readFileSync(
-  join(dir, '../../../routes/_protected/bookmarks/$id/edit.tsx'),
+const routeSource = readFileSync(join(dir, 'index.tsx'), 'utf8')
+const formSource = readFileSync(
+  join(dir, '../../../../features/bookmarks/components/bookmark-workbench-form.tsx'),
   'utf8'
 )
+const hookSource = readFileSync(
+  join(dir, '../../../../features/bookmarks/hooks/use-bookmark-title-fetch.ts'),
+  'utf8'
+)
+const editRouteSource = readFileSync(join(dir, '../$id/edit.tsx'), 'utf8')
 
 describe('buildNewBookmarkCommand', () => {
   test('新規ブックマークではタグを空配列で送る', () => {
@@ -32,20 +35,20 @@ describe('buildNewBookmarkCommand', () => {
   })
 })
 
-describe('NewBookmarkScreen', () => {
+describe('new bookmark route', () => {
   test('CreateBookmark を oRPC mutationOptions 経由で送る', () => {
-    expect(screenSource).toContain('orpc.bookmarks.create.mutationOptions')
-    expect(screenSource).toContain('refreshAfterCreateBookmark')
+    expect(routeSource).toContain('orpc.bookmarks.create.mutationOptions')
+    expect(routeSource).toContain('refreshAfterCreateBookmark')
   })
 
   test('旧 Server Function に依存しない', () => {
-    expect(screenSource).not.toContain("from '../functions/add-bookmark'")
-    expect(screenSource).not.toContain('addBookmark({')
+    expect(routeSource).not.toContain("from '../functions/add-bookmark'")
+    expect(routeSource).not.toContain('addBookmark({')
   })
 
   test('Error の class 名と name に依存しない', () => {
-    expect(screenSource).toContain('getCreateBookmarkErrorMessage')
-    expect(screenSource).not.toContain('error.name')
+    expect(routeSource).toContain('getCreateBookmarkErrorMessage')
+    expect(routeSource).not.toContain('error.name')
     expect(formSource).not.toContain('instanceof Error')
     expect(formSource).not.toContain('error.message')
   })

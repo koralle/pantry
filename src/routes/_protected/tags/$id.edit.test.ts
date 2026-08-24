@@ -6,9 +6,9 @@ import { describe, expect, test } from 'vitest'
 
 const dir = dirname(fileURLToPath(import.meta.url))
 
-describe('EditTagScreen', () => {
+describe('edit tag route', () => {
   test('UpdateTagをoRPC mutationとして所有する', () => {
-    const source = readFileSync(join(dir, 'edit-tag-screen.tsx'), 'utf8')
+    const source = readFileSync(join(dir, '$id.edit.tsx'), 'utf8')
 
     expect(source).not.toContain('../functions/update-tag')
     expect(source).not.toContain('TagNameAlreadyExistsError')
