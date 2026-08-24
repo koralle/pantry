@@ -1,3 +1,4 @@
+import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { createFileRoute, Outlet, redirect, useSearch } from '@tanstack/react-router'
 import { useRef } from 'react'
 
@@ -5,25 +6,33 @@ import { AppHeader } from '../features/app-shell/components/app-header'
 import { MobileShelfDialog } from '../features/app-shell/components/mobile-shelf-dialog'
 import { ProtectedShell } from '../features/app-shell/components/protected-shell'
 import { ShelfSidebar } from '../features/app-shell/components/shelf-sidebar'
-import { getSession } from '../features/auth/functions/get-session'
+import { isInternalPath } from '../features/auth/lib/is-internal-path'
 import { resolveChromeListSearch } from '../features/navigation/lib/bookmark-search-builders'
-import { fetchShelfTags } from '../features/tags/functions/fetch-shelf-tags'
+import { getRpcClient } from '../rpc/runtime-client'
 
 export const Route = createFileRoute('/_protected')({
   beforeLoad: async ({ location }) => {
-    const session = await getSession()
+    const client = await getRpcClient()
+    const session = await client.auth.session()
 
-    if (!session) {
+    if (session === null) {
       throw redirect({
         to: '/sign-in',
-        search: { redirect: location.href }
+        search: {
+          redirect: isInternalPath(location.href) ? location.href : '/'
+        }
       })
     }
 
-    return { user: session.user }
+    return session
   },
-  loader: async () => {
-    const shelfTagsPromise = fetchShelfTags()
+  loader: async ({ context }) => {
+    const client = await getRpcClient()
+    const orpc = createTanstackQueryUtils(client)
+    const shelfTagsPromise = context.queryClient.ensureQueryData(
+      orpc.tags.shelf.queryOptions({ staleTime: 5000 })
+    )
+
     return { shelfTagsPromise }
   },
   component: () => <Layout />

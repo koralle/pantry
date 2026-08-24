@@ -4,7 +4,7 @@ import { css, cx } from 'styled-system/css'
 import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledLink } from '../../../shared/components/styled-link'
 import { pageLead, pageTitle, sectionLabel } from '../../../styles/type'
-import type { ensureSession } from '../../auth/functions/ensure-session'
+import type { SessionUser } from '../../auth/domain/auth-values'
 import { useSignOut } from '../../auth/hooks/use-sign-out'
 import { defaultBookmarkSearch } from '../../navigation/lib/bookmark-search'
 
@@ -48,7 +48,7 @@ const settingsAccountDd = css({
 })
 
 interface SettingsScreenProps {
-  readonly user: Awaited<ReturnType<typeof ensureSession>>['user']
+  readonly user: SessionUser
 }
 
 export function SettingsScreen({ user }: SettingsScreenProps) {

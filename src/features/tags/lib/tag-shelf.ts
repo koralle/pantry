@@ -8,6 +8,17 @@ export type ShelfTag = {
   bookmarkCount: number
 }
 
+/**
+ * タグ詳細・編集画面の写像。DB 行の残り（userId、正規化名、監査列）は載せない。
+ */
+export type TagRecord = {
+  id: number
+  name: string
+  pinned: boolean
+  sortOrder: number
+  color: string | null
+}
+
 function compareName(a: ShelfTag, b: ShelfTag): number {
   return a.name.localeCompare(b.name)
 }

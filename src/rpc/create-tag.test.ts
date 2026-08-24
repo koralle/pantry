@@ -3,6 +3,7 @@ import { RPCLink } from '@orpc/client/fetch'
 import type { RouterClient } from '@orpc/server'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
+import type { SessionUser } from '../features/auth/domain/auth-values'
 import type { InsertTag } from '../features/tags/application/create-tag'
 import type { UpdateTag } from '../features/tags/application/update-tag'
 import type { TagId } from '../features/tags/domain/tag-values'
@@ -13,12 +14,21 @@ import { handleRpcRequest } from './handle-request.server'
 const userId = 'user-1'
 const updateTag: UpdateTag = async () => ({ kind: 'not-found' })
 
+const sessionUser: SessionUser = {
+  id: userId,
+  name: 'koralle',
+  email: 'koralle@example.com'
+}
+
 function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
-  getSession.mockResolvedValue({ user: { id: userId } })
+  getSession.mockResolvedValue(sessionUser)
   return createAppRouter({
     getSession,
     insertTag,
-    updateTag
+    updateTag,
+    listShelfTags: async () => [],
+    listTags: async () => [],
+    findTagById: async () => null
   })
 }
 
@@ -76,7 +86,10 @@ describe('CreateTag RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag: async () => ({ kind: 'name-conflict' }),
-      updateTag
+      updateTag,
+      listShelfTags: async () => [],
+      listTags: async () => [],
+      findTagById: async () => null
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.tags.create({ name: 'Work' }).then(
@@ -92,12 +105,15 @@ describe('CreateTag RPC', () => {
   test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return sessionUser
     })
     const router = createAppRouter({
       getSession,
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
-      updateTag
+      updateTag,
+      listShelfTags: async () => [],
+      listTags: async () => [],
+      findTagById: async () => null
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 

@@ -4,7 +4,7 @@ import * as v from 'valibot'
 
 import { getDB } from '../../../db/get-db.server'
 import { tagsTable } from '../../../db/schema/tag'
-import { requireRequestSession } from '../../auth/functions/request-session.server'
+import { requireRequestSession } from '../../auth/server/request-session.server'
 
 const tagIdSchema = v.object({
   id: v.number()

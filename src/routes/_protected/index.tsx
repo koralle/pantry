@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-router'
 import * as v from 'valibot'
 
-import { ensureSession } from '../../features/auth/functions/ensure-session'
 import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
 import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmarks'
 import { bookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
@@ -19,8 +18,6 @@ export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
   loaderDeps: ({ search }) => bookmarkListLoaderDeps(search),
   loader: async ({ deps }) => {
-    const { user } = await ensureSession()
-
     const bookmarksPromise = fetchBookmarks({
       data: {
         tagMode: deps.tagMode,
@@ -33,7 +30,6 @@ export const Route = createFileRoute('/_protected/')({
     })
 
     return {
-      user,
       bookmarksPromise
     }
   },

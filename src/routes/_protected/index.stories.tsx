@@ -2,13 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Outlet, createRootRouteWithContext, createRoute } from '@tanstack/react-router'
 import { expect, mocked, userEvent, waitFor, within } from 'storybook/test'
 
-import { ensureSession } from '../../features/auth/functions/ensure-session'
-import { getSession } from '../../features/auth/functions/get-session'
 import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmarks'
 import type { BookmarkListItem } from '../../features/bookmarks/lib/attach-bookmark-tags'
 import { writeListLayout } from '../../features/bookmarks/lib/list-layout-preference'
 import type { BookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
-import { fetchShelfTags } from '../../features/tags/functions/fetch-shelf-tags'
 import { touchTagLastUsed } from '../../features/tags/functions/touch-tag-last-used'
 import type { ShelfTag } from '../../features/tags/lib/tag-shelf'
 import preview from '../../storybook/preview'
@@ -41,9 +38,16 @@ const storyRoot = createRootRouteWithContext<{ readonly queryClient: QueryClient
 const storyProtectedLayout = createRoute({
   id: '/_protected',
   getParentRoute: () => storyRoot,
-  beforeLoad: ProtectedLayoutRoute.options.beforeLoad!,
+  // Storybook では oRPC client を立てない。認証済み user context だけを再現する。
+  beforeLoad: () => ({
+    user: {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email
+    }
+  }),
   loader: async () => ({
-    shelfTagsPromise: fetchShelfTags()
+    shelfTagsPromise: Promise.resolve(shelfTags)
   }),
   component: ProtectedLayoutRoute.options.component!
 })
@@ -192,15 +196,9 @@ function neverPromise<T>(): Promise<T> {
 }
 
 function stubListApis() {
-  mocked(getSession).mockReset()
-  mocked(ensureSession).mockReset()
-  mocked(fetchShelfTags).mockReset()
   mocked(fetchBookmarks).mockReset()
   mocked(touchTagLastUsed).mockReset()
 
-  mocked(getSession).mockResolvedValue(session)
-  mocked(ensureSession).mockResolvedValue(session)
-  mocked(fetchShelfTags).mockResolvedValue(shelfTags)
   mocked(fetchBookmarks).mockResolvedValue(bookmarks)
   mocked(touchTagLastUsed).mockResolvedValue({ ok: true as const })
 }
@@ -521,7 +519,9 @@ export const LoadMoreError = meta.story({
 
 export const NoShelfTags = meta.story({
   beforeEach: async () => {
-    mocked(fetchShelfTags).mockResolvedValue([])
+    storyProtectedLayout.options.loader = async () => ({
+      shelfTagsPromise: Promise.resolve([])
+    })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

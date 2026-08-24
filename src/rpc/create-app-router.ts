@@ -2,7 +2,7 @@ import { ORPCError, os } from '@orpc/server'
 import * as v from 'valibot'
 
 import { userIdSchema } from '../features/auth/domain/auth-values'
-import type { UserId } from '../features/auth/domain/auth-values'
+import type { SessionUser, UserId } from '../features/auth/domain/auth-values'
 import {
   createTagInputSchema,
   executeCreateTag,
@@ -15,23 +15,30 @@ import {
   updateTagInputSchema
 } from '../features/tags/application/update-tag'
 import type { UpdateTag } from '../features/tags/application/update-tag'
+import type { ShelfTag, TagRecord } from '../features/tags/lib/tag-shelf'
+import type { TagsListRow } from '../features/tags/persistence/select-tags'
+import { offsetPaginationQuerySchema } from '../schemas/pagination'
 
-type RpcSession = {
-  readonly user: {
-    readonly id: string
-  }
-}
+type GetSession = (headers: Headers) => Promise<SessionUser | null>
 
-type GetSession = (headers: Headers) => Promise<RpcSession | null>
+const tagIdInputSchema = v.object({
+  id: v.pipe(v.number(), v.integer(), v.minValue(1))
+})
 
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
- * RPC テストは session と永続化処理を差し替え、Turso を立てずに契約だけを叩く。
+ * RPC テストは session と各 service を差し替え、Turso を立てずに契約だけを叩く。
  */
 export type AppRouterDeps = {
   readonly getSession: GetSession
   readonly insertTag: InsertTag
   readonly updateTag: UpdateTag
+  readonly listShelfTags: (userId: UserId) => Promise<ShelfTag[]>
+  readonly listTags: (
+    userId: UserId,
+    page: v.InferOutput<typeof offsetPaginationQuerySchema>
+  ) => Promise<TagsListRow[]>
+  readonly findTagById: (userId: UserId, id: number) => Promise<TagRecord | null>
 }
 
 /**
@@ -59,6 +66,9 @@ export function createAppRouter(deps: AppRouterDeps) {
   const base = os.$context<{ headers: Headers }>().errors({
     UNAUTHORIZED: {
       status: 401
+    },
+    'tag-not-found': {
+      status: 404
     }
   })
   const requireAuth = base.middleware(async ({ context, next, errors }) => {
@@ -69,10 +79,24 @@ export function createAppRouter(deps: AppRouterDeps) {
 
     return next({
       context: {
-        userId: v.parse(userIdSchema, session.user.id)
+        userId: v.parse(userIdSchema, session.id)
       }
     })
   })
+
+  const auth = {
+    /**
+     * 未認証も 200 null で返す public procedure。redirect 判定は route 側で行う。
+     */
+    session: base.handler(async ({ context }) => {
+      const user = await deps.getSession(context.headers)
+      if (user == null) {
+        return null
+      }
+      return { user }
+    })
+  }
+
   const createTag = base
     .use(requireAuth)
     .input(createTagInputSchema)
@@ -134,9 +158,32 @@ export function createAppRouter(deps: AppRouterDeps) {
     })
 
   return {
+    auth,
     tags: {
       create: createTag,
-      update: updateTag
+      update: updateTag,
+      shelf: base
+        .use(requireAuth)
+        .handler(async ({ context }) => deps.listShelfTags(context.userId)),
+      list: base
+        .use(requireAuth)
+        .input(offsetPaginationQuerySchema)
+        .handler(async ({ input, context }) => deps.listTags(context.userId, input)),
+      byId: base
+        .use(requireAuth)
+        .input(tagIdInputSchema)
+        .errors({
+          'tag-not-found': {
+            status: 404
+          }
+        })
+        .handler(async ({ input, context, errors }) => {
+          const record = await deps.findTagById(context.userId, input.id)
+          if (record == null) {
+            throw errors['tag-not-found']()
+          }
+          return record
+        })
     }
   }
 }

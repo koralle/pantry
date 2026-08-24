@@ -1,10 +1,8 @@
 import { use } from 'react'
 
-import type { getTag } from '../functions/get-tag'
 import { getUpdateTagErrorMessage } from '../lib/get-update-tag-error-message'
+import type { TagRecord } from '../lib/tag-shelf'
 import { TagForm } from './tag-form'
-
-type TagRecord = Awaited<ReturnType<typeof getTag>>
 
 type EditTagFormProps = {
   readonly tagPromise: Promise<TagRecord>
