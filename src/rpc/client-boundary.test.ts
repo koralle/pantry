@@ -15,6 +15,7 @@ describe('server direct RPC client', () => {
       },
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
       updateTag: async () => ({ kind: 'not-found' }),
+      touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
       findTagById: async () => null

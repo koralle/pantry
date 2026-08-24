@@ -5,6 +5,7 @@ import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
 import type { SessionUser } from '../features/auth/domain/auth-values'
 import type { InsertTagOutput } from '../features/tags/application/create-tag'
+import type { TouchTagOutput } from '../features/tags/application/touch-tag'
 import type { UpdateTagOutput } from '../features/tags/application/update-tag'
 import type { TagId } from '../features/tags/domain/tag-values'
 import type { ShelfTag } from '../features/tags/lib/tag-shelf'
@@ -27,6 +28,7 @@ function baseDeps(): ReadDeps {
     getSession: vi.fn(async () => sessionUser),
     insertTag: vi.fn(async (): Promise<InsertTagOutput> => ({ kind: 'created', id: 1 as never })),
     updateTag: vi.fn(async (): Promise<UpdateTagOutput> => ({ kind: 'not-found' })),
+    touchTag: vi.fn(async (): Promise<TouchTagOutput> => ({ kind: 'touched' })),
     listShelfTags: vi.fn(async () => [] satisfies ShelfTag[]),
     listTags: vi.fn(async () => []),
     findTagById: vi.fn(async () => null)

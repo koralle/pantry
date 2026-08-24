@@ -1,14 +1,20 @@
+import { useMutation } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
+import { orpc } from '../../../rpc/query'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { tagNamesMatch } from '../domain/tag-values'
-import { touchTagLastUsed } from '../functions/touch-tag-last-used'
 import type { ShelfTag } from '../lib/tag-shelf'
 
+/**
+ * Fire-and-forget。失敗は mutation state に落ちるだけにし、
+ * session expiry の redirect は共通 interceptor に任せる。
+ */
 export function useTouchTagLastUsedOnce(
   search: BookmarkSearchSchema,
   shelfTagsPromise: Promise<ShelfTag[]>
 ) {
+  const { mutate: touchTag } = useMutation(orpc.tags.touch.mutationOptions())
   const tagKey = search.tags?.join('\0') ?? ''
 
   useEffect(() => {
@@ -29,12 +35,12 @@ export function useTouchTagLastUsedOnce(
       }
       const primary = tags.find((tag) => tagNamesMatch(tag.name, primaryName))
       if (primary != null) {
-        void touchTagLastUsed({ data: { id: primary.id } })
+        touchTag({ id: primary.id })
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [tagKey, shelfTagsPromise])
+  }, [tagKey, shelfTagsPromise, touchTag])
 }

@@ -9,6 +9,8 @@ import {
   toCreateTagCommand
 } from '../features/tags/application/create-tag'
 import type { InsertTag } from '../features/tags/application/create-tag'
+import { executeTouchTag, touchTagInputSchema } from '../features/tags/application/touch-tag'
+import type { TouchTag } from '../features/tags/application/touch-tag'
 import {
   executeUpdateTag,
   toUpdateTagCommand,
@@ -33,12 +35,20 @@ export type AppRouterDeps = {
   readonly getSession: GetSession
   readonly insertTag: InsertTag
   readonly updateTag: UpdateTag
+  readonly touchTag: TouchTag
   readonly listShelfTags: (userId: UserId) => Promise<ShelfTag[]>
   readonly listTags: (
     userId: UserId,
     page: v.InferOutput<typeof offsetPaginationQuerySchema>
   ) => Promise<TagsListRow[]>
   readonly findTagById: (userId: UserId, id: number) => Promise<TagRecord | null>
+}
+
+/**
+ * HTTP 上の TouchTag 成功形。Application の branded `TagId` は載せない。
+ */
+export type TouchTagOutput = {
+  readonly ok: true
 }
 
 /**
@@ -157,11 +167,38 @@ export function createAppRouter(deps: AppRouterDeps) {
       return output
     })
 
+  const touchTag = base
+    .use(requireAuth)
+    .input(touchTagInputSchema)
+    .errors({
+      'tag-not-found': {
+        status: 404
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeTouchTag({
+        touchTag: deps.touchTag,
+        userId: context.userId as UserId,
+        id: input.id
+      })
+
+      if (!result.ok) {
+        throw errors['tag-not-found']()
+      }
+
+      const output: TouchTagOutput = {
+        ok: true
+      }
+
+      return output
+    })
+
   return {
     auth,
     tags: {
       create: createTag,
       update: updateTag,
+      touch: touchTag,
       shelf: base
         .use(requireAuth)
         .handler(async ({ context }) => deps.listShelfTags(context.userId)),
