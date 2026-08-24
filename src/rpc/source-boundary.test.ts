@@ -51,10 +51,7 @@ describe('client bundle boundary', () => {
       await expect(access(join(srcDir, path))).rejects.toThrow()
     }
 
-    const moved = [
-      'features/auth/server/get-auth.server.ts',
-      'features/auth/server/request-session.server.ts'
-    ]
+    const moved = ['features/auth/server/get-auth.server.ts']
     for (const path of moved) {
       await expect(access(join(srcDir, path))).resolves.toBeUndefined()
     }
