@@ -1,6 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { ArrowLeft, LogOut } from 'lucide-react'
+import { css, cx } from 'styled-system/css'
 
-import { SettingsScreen } from '../../../features/settings/components/settings-screen'
+import { useSignOut } from '../../../features/auth/hooks/use-sign-out'
+import { defaultBookmarkSearch } from '../../../features/navigation/lib/bookmark-search'
+import { StyledButton } from '../../../shared/components/styled-button'
+import { StyledLink } from '../../../shared/components/styled-link'
+import { pageLead, pageTitle, sectionLabel } from '../../../styles/type'
 
 export const Route = createFileRoute('/_protected/settings/')({
   loader: async ({ context }) => ({
@@ -9,8 +15,92 @@ export const Route = createFileRoute('/_protected/settings/')({
   component: RouteComponent
 })
 
+const settings = css({
+  maxInlineSize: '28rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '5'
+})
+
+const settingsHeading = css({
+  marginBlockEnd: '3'
+})
+
+const settingsSection = css({
+  borderBlockStartWidth: 'thin',
+  borderBlockStartStyle: 'solid',
+  borderBlockStartColor: 'border.default',
+  paddingBlockStart: '5'
+})
+
+const settingsAccount = css({
+  display: 'grid',
+  gap: '3.5',
+  margin: '0'
+})
+
+const settingsAccountRow = css({
+  display: 'grid',
+  gap: '1'
+})
+
+const settingsAccountDt = css({
+  color: 'fg.muted',
+  fontSize: 'xs2'
+})
+
+const settingsAccountDd = css({
+  margin: '0',
+  wordBreak: 'break-word'
+})
+
 function RouteComponent() {
   const { user } = Route.useLoaderData()
+  const { handleSignOut, isPending } = useSignOut()
 
-  return <SettingsScreen user={user} />
+  return (
+    <div className={settings}>
+      <h1 className={pageTitle}>設定</h1>
+      <p className={pageLead}>アカウントとログアウト</p>
+
+      <section className={settingsSection}>
+        <h2 className={cx(sectionLabel, settingsHeading)}>アカウント</h2>
+        <dl className={settingsAccount}>
+          <div className={settingsAccountRow}>
+            <dt className={settingsAccountDt}>名前</dt>
+            <dd className={settingsAccountDd}>{user.name}</dd>
+          </div>
+          <div className={settingsAccountRow}>
+            <dt className={settingsAccountDt}>メール</dt>
+            <dd className={settingsAccountDd}>{user.email}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className={settingsSection}>
+        <h2 className={cx(sectionLabel, settingsHeading)}>セッション</h2>
+        <StyledButton
+          visual='accent'
+          onPress={handleSignOut}
+          isDisabled={isPending}>
+          <LogOut
+            size={16}
+            aria-hidden
+          />{' '}
+          {isPending ? 'ログアウト中...' : 'ログアウト'}
+        </StyledButton>
+      </section>
+
+      <StyledLink
+        to='/'
+        search={defaultBookmarkSearch}
+        visual='accent'>
+        <ArrowLeft
+          size={16}
+          aria-hidden
+        />{' '}
+        一覧へ戻る
+      </StyledLink>
+    </div>
+  )
 }

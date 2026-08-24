@@ -22,8 +22,32 @@ export const Route = createFileRoute('/sign-in/')({
 
 function RouteComponent() {
   const { redirect } = useSearch({ from: '/sign-in/' })
+  const router = useRouter()
 
-  return <SignInScreen redirect={redirect} />
+  async function onSignIn({ email, password }: SignInSchema) {
+    const { error } = await authClient.signIn.email({ email, password })
+
+    if (error === null) {
+      await router.navigate({ to: redirect ?? '/' })
+      return null
+    }
+
+    return new SignInError({
+      code: error.code,
+      status: error.status,
+      statusText: error.statusText
+    })
+  }
+
+  return (
+    <div className={signInPage}>
+      <div className={signInPanel}>
+        <p className={signInBrand}>Pantry</p>
+        <p className={pageLead}>自分のブックマークに入る</p>
+        <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
+      </div>
+    </div>
+  )
 }
 
 const signInPage = css({
@@ -52,32 +76,3 @@ const signInBrand = css({
   letterSpacing: 'wide',
   lineHeight: 'tight'
 })
-
-function SignInScreen({ redirect }: { readonly redirect: string | undefined }) {
-  const router = useRouter()
-
-  async function onSignIn({ email, password }: SignInSchema) {
-    const { error } = await authClient.signIn.email({ email, password })
-
-    if (error === null) {
-      await router.navigate({ to: redirect ?? '/' })
-      return null
-    }
-
-    return new SignInError({
-      code: error.code,
-      status: error.status,
-      statusText: error.statusText
-    })
-  }
-
-  return (
-    <div className={signInPage}>
-      <div className={signInPanel}>
-        <p className={signInBrand}>Pantry</p>
-        <p className={pageLead}>自分のブックマークに入る</p>
-        <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
-      </div>
-    </div>
-  )
-}

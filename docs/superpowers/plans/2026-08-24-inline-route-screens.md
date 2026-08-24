@@ -23,10 +23,10 @@
 - Modify: `src/routes/_protected/settings/index.tsx`
 - Modify: `src/routes/sign-in/index.tsx`
 
-- [ ] Copy each corresponding screen component's imports and implementation into the existing `RouteComponent`, resolving relative imports for the route depth.
-- [ ] Keep route-specific `Route.useSearch`, `Route.useParams`, loader data, and route loaders as the single source of page inputs.
-- [ ] Keep existing reusable feature components as children and retain all current mutation, error, loading, navigation, and success-flash behavior.
-- [ ] Remove the local `SignInScreen` function by placing its router mutation and JSX directly in `RouteComponent`.
+- [x] Copy each corresponding screen component's imports and implementation into the existing `RouteComponent`, resolving relative imports for the route depth.
+- [x] Keep route-specific `Route.useSearch`, `Route.useParams`, loader data, and route loaders as the single source of page inputs.
+- [x] Keep existing reusable feature components as children and retain all current mutation, error, loading, navigation, and success-flash behavior.
+- [x] Remove the local `SignInScreen` function by placing its router mutation and JSX directly in `RouteComponent`.
 
 ### Task 2: Move source-boundary tests and remove wrappers
 
@@ -47,10 +47,10 @@
 - Delete: `src/features/bookmarks/components/bookmark-detail-screen.tsx`
 - Delete: `src/features/settings/components/settings-screen.tsx`
 
-- [ ] Move the three tests beside their matching routes, update imports/source reads to route-relative paths, and keep their assertions about oRPC and typed error contracts.
-- [ ] Rename the test descriptions from `Screen` to route/page terminology without changing tested behavior.
-- [ ] Replace the three feature test entries in `vitest.config.ts` with the three route test paths.
-- [ ] Delete all seven wrappers and verify no source import or filename reference remains.
+- [x] Move the three tests beside their matching routes, update imports/source reads to route-relative paths, and keep their assertions about oRPC and typed error contracts.
+- [x] Rename the test descriptions from `Screen` to route/page terminology without changing tested behavior.
+- [x] Replace the three feature test entries in `vitest.config.ts` with the three route test paths.
+- [x] Delete all seven wrappers and verify no source import or filename reference remains.
 
 ### Task 3: Update comments and verify
 
@@ -60,11 +60,11 @@
 - Modify: `src/routes/_protected/bookmarks/$id/edit.tsx`
 - Modify: `docs/testing.md` only if its route-story wording is stale after the move.
 
-- [ ] Replace comments that describe a deleted feature `Screen` boundary with route ownership wording.
-- [ ] Run `pnpm run format:check` and `pnpm run lint`.
-- [ ] Run `pnpm run typecheck` and `pnpm run test`.
-- [ ] Run `pnpm run build`.
-- [ ] Grep for all seven deleted filenames and `Screen` imports, then inspect `git diff` and `git status` for unrelated changes.
+- [x] Replace comments that describe a deleted feature `Screen` boundary with route ownership wording.
+- [x] Run `pnpm run format:check` and `pnpm run lint`.
+- [x] Run `pnpm run typecheck` and `pnpm run test`.
+- [x] Run `pnpm run build`.
+- [x] Grep for all seven deleted filenames and `Screen` imports, then inspect `git diff` and `git status` for unrelated changes.
 
 ### Task 4: Commit the implementation
 
