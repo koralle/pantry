@@ -136,4 +136,19 @@ describe('touchTag', () => {
 
     expect(result).toEqual({ kind: 'not-found' })
   })
+
+  test('同一タグへの並行 touch は両方 touched になり、行は1件のまま', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    const id = await createOwnedTag(db, 'user-a', 'Work')
+
+    const input = touchInput('user-a', Number(id))
+    const [first, second] = await Promise.all([touchTag(db, input), touchTag(db, input)])
+
+    expect(first).toEqual({ kind: 'touched' })
+    expect(second).toEqual({ kind: 'touched' })
+    const rows = await db.select({ lastUsedAt: tagsTable.lastUsedAt }).from(tagsTable)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.lastUsedAt).not.toBeNull()
+  })
 })
