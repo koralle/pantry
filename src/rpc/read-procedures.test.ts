@@ -5,6 +5,7 @@ import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
 import type { SessionUser } from '../features/auth/domain/auth-values'
 import type { InsertTagOutput } from '../features/tags/application/create-tag'
+import type { UpdateTagOutput } from '../features/tags/application/update-tag'
 import type { TagId } from '../features/tags/domain/tag-values'
 import type { ShelfTag } from '../features/tags/lib/tag-shelf'
 import { createAppRouter } from './create-app-router'
@@ -25,6 +26,7 @@ function baseDeps(): ReadDeps {
   return {
     getSession: vi.fn(async () => sessionUser),
     insertTag: vi.fn(async (): Promise<InsertTagOutput> => ({ kind: 'created', id: 1 as never })),
+    updateTag: vi.fn(async (): Promise<UpdateTagOutput> => ({ kind: 'not-found' })),
     listShelfTags: vi.fn(async () => [] satisfies ShelfTag[]),
     listTags: vi.fn(async () => []),
     findTagById: vi.fn(async () => null)

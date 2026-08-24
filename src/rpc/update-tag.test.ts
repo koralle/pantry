@@ -14,12 +14,23 @@ const userId = 'user-1'
 const input = { id: 7, name: 'Work', pinned: false, sortOrder: 0, color: null }
 const insertTag: InsertTag = async () => ({ kind: 'name-conflict' })
 
+const readDeps = {
+  listShelfTags: async () => [],
+  listTags: async () => [],
+  findTagById: async () => null
+}
+
 function authenticatedRouter(updateTag: UpdateTag, getSession = vi.fn()) {
-  getSession.mockResolvedValue({ user: { id: userId } })
+  getSession.mockResolvedValue({
+    id: userId,
+    name: 'koralle',
+    email: `${userId}@example.com`
+  })
   return createAppRouter({
     getSession,
     insertTag,
-    updateTag
+    updateTag,
+    ...readDeps
   })
 }
 
@@ -73,7 +84,8 @@ describe('UpdateTag RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag,
-      updateTag: async () => ({ kind: 'not-found' })
+      updateTag: async () => ({ kind: 'not-found' }),
+      ...readDeps
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.tags.update(input).then(
@@ -89,12 +101,17 @@ describe('UpdateTag RPC', () => {
   test('Cookie ヘッダーが認証 middleware に一度だけ届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return {
+        id: userId,
+        name: 'koralle',
+        email: `${userId}@example.com`
+      }
     })
     const router = createAppRouter({
       getSession,
       insertTag,
-      updateTag: async () => ({ kind: 'updated', id: 7 as never })
+      updateTag: async () => ({ kind: 'updated', id: 7 as never }),
+      ...readDeps
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 

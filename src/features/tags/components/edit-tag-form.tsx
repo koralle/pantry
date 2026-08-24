@@ -1,7 +1,7 @@
 import { use } from 'react'
 
-import type { TagRecord } from '../lib/tag-shelf'
 import { getUpdateTagErrorMessage } from '../lib/get-update-tag-error-message'
+import type { TagRecord } from '../lib/tag-shelf'
 import { TagForm } from './tag-form'
 
 type EditTagFormProps = {

@@ -162,7 +162,9 @@ export function createAppRouter(deps: AppRouterDeps) {
     tags: {
       create: createTag,
       update: updateTag,
-      shelf: base.use(requireAuth).handler(async ({ context }) => deps.listShelfTags(context.userId)),
+      shelf: base
+        .use(requireAuth)
+        .handler(async ({ context }) => deps.listShelfTags(context.userId)),
       list: base
         .use(requireAuth)
         .input(offsetPaginationQuerySchema)

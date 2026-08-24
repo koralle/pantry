@@ -14,6 +14,7 @@ describe('server direct RPC client', () => {
         return { id: 'user-1', name: 'koralle', email: 'koralle@example.com' }
       },
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
+      updateTag: async () => ({ kind: 'not-found' }),
       listShelfTags: async () => [],
       listTags: async () => [],
       findTagById: async () => null
