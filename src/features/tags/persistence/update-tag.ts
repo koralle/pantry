@@ -9,8 +9,8 @@ import { tagIdSchema } from '../domain/tag-values'
 /**
  * 同名判定の正本は `(userId, normalizedName)` の unique 制約。
  * 事前 SELECT で重複を弾くと、SELECT と UPDATE の隙間に割り込まれて衝突を見逃す。
- * `UPDATE OR IGNORE ... RETURNING` が空なら業務上の名前衝突とみなす。所有チェックの SELECT は
- * 存在・権限の 404 判定にだけ使い、名前衝突の判定には使わない。
+ * `UPDATE OR IGNORE ... RETURNING` が空でも、直後に同一行を再 SELECT して理由を仕分ける。
+ * 行が消えていれば削除との競合で 404、残っていれば名前衝突で 409 を返す。
  */
 export async function updateTag(db: AppDb, input: UpdateTagInput): Promise<UpdateTagOutput> {
   return db.transaction(async (tx) => {
@@ -37,6 +37,16 @@ export async function updateTag(db: AppDb, input: UpdateTagInput): Promise<Updat
     `)
 
     if (updated === undefined) {
+      const [remaining] = await tx
+        .select({ id: tagsTable.id })
+        .from(tagsTable)
+        .where(and(eq(tagsTable.id, input.id), eq(tagsTable.userId, input.userId)))
+        .limit(1)
+
+      if (remaining === undefined) {
+        return { kind: 'not-found' }
+      }
+
       return { kind: 'name-conflict' }
     }
 

@@ -31,6 +31,15 @@ describe('toUpdateTagCommand', () => {
       color: null
     })
   })
+
+  test('hex形式でないcolorは拒否する', () => {
+    expect(() =>
+      parseInput({ id: 7, name: 'Work', pinned: false, sortOrder: 0, color: 'red' })
+    ).toThrow()
+    expect(() =>
+      parseInput({ id: 7, name: 'Work', pinned: false, sortOrder: 0, color: '#12345' })
+    ).toThrow()
+  })
 })
 
 describe('executeUpdateTag', () => {

@@ -7,15 +7,19 @@ import { tagIdSchema, tagNameSchema } from '../domain/tag-values'
 import type { TagId, TagName } from '../domain/tag-values'
 
 /**
- * HTTP 直前の形。id を含む更新入力をそのまま受ける。
- * 画面が送った pinned / color / sortOrder の省略と明示を、ここで確定させない。
+ * HTTP 直前の形。full-replace 契約で、id を含む全 5 項目が必須。部分更新は受けない。
+ * 省略は欠落のまま 400 になるため、呼び出し側は常に現状値を送ること。
  */
 export const updateTagInputSchema = v.object({
   id: tagIdSchema,
   name: tagNameSchema,
   pinned: v.boolean(),
+  // UI の NumberField は負数や小数も送り得るため、境界では数値型だけを強制する
   sortOrder: v.number(),
-  color: v.nullable(v.string())
+  color: v.nullable(
+    // UI は固定パレット (#RRGGBB) のみだが、#RGB も CSS として有効なので許す
+    v.pipe(v.string(), v.regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/))
+  )
 })
 
 export type UpdateTagWireInput = v.InferInput<typeof updateTagInputSchema>

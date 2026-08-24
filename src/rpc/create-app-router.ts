@@ -1,4 +1,4 @@
-import { os } from '@orpc/server'
+import { ORPCError, os } from '@orpc/server'
 import * as v from 'valibot'
 
 import { userIdSchema } from '../features/auth/domain/auth-values'
@@ -120,7 +120,10 @@ export function createAppRouter(deps: AppRouterDeps) {
         if (result.error.code === 'tag-name-already-exists') {
           throw errors['tag-name-already-exists']()
         }
-        throw errors['tag-not-found']()
+        if (result.error.code === 'tag-not-found') {
+          throw errors['tag-not-found']()
+        }
+        throw new ORPCError('INTERNAL_SERVER_ERROR')
       }
 
       const output: UpdateTagOutput = {

@@ -287,6 +287,27 @@ describe.sequential('updateTag', () => {
     })
   })
 
+  test('所有確認の後に行が消えた競合は not-found を返す', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    const id = await insertTagRow(db, { userId: 'user-a', name: 'Vanish' })
+
+    // 所有 SELECT と UPDATE の隙間で別接続が削除した状況を、BEFORE UPDATE トリガで再現する。
+    // 行を消すと UPDATE の対象が消えるため RETURNING は空になり、404 仕分けの分岐に入る。
+    await db.run(
+      sql.raw(
+        `CREATE TRIGGER vanish_after_check BEFORE UPDATE ON tags WHEN OLD.id = ${id} BEGIN DELETE FROM tags WHERE id = ${id}; END`
+      )
+    )
+
+    const result = await updateTag(
+      db,
+      createCommand({ userId: 'user-a', id, name: 'Renamed', sortOrder: 3 })
+    )
+
+    expect(result).toEqual({ kind: 'not-found' })
+  })
+
   test('汎用 UNIQUE 判定と例外は import しない', () => {
     const source = readFileSync(join(persistenceDir, 'update-tag.ts'), 'utf8')
     expect(source).not.toContain('isSqliteUniqueConstraintError')
