@@ -13,6 +13,7 @@ import type { AppRouter } from './create-app-router'
 import { handleRpcRequest } from './handle-request.server'
 
 const userId = 'user-1'
+const detailFixtureId = '019fae92-3bb0-78cd-b488-65ce0e26a001'
 
 type RouterDeps = Parameters<typeof createAppRouter>[0]
 
@@ -87,8 +88,8 @@ describe('bookmarks RPC 契約', () => {
     for (const call of [
       (client: RouterClient<AppRouter>) =>
         client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 50, offset: 0 }),
-      (client: RouterClient<AppRouter>) => client.bookmarks.detail({ id: 'b-1' }),
-      (client: RouterClient<AppRouter>) => client.bookmarks.delete({ id: 'b-1' })
+      (client: RouterClient<AppRouter>) => client.bookmarks.detail({ id: detailFixtureId }),
+      (client: RouterClient<AppRouter>) => client.bookmarks.delete({ id: detailFixtureId })
     ]) {
       const deps = baseDeps()
       deps.getSession = vi.fn(async () => null)
@@ -165,6 +166,18 @@ describe('bookmarks.list', () => {
     ).rejects.toBeInstanceOf(Error)
     expect(getResponse().status).toBeGreaterThanOrEqual(400)
     expect(getResponse().status).toBeLessThan(500)
+  })
+
+  test('limit が上限 50 を超えると 400 BAD_REQUEST を返す', async () => {
+    const deps = baseDeps()
+    const { client, getResponse } = createTestClient(createAppRouter(deps))
+
+    const error = await rejection(
+      client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 51, offset: 0 })
+    )
+
+    expect(error.code).toBe('BAD_REQUEST')
+    expect(getResponse().status).toBe(400)
   })
 
   test('DB 障害は内部メッセージを漏らさず 500 を返す', async () => {
@@ -270,6 +283,16 @@ describe('bookmarks.delete', () => {
     expect(error.code).toBe('BAD_REQUEST')
     expect(getResponse().status).toBe(400)
     expect(softDeleteBookmark).not.toHaveBeenCalled()
+  })
+
+  test('id は UUID 以外（空文字を含む）を 400 BAD_REQUEST で拒否する', async () => {
+    const deps = baseDeps()
+    const { client, getResponse } = createTestClient(createAppRouter(deps))
+
+    const error = await rejection(client.bookmarks.delete({ id: '' }))
+
+    expect(error.code).toBe('BAD_REQUEST')
+    expect(getResponse().status).toBe(400)
   })
 
   test('未知の障害は内部メッセージを漏らさず 500 を返す', async () => {

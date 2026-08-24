@@ -358,11 +358,12 @@ export function createAppRouter(deps: AppRouterDeps) {
   const bookmarkListInputSchema = v.object({
     ...offsetPaginationQuerySchema.entries,
     q: v.optional(v.string()),
-    tagNames: v.optional(v.array(v.string())),
+    tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
     tagMode: v.picklist(['and', 'or']),
     sort: v.picklist(['newest', 'updated'])
   })
-  const bookmarkIdInputSchema = v.object({ id: v.string() })
+  /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
+  const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) })
 
   const listBookmarks = base
     .use(requireAuth)

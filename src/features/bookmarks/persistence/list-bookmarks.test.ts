@@ -206,6 +206,17 @@ describe('listBookmarks', () => {
     expect(none).toEqual([])
   })
 
+  test(String.raw`q の % _ \ はワイルドカードではなくリテラルとして一致させる`, async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    await insertBookmark(db, { id: 'b-literal', userId: 'user-a', title: '50%_off' })
+    await insertBookmark(db, { id: 'b-wildcard', userId: 'user-a', title: '50Xoff' })
+
+    const items = await listBookmarks(db, query('user-a', { q: '50%_' }))
+
+    expect(items.map((item) => item.id)).toEqual(['b-literal'])
+  })
+
   test('タグ AND は全て持つブックマークだけ、OR はどれかを含む', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')

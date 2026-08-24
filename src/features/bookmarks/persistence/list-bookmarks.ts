@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, like, or, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm'
 
 import type { AppDb } from '../../../db/app-db'
 import { bookmarkTable } from '../../../db/schema/bookmark'
@@ -34,12 +34,13 @@ export async function listBookmarks(
   const conditions = [eq(bookmarkTable.userId, userId), isNull(bookmarkTable.deletedAt)]
 
   if (q != null) {
-    const pattern = `%${q}%`
+    // ユーザー入力の % _ \ をリテラルとして扱わせる。LIKE のワイルドカード注入を潰す。
+    const pattern = `%${q.replace(/[\\%_]/g, String.raw`\$&`)}%`
     conditions.push(
       or(
-        like(bookmarkTable.title, pattern),
-        like(bookmarkTable.url, pattern),
-        like(bookmarkTable.note, pattern)
+        sql`${bookmarkTable.title} like ${pattern} escape '\\'`,
+        sql`${bookmarkTable.url} like ${pattern} escape '\\'`,
+        sql`${bookmarkTable.note} like ${pattern} escape '\\'`
       )!
     )
   }

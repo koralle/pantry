@@ -53,7 +53,7 @@ export async function getBookmarkDetail(
     .select({ name: tagsTable.name })
     .from(bookmarkTagsTable)
     .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
-    .where(eq(bookmarkTagsTable.bookmarkId, bookmark.id))
+    .where(and(eq(bookmarkTagsTable.bookmarkId, bookmark.id), eq(tagsTable.userId, userId)))
     .orderBy(tagsTable.name)
 
   return {
