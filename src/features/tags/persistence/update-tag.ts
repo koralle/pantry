@@ -6,6 +6,12 @@ import { tagsTable } from '../../../db/schema/tag'
 import type { UpdateTagInput, UpdateTagOutput } from '../application/update-tag'
 import { tagIdSchema } from '../domain/tag-values'
 
+/**
+ * 同名判定の正本は `(userId, normalizedName)` の unique 制約。
+ * 事前 SELECT で重複を弾くと、SELECT と UPDATE の隙間に割り込まれて衝突を見逃す。
+ * `UPDATE OR IGNORE ... RETURNING` が空なら業務上の名前衝突とみなす。所有チェックの SELECT は
+ * 存在・権限の 404 判定にだけ使い、名前衝突の判定には使わない。
+ */
 export async function updateTag(db: AppDb, input: UpdateTagInput): Promise<UpdateTagOutput> {
   return db.transaction(async (tx) => {
     const [existing] = await tx

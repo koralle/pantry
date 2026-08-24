@@ -43,6 +43,10 @@ export type CreateTagOutput = {
   readonly id: number
 }
 
+/**
+ * HTTP 上の UpdateTag 成功形。branded `TagId` は載せない。
+ * brand は型システムの印で、JSON には残らない。
+ */
 export type UpdateTagOutput = {
   readonly id: number
 }
