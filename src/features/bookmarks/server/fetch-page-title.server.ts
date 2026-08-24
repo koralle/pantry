@@ -9,6 +9,8 @@ type FetchLike = typeof fetch
 /**
  * 禁止 URL は例外ではなく `url-not-allowed` の戻り値として届ける。
  * redirect 先の検証も同じ関数に通し、private host への hop を塞ぐ。
+ * hostname は WHATWG URL 正規化後（IPv6 は hex 展開・小文字）を前提とするが、
+ * 生の `::ffff:127.0.0.1` 表記も受けるよう parser 側で吸収する。
  */
 function parseAllowedPageUrl(rawUrl: string): URL | undefined {
   let url: URL
@@ -35,23 +37,7 @@ function parseAllowedPageUrl(rawUrl: string): URL | undefined {
   return url
 }
 
-function isBlockedIp(hostname: string): boolean {
-  if (hostname === '::1' || hostname === '0:0:0:0:0:0:0:1') {
-    return true
-  }
-
-  const ipv4 = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
-  if (ipv4 == null) {
-    return false
-  }
-
-  const parts = ipv4.slice(1).map(Number)
-  if (parts.some((part) => part > 255)) {
-    return true
-  }
-
-  const [a, b] = parts as [number, number, number, number]
-
+function isBlockedIpv4Range(a: number, b: number): boolean {
   if (a === 10 || a === 127 || a === 0) {
     return true
   }
@@ -66,6 +52,92 @@ function isBlockedIp(hostname: string): boolean {
   }
   if (a === 100 && b >= 64 && b <= 127) {
     return true
+  }
+
+  return false
+}
+
+/**
+ * IPv6 を 8 つの hextet に展開する。`::` 圧縮と末尾ドット形式（::ffff:1.2.3.4）も受け付ける。
+ * 不正な表記は undefined。
+ */
+function parseIpv6Hextets(hostname: string): number[] | undefined {
+  const parts = hostname.split('::')
+  if (parts.length > 2) {
+    return undefined
+  }
+  const compressed = parts.length === 2
+  const [headSection = '', tailSection = ''] = parts
+
+  const headTokens = headSection === '' ? [] : headSection.split(':')
+  const tailTokens = compressed && tailSection !== '' ? tailSection.split(':') : []
+  const tokens = [...headTokens, ...tailTokens]
+  const lastTokenIndex = tokens.length - 1
+
+  const hextets: number[] = []
+  for (const [index, token] of tokens.entries()) {
+    if (token.includes('.')) {
+      const ipv4 = token.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+      if (ipv4 == null || index !== lastTokenIndex) {
+        return undefined
+      }
+      const octets = ipv4.slice(1).map(Number)
+      if (octets.some((octet) => octet > 255)) {
+        return undefined
+      }
+      const [o0 = 0, o1 = 0, o2 = 0, o3 = 0] = octets
+      hextets.push((o0 << 8) | o1, (o2 << 8) | o3)
+      continue
+    }
+
+    if (!/^[0-9a-f]{1,4}$/.test(token)) {
+      return undefined
+    }
+    hextets.push(Number.parseInt(token, 16))
+  }
+
+  if (hextets.length > 8 || (!compressed && hextets.length !== 8)) {
+    return undefined
+  }
+  if (compressed) {
+    hextets.splice(headTokens.length, 0, ...Array.from({ length: 8 - hextets.length }, () => 0))
+  }
+
+  return hextets
+}
+function isBlockedIp(rawHostname: string): boolean {
+  // Workerd の URL.hostname は IPv6 の角括弧を残す（Node / WHATWG は剥がす）ため、ここで正規化する。
+  const hostname =
+    rawHostname.startsWith('[') && rawHostname.endsWith(']')
+      ? rawHostname.slice(1, -1)
+      : rawHostname
+
+  const ipv4 = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  if (ipv4 != null) {
+    const parts = ipv4.slice(1).map(Number)
+    if (parts.some((part) => part > 255)) {
+      return true
+    }
+    const [a, b] = parts as [number, number, number, number]
+    return isBlockedIpv4Range(a, b)
+  }
+
+  const hextets = parseIpv6Hextets(hostname)
+  if (hextets == null || hextets.length !== 8) {
+    return false
+  }
+
+  const [g0 = 0, g1 = 0, g2 = 0, g3 = 0, g4 = 0, g5 = 0, g6 = 0] = hextets
+  // Fc00::/7 unique local、fe80::/10 link-local
+  if ((g0 & 0xFE00) === 0xFC00 || (g0 & 0xFFC0) === 0xFE80) {
+    return true
+  }
+
+  // 先頭 96bit がゼロ（::1、未指定 ::、廃止済み IPv4-compatible）または
+  // IPv4-mapped（::ffff:0:0/96）なら、下位 32bit を IPv4 として再検査する。
+  // ::ffff:127.0.0.1 は URL 正規化で ::ffff:7f00:1 になるため hex 形式での判定が必須。
+  if (g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && g4 === 0 && (g5 === 0 || g5 === 0xFFFF)) {
+    return isBlockedIpv4Range(g6 >> 8, g6 & 0xFF)
   }
 
   return false

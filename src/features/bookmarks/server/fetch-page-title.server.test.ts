@@ -24,6 +24,18 @@ describe('fetchPageTitle', () => {
     expect(await fetchPageTitle('http://192.168.1.1/')).toEqual({ kind: 'url-not-allowed' })
   })
 
+  test('rejects IPv4-mapped IPv6 loopback as url-not-allowed', async () => {
+    expect(await fetchPageTitle('http://[::ffff:127.0.0.1]/')).toEqual({ kind: 'url-not-allowed' })
+    expect(await fetchPageTitle('http://[::ffff:10.0.0.1]/')).toEqual({ kind: 'url-not-allowed' })
+    expect(await fetchPageTitle('http://[::1]/')).toEqual({ kind: 'url-not-allowed' })
+  })
+
+  test('rejects private IPv6 ranges as url-not-allowed', async () => {
+    expect(await fetchPageTitle('http://[fc00::1]/')).toEqual({ kind: 'url-not-allowed' })
+    expect(await fetchPageTitle('http://[fd12:3456:789a::1]/')).toEqual({ kind: 'url-not-allowed' })
+    expect(await fetchPageTitle('http://[fe80::1]/')).toEqual({ kind: 'url-not-allowed' })
+  })
+
   test('returns unavailable on network failure', async () => {
     const failingFetch = vi.fn(async () => {
       throw new Error('network down')
