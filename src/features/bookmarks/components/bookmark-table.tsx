@@ -11,9 +11,9 @@ import {
 } from '../../../styles/data-table'
 import { srOnly } from '../../../styles/sr-only'
 import { tagChip } from '../../../styles/tag-chip'
-import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
 import { formatListDateTime } from '../lib/format-date-time'
 import { shortenUrl } from '../lib/shorten-url'
+import type { BookmarkListItem } from '../persistence/list-bookmarks'
 
 const bookmarkTags = css({
   display: 'flex',

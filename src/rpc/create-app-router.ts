@@ -8,6 +8,8 @@ import {
   executeCreateBookmark
 } from '../features/bookmarks/application/create-bookmark'
 import type { InsertBookmark } from '../features/bookmarks/application/create-bookmark'
+import { executeDeleteBookmark } from '../features/bookmarks/application/delete-bookmark'
+import type { SoftDeleteBookmark } from '../features/bookmarks/application/delete-bookmark'
 import {
   executeFetchPageTitle,
   fetchPageTitleInputSchema
@@ -19,6 +21,11 @@ import {
 } from '../features/bookmarks/application/update-bookmark'
 import type { UpdateBookmark } from '../features/bookmarks/application/update-bookmark'
 import { bookmarkIdSchema } from '../features/bookmarks/domain/bookmark-values'
+import type { BookmarkDetail } from '../features/bookmarks/persistence/get-bookmark-detail'
+import type {
+  BookmarkListItem,
+  BookmarkListQuery
+} from '../features/bookmarks/persistence/list-bookmarks'
 import {
   createTagInputSchema,
   executeCreateTag,
@@ -52,10 +59,7 @@ export type BookmarkEditorOutput = {
   readonly tagIds: number[]
 }
 
-type FindBookmarkEditor = (
-  userId: UserId,
-  id: string
-) => Promise<BookmarkEditorOutput | null>
+type FindBookmarkEditor = (userId: UserId, id: string) => Promise<BookmarkEditorOutput | null>
 
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
@@ -76,6 +80,14 @@ export type AppRouterDeps = {
   readonly fetchPageTitle: FetchPageTitle
   readonly updateBookmark: UpdateBookmark
   readonly findBookmarkEditor: FindBookmarkEditor
+  readonly listBookmarks: (
+    input: { readonly userId: UserId } & BookmarkListQuery
+  ) => Promise<BookmarkListItem[]>
+  readonly getBookmarkDetail: (
+    userId: UserId,
+    input: { readonly id: string }
+  ) => Promise<BookmarkDetail | null>
+  readonly softDeleteBookmark: SoftDeleteBookmark
 }
 
 /**
@@ -340,6 +352,76 @@ export function createAppRouter(deps: AppRouterDeps) {
       return record
     })
 
+  const bookmarkListInputSchema = v.object({
+    ...offsetPaginationQuerySchema.entries,
+    q: v.optional(v.string()),
+    tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
+    tagMode: v.picklist(['and', 'or']),
+    sort: v.picklist(['newest', 'updated'])
+  })
+  /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
+  const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) })
+
+  const listBookmarks = base
+    .use(requireAuth)
+    .input(bookmarkListInputSchema)
+    .handler(async ({ input, context }) =>
+      deps.listBookmarks({
+        userId: context.userId as UserId,
+        tagMode: input.tagMode,
+        sort: input.sort,
+        limit: input.limit,
+        offset: input.offset,
+        ...(input.q !== undefined ? { q: input.q } : {}),
+        ...(input.tagNames !== undefined ? { tagNames: input.tagNames } : {})
+      })
+    )
+
+  /**
+   * Query service の対象なし null は、ここでだけ 404 defined error へ変換する。
+   * DB 障害や不正な保存済み row は包み直さず 500 に抜ける。
+   */
+  const bookmarkDetail = base
+    .use(requireAuth)
+    .errors({
+      'bookmark-not-found': {
+        status: 404
+      }
+    })
+    .input(bookmarkIdInputSchema)
+    .handler(async ({ input, context, errors }) => {
+      const detail = await deps.getBookmarkDetail(context.userId as UserId, { id: input.id })
+
+      if (detail == null) {
+        throw errors['bookmark-not-found']()
+      }
+
+      return detail
+    })
+
+  /** 成功なら plain string ID を wire へ返す。Application の判別子はここで消える。 */
+  const deleteBookmark = base
+    .use(requireAuth)
+    .errors({
+      'bookmark-not-found': {
+        status: 404
+      }
+    })
+    .input(bookmarkIdInputSchema)
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeDeleteBookmark({
+        softDeleteBookmark: deps.softDeleteBookmark,
+        userId: context.userId as UserId,
+        command: input
+      })
+
+      if (result.kind === 'bookmark-not-found') {
+        throw errors['bookmark-not-found']()
+      }
+
+      return { id: result.id }
+    })
+
   return {
     auth,
     tags: {
@@ -373,7 +455,10 @@ export function createAppRouter(deps: AppRouterDeps) {
       create: createBookmark,
       title: fetchTitle,
       update: updateBookmark,
-      editor
+      editor,
+      list: listBookmarks,
+      detail: bookmarkDetail,
+      delete: deleteBookmark
     }
   }
 }

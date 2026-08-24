@@ -5,8 +5,11 @@
 import { getDB } from '../db/get-db.server'
 import type { SessionUser } from '../features/auth/domain/auth-values'
 import { getAuth } from '../features/auth/server/get-auth.server'
+import { getBookmarkDetail } from '../features/bookmarks/persistence/get-bookmark-detail'
 import { insertBookmark } from '../features/bookmarks/persistence/insert-bookmark'
+import { listBookmarks } from '../features/bookmarks/persistence/list-bookmarks'
 import { selectBookmarkEditor } from '../features/bookmarks/persistence/select-bookmark-editor'
+import { softDeleteBookmark } from '../features/bookmarks/persistence/soft-delete-bookmark'
 import { updateBookmark } from '../features/bookmarks/persistence/update-bookmark'
 import { fetchPageTitle } from '../features/bookmarks/server/fetch-page-title.server'
 import { insertTag } from '../features/tags/persistence/insert-tag'
@@ -39,5 +42,8 @@ export const appRouter = createAppRouter({
   insertBookmark: async (input) => insertBookmark(getDB(), input),
   fetchPageTitle: async (url) => fetchPageTitle(url),
   updateBookmark: async (input) => updateBookmark(getDB(), input),
-  findBookmarkEditor: async (userId, id) => selectBookmarkEditor(getDB(), userId, id)
+  findBookmarkEditor: async (userId, id) => selectBookmarkEditor(getDB(), userId, id),
+  listBookmarks: async (input) => listBookmarks(getDB(), input),
+  getBookmarkDetail: async (userId, input) => getBookmarkDetail(getDB(), userId, input),
+  softDeleteBookmark: async (input) => softDeleteBookmark(getDB(), input)
 })

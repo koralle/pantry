@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Outlet, createRootRouteWithContext, createRoute } from '@tanstack/react-router'
-import { expect, mocked, userEvent, waitFor, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
-import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmarks'
-import type { BookmarkListItem } from '../../features/bookmarks/lib/attach-bookmark-tags'
 import { writeListLayout } from '../../features/bookmarks/lib/list-layout-preference'
+import type { BookmarkListItem } from '../../features/bookmarks/persistence/list-bookmarks'
 import type { BookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
 import type { ShelfTag } from '../../features/tags/lib/tag-shelf'
+import { orpc } from '../../rpc/query'
 import preview from '../../storybook/preview'
 import { Route as ProtectedLayoutRoute } from '../_protected'
 import { Route as ListFileRoute } from './index'
@@ -16,6 +16,26 @@ const storyQueryClient = new QueryClient({
     queries: {
       retry: false
     }
+  }
+})
+
+/**
+ * 一覧 read の実 network を止めず、queryFn だけを差し替える。
+ * loader の prefetch も load-more も本物の query options / key を通る。
+ */
+type ListFixtureInput = { readonly offset?: number }
+
+type ListFixture = (
+  input: ListFixtureInput
+) => BookmarkListItem[] | Promise<BookmarkListItem[]> | Promise<never>
+
+let listFixture: ListFixture
+
+storyQueryClient.setQueryDefaults(orpc.bookmarks.list.key(), {
+  queryFn: async ({ queryKey }) => {
+    const state = queryKey[1] as { input?: ListFixtureInput }
+    const result = listFixture(state?.input ?? {})
+    return result
   }
 })
 
@@ -139,11 +159,8 @@ function makeBookmark(
   bookmark: Pick<BookmarkListItem, 'id' | 'title' | 'url'> & Partial<BookmarkListItem>
 ): BookmarkListItem {
   return {
-    userId: session.user.id,
     note: null,
-    createdAt: now,
-    updatedAt: now,
-    deletedAt: null,
+    updatedAt: now.toISOString(),
     tags: [],
     ...bookmark
   }
@@ -160,8 +177,7 @@ const longBookmark = makeBookmark({
   title: '2020年版: なぜ仮想 DOM / 宣言的 UI という概念が、あのときの俺達の魂を震えさせたのか',
   url: 'https://zenn.dev/mizchi/books/0c55c230f5cc754c38b9',
   note: '当時の空気感と、今のコンポーネント設計を見比べるためのメモ。カード表示では2行までに収まるはず。',
-  createdAt: now,
-  updatedAt: later,
+  updatedAt: later.toISOString(),
   tags: [
     { id: 1, name: 'reading' },
     { id: 2, name: 'work' },
@@ -195,22 +211,20 @@ function neverPromise<T>(): Promise<T> {
 }
 
 function stubListApis() {
-  mocked(fetchBookmarks).mockReset()
-
-  mocked(fetchBookmarks).mockResolvedValue(bookmarks)
+  storyQueryClient.clear()
+  listFixture = () => bookmarks
 }
 
 function stubPagedBookmarks(next: BookmarkListItem[] | Promise<BookmarkListItem[]> | Error) {
-  mocked(fetchBookmarks).mockImplementation(async (opts) => {
-    const offset = Number(opts.data.offset ?? 0)
-    if (offset === 0) {
+  listFixture = (input) => {
+    if ((input.offset ?? 0) === 0) {
       return firstPage
     }
     if (next instanceof Error) {
-      throw next
+      return Promise.reject(next)
     }
     return next
-  })
+  }
 }
 
 function listQuery(query: Partial<BookmarkSearchSchema>) {
@@ -291,7 +305,7 @@ export const Cards = meta.story({
 
 export const Empty = meta.story({
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockResolvedValue([])
+    listFixture = () => []
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -305,7 +319,7 @@ export const Empty = meta.story({
 export const EmptyBySearch = meta.story({
   parameters: listQuery({ q: '存在しないキーワード' }),
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockResolvedValue([])
+    listFixture = () => []
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -325,7 +339,7 @@ export const EmptyBySearch = meta.story({
 export const EmptyByTags = meta.story({
   parameters: listQuery({ tags: ['reading'] }),
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockResolvedValue([])
+    listFixture = () => []
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -341,7 +355,7 @@ export const EmptyByTags = meta.story({
 export const SearchResults = meta.story({
   parameters: listQuery({ q: 'React' }),
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockResolvedValue([reactBookmark])
+    listFixture = () => [reactBookmark]
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -356,7 +370,7 @@ export const SearchResults = meta.story({
 export const TagFilterAnd = meta.story({
   parameters: listQuery({ tags: ['reading', 'work'], tagMode: 'and' }),
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockResolvedValue([longBookmark])
+    listFixture = () => [longBookmark]
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -376,7 +390,7 @@ export const TagFilterAnd = meta.story({
 export const TagFilterOr = meta.story({
   parameters: listQuery({ tags: ['reading'], tagMode: 'or' }),
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockResolvedValue([longBookmark])
+    listFixture = () => [longBookmark]
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -407,7 +421,7 @@ export const SortUpdated = meta.story({
 
 export const InitialLoading = meta.story({
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockImplementation(() => neverPromise())
+    listFixture = () => neverPromise()
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -430,7 +444,7 @@ export const InitialLoading = meta.story({
 export const InitialLoadingCards = meta.story({
   beforeEach: async () => {
     writeListLayout('card')
-    mocked(fetchBookmarks).mockImplementation(() => neverPromise())
+    listFixture = () => neverPromise()
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -452,7 +466,7 @@ export const InitialLoadingCards = meta.story({
 
 export const LoadError = meta.story({
   beforeEach: async () => {
-    mocked(fetchBookmarks).mockRejectedValue(new Error('一覧の読み込みに失敗しました'))
+    listFixture = () => Promise.reject(new Error('一覧の読み込みに失敗しました'))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

@@ -20,7 +20,12 @@ describe('server direct RPC client', () => {
       listTags: async () => [],
       findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
-      fetchPageTitle: async () => ({ kind: 'unavailable' })
+      fetchPageTitle: async () => ({ kind: 'unavailable' }),
+      updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+      findBookmarkEditor: async () => null,
+      listBookmarks: async () => [],
+      getBookmarkDetail: async () => null,
+      softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })
 
     const client = createServerRpcClient(

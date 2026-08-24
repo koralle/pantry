@@ -28,6 +28,11 @@ function authenticatedRouter(fetchPageTitle: FetchPageTitle, getSession = vi.fn(
     listTags: async () => [],
     findTagById: async () => null,
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
+    updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+    findBookmarkEditor: async () => null,
+    listBookmarks: async () => [],
+    getBookmarkDetail: async () => null,
+    softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' }),
     fetchPageTitle
   })
 }
@@ -53,7 +58,12 @@ describe('FetchPageTitle RPC', () => {
       listTags: async () => [],
       findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
-      fetchPageTitle: async () => ({ kind: 'unavailable' })
+      fetchPageTitle: async () => ({ kind: 'unavailable' }),
+      updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+      findBookmarkEditor: async () => null,
+      listBookmarks: async () => [],
+      getBookmarkDetail: async () => null,
+      softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })
     const client = createTestClient(router)
     const rejected = await client.bookmarks.title({ url: 'https://example.com' }).then(

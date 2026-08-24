@@ -1,9 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { getErrorMessage } from 'react-error-boundary'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
-import { fetchBookmarks } from '../functions/fetch-bookmarks'
-import type { BookmarkListItem } from '../lib/attach-bookmark-tags'
+import { bookmarkListQueryOptions } from '../lib/bookmark-list-query-options'
+import type { BookmarkListItem } from '../persistence/list-bookmarks'
 
 export function useBookmarkListPagination({
   initial,
@@ -14,6 +15,7 @@ export function useBookmarkListPagination({
   readonly pageLimit: number
   readonly search: BookmarkSearchSchema
 }) {
+  const queryClient = useQueryClient()
   const [items, setItems] = useState(initial)
   const [hasMore, setHasMore] = useState(initial.length >= pageLimit)
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
@@ -33,16 +35,17 @@ export function useBookmarkListPagination({
     setIsLoadingMore(true)
     void (async () => {
       try {
-        const next = await fetchBookmarks({
-          data: {
+        // Offset 別の query key で次ページだけを取り、既存の append UI を維持する。
+        const next = await queryClient.fetchQuery(
+          bookmarkListQueryOptions({
             tagMode: search.tagMode,
             sort: search.sort,
             limit: pageLimit,
             offset: items.length,
             ...(search.q !== undefined ? { q: search.q } : {}),
-            ...(search.tags !== undefined ? { tagNames: search.tags } : {})
-          }
-        })
+            ...(search.tags !== undefined ? { tags: search.tags } : {})
+          })
+        )
         setItems((prev) => [...prev, ...next])
         setHasMore(next.length >= pageLimit)
       } catch (error) {

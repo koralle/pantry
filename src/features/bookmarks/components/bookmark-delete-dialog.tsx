@@ -1,13 +1,15 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Trash2, X } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay, Text } from 'react-aria-components'
 
+import { orpc } from '../../../rpc/query'
 import { StyledButton } from '../../../shared/components/styled-button'
 import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../styles/dialog'
 import { fieldError } from '../../../styles/form'
 import type { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
-import { deleteBookmark } from '../functions/delete-bookmark'
+import { getDeleteBookmarkErrorMessage } from '../lib/get-delete-bookmark-error-message'
 
 export function BookmarkDeleteDialog({
   bookmark,
@@ -17,22 +19,37 @@ export function BookmarkDeleteDialog({
   readonly listSearch: ReturnType<typeof buildListBackSearch>
 }) {
   const navigate = useNavigate()
+  const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, startDeleteTransition] = useTransition()
+
+  const deleteMutation = useMutation(
+    orpc.bookmarks.delete.mutationOptions({
+      onSuccess: () => {
+        // DB commit 済みの成功を refresh 失敗で覆さない。invalidate は best-effort。
+        void router.invalidate().catch((error: unknown) => {
+          console.error('Failed to refresh route data after DeleteBookmark', error)
+        })
+      }
+    })
+  )
 
   const handleDelete = () => {
     setDeleteError(null)
     startDeleteTransition(async () => {
       try {
-        await deleteBookmark({ data: { id: bookmark.id } })
+        await deleteMutation.mutateAsync({ id: bookmark.id })
         await navigate({
           to: '/',
           search: listSearch,
           state: { bookmarkDeleted: true }
         })
       } catch (error) {
-        setDeleteError(error instanceof Error ? error.message : '削除に失敗しました')
+        const message = getDeleteBookmarkErrorMessage(error)
+        if (message != null) {
+          setDeleteError(message)
+        }
       }
     })
   }

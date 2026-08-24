@@ -42,7 +42,7 @@ const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんで
  */
 const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url }) => {
   try {
-    const fetchedTitle = await rpcClient.bookmarks.title({ url })
+    const fetchedTitle = await (await getRpcClient()).bookmarks.title({ url })
     if (fetchedTitle === null) {
       return {
         status: 'error',
