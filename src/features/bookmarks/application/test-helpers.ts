@@ -45,26 +45,3 @@ export function tagName(value: string): TagName {
 export function userId(value: string): UserId {
   return v.parse(userIdSchema, value)
 }
-
-/** Promise ベースの drizzle 風チェーン。任意の末端で await できるようにする。 */
-export function createThenableChain<T>(result: T | Promise<T>) {
-  const chain = Promise.resolve(result) as Promise<T> & Record<string, () => unknown>
-  const methods = [
-    'from',
-    'where',
-    'limit',
-    'offset',
-    'orderBy',
-    'set',
-    'values',
-    'returning',
-    'innerJoin',
-    'leftJoin'
-  ] as const
-
-  for (const method of methods) {
-    chain[method] = () => chain
-  }
-
-  return chain
-}

@@ -25,6 +25,6 @@ export function createServerRpcClient(
 }
 
 /**
- * 本番では request context の外で生成しない。headers provider は呼び出し毎に解決する。
+ * Request context の外で生成しない。headers provider は呼び出し毎に解決する。
  */
 export const serverRpcClient = createServerRpcClient(() => getRequestHeaders())

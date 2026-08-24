@@ -14,6 +14,12 @@ import {
 } from '../features/bookmarks/application/fetch-page-title'
 import type { FetchPageTitle } from '../features/bookmarks/application/fetch-page-title'
 import {
+  executeUpdateBookmark,
+  updateBookmarkInputSchema
+} from '../features/bookmarks/application/update-bookmark'
+import type { UpdateBookmark } from '../features/bookmarks/application/update-bookmark'
+import { bookmarkIdSchema } from '../features/bookmarks/domain/bookmark-values'
+import {
   createTagInputSchema,
   executeCreateTag,
   toCreateTagCommand
@@ -37,6 +43,20 @@ const tagIdInputSchema = v.object({
   id: v.pipe(v.number(), v.integer(), v.minValue(1))
 })
 
+/** 編集画面に必要な projection。branded な型は wire output に残さない。 */
+export type BookmarkEditorOutput = {
+  readonly id: string
+  readonly url: string
+  readonly title: string
+  readonly note: string | null
+  readonly tagIds: number[]
+}
+
+type FindBookmarkEditor = (
+  userId: UserId,
+  id: string
+) => Promise<BookmarkEditorOutput | null>
+
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
  * RPC テストは session と各 service を差し替え、Turso を立てずに契約だけを叩く。
@@ -54,6 +74,8 @@ export type AppRouterDeps = {
   readonly findTagById: (userId: UserId, id: number) => Promise<TagRecord | null>
   readonly insertBookmark: InsertBookmark
   readonly fetchPageTitle: FetchPageTitle
+  readonly updateBookmark: UpdateBookmark
+  readonly findBookmarkEditor: FindBookmarkEditor
 }
 
 /**
@@ -83,6 +105,11 @@ export type CreateBookmarkOutput = {
  */
 export type UpdateTagOutput = {
   readonly id: number
+}
+
+/** HTTP 上の UpdateBookmark 成功形。Application の branded `BookmarkId` は載せない。 */
+export type UpdateBookmarkOutput = {
+  readonly id: string
 }
 
 /**
@@ -240,6 +267,37 @@ export function createAppRouter(deps: AppRouterDeps) {
 
       return output
     })
+  const updateBookmark = base
+    .use(requireAuth)
+    .input(updateBookmarkInputSchema)
+    .errors({
+      'duplicate-url': {
+        status: 409
+      },
+      'invalid-tag': {
+        status: 409
+      },
+      'bookmark-not-found': {
+        status: 404
+      }
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeUpdateBookmark({
+        updateBookmark: deps.updateBookmark,
+        userId: context.userId as UserId,
+        command: input
+      })
+
+      if (!result.ok) {
+        throw errors[result.error.code]()
+      }
+
+      const output: UpdateBookmarkOutput = {
+        id: result.value.id
+      }
+
+      return output
+    })
   const fetchTitle = base
     .use(requireAuth)
     .input(fetchPageTitleInputSchema)
@@ -259,6 +317,27 @@ export function createAppRouter(deps: AppRouterDeps) {
       }
 
       return result.value
+    })
+  const editor = base
+    .use(requireAuth)
+    .input(
+      v.object({
+        id: bookmarkIdSchema
+      })
+    )
+    .errors({
+      'bookmark-not-found': {
+        status: 404
+      }
+    })
+    .handler(async ({ input, context, errors }): Promise<BookmarkEditorOutput> => {
+      const record = await deps.findBookmarkEditor(context.userId as UserId, input.id)
+
+      if (record == null) {
+        throw errors['bookmark-not-found']()
+      }
+
+      return record
     })
 
   return {
@@ -292,7 +371,9 @@ export function createAppRouter(deps: AppRouterDeps) {
     },
     bookmarks: {
       create: createBookmark,
-      title: fetchTitle
+      title: fetchTitle,
+      update: updateBookmark,
+      editor
     }
   }
 }

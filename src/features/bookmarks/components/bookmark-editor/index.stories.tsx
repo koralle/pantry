@@ -3,11 +3,8 @@ import { styled } from 'styled-system/jsx'
 import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
 
-import { err, ok } from '../../../../shared/domain/result'
 import preview from '../../../../storybook/preview'
 import { tagIdSchema } from '../../../tags/domain/tag-values'
-import type { ExecuteUpdateBookmark } from '../../application/execute-update-bookmark'
-import type { BookmarkEditorData } from '../../application/load-bookmark-for-edit'
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
@@ -15,7 +12,7 @@ import {
   bookmarkUrlSchema
 } from '../../domain/bookmark-values'
 import { BookmarkEditor } from './index'
-import type { BookmarkTitleFetchAction } from './index'
+import type { BookmarkEditorData, BookmarkTitleFetchAction } from './index'
 
 const bookmarkId = v.parse(bookmarkIdSchema, uuidv7())
 
@@ -45,7 +42,7 @@ const meta = preview.meta({
 export const Default = meta.story({
   args: {
     initialData,
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => ok({ bookmarkId })),
+    onUpdateBookmark: fn(async () => ({ ok: true as const, bookmarkId })),
     onCompleted: fn(async () => undefined),
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => ({
       status: 'success',
@@ -61,7 +58,10 @@ export const Default = meta.story({
 
 export const UpdateHasDuplicateUrl = Default.extend({
   args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => err({ code: 'duplicate-url' }))
+    onUpdateBookmark: fn(async () => ({
+      ok: false as const,
+      failureCode: 'duplicate-url' as const
+    }))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -69,19 +69,30 @@ export const UpdateHasDuplicateUrl = Default.extend({
     await expect(canvas.getByRole('alert')).toHaveTextContent(
       '同じ URL のブックマークが既にあります'
     )
+    await expect(canvas.getByRole('alert')).toHaveTextContent('この URL は既に登録されています')
   }
 })
 
 export const UpdateHasUnexpectedError = Default.extend({
   args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () => {
-      throw new Error('boom')
-    })
+    onUpdateBookmark: fn(async () => ({ ok: false as const, failureCode: 'unexpected' as const }))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('保存に失敗しました')
+  }
+})
+
+export const SessionExpiredShowsNoFormError = Default.extend({
+  args: {
+    onUpdateBookmark: fn(async () => ({ ok: false as const, failureCode: null }))
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    // UNAUTHORIZED は interceptor の redirect に任せるため、フォームエラーは出さない。
+    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
   }
 })
 
@@ -101,19 +112,19 @@ export const CompletionNavigationFails = Default.extend({
   }
 })
 
-export const FetchingTitleClearsTitleServerError = Default.extend({
+export const EditingUrlClearsUrlServerError = Default.extend({
   args: {
-    onUpdateBookmark: fn<ExecuteUpdateBookmark>(async () =>
-      err({ code: 'invalid-title', field: 'title' })
-    )
+    onUpdateBookmark: fn(async () => ({
+      ok: false as const,
+      failureCode: 'duplicate-url' as const
+    }))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByRole('alert')).toHaveTextContent('タイトルを入力してください')
+    await expect(canvas.getByText('この URL は既に登録されています')).toBeInTheDocument()
 
-    await userEvent.click(canvas.getByRole('button', { name: 'タイトルを取得' }))
-    await expect(canvas.getByLabelText('タイトル')).toHaveValue('取得したタイトル')
-    await expect(canvas.queryByText('タイトルを入力してください')).not.toBeInTheDocument()
+    await userEvent.type(canvas.getByLabelText('URL'), '-2')
+    await expect(canvas.queryByText('この URL は既に登録されています')).not.toBeInTheDocument()
   }
 })

@@ -23,7 +23,8 @@ const nodeTests = [
   'src/features/tags/hooks/use-touch-tag-last-used.test.ts',
   'src/rpc/source-boundary.test.ts',
   'src/features/bookmarks/persistence/**/*.test.ts',
-  'src/features/bookmarks/components/new-bookmark-screen.test.ts'
+  'src/features/bookmarks/components/new-bookmark-screen.test.ts',
+  'src/features/bookmarks/orpc-update.source.test.ts'
 ]
 
 export default defineConfig({
