@@ -129,15 +129,15 @@ function isBlockedIp(rawHostname: string): boolean {
 
   const [g0 = 0, g1 = 0, g2 = 0, g3 = 0, g4 = 0, g5 = 0, g6 = 0] = hextets
   // Fc00::/7 unique local、fe80::/10 link-local
-  if ((g0 & 0xFE_00) === 0xFC_00 || (g0 & 0xFFC0) === 0xFE80) {
+  if ((g0 & 0xfe_00) === 0xfc_00 || (g0 & 0xffc0) === 0xfe80) {
     return true
   }
 
   // 先頭 96bit がゼロ（::1、未指定 ::、廃止済み IPv4-compatible）または
   // IPv4-mapped（::ffff:0:0/96）なら、下位 32bit を IPv4 として再検査する。
   // ::ffff:127.0.0.1 は URL 正規化で ::ffff:7f00:1 になるため hex 形式での判定が必須。
-  if (g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && g4 === 0 && (g5 === 0 || g5 === 0xFFFF)) {
-    return isBlockedIpv4Range(g6 >> 8, g6 & 0xFF)
+  if (g0 === 0 && g1 === 0 && g2 === 0 && g3 === 0 && g4 === 0 && (g5 === 0 || g5 === 0xffff)) {
+    return isBlockedIpv4Range(g6 >> 8, g6 & 0xff)
   }
 
   return false

@@ -64,7 +64,7 @@ function installRpcFetchStub(): void {
   }
   const passthroughFetch = originalFetch
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = typeof input === 'string' ? input : (input instanceof URL ? input.href : input.url)
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     if (new URL(url, window.location.origin).pathname === '/api/rpc') {
       return handleRpcRequest(new Request(url, init), buildRpcRouter())
     }
