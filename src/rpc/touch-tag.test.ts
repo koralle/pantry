@@ -10,12 +10,24 @@ import { handleRpcRequest } from './handle-request.server'
 
 const userId = 'user-1'
 
+const readDeps = {
+  updateTag: async () => ({ kind: 'not-found' }) as const,
+  listShelfTags: async () => [] as never[],
+  listTags: async () => [] as never[],
+  findTagById: async () => null
+}
+
 function authenticatedRouter(touchTag: TouchTag, getSession = vi.fn()) {
-  getSession.mockResolvedValue({ user: { id: userId } })
+  getSession.mockResolvedValue({
+    id: userId,
+    name: 'koralle',
+    email: `${userId}@example.com`
+  })
   return createAppRouter({
     getSession,
     insertTag: async () => ({ kind: 'name-conflict' }),
-    touchTag
+    touchTag,
+    ...readDeps
   })
 }
 
@@ -75,7 +87,8 @@ describe('TouchTag RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag: async () => ({ kind: 'name-conflict' }),
-      touchTag: async () => ({ kind: 'touched' })
+      touchTag: async () => ({ kind: 'touched' }),
+      ...readDeps
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.tags.touch({ id: 1 }).then(
@@ -91,7 +104,11 @@ describe('TouchTag RPC', () => {
   test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return {
+        id: userId,
+        name: 'koralle',
+        email: `${userId}@example.com`
+      }
     })
     const router = authenticatedRouter(async () => ({ kind: 'touched' }), getSession)
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })

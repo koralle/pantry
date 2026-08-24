@@ -15,6 +15,7 @@ const input = { id: 7, name: 'Work', pinned: false, sortOrder: 0, color: null }
 const insertTag: InsertTag = async () => ({ kind: 'name-conflict' })
 
 const readDeps = {
+  touchTag: async () => ({ kind: 'touched' }) as const,
   listShelfTags: async () => [],
   listTags: async () => [],
   findTagById: async () => null

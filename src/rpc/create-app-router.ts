@@ -9,14 +9,14 @@ import {
   toCreateTagCommand
 } from '../features/tags/application/create-tag'
 import type { InsertTag } from '../features/tags/application/create-tag'
+import { executeTouchTag, touchTagInputSchema } from '../features/tags/application/touch-tag'
+import type { TouchTag } from '../features/tags/application/touch-tag'
 import {
   executeUpdateTag,
   toUpdateTagCommand,
   updateTagInputSchema
 } from '../features/tags/application/update-tag'
 import type { UpdateTag } from '../features/tags/application/update-tag'
-import { executeTouchTag, touchTagInputSchema } from '../features/tags/application/touch-tag'
-import type { TouchTag } from '../features/tags/application/touch-tag'
 import type { ShelfTag, TagRecord } from '../features/tags/lib/tag-shelf'
 import type { TagsListRow } from '../features/tags/persistence/select-tags'
 import { offsetPaginationQuerySchema } from '../schemas/pagination'
