@@ -63,18 +63,18 @@ describe('CreateBookmark RPC', () => {
     expectTypeOf<CreateOutput['id']>().not.toEqualTypeOf<BookmarkId>()
   })
 
-  test('不正な入力は 4xx を返し、port を呼ばない', async () => {
+  test('不正な入力は 400 BAD_REQUEST を返し、port を呼ばない', async () => {
     const insertBookmark = vi.fn(async () => ({ kind: 'duplicate-url' }) as const)
     const router = authenticatedRouter(insertBookmark)
     const { client, getResponse } = createTestClient(router)
+    const rejected = await client.bookmarks.create({ ...validInput, url: 'not-a-url' } as any).then(
+      () => null,
+      (error: unknown) => error
+    )
 
-    await expect(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      client.bookmarks.create({ ...validInput, url: 'not-a-url' } as any)
-    ).rejects.toBeInstanceOf(Error)
-
-    expect(getResponse().status).toBeGreaterThanOrEqual(400)
-    expect(getResponse().status).toBeLessThan(500)
+    expect(rejected).toBeInstanceOf(ORPCError)
+    expect((rejected as ORPCError<string, unknown>).code).toBe('BAD_REQUEST')
+    expect(getResponse().status).toBe(400)
     expect(insertBookmark).not.toHaveBeenCalled()
   })
 

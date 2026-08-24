@@ -66,7 +66,7 @@ describe('FetchPageTitle RPC', () => {
     await expect(client.bookmarks.title({ url: 'https://example.com' })).resolves.toBeNull()
   })
 
-  test('禁止 URL は 4xx url-not-allowed を返す', async () => {
+  test('禁止 URL は 400 url-not-allowed を返す', async () => {
     const router = authenticatedRouter(async () => ({ kind: 'url-not-allowed' }))
     const client = createTestClient(router)
     const rejected = await client.bookmarks.title({ url: 'http://localhost' }).then(
@@ -77,8 +77,7 @@ describe('FetchPageTitle RPC', () => {
     expect(rejected).toBeInstanceOf(ORPCError)
     const error = rejected as ORPCError<string, unknown>
     expect(error.code).toBe('url-not-allowed')
-    expect(error.status).toBeGreaterThanOrEqual(400)
-    expect(error.status).toBeLessThan(500)
+    expect(error.status).toBe(400)
   })
 
   test('想定外の例外は内部 message を漏らさず 500 を返す', async () => {
@@ -104,13 +103,18 @@ describe('FetchPageTitle RPC', () => {
     expect(await lastResponse?.text()).not.toContain('proxy secret detail')
   })
 
-  test('不正な URL 入力は 4xx を返し、port を呼ばない', async () => {
+  test('不正な URL 入力は 400 BAD_REQUEST を返し、port を呼ばない', async () => {
     const fetchPageTitle = vi.fn(async () => ({ kind: 'unavailable' }) as const)
     const router = authenticatedRouter(fetchPageTitle)
     const client = createTestClient(router)
+    const rejected = await client.bookmarks.title({ url: 'not-a-url' } as any).then(
+      () => null,
+      (error: unknown) => error
+    )
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(client.bookmarks.title({ url: 'not-a-url' } as any)).rejects.toBeInstanceOf(Error)
+    expect(rejected).toBeInstanceOf(ORPCError)
+    expect((rejected as ORPCError<string, unknown>).code).toBe('BAD_REQUEST')
+    expect((rejected as ORPCError<string, unknown>).status).toBe(400)
     expect(fetchPageTitle).not.toHaveBeenCalled()
   })
 })
