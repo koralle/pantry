@@ -14,10 +14,19 @@ import { handleRpcRequest } from './handle-request.server'
 const userId = 'user-1'
 
 function authenticatedRouter(fetchPageTitle: FetchPageTitle, getSession = vi.fn()) {
-  getSession.mockResolvedValue({ user: { id: userId } })
+  getSession.mockResolvedValue({
+    id: userId,
+    name: 'koralle',
+    email: `${userId}@example.com`
+  })
   return createAppRouter({
     getSession,
     insertTag: async () => ({ kind: 'created', id: 1 as never }),
+    updateTag: async () => ({ kind: 'not-found' }),
+    touchTag: async () => ({ kind: 'touched' }),
+    listShelfTags: async () => [],
+    listTags: async () => [],
+    findTagById: async () => null,
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
     fetchPageTitle
   })
@@ -38,6 +47,11 @@ describe('FetchPageTitle RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
+      updateTag: async () => ({ kind: 'not-found' }),
+      touchTag: async () => ({ kind: 'touched' }),
+      listShelfTags: async () => [],
+      listTags: async () => [],
+      findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
       fetchPageTitle: async () => ({ kind: 'unavailable' })
     })

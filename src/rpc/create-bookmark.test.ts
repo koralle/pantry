@@ -19,12 +19,21 @@ const validInput = {
 }
 
 function authenticatedRouter(insertBookmark: InsertBookmark, getSession = vi.fn()) {
-  getSession.mockResolvedValue({ user: { id: userId } })
+  getSession.mockResolvedValue({
+    id: userId,
+    name: 'koralle',
+    email: `${userId}@example.com`
+  })
   return createAppRouter({
     getSession,
     insertTag: async () => ({ kind: 'created', id: 1 as never }),
     insertBookmark,
-    fetchPageTitle: async () => ({ kind: 'unavailable' })
+    fetchPageTitle: async () => ({ kind: 'unavailable' }),
+    updateTag: async () => ({ kind: 'not-found' }),
+    touchTag: async () => ({ kind: 'touched' }),
+    listShelfTags: async () => [],
+    listTags: async () => [],
+    findTagById: async () => null
   })
 }
 
@@ -82,6 +91,11 @@ describe('CreateBookmark RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
+      updateTag: async () => ({ kind: 'not-found' }),
+      touchTag: async () => ({ kind: 'touched' }),
+      listShelfTags: async () => [],
+      listTags: async () => [],
+      findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
       fetchPageTitle: async () => ({ kind: 'unavailable' })
     })
@@ -99,7 +113,11 @@ describe('CreateBookmark RPC', () => {
   test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return {
+        id: userId,
+        name: 'koralle',
+        email: `${userId}@example.com`
+      }
     })
     const router = createAppRouter({
       getSession,
@@ -108,7 +126,12 @@ describe('CreateBookmark RPC', () => {
         kind: 'created',
         id: '01900000-0000-7000-8000-000000000000' as never
       }),
-      fetchPageTitle: async () => ({ kind: 'unavailable' })
+      fetchPageTitle: async () => ({ kind: 'unavailable' }),
+      updateTag: async () => ({ kind: 'not-found' }),
+      touchTag: async () => ({ kind: 'touched' }),
+      listShelfTags: async () => [],
+      listTags: async () => [],
+      findTagById: async () => null
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 

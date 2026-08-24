@@ -129,7 +129,7 @@ function isBlockedIp(rawHostname: string): boolean {
 
   const [g0 = 0, g1 = 0, g2 = 0, g3 = 0, g4 = 0, g5 = 0, g6 = 0] = hextets
   // Fc00::/7 unique local、fe80::/10 link-local
-  if ((g0 & 0xFE00) === 0xFC00 || (g0 & 0xFFC0) === 0xFE80) {
+  if ((g0 & 0xFE00) === 0xfc_00 || (g0 & 0xFFC0) === 0xFE80) {
     return true
   }
 

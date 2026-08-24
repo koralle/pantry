@@ -18,7 +18,9 @@ describe('server direct RPC client', () => {
       touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
-      findTagById: async () => null
+      findTagById: async () => null,
+      insertBookmark: async () => ({ kind: 'duplicate-url' }),
+      fetchPageTitle: async () => ({ kind: 'unavailable' })
     })
 
     const client = createServerRpcClient(

@@ -29,15 +29,11 @@ export const appRouter = createAppRouter({
     }
   },
   insertTag: async (input) => insertTag(getDB(), input),
-<<<<<<< HEAD
   updateTag: async (input) => updateTag(getDB(), input),
   touchTag: async (input) => touchTag(getDB(), input),
   listShelfTags: async (userId) => selectShelfTags(getDB(), userId),
   listTags: async (userId, page) => selectTags(getDB(), userId, page),
   findTagById: async (userId, id) => selectTagById(getDB(), userId, id),
-  insertBookmark: async (input) => insertBookmark(getDB(), input)
-=======
   insertBookmark: async (input) => insertBookmark(getDB(), input),
   fetchPageTitle: async (url) => fetchPageTitle(url)
->>>>>>> 800a5fa (feat(rpc): expose bookmarks.title through narrow external-fetch port and move fetch-page-title to server)
 })

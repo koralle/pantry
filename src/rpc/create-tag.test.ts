@@ -25,17 +25,13 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
   return createAppRouter({
     getSession,
     insertTag,
-<<<<<<< HEAD
     updateTag,
     touchTag: async () => ({ kind: 'touched' }),
     listShelfTags: async () => [],
     listTags: async () => [],
     findTagById: async () => null,
-    insertBookmark: async () => ({ kind: 'duplicate-url' })
-=======
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
     fetchPageTitle: async () => ({ kind: 'unavailable' })
->>>>>>> 800a5fa (feat(rpc): expose bookmarks.title through narrow external-fetch port and move fetch-page-title to server)
   })
 }
 
@@ -93,17 +89,13 @@ describe('CreateTag RPC', () => {
     const router = createAppRouter({
       getSession: async () => null,
       insertTag: async () => ({ kind: 'name-conflict' }),
-<<<<<<< HEAD
       updateTag,
       touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
       findTagById: async () => null,
-      insertBookmark: async () => ({ kind: 'duplicate-url' })
-=======
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
       fetchPageTitle: async () => ({ kind: 'unavailable' })
->>>>>>> 800a5fa (feat(rpc): expose bookmarks.title through narrow external-fetch port and move fetch-page-title to server)
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.tags.create({ name: 'Work' }).then(
@@ -124,17 +116,13 @@ describe('CreateTag RPC', () => {
     const router = createAppRouter({
       getSession,
       insertTag: async () => ({ kind: 'created', id: 1 as never }),
-<<<<<<< HEAD
       updateTag,
       touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
       findTagById: async () => null,
-      insertBookmark: async () => ({ kind: 'duplicate-url' })
-=======
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
       fetchPageTitle: async () => ({ kind: 'unavailable' })
->>>>>>> 800a5fa (feat(rpc): expose bookmarks.title through narrow external-fetch port and move fetch-page-title to server)
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 
