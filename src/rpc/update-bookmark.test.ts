@@ -4,7 +4,7 @@ import type { RouterClient } from '@orpc/server'
 import * as v from 'valibot'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
-import type { UserId } from '../features/auth/domain/auth-values'
+import type { UserId, SessionUser } from '../features/auth/domain/auth-values'
 import type { UpdateBookmark } from '../features/bookmarks/application/update-bookmark'
 import { bookmarkIdSchema } from '../features/bookmarks/domain/bookmark-values'
 import type { AppRouter } from './create-app-router'
@@ -28,8 +28,7 @@ function updatedPortOutput() {
   return { kind: 'updated', id: bookmarkId } as const
 }
 
-type TestSession = { user: { id: string } }
-type GetSessionFn = (headers: Headers) => Promise<TestSession | null>
+type GetSessionFn = (headers: Headers) => Promise<SessionUser | null>
 type FindBookmarkEditorFn = (
   userId: UserId,
   id: string
@@ -47,7 +46,12 @@ function authenticatedRouter(overrides?: {
   getSession?: GetSessionFn
 }) {
   const getSession =
-    overrides?.getSession ?? (async (): Promise<TestSession | null> => ({ user: { id: userId } }))
+    overrides?.getSession ??
+    (async (): Promise<SessionUser | null> => ({
+      id: userId,
+      name: 'koralle',
+      email: `${userId}@example.com`
+    }))
   const updateBookmark =
     overrides?.updateBookmark ?? ((async () => updatedPortOutput()) satisfies UpdateBookmark)
   const findBookmarkEditor: FindBookmarkEditorFn =
@@ -62,8 +66,18 @@ function authenticatedRouter(overrides?: {
   return createAppRouter({
     getSession,
     insertTag: async () => ({ kind: 'created', id: 1 as never }),
+    updateTag: async () => ({ kind: 'not-found' }),
+    touchTag: async () => ({ kind: 'touched' }),
+    listShelfTags: async () => [],
+    listTags: async () => [],
+    findTagById: async () => null,
+    insertBookmark: async () => ({ kind: 'duplicate-url' }),
+    fetchPageTitle: async () => ({ kind: 'unavailable' }),
     updateBookmark,
-    findBookmarkEditor
+    findBookmarkEditor,
+    listBookmarks: async () => [],
+    getBookmarkDetail: async (): Promise<null> => null,
+    softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' }) as const
   })
 }
 
@@ -137,7 +151,11 @@ describe('UpdateBookmark RPC', () => {
   test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return {
+        id: userId,
+        name: 'koralle',
+        email: `${userId}@example.com`
+      }
     })
     const router = authenticatedRouter({ getSession })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
@@ -243,7 +261,11 @@ describe('BookmarkEditor read RPC', () => {
   test('編集データを返し、Cookie ヘッダーが認証に使われる', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return {
+        id: userId,
+        name: 'koralle',
+        email: `${userId}@example.com`
+      }
     })
     const router = authenticatedRouter({ getSession })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })

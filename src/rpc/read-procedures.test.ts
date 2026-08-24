@@ -6,6 +6,7 @@ import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 import type { SessionUser } from '../features/auth/domain/auth-values'
 import type { InsertBookmarkOutput } from '../features/bookmarks/application/create-bookmark'
 import type { FetchPageTitleOutput } from '../features/bookmarks/application/fetch-page-title'
+import type { UpdateBookmarkOutput } from '../features/bookmarks/application/update-bookmark'
 import type { InsertTagOutput } from '../features/tags/application/create-tag'
 import type { TouchTagOutput } from '../features/tags/application/touch-tag'
 import type { UpdateTagOutput } from '../features/tags/application/update-tag'
@@ -35,7 +36,17 @@ function baseDeps(): ReadDeps {
     listTags: vi.fn(async () => []),
     findTagById: vi.fn(async () => null),
     insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({ kind: 'duplicate-url' })),
-    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({ kind: 'unavailable' }))
+    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({ kind: 'unavailable' })),
+    updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
+      kind: 'bookmark-not-found'
+    })),
+    findBookmarkEditor: vi.fn(async () => null),
+    listBookmarks: vi.fn(async () => []),
+    getBookmarkDetail: vi.fn(async () => null),
+    softDeleteBookmark: vi.fn(async (): Promise<{ kind: 'bookmark-not-found'; id: string }> => ({
+      kind: 'bookmark-not-found',
+      id: ''
+    }))
   }
 }
 

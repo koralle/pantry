@@ -30,10 +30,24 @@ let updateBookmarkDep: UpdateBookmark
 
 function buildRpcRouter(): AppRouter {
   return createAppRouter({
-    getSession: async () => ({ user: { id: 'story-user' } }),
+    getSession: async () => ({
+      id: 'story-user',
+      name: 'Story User',
+      email: 'story-user@example.com'
+    }),
     insertTag: async () => ({ kind: 'created', id: 1 as never }),
+    updateTag: async () => ({ kind: 'not-found' }),
+    touchTag: async () => ({ kind: 'touched' }),
+    listShelfTags: async () => [],
+    listTags: async () => [],
+    findTagById: async () => null,
+    insertBookmark: async () => ({ kind: 'duplicate-url' }),
+    fetchPageTitle: async () => ({ kind: 'unavailable' }),
     updateBookmark: updateBookmarkDep,
-    findBookmarkEditor: findBookmarkEditorDep
+    findBookmarkEditor: findBookmarkEditorDep,
+    listBookmarks: async () => [],
+    getBookmarkDetail: async () => null,
+    softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
   })
 }
 

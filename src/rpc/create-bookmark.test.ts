@@ -33,7 +33,12 @@ function authenticatedRouter(insertBookmark: InsertBookmark, getSession = vi.fn(
     touchTag: async () => ({ kind: 'touched' }),
     listShelfTags: async () => [],
     listTags: async () => [],
-    findTagById: async () => null
+    findTagById: async () => null,
+    updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+    findBookmarkEditor: async () => null,
+    listBookmarks: async () => [],
+    getBookmarkDetail: async () => null,
+    softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
   })
 }
 
@@ -97,7 +102,12 @@ describe('CreateBookmark RPC', () => {
       listTags: async () => [],
       findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
-      fetchPageTitle: async () => ({ kind: 'unavailable' })
+      fetchPageTitle: async () => ({ kind: 'unavailable' }),
+      updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+      findBookmarkEditor: async () => null,
+      listBookmarks: async () => [],
+      getBookmarkDetail: async () => null,
+      softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.bookmarks.create(validInput).then(
@@ -131,7 +141,12 @@ describe('CreateBookmark RPC', () => {
       touchTag: async () => ({ kind: 'touched' }),
       listShelfTags: async () => [],
       listTags: async () => [],
-      findTagById: async () => null
+      findTagById: async () => null,
+      updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+      findBookmarkEditor: async () => null,
+      listBookmarks: async () => [],
+      getBookmarkDetail: async () => null,
+      softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 

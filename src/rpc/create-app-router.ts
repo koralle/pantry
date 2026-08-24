@@ -59,10 +59,7 @@ export type BookmarkEditorOutput = {
   readonly tagIds: number[]
 }
 
-type FindBookmarkEditor = (
-  userId: UserId,
-  id: string
-) => Promise<BookmarkEditorOutput | null>
+type FindBookmarkEditor = (userId: UserId, id: string) => Promise<BookmarkEditorOutput | null>
 
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。

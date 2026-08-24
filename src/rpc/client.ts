@@ -24,16 +24,15 @@ const link = new RPCLink({
     // SSR では url を使わない。ssrRpcFetch が process 内の handler へ直接流す。
     return 'http://pantry.internal/api/rpc'
   },
-  fetch: (request) => {
+  // 呼び出し毎に解決する。構築時に bind すると、あとから差し替えられた
+  // global fetch（テストや Storybook の stub）を拾えない。
+  fetch: (request, init) => {
     if (import.meta.env.SSR) {
       return import('./ssr-rpc-fetch.server').then(({ ssrRpcFetch }) => ssrRpcFetch(request))
     }
 
-    return fetch(request)
+    return globalThis.fetch(request, init)
   },
-  // 呼び出し毎に解決する。構築時に bind すると、あとから差し替えられた
-  // global fetch（テストや Storybook の stub）を拾えない。
-  fetch: (request, init) => globalThis.fetch(request, init),
   interceptors: [
     onError((error) => {
       if (error instanceof ORPCError && error.defined && error.code === 'UNAUTHORIZED') {

@@ -21,11 +21,24 @@ function capturingSessionRouter() {
   const capturedCookies: Array<string | null> = []
   const getSession = vi.fn(async (headers: Headers) => {
     capturedCookies.push(headers.get('cookie'))
-    return { user: { id: 'user-1' } }
+    return {
+      id: 'user-1',
+      name: 'koralle',
+      email: 'user-1@example.com'
+    }
   })
   const router = createAppRouter({
     getSession,
     insertTag: async () => ({ kind: 'created', id: 1 as TagId }),
+    updateTag: async () => ({ kind: 'not-found' }),
+    touchTag: async () => ({ kind: 'touched' }),
+    listShelfTags: async () => [],
+    listTags: async () => [],
+    findTagById: async () => null,
+    insertBookmark: async () => ({ kind: 'duplicate-url' }),
+    fetchPageTitle: async () => ({ kind: 'unavailable' }),
+    updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
+    findBookmarkEditor: async () => null,
     listBookmarks: async () => [],
     getBookmarkDetail: async () => null,
     softDeleteBookmark: async () => ({ kind: 'bookmark-not-found' })

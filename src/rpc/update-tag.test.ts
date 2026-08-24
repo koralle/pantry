@@ -20,7 +20,12 @@ const readDeps = {
   fetchPageTitle: async () => ({ kind: 'unavailable' }) as const,
   listShelfTags: async () => [],
   listTags: async () => [],
-  findTagById: async () => null
+  findTagById: async () => null,
+  updateBookmark: async () => ({ kind: 'bookmark-not-found' }) as const,
+  findBookmarkEditor: async (): Promise<null> => null,
+  listBookmarks: async () => [] as never[],
+  getBookmarkDetail: async (): Promise<null> => null,
+  softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' }) as const
 }
 
 function authenticatedRouter(updateTag: UpdateTag, getSession = vi.fn()) {

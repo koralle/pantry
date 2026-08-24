@@ -1,14 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Outlet, createRootRouteWithContext, createRoute } from '@tanstack/react-router'
-import { expect, mocked, userEvent, waitFor, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
-<<<<<<< HEAD
-import { fetchBookmarks } from '../../features/bookmarks/functions/fetch-bookmarks'
-import type { BookmarkListItem } from '../../features/bookmarks/lib/attach-bookmark-tags'
-=======
-import { ensureSession } from '../../features/auth/functions/ensure-session'
-import { getSession } from '../../features/auth/functions/get-session'
->>>>>>> 85739b2 (feat(bookmarks): route list/detail reads and delete dialog through oRPC queries)
 import { writeListLayout } from '../../features/bookmarks/lib/list-layout-preference'
 import type { BookmarkListItem } from '../../features/bookmarks/persistence/list-bookmarks'
 import type { BookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
@@ -218,24 +211,8 @@ function neverPromise<T>(): Promise<T> {
 }
 
 function stubListApis() {
-<<<<<<< HEAD
-  mocked(fetchBookmarks).mockReset()
-
-  mocked(fetchBookmarks).mockResolvedValue(bookmarks)
-=======
-  mocked(getSession).mockReset()
-  mocked(ensureSession).mockReset()
-  mocked(fetchShelfTags).mockReset()
-  mocked(touchTagLastUsed).mockReset()
-
-  mocked(getSession).mockResolvedValue(session)
-  mocked(ensureSession).mockResolvedValue(session)
-  mocked(fetchShelfTags).mockResolvedValue(shelfTags)
-  mocked(touchTagLastUsed).mockResolvedValue({ ok: true as const })
-
   storyQueryClient.clear()
   listFixture = () => bookmarks
->>>>>>> 85739b2 (feat(bookmarks): route list/detail reads and delete dialog through oRPC queries)
 }
 
 function stubPagedBookmarks(next: BookmarkListItem[] | Promise<BookmarkListItem[]> | Error) {

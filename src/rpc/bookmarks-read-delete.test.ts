@@ -3,7 +3,11 @@ import { RPCLink } from '@orpc/client/fetch'
 import type { RouterClient } from '@orpc/server'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
+import type { SessionUser } from '../features/auth/domain/auth-values'
+import type { InsertBookmarkOutput } from '../features/bookmarks/application/create-bookmark'
 import type { SoftDeleteBookmark } from '../features/bookmarks/application/delete-bookmark'
+import type { FetchPageTitleOutput } from '../features/bookmarks/application/fetch-page-title'
+import type { UpdateBookmarkOutput } from '../features/bookmarks/application/update-bookmark'
 import type { BookmarkId } from '../features/bookmarks/domain/bookmark-values'
 import type { BookmarkDetail } from '../features/bookmarks/persistence/get-bookmark-detail'
 import type { BookmarkListItem } from '../features/bookmarks/persistence/list-bookmarks'
@@ -21,11 +25,26 @@ type MutableDeps = { -readonly [K in keyof RouterDeps]: RouterDeps[K] }
 
 function baseDeps(): MutableDeps {
   return {
-    getSession: vi.fn(async () => ({ user: { id: userId } })),
+    getSession: vi.fn(async (): Promise<SessionUser | null> => ({
+      id: userId,
+      name: 'koralle',
+      email: `${userId}@example.com`
+    })),
     insertTag: vi.fn(async (): Promise<{ kind: 'created'; id: TagId }> => ({
       kind: 'created',
       id: 1 as TagId
     })),
+    updateTag: vi.fn(async () => ({ kind: 'not-found' }) as const),
+    touchTag: vi.fn(async () => ({ kind: 'touched' }) as const),
+    listShelfTags: vi.fn(async () => []),
+    listTags: vi.fn(async () => []),
+    findTagById: vi.fn(async () => null),
+    insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({ kind: 'duplicate-url' })),
+    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({ kind: 'unavailable' })),
+    updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
+      kind: 'bookmark-not-found'
+    })),
+    findBookmarkEditor: vi.fn(async () => null),
     listBookmarks: vi.fn(async (): Promise<BookmarkListItem[]> => []),
     getBookmarkDetail: vi.fn(async (): Promise<BookmarkDetail | null> => null),
     softDeleteBookmark: vi.fn(async (): Promise<{ kind: 'bookmark-not-found' }> => ({
@@ -105,7 +124,11 @@ describe('bookmarks RPC 契約', () => {
   test('Cookie ヘッダーが認証 middleware に届く', async () => {
     const getSession = vi.fn(async (headers: Headers) => {
       expect(headers.get('cookie')).toBe('better-auth.session_token=abc')
-      return { user: { id: userId } }
+      return {
+        id: userId,
+        name: 'koralle',
+        email: `${userId}@example.com`
+      }
     })
     const deps = baseDeps()
     deps.getSession = getSession
