@@ -1,6 +1,7 @@
 import { createORPCClient, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import type { RouterClient } from '@orpc/server'
+import * as v from 'valibot'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 
 import type { SessionUser } from '../features/auth/domain/auth-values'
@@ -31,7 +32,12 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
     listTags: async () => [],
     findTagById: async () => null,
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
-    fetchPageTitle: async () => ({ kind: 'unavailable' })
+    fetchPageTitle: async () => ({ kind: 'unavailable' }),
+    updateBookmark: async () => ({
+      kind: 'updated',
+      id: '019fae92-3bb0-78cd-b488-65ce0e26a939'
+    }),
+    findBookmarkEditor: async () => null
   })
 }
 
@@ -95,7 +101,12 @@ describe('CreateTag RPC', () => {
       listTags: async () => [],
       findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
-      fetchPageTitle: async () => ({ kind: 'unavailable' })
+      fetchPageTitle: async () => ({ kind: 'unavailable' }),
+      updateBookmark: async () => ({
+        kind: 'updated',
+        id: '019fae92-3bb0-78cd-b488-65ce0e26a939'
+      }),
+      findBookmarkEditor: async () => null
     })
     const { client, getResponse } = createTestClient(router)
     const rejected = await client.tags.create({ name: 'Work' }).then(
@@ -122,7 +133,12 @@ describe('CreateTag RPC', () => {
       listTags: async () => [],
       findTagById: async () => null,
       insertBookmark: async () => ({ kind: 'duplicate-url' }),
-      fetchPageTitle: async () => ({ kind: 'unavailable' })
+      fetchPageTitle: async () => ({ kind: 'unavailable' }),
+      updateBookmark: async () => ({
+        kind: 'updated',
+        id: '019fae92-3bb0-78cd-b488-65ce0e26a939'
+      }),
+      findBookmarkEditor: async () => null
     })
     const { client } = createTestClient(router, { cookie: 'better-auth.session_token=abc' })
 

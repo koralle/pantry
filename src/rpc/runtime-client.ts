@@ -8,7 +8,7 @@ import type { AppRouter } from './create-app-router'
  * Loader / beforeLoad は SSR でも client navigation でも走る。
  * server では request headers を載せた direct client、browser では既存 rpcClient を使う。
  * server 実装は compiler が client bundle から落とすため、
- * handle-request.server や Better Auth server が browser へ流れない。
+ * client.server や Better Auth server が browser へ流れない。
  */
 export const getRpcClient = createIsomorphicFn()
   .server(async (): Promise<RouterClient<AppRouter>> => {
