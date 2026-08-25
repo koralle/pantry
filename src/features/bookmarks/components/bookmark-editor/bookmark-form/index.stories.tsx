@@ -136,7 +136,7 @@ export const FieldError = Default.extend({
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByRole('alert')).toHaveTextContent('入力内容を確認してください')
-    await expect(canvas.getByText('Invalid URL: Received "not-a-url"')).toBeInTheDocument()
+    await expect(canvas.getByText('有効なURLを入力してください')).toBeInTheDocument()
     await expect(canvas.getByText('タイトルを入力してください')).toBeInTheDocument()
     await expect(args.onSubmit).not.toHaveBeenCalled()
   }
@@ -313,14 +313,14 @@ export const ValidationClearsOnEdit = Default.extend({
 
     // 送信で Conform validation error を出す
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByText('Invalid URL: Received "not-a-url"')).toBeInTheDocument()
+    await expect(canvas.getByText('有効なURLを入力してください')).toBeInTheDocument()
 
     // URL を編集すると Conform 側の error は onInput 再検証で消える
     const url = canvas.getByLabelText('URL')
     await userEvent.clear(url)
     await userEvent.type(url, 'https://example.com/edited')
     await waitFor(() => {
-      expect(canvas.queryByText('Invalid URL: Received "not-a-url"')).not.toBeInTheDocument()
+      expect(canvas.queryByText('有効なURLを入力してください')).not.toBeInTheDocument()
     })
   }
 })
