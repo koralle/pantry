@@ -25,25 +25,8 @@
       }
     }
   },
+  "instructions": [".agents/rules/*.md"],
   "agent": {
-    "[OpenCode] DeepSeek V4 Flash": {
-      "mode": "primary",
-      "model": "opencode-go/deepseek-v4-flash",
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true
-      }
-    },
-    "[QwenCloud] Qwen 3.8 Max": {
-      "mode": "primary",
-      "model": "balian-token-plan-personal/qwen3.8-max",
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true
-      }
-    },
     "[OpenAI] GPT-5.6 Luna": {
       "mode": "primary",
       "model": "openai/gpt-5.6-luna",
