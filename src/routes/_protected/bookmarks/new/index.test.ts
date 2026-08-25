@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -87,5 +87,19 @@ describe('title fetch consumers', () => {
     expect(editRouteSource).not.toContain('instanceof Error')
     expect(editRouteSource).not.toContain('error.message')
     expect(editRouteSource).toContain('getTitleFetchErrorMessage')
+  })
+})
+
+describe('removed workbench form', () => {
+  test('BookmarkWorkbenchForm は削除されている', () => {
+    expect(
+      existsSync(join(dir, '../../../../features/bookmarks/components/bookmark-workbench-form.tsx'))
+    ).toBe(false)
+  })
+
+  test('旧 title fetch hook は削除されている', () => {
+    expect(
+      existsSync(join(dir, '../../../../features/bookmarks/hooks/use-bookmark-title-fetch.ts'))
+    ).toBe(false)
   })
 })
