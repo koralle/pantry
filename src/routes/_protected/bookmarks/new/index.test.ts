@@ -8,14 +8,6 @@ import { buildNewBookmarkCommand } from '../../../../features/bookmarks/componen
 
 const dir = dirname(fileURLToPath(import.meta.url))
 const routeSource = readFileSync(join(dir, 'index.tsx'), 'utf8')
-const formSource = readFileSync(
-  join(dir, '../../../../features/bookmarks/components/bookmark-workbench-form.tsx'),
-  'utf8'
-)
-const hookSource = readFileSync(
-  join(dir, '../../../../features/bookmarks/hooks/use-bookmark-title-fetch.ts'),
-  'utf8'
-)
 const editRouteSource = readFileSync(join(dir, '../$id/edit.tsx'), 'utf8')
 
 describe('buildNewBookmarkCommand', () => {
@@ -36,6 +28,24 @@ describe('buildNewBookmarkCommand', () => {
 })
 
 describe('new bookmark route', () => {
+  test('BookmarkForm を使う', () => {
+    expect(routeSource).toContain(
+      "from '../../../../features/bookmarks/components/bookmark-editor/bookmark-form'"
+    )
+    expect(routeSource).toContain('<BookmarkForm')
+    expect(routeSource).not.toContain('BookmarkWorkbenchForm')
+    expect(routeSource).not.toContain('bookmark-workbench-form')
+  })
+
+  test('新規作成ラベルと空の初期値を渡す', () => {
+    expect(routeSource).toContain("submitLabel='登録'")
+    expect(routeSource).toContain("pendingLabel='登録中…'")
+    expect(routeSource).toContain("legend='ブックマーク新規登録'")
+    expect(routeSource).toContain("url: ''")
+    expect(routeSource).toContain("title: ''")
+    expect(routeSource).toContain('note: null')
+  })
+
   test('CreateBookmark を oRPC mutationOptions 経由で送る', () => {
     expect(routeSource).toContain('orpc.bookmarks.create.mutationOptions')
     expect(routeSource).toContain('refreshAfterCreateBookmark')
@@ -49,15 +59,26 @@ describe('new bookmark route', () => {
   test('Error の class 名と name に依存しない', () => {
     expect(routeSource).toContain('getCreateBookmarkErrorMessage')
     expect(routeSource).not.toContain('error.name')
-    expect(formSource).not.toContain('instanceof Error')
-    expect(formSource).not.toContain('error.message')
+    expect(routeSource).not.toContain('instanceof Error')
+    expect(routeSource).not.toContain('error.message')
+  })
+
+  test('UNAUTHORIZED はフォームエラーにしない', () => {
+    expect(routeSource).toContain('if (message !== null)')
+  })
+
+  test('保存成功後の遷移失敗は保存失敗と混ぜない', () => {
+    expect(routeSource).toContain('保存は完了しましたが、画面の移動に失敗しました')
   })
 })
 
 describe('title fetch consumers', () => {
-  test('workbench hook は bookmarks.title procedure を叩く', () => {
-    expect(hookSource).toContain('bookmarks.title')
-    expect(hookSource).not.toContain('fetchBookmarkTitle')
+  test('new route の action は code 契約だけで文言を決める', () => {
+    expect(routeSource).toContain('bookmarks.title')
+    expect(routeSource).not.toContain('fetchBookmarkTitle')
+    expect(routeSource).not.toContain('instanceof Error')
+    expect(routeSource).not.toContain('error.message')
+    expect(routeSource).toContain('getTitleFetchErrorMessage')
   })
 
   test('edit route の action は code 契約だけで文言を決める', () => {
@@ -66,11 +87,5 @@ describe('title fetch consumers', () => {
     expect(editRouteSource).not.toContain('instanceof Error')
     expect(editRouteSource).not.toContain('error.message')
     expect(editRouteSource).toContain('getTitleFetchErrorMessage')
-  })
-
-  test('hook も Error message を直接表示しない', () => {
-    expect(hookSource).not.toContain('instanceof Error')
-    expect(hookSource).not.toContain('.message ===')
-    expect(hookSource).toContain('getTitleFetchErrorMessage')
   })
 })
