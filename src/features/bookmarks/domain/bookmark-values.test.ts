@@ -36,6 +36,14 @@ describe('bookmarkUrlSchema', () => {
     expect(v.safeParse(bookmarkUrlSchema, 'not-a-url').success).toBe(false)
   })
 
+  test('reports a Japanese message for malformed URLs', () => {
+    const result = v.safeParse(bookmarkUrlSchema, 'foo')
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.issues[0]?.message).toBe('有効なURLを入力してください')
+    }
+  })
+
   test('does not canonicalize', () => {
     const result = v.safeParse(bookmarkUrlSchema, 'https://Example.COM/Path/')
     expect(result.success).toBe(true)
