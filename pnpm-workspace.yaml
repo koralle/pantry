@@ -35,7 +35,8 @@ catalogs:
     '@praha/error-factory': 1.4.1
     'react-error-boundary': 6.1.2
   form:
-    '@formisch/react': 0.8.0
+    '@conform-to/react': 1.21.1
+    '@conform-to/valibot': 1.21.1
   format:
     oxfmt: 0.63.0
   framework:

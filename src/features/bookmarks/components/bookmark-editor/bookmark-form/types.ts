@@ -1,13 +1,10 @@
-import type { FormStore } from '@formisch/react'
-
-import { bookmarkFormSchema } from './schema'
 import type { BookmarkFormOutput } from './schema'
 
 export type BookmarkFormFieldKey = 'url' | 'title' | 'note'
 
 /**
  * BookmarkForm が受け取る画面表示用サーバーエラー。
- * Formisch の validation error はここに載せず、Formisch store が所有する。
+ * Conform の validation error はここに載せず、Conform が所有する。
  * tags は BookmarkForm の責務外なので含めない。
  */
 export type BookmarkFormServerError = {
@@ -17,7 +14,7 @@ export type BookmarkFormServerError = {
 
 /**
  * BookmarkEditor が唯一の所有者となる更新結果エラー。
- * Formisch validation error はここへ持ち込まない。
+ * Conform validation error はここへ持ち込まない。
  */
 export type BookmarkEditorError = {
   readonly form?: BookmarkFormServerError
@@ -56,13 +53,13 @@ export type BookmarkFormProps = {
   readonly initialValues: BookmarkFormInitialValues
   /**
    * BookmarkEditor が保持するサーバーエラーを表示だけのために受け取る。
-   * Formisch store へコピーしない。入力変更時は onClearFieldError 経由で
+   * Conform へコピーしない。入力変更時は onClearFieldError 経由で
    * 所有者 (BookmarkEditor) に削除を依頼する。
    */
   readonly serverError?: BookmarkFormServerError | null
   /**
    * Field 入力変更時に、対応する server error を BookmarkEditor 側で clear するための通知。
-   * Formisch の field error は BookmarkForm が自前で clear するので、
+   * Conform の field error は BookmarkForm が自前で clear するので、
    * ここでは server error 側の clear だけを扱う。
    */
   readonly onClearFieldError?: (field: BookmarkFormFieldKey) => void
@@ -73,5 +70,3 @@ export type BookmarkFormProps = {
   /** タイトル取得 action。hook 側のラッパーを経て useActionState に渡る。Server Function は注入側が持つ */
   readonly fetchTitleAction: BookmarkTitleFetchAction
 }
-
-export type BookmarkFormStore = FormStore<typeof bookmarkFormSchema>

@@ -70,9 +70,12 @@ catalogs:
       specifier: 6.1.2
       version: 6.1.2
   form:
-    '@formisch/react':
-      specifier: 0.8.0
-      version: 0.8.0
+    '@conform-to/react':
+      specifier: 1.21.1
+      version: 1.21.1
+    '@conform-to/valibot':
+      specifier: 1.21.1
+      version: 1.21.1
   format:
     oxfmt:
       specifier: 0.63.0
@@ -222,12 +225,15 @@ importers:
       '@cloudflare/vite-plugin':
         specifier: catalog:build
         version: 1.52.1(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))(wrangler@4.123.0)
+      '@conform-to/react':
+        specifier: catalog:form
+        version: 1.21.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@conform-to/valibot':
+        specifier: catalog:form
+        version: 1.21.1(valibot@1.4.2(typescript@7.0.2))
       '@fontsource/noto-sans-jp':
         specifier: catalog:ui
         version: 5.3.0
-      '@formisch/react':
-        specifier: catalog:form
-        version: 0.8.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@7.0.2)(valibot@1.4.2(typescript@7.0.2))
       '@libsql/client':
         specifier: catalog:database
         version: 0.17.4
@@ -650,6 +656,20 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@conform-to/dom@1.21.1':
+    resolution: {integrity: sha512-pYnhrJoM1xDbAx36rVxxm4643TFWwquTDoI8abtgnC40XIHDZDUhy3pIrZrv+QjwtLEgSWGP5GX/LqJ+IDfe/Q==}
+
+  '@conform-to/react@1.21.1':
+    resolution: {integrity: sha512-q0kzC5dEHL4okfmdbih95OfuelXw6xlLeN9WvtxQ7CP047D6A5lRK+0DykZZHCFP4idsQzC8NUBQd/tkKXPukg==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
+  '@conform-to/valibot@1.21.1':
+    resolution: {integrity: sha512-CWMdCk7WzYmMsWPF+nKRwkw4EKBRCoTIiqJa8sb8uDGGNbgbLd62PBeHvIh4mQuoGHT31SQ6QSUhbCUjV52Rqw==}
+    peerDependencies:
+      valibot: '>= 0.32.0'
+
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
@@ -885,17 +905,6 @@ packages:
 
   '@fontsource/noto-sans-jp@5.3.0':
     resolution: {integrity: sha512-OZbBzZ8LrFRs2RFT2Cc0HUV2C2ZeSfyEXhDJWR0EZuZaraJfRubpvrFmUnCljuBDEkw8Vn6CE/+nf9dj9b+0lg==}
-
-  '@formisch/react@0.8.0':
-    resolution: {integrity: sha512-ftuh+gnCP/82J0FQxYzzgENg5gIv0ZBQNmtu2/SQ9XuyfA8zBJIACGqtBdnCjReZdM76MxP6E/T0VbvwvZQ20A==}
-    peerDependencies:
-      react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      typescript: '>=5'
-      valibot: ^1.4.1
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -6111,6 +6120,19 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20260811.1':
     optional: true
 
+  '@conform-to/dom@1.21.1': {}
+
+  '@conform-to/react@1.21.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      '@conform-to/dom': 1.21.1
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+
+  '@conform-to/valibot@1.21.1(valibot@1.4.2(typescript@7.0.2))':
+    dependencies:
+      '@conform-to/dom': 1.21.1
+      valibot: 1.4.2(typescript@7.0.2)
+
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -6294,14 +6316,6 @@ snapshots:
       levn: 0.4.1
 
   '@fontsource/noto-sans-jp@5.3.0': {}
-
-  '@formisch/react@0.8.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@7.0.2)(valibot@1.4.2(typescript@7.0.2))':
-    dependencies:
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-      valibot: 1.4.2(typescript@7.0.2)
-    optionalDependencies:
-      typescript: 7.0.2
 
   '@humanfs/core@0.19.2':
     dependencies:

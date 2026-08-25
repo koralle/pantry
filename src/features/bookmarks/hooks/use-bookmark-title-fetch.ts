@@ -1,20 +1,22 @@
-import { getInput, setInput } from '@formisch/react'
-import type { FormStore } from '@formisch/react'
 import { useState } from 'react'
 
 import { rpcClient } from '../../../rpc/client'
-import type { workbenchSchema } from '../components/bookmark-workbench-form'
 import { getTitleFetchErrorMessage } from '../lib/get-title-fetch-error-message'
 
 const titleFetchFailedMessage = 'タイトルを取得できませんでした。手入力で続けられます'
 
-export function useBookmarkTitleFetch(form: FormStore<typeof workbenchSchema>) {
+type UseBookmarkTitleFetchOptions = {
+  readonly getUrl: () => string
+  readonly setTitle: (title: string) => void
+}
+
+export function useBookmarkTitleFetch({ getUrl, setTitle }: UseBookmarkTitleFetchOptions) {
   const [titleFetchError, setTitleFetchError] = useState<string | null>(null)
   const [isFetchingTitle, setIsFetchingTitle] = useState(false)
 
   async function handleFetchTitle() {
     setTitleFetchError(null)
-    const url = getInput(form, { path: ['url'] }) ?? ''
+    const url = getUrl()
     if (url.trim() === '') {
       setTitleFetchError('先にURLを入力してください')
       return
@@ -27,7 +29,7 @@ export function useBookmarkTitleFetch(form: FormStore<typeof workbenchSchema>) {
         setTitleFetchError(titleFetchFailedMessage)
         return
       }
-      setInput(form, { path: ['title'], input: fetchedTitle })
+      setTitle(fetchedTitle)
     } catch (error) {
       setTitleFetchError(getTitleFetchErrorMessage(error))
     } finally {

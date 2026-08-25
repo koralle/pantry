@@ -57,16 +57,16 @@ export function BookmarkEditor({
   fetchTitleAction
 }: BookmarkEditorProps) {
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
-  // BookmarkForm へは表示用に serverError を渡し、Formisch store へはコピーしない。
-  // これによって、Formisch の validation error と server error のライフサイクルを
-  // 分離でき、field の onChange から Formisch と server それぞれの clear 経路が
+  // BookmarkForm へは表示用に serverError を渡し、Conform へはコピーしない。
+  // これによって、Conform の validation error と server error のライフサイクルを
+  // 分離でき、field の onChange から Conform と server それぞれの clear 経路が
   // 明確に分かれる。
   const [editorError, setEditorError] = useState<BookmarkEditorError | null>(null)
 
   function clearFormFieldError(field: BookmarkFormFieldKey) {
     // BookmarkForm の field 入力変更に応じて、対応する server field error だけを取り除く。
     // Summary と他 field は残す。所有者が Editor 側なので、
-    // BookmarkForm から Formisch を触らずに済む。
+    // BookmarkForm から Conform を触らずに済む。
     setEditorError((current) => {
       if (current === null || current.form === undefined) {
         return current
@@ -92,7 +92,7 @@ export function BookmarkEditor({
     // OnUpdateBookmark と onCompleted のエラー境界を分離する。
     // Update が成功したあとに Navigation (onCompleted) が失敗しても、
     // それは「保存失敗」ではない (実データは保存済み)。
-    // 保存済みであることを伝える安全なメッセージへ変換し、Formisch の submit
+    // 保存済みであることを伝える安全なメッセージへ変換し、Conform の submit
     // Handler へ rejection を返して raw error を validation error にしない。
     const updateResult = await onUpdateBookmark(buildUpdateBookmarkCommand(initialData, values))
 

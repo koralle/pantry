@@ -1,6 +1,7 @@
-import { Field, getErrors, getInput, useForm, validate } from '@formisch/react'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react'
+import { parseWithValibot } from '@conform-to/valibot'
 import { CircleAlert, Download } from 'lucide-react'
-import { useActionState, useState } from 'react'
+import { startTransition, useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
@@ -36,6 +37,15 @@ interface BookmarkWorkbenchFormProps {
   readonly mapError: (error: unknown) => string | null
 }
 
+function readFormValue(formId: string, name: string): string {
+  const formElement = document.getElementById(formId)
+  if (!(formElement instanceof HTMLFormElement)) {
+    return ''
+  }
+  const value = new FormData(formElement).get(name)
+  return typeof value === 'string' ? value : ''
+}
+
 export function BookmarkWorkbenchForm({
   mode,
   initialValues,
@@ -44,57 +54,76 @@ export function BookmarkWorkbenchForm({
   onSubmit,
   mapError
 }: BookmarkWorkbenchFormProps) {
-  const form = useForm({
-    initialInput: {
+  const [formError, setFormError] = useState<string | null>(null)
+  const [, submitAction, isPending] = useActionState(
+    async (_previous: unknown, formData: FormData) => {
+      setFormError(null)
+      const submission = parseWithValibot(formData, {
+        disableAutoCoercion: true,
+        schema: workbenchSchema
+      })
+      if (submission.status !== 'success') {
+        return
+      }
+
+      const note = submission.value.note === '' ? null : submission.value.note
+
+      try {
+        await onSubmit({ url: submission.value.url, title: submission.value.title, note })
+      } catch (error) {
+        const message = mapError(error)
+        if (message !== null) {
+          setFormError(message)
+        }
+      }
+    },
+    null
+  )
+  const [form, fields] = useForm<BookmarkWorkbenchValues>({
+    defaultValue: {
       url: initialValues.url,
       title: initialValues.title,
       note: initialValues.note ?? ''
     },
-    schema: workbenchSchema
+    onSubmit(event, { formData, submission }) {
+      event.preventDefault()
+      if (submission?.status !== 'success') {
+        return
+      }
+      startTransition(() => {
+        submitAction(formData)
+      })
+    },
+    onValidate({ formData }) {
+      return parseWithValibot(formData, { disableAutoCoercion: true, schema: workbenchSchema })
+    },
+    shouldRevalidate: 'onInput',
+    shouldValidate: 'onSubmit'
   })
 
-  const { titleFetchError, isFetchingTitle, handleFetchTitle } = useBookmarkTitleFetch(form)
-
-  const [formError, setFormError] = useState<string | null>(null)
-
-  const [, submitAction, isPending] = useActionState(async () => {
-    setFormError(null)
-    const result = await validate(form)
-    if (!result.success) {
-      setFormError('入力内容を確認してください')
-      return
+  const { titleFetchError, isFetchingTitle, handleFetchTitle } = useBookmarkTitleFetch({
+    getUrl: () => readFormValue(form.id, fields.url.name),
+    setTitle: (title) => {
+      form.update({ name: fields.title.name, value: title })
     }
-
-    const url = getInput(form, { path: ['url'] }) ?? ''
-    const title = getInput(form, { path: ['title'] }) ?? ''
-    const rawNote = getInput(form, { path: ['note'] }) ?? ''
-    const note = rawNote === '' ? null : rawNote
-
-    try {
-      await onSubmit({ url, title, note })
-    } catch (error) {
-      const message = mapError(error)
-      if (message !== null) {
-        setFormError(message)
-      }
-    }
-  }, null)
+  })
 
   const busy = isPending || isFetchingTitle
   const summaryErrors = [formError, titleFetchError].filter(
     (message): message is string => message != null
   )
-  const schemaErrors = getErrors(form)
+  const schemaErrors = form.status === 'error' ? ['入力内容を確認してください'] : []
   const allSummary = [
     ...summaryErrors,
-    ...(schemaErrors ?? []).filter((message) => !summaryErrors.includes(message))
+    ...schemaErrors.filter((message) => !summaryErrors.includes(message)),
+    ...(form.errors ?? []).filter((message) => !summaryErrors.includes(message))
   ]
 
   return (
     <form
       className={workbenchForm}
-      action={submitAction}
-      noValidate>
+      {...getFormProps(form)}
+      action={submitAction}>
       {allSummary.length > 0 ? (
         <div
           className={formSummary}
@@ -120,80 +149,47 @@ export function BookmarkWorkbenchForm({
           {mode === 'new' ? 'ブックマーク新規登録' : 'ブックマーク編集'}
         </legend>
 
-        <Field
-          of={form}
-          path={['url']}>
-          {(f) => (
-            <div className={field}>
-              <StyledLabel htmlFor={f.props.name}>URL</StyledLabel>
-              <div className={fieldUrlRow}>
-                <StyledInput
-                  id={f.props.name}
-                  value={f.input}
-                  type='url'
-                  onChange={(event) => {
-                    f.onChange(event.target.value)
-                  }}
-                  required
-                  disabled={busy}
-                />
-                <StyledButton
-                  onPress={() => {
-                    void handleFetchTitle()
-                  }}
-                  isDisabled={busy}>
-                  <Download
-                    size={16}
-                    aria-hidden
-                  />{' '}
-                  {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
-                </StyledButton>
-              </div>
-              {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
-            </div>
-          )}
-        </Field>
+        <div className={field}>
+          <StyledLabel htmlFor={fields.url.id}>URL</StyledLabel>
+          <div className={fieldUrlRow}>
+            <StyledInput
+              {...getInputProps(fields.url, { type: 'url' })}
+              required
+              disabled={busy}
+            />
+            <StyledButton
+              onPress={() => {
+                void handleFetchTitle()
+              }}
+              isDisabled={busy}>
+              <Download
+                size={16}
+                aria-hidden
+              />{' '}
+              {isFetchingTitle ? '取得中…' : 'タイトルを取得'}
+            </StyledButton>
+          </div>
+          {fields.url.errors ? <p className={fieldError}>{fields.url.errors[0]}</p> : null}
+        </div>
 
-        <Field
-          of={form}
-          path={['title']}>
-          {(f) => (
-            <div className={field}>
-              <StyledLabel htmlFor={f.props.name}>タイトル</StyledLabel>
-              <StyledInput
-                id={f.props.name}
-                value={f.input}
-                type='text'
-                onChange={(event) => {
-                  f.onChange(event.target.value)
-                }}
-                required
-                disabled={busy}
-              />
-              {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
-            </div>
-          )}
-        </Field>
+        <div className={field}>
+          <StyledLabel htmlFor={fields.title.id}>タイトル</StyledLabel>
+          <StyledInput
+            {...getInputProps(fields.title, { type: 'text' })}
+            required
+            disabled={busy}
+          />
+          {fields.title.errors ? <p className={fieldError}>{fields.title.errors[0]}</p> : null}
+        </div>
 
-        <Field
-          of={form}
-          path={['note']}>
-          {(f) => (
-            <div className={field}>
-              <StyledLabel htmlFor={f.props.name}>メモ</StyledLabel>
-              <StyledInput
-                id={f.props.name}
-                value={f.input ?? ''}
-                type='text'
-                onChange={(event) => {
-                  f.onChange(event.target.value)
-                }}
-                disabled={busy}
-              />
-              {f.errors ? <p className={fieldError}>{f.errors[0]}</p> : null}
-            </div>
-          )}
-        </Field>
+        <div className={field}>
+          <StyledLabel htmlFor={fields.note.id}>メモ</StyledLabel>
+          <StyledInput
+            {...getInputProps(fields.note, { type: 'text' })}
+            disabled={busy}
+          />
+          {fields.note.errors ? <p className={fieldError}>{fields.note.errors[0]}</p> : null}
+        </div>
       </fieldset>
 
       <StyledButton
