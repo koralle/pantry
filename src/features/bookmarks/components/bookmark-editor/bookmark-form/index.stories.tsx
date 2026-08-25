@@ -300,7 +300,7 @@ export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
   }
 })
 
-export const FormischValidationClearsOnEdit = Default.extend({
+export const ValidationClearsOnEdit = Default.extend({
   args: {
     initialValues: {
       url: 'not-a-url',
@@ -311,11 +311,11 @@ export const FormischValidationClearsOnEdit = Default.extend({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
-    // 送信で Formisch validation error を出す
+    // 送信で Conform validation error を出す
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
     await expect(canvas.getByText('Invalid URL: Received "not-a-url"')).toBeInTheDocument()
 
-    // URL を編集すると Formisch 側の error は onChange で clear される (従来通り)
+    // URL を編集すると Conform 側の error は onInput 再検証で消える
     const url = canvas.getByLabelText('URL')
     await userEvent.clear(url)
     await userEvent.type(url, 'https://example.com/edited')

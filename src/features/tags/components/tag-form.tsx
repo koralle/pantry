@@ -1,15 +1,20 @@
-import { Field, getInput, useForm } from '@formisch/react'
+import { getFormProps, getInputProps, useForm } from '@conform-to/react'
+import { parseWithValibot } from '@conform-to/valibot'
 import { CircleAlert } from 'lucide-react'
-import { useActionState, useState } from 'react'
+import { startTransition, useActionState, useState } from 'react'
 import * as v from 'valibot'
 
 import { StyledButton } from '../../../shared/components/styled-button'
 import { StyledInput } from '../../../shared/components/styled-input'
 import { StyledLabel } from '../../../shared/components/styled-label'
-import { field, formSummary } from '../../../styles/form'
+import { field, fieldError, formSummary } from '../../../styles/form'
 import { srOnly } from '../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../styles/workbench'
 import { TagEditFields } from './tag-edit-fields'
+
+const tagNameSchema = v.object({
+  name: v.pipe(v.string(), v.nonEmpty('タグ名を入力してください'))
+})
 
 type TagFormValues = {
   readonly name: string
@@ -43,20 +48,18 @@ export function TagForm({
   const [color, setColor] = useState<string | null>(initialValues.color)
   const [sortOrder, setSortOrder] = useState(initialValues.sortOrder)
   const [formError, setFormError] = useState<string | null>(null)
-  const form = useForm({
-    initialInput: {
-      name: initialValues.name
-    },
-    schema: v.object({
-      name: v.string()
-    })
-  })
-  const [, submit, isPending] = useActionState(async () => {
+  const [, submit, isPending] = useActionState(async (_previous: unknown, formData: FormData) => {
     setFormError(null)
-    const name = getInput(form, { path: ['name'] }) ?? ''
+    const submission = parseWithValibot(formData, {
+      disableAutoCoercion: true,
+      schema: tagNameSchema
+    })
+    if (submission.status !== 'success') {
+      return
+    }
 
     try {
-      await onSubmit({ name, pinned, color, sortOrder })
+      await onSubmit({ name: submission.value.name, pinned, color, sortOrder })
     } catch (error) {
       const message = mapError(error)
       if (message !== null) {
@@ -64,10 +67,30 @@ export function TagForm({
       }
     }
   }, null)
+  const [form, fields] = useForm({
+    defaultValue: {
+      name: initialValues.name
+    },
+    onSubmit(event, { formData, submission }) {
+      event.preventDefault()
+      if (submission?.status !== 'success') {
+        return
+      }
+      startTransition(() => {
+        submit(formData)
+      })
+    },
+    onValidate({ formData }) {
+      return parseWithValibot(formData, { disableAutoCoercion: true, schema: tagNameSchema })
+    },
+    shouldRevalidate: 'onInput',
+    shouldValidate: 'onSubmit'
+  })
 
   return (
     <form
       className={workbenchForm}
+      {...getFormProps(form)}
       action={submit}>
       {formError != null ? (
         <div
@@ -89,24 +112,14 @@ export function TagForm({
         disabled={isPending}>
         <legend className={srOnly}>{legend}</legend>
 
-        <Field
-          of={form}
-          path={['name']}>
-          {(fieldProps) => (
-            <div className={field}>
-              <StyledLabel htmlFor={fieldProps.props.name}>タグ名</StyledLabel>
-              <StyledInput
-                id={fieldProps.props.name}
-                value={fieldProps.input}
-                type='text'
-                onChange={(event) => {
-                  fieldProps.onChange(event.target.value)
-                }}
-                required
-              />
-            </div>
-          )}
-        </Field>
+        <div className={field}>
+          <StyledLabel htmlFor={fields.name.id}>タグ名</StyledLabel>
+          <StyledInput
+            {...getInputProps(fields.name, { type: 'text' })}
+            required
+          />
+          {fields.name.errors ? <p className={fieldError}>{fields.name.errors[0]}</p> : null}
+        </div>
 
         <TagEditFields
           pinned={pinned}
