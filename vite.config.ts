@@ -10,7 +10,13 @@ const config = defineConfig({
   plugins: [
     devtools(),
     cloudflare({ viteEnvironment: { name: 'ssr' } }),
-    tanstackStart(),
+    tanstackStart({
+      router: {
+        // File-based routing treats dots as path segments, so
+        // `index.stories.tsx` would otherwise be crawled as `/stories`.
+        routeFileIgnorePattern: '\\.stories\\.(tsx|ts|jsx|js)$'
+      }
+    }),
     viteReact()
   ],
   resolve: {
