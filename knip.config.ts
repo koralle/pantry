@@ -14,6 +14,8 @@ const config: KnipConfig = {
       'src/**/*.stories.@(ts|tsx)'
     ]
   },
+  // Agent skills are repository tooling, not application entry points.
+  ignore: ['.agents/**'],
   // Do not parse lefthook.yaml / git hooks for entry scripts and binaries.
   lefthook: false,
   ignoreDependencies: [
