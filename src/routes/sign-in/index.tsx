@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router'
 import { css } from 'styled-system/css'
+import { grid } from 'styled-system/patterns'
 import * as v from 'valibot'
 
 import { SignInWithEmailAndPasswordForm } from '../../features/auth/components/sign-in-form'
@@ -7,7 +8,6 @@ import { authClient } from '../../features/auth/lib/auth-client'
 import { isInternalPath } from '../../features/auth/lib/is-internal-path'
 import { SignInError } from '../../features/auth/lib/sign-in-error'
 import type { SignInSchema } from '../../features/auth/lib/sign-in-schema'
-import { pageLead } from '../../styles/type'
 
 const internalRedirectSchema = v.pipe(v.string(), v.check(isInternalPath))
 
@@ -40,39 +40,74 @@ function RouteComponent() {
   }
 
   return (
-    <div className={signInPage}>
-      <div className={signInPanel}>
-        <p className={signInBrand}>Pantry</p>
-        <p className={pageLead}>自分のブックマークに入る</p>
-        <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
+    <div
+      className={grid({
+        gridTemplateRows: '1fr',
+        containerName: 'sign-in-page-root',
+        containerType: 'inline-size',
+        minBlockSize: '100svb'
+      })}>
+      <div
+        className={grid({
+          minBlockSize: 'stretch',
+          '@container sign-in-page-root (min-inline-size: 60rem)': {
+            gridTemplateColumns: '1fr 1fr'
+          }
+        })}>
+        <div
+          className={css({
+            display: 'none',
+            '@container sign-in-page-root (min-inline-size: 60rem)': {
+              display: 'grid',
+              minInlineSize: 0,
+              padding: 2
+            }
+          })}>
+          <div
+            className={grid({
+              placeContent: 'center',
+              backgroundColor: 'accent.solid',
+              color: 'accent.fg',
+              borderRadius: 'sheet'
+            })}>
+            <p
+              translate='no'
+              className={css({
+                margin: 0,
+                fontSize: 'title',
+                fontWeight: 'bold',
+                lineHeight: 'tight'
+              })}>
+              Pantry
+            </p>
+          </div>
+        </div>
+
+        <section
+          className={css({
+            display: 'grid',
+            placeItems: 'center',
+            minInlineSize: 0,
+            paddingInline: 4,
+            '@container sign-in-page-root (min-inline-size: 60rem)': {
+              paddingInline: 12
+            }
+          })}>
+          <div
+            className={grid({
+              paddingInline: 6,
+              paddingBlock: 10,
+              borderRadius: 'sheet',
+              inlineSize: 'min(100%, 30rem)',
+              '& button[type="submit"]': {
+                inlineSize: 'stretch'
+              }
+            })}>
+            <h1 className={css({ textAlign: 'center' })}>ログイン</h1>
+            <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
+          </div>
+        </section>
       </div>
     </div>
   )
 }
-
-const signInPage = css({
-  minBlockSize: '100dvh',
-  display: 'grid',
-  placeItems: 'center',
-  paddingBlock: '6',
-  paddingInline: '4',
-  backgroundImage:
-    'radial-gradient(ellipse at 20% 0%, color-mix(in oklab, {colors.pantry.accent} 10%, transparent), transparent 55%)',
-  backgroundColor: 'bg.canvas'
-})
-
-const signInPanel = css({
-  width: '22rem',
-  maxInlineSize: 'full',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '5'
-})
-
-const signInBrand = css({
-  margin: '0',
-  fontSize: '3xl',
-  fontWeight: 'bold',
-  letterSpacing: 'wide',
-  lineHeight: 'tight'
-})
