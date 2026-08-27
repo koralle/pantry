@@ -55,6 +55,8 @@ const meta = preview.meta({
 export const Default = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: 'ログイン', level: 1 })).toBeInTheDocument()
+    await expect(canvas.getAllByRole('heading', { level: 1, hidden: true })).toHaveLength(1)
     await expect(canvas.getByLabelText('メール')).toBeInTheDocument()
     await expect(canvas.getByLabelText('パスワード')).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: 'サインイン' })).toBeEnabled()
