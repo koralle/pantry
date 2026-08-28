@@ -20,4 +20,9 @@ describe('BookmarkDeleteDialog', () => {
     expect(source).toContain('mutateAsync')
     expect(source).not.toContain('../functions/delete-bookmark')
   })
+
+  test('削除成功後は共通の一覧 refresh を使う', () => {
+    expect(source).toContain("refreshAfterBookmarkMutation(router, queryClient, 'DeleteBookmark')")
+    expect(source).not.toContain('resetBookmarkListCache')
+  })
 })

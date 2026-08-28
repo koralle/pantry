@@ -1,30 +1,30 @@
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { getErrorMessage } from 'react-error-boundary'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { bookmarkListQueryOptions } from '../lib/bookmark-list-query-options'
 import {
-  bookmarkListSearchKey,
   consumeBookmarkListScroll,
   rememberBookmarkListScroll
 } from '../lib/bookmark-list-scroll-session'
 
 export function useBookmarkListPagination({ search }: { readonly search: BookmarkSearchSchema }) {
-  const query = useSuspenseInfiniteQuery(bookmarkListQueryOptions(searchToQueryInput(search)))
-  const searchKey = bookmarkListSearchKey(search)
+  const query = useSuspenseInfiniteQuery(bookmarkListQueryOptions(search))
   const items = query.data.pages.flatMap((page) => page.items)
+  const searchRef = useRef(search)
+  searchRef.current = search
 
   useLayoutEffect(() => {
-    const scrollY = consumeBookmarkListScroll(searchKey)
+    const scrollY = consumeBookmarkListScroll(searchRef.current)
     if (scrollY != null) {
       window.scrollTo(0, scrollY)
     }
 
     return () => {
-      rememberBookmarkListScroll(searchKey, window.scrollY)
+      rememberBookmarkListScroll(searchRef.current, window.scrollY)
     }
-  }, [searchKey])
+  }, [search.q, search.tagMode, search.sort, search.tags])
 
   const loadMore = () => {
     if (query.isFetchingNextPage || !query.hasNextPage) {
@@ -41,14 +41,5 @@ export function useBookmarkListPagination({ search }: { readonly search: Bookmar
       : null,
     isLoadingMore: query.isFetchingNextPage,
     loadMore
-  }
-}
-
-function searchToQueryInput(search: BookmarkSearchSchema) {
-  return {
-    tagMode: search.tagMode,
-    sort: search.sort,
-    ...(search.q !== undefined ? { q: search.q } : {}),
-    ...(search.tags !== undefined ? { tags: search.tags } : {})
   }
 }

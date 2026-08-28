@@ -55,13 +55,31 @@ describe('bookmark list query ownership', () => {
     }
   })
 
-  test('一覧復帰のために staleTime Infinity と refetchOnMount false を使う', () => {
+  test('一覧復帰のために staleTime Infinity と mutation 時の removeQueries を使う', () => {
     const helper = readSource('features/bookmarks/lib/bookmark-list-query-options.ts')
     expect(helper).toContain('Number.POSITIVE_INFINITY')
-    expect(helper).toContain('refetchOnMount: false')
+    expect(helper).not.toContain('refetchOnWindowFocus')
+    expect(helper).not.toContain('refetchOnReconnect')
+    expect(helper).not.toContain('refetchOnMount')
     expect(readSource('features/bookmarks/lib/reset-bookmark-list-cache.ts')).toContain(
       'removeQueries'
     )
+  })
+
+  test('query options 工場が BookmarkSearchSchema を受け、tags を tagNames へ写す', () => {
+    const helper = readSource('features/bookmarks/lib/bookmark-list-query-options.ts')
+    expect(helper).toContain('search: BookmarkSearchSchema')
+    expect(helper).toContain('tagNames')
+    expect(helper).not.toContain('BookmarkListQueryInput')
+
+    const hook = readSource('features/bookmarks/hooks/use-bookmark-list-pagination.ts')
+    expect(hook).toContain('bookmarkListQueryOptions(search)')
+    expect(hook).not.toContain('searchToQueryInput')
+    expect(hook).not.toContain('tagNames')
+
+    const index = readSource('routes/_protected/index.tsx')
+    expect(index).toContain('loaderDeps: ({ search }) => search')
+    expect(index).not.toContain('bookmarkListLoaderDeps')
   })
 
   test('Card / Table 切替は query を捨てずスクロールだけ先頭へ戻す', () => {

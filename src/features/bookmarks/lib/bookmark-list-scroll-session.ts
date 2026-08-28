@@ -1,25 +1,46 @@
-export function bookmarkListSearchKey(search: {
-  readonly q?: string | undefined
-  readonly tags?: readonly string[] | undefined
-  readonly tagMode: string
-  readonly sort: string
-}): string {
-  return [search.q ?? '', search.tags?.join(',') ?? '', search.tagMode, search.sort].join('|')
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
+
+export function bookmarkListSearchEquals(
+  left: BookmarkSearchSchema,
+  right: BookmarkSearchSchema
+): boolean {
+  return (
+    left.q === right.q &&
+    left.tagMode === right.tagMode &&
+    left.sort === right.sort &&
+    tagsEqual(left.tags, right.tags)
+  )
+}
+
+function tagsEqual(
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined
+): boolean {
+  if (left === right) {
+    return true
+  }
+  if (left == null || right == null) {
+    return false
+  }
+  if (left.length !== right.length) {
+    return false
+  }
+  return left.every((tag, index) => tag === right[index])
 }
 
 type BookmarkListScrollSession = {
-  searchKey: string
+  search: BookmarkSearchSchema
   scrollY: number
 }
 
 let session: BookmarkListScrollSession | null = null
 
-export function rememberBookmarkListScroll(searchKey: string, scrollY: number): void {
-  session = { searchKey, scrollY }
+export function rememberBookmarkListScroll(search: BookmarkSearchSchema, scrollY: number): void {
+  session = { search, scrollY }
 }
 
-export function consumeBookmarkListScroll(searchKey: string): number | null {
-  if (session == null || session.searchKey !== searchKey) {
+export function consumeBookmarkListScroll(search: BookmarkSearchSchema): number | null {
+  if (session == null || !bookmarkListSearchEquals(session.search, search)) {
     return null
   }
   const { scrollY } = session

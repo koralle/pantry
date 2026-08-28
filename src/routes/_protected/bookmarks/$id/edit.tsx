@@ -12,7 +12,7 @@ import type {
   BookmarkTitleFetchAction
 } from '../../../../features/bookmarks/components/bookmark-editor'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
-import { resetBookmarkListCache } from '../../../../features/bookmarks/lib/reset-bookmark-list-cache'
+import { refreshAfterBookmarkMutation } from '../../../../features/bookmarks/lib/refresh-after-bookmark-mutation'
 import { toUpdateBookmarkFailureCode } from '../../../../features/bookmarks/lib/update-bookmark-failure'
 import { bookmarkDetailSearchSchema } from '../../../../features/navigation/lib/bookmark-search'
 import { listSearchFromDetail } from '../../../../features/navigation/lib/bookmark-search-builders'
@@ -201,10 +201,7 @@ export function RouteComponent() {
           fetchTitleAction={fetchTitleAction}
           onCompleted={async (bookmarkId) => {
             // DB commit 済みの成功を refresh failure で覆さない。invalidate は best-effort。
-            resetBookmarkListCache(queryClient)
-            void router.invalidate().catch((error: unknown) => {
-              console.error('Failed to refresh route data after UpdateBookmark', error)
-            })
+            refreshAfterBookmarkMutation(router, queryClient, 'UpdateBookmark')
 
             await navigate({
               to: '/bookmarks/$id',

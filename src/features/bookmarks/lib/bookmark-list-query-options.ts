@@ -5,33 +5,25 @@ import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 const BOOKMARK_LIST_STALE_TIME = Number.POSITIVE_INFINITY
 const BOOKMARK_LIST_GC_TIME = 30 * 60 * 1000
 
-export type BookmarkListQueryInput = {
-  readonly q?: string | undefined
-  readonly tags?: readonly string[] | undefined
-  readonly tagMode: BookmarkSearchSchema['tagMode']
-  readonly sort: BookmarkSearchSchema['sort']
-}
-
 /**
  * 一覧 read の query options 工場。route loader の prefetchInfiniteQuery も、
  * component の useSuspenseInfiniteQuery も、ここから作った同じ options を使う。
  * query key の所有者はこの関数に限定する。
+ *
+ * RPC へ渡す tagNames / cursor への変換もここで閉じる。
  */
-export function bookmarkListQueryOptions(input: BookmarkListQueryInput) {
+export function bookmarkListQueryOptions(search: BookmarkSearchSchema) {
   return orpc.bookmarks.list.infiniteOptions({
     input: (pageParam: string | undefined) => ({
-      tagMode: input.tagMode,
-      sort: input.sort,
-      ...(input.q !== undefined ? { q: input.q } : {}),
-      ...(input.tags !== undefined ? { tagNames: [...input.tags] } : {}),
+      tagMode: search.tagMode,
+      sort: search.sort,
+      ...(search.q !== undefined ? { q: search.q } : {}),
+      ...(search.tags !== undefined ? { tagNames: [...search.tags] } : {}),
       ...(pageParam !== undefined ? { cursor: pageParam } : {})
     }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: BOOKMARK_LIST_STALE_TIME,
-    gcTime: BOOKMARK_LIST_GC_TIME,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: false
+    gcTime: BOOKMARK_LIST_GC_TIME
   })
 }

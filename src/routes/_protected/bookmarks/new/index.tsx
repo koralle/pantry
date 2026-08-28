@@ -12,7 +12,7 @@ import type {
 import { buildNewBookmarkCommand } from '../../../../features/bookmarks/components/new-bookmark-command'
 import { getCreateBookmarkErrorMessage } from '../../../../features/bookmarks/lib/get-create-bookmark-error-message'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
-import { refreshAfterCreateBookmark } from '../../../../features/bookmarks/lib/refresh-after-create-bookmark'
+import { refreshAfterBookmarkMutation } from '../../../../features/bookmarks/lib/refresh-after-bookmark-mutation'
 import { bookmarkDetailSearchSchema } from '../../../../features/navigation/lib/bookmark-search'
 import { listSearchFromDetail } from '../../../../features/navigation/lib/bookmark-search-builders'
 import { orpc } from '../../../../rpc/query'
@@ -64,7 +64,7 @@ function RouteComponent() {
   const mutation = useMutation(
     orpc.bookmarks.create.mutationOptions({
       onSuccess: () => {
-        refreshAfterCreateBookmark(router, queryClient)
+        refreshAfterBookmarkMutation(router, queryClient, 'CreateBookmark')
       }
     })
   )

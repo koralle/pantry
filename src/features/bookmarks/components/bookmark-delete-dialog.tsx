@@ -10,7 +10,7 @@ import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../sty
 import { fieldError } from '../../../styles/form'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { getDeleteBookmarkErrorMessage } from '../lib/get-delete-bookmark-error-message'
-import { resetBookmarkListCache } from '../lib/reset-bookmark-list-cache'
+import { refreshAfterBookmarkMutation } from '../lib/refresh-after-bookmark-mutation'
 
 export function BookmarkDeleteDialog({
   bookmark,
@@ -30,10 +30,7 @@ export function BookmarkDeleteDialog({
     orpc.bookmarks.delete.mutationOptions({
       onSuccess: () => {
         // DB commit 済みの成功を refresh 失敗で覆さない。invalidate は best-effort。
-        resetBookmarkListCache(queryClient)
-        void router.invalidate().catch((error: unknown) => {
-          console.error('Failed to refresh route data after DeleteBookmark', error)
-        })
+        refreshAfterBookmarkMutation(router, queryClient, 'DeleteBookmark')
       }
     })
   )
