@@ -91,12 +91,22 @@ describe('bookmark list query ownership', () => {
     expect(frame).not.toContain("join('|')")
   })
 
-  test('scroll effect は searchRef ではなく開始時の search を閉じる', () => {
+  test('一覧条件の正本は bookmarkListSearchIdentity だけ', () => {
+    const session = readSource('features/bookmarks/lib/bookmark-list-scroll-session.ts')
+    expect(session).toContain('bookmarkListSearchIdentity')
+    expect(session).not.toContain('bookmarkListSearchEquals')
+    expect(session).not.toContain('tagsEqual')
+  })
+
+  test('scroll effect は search identity を dependency にする', () => {
     const hook = readSource('features/bookmarks/hooks/use-bookmark-list-pagination.ts')
+    expect(hook).toContain('bookmarkListSearchIdentity')
+    expect(hook).toContain('[searchIdentity]')
     expect(hook).not.toContain('searchRef')
     expect(hook).not.toContain('useRef')
-    expect(hook).toContain('rememberBookmarkListScroll(search,')
-    expect(hook).toContain('consumeBookmarkListScroll(search)')
+    expect(hook).not.toContain('bookmarkListSearchEquals')
+    expect(hook).toContain('rememberBookmarkListScroll(searchIdentity,')
+    expect(hook).toContain('consumeBookmarkListScroll(searchIdentity)')
   })
 
   test('BookmarkDetailSearch は schema から導出し listDefaults を持たない', () => {

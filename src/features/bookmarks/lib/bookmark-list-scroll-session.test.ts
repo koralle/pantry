@@ -2,7 +2,6 @@ import { afterEach, describe, expect, test } from 'vitest'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import {
-  bookmarkListSearchEquals,
   bookmarkListSearchIdentity,
   clearBookmarkListScroll,
   consumeBookmarkListScroll,
@@ -21,35 +20,37 @@ describe('bookmark list scroll session', () => {
   })
 
   test('同じ一覧条件なら保存したスクロール位置を一度だけ返す', () => {
-    rememberBookmarkListScroll(defaultSearch, 640)
+    rememberBookmarkListScroll(bookmarkListSearchIdentity(defaultSearch), 640)
 
-    expect(consumeBookmarkListScroll({ ...defaultSearch })).toBe(640)
-    expect(consumeBookmarkListScroll({ ...defaultSearch })).toBeNull()
+    expect(consumeBookmarkListScroll(bookmarkListSearchIdentity({ ...defaultSearch }))).toBe(640)
+    expect(consumeBookmarkListScroll(bookmarkListSearchIdentity({ ...defaultSearch }))).toBeNull()
   })
 
   test('条件が変わった一覧にはスクロール位置を渡さない', () => {
-    rememberBookmarkListScroll(defaultSearch, 640)
+    rememberBookmarkListScroll(bookmarkListSearchIdentity(defaultSearch), 640)
 
     expect(
-      consumeBookmarkListScroll({
-        q: 'react',
-        tagMode: 'and',
-        sort: 'newest'
-      })
+      consumeBookmarkListScroll(
+        bookmarkListSearchIdentity({
+          q: 'react',
+          tagMode: 'and',
+          sort: 'newest'
+        })
+      )
     ).toBeNull()
   })
 
   test('タグ名のカンマとタグ配列の区切りを同一条件として扱わない', () => {
-    const commaInName = {
+    const commaInName = bookmarkListSearchIdentity({
       tags: ['a,b'],
       tagMode: 'and',
       sort: 'newest'
-    } as const satisfies BookmarkSearchSchema
-    const twoTags = {
+    })
+    const twoTags = bookmarkListSearchIdentity({
       tags: ['a', 'b'],
       tagMode: 'and',
       sort: 'newest'
-    } as const satisfies BookmarkSearchSchema
+    })
 
     rememberBookmarkListScroll(commaInName, 640)
 
@@ -74,24 +75,15 @@ describe('bookmark list scroll session', () => {
   })
 
   test('タグ配列は要素と並びが同じときだけ同一条件', () => {
+    expect(bookmarkListSearchIdentity({ tags: ['a', 'b'], tagMode: 'and', sort: 'newest' })).toBe(
+      bookmarkListSearchIdentity({ tags: ['a', 'b'], tagMode: 'and', sort: 'newest' })
+    )
     expect(
-      bookmarkListSearchEquals(
-        { tags: ['a', 'b'], tagMode: 'and', sort: 'newest' },
-        { tags: ['a', 'b'], tagMode: 'and', sort: 'newest' }
-      )
-    ).toBe(true)
-    expect(
-      bookmarkListSearchEquals(
-        { tags: ['a', 'b'], tagMode: 'and', sort: 'newest' },
-        { tags: ['b', 'a'], tagMode: 'and', sort: 'newest' }
-      )
-    ).toBe(false)
-    expect(
-      bookmarkListSearchEquals(
-        { tagMode: 'and', sort: 'newest' },
-        { tags: [], tagMode: 'and', sort: 'newest' }
-      )
-    ).toBe(false)
+      bookmarkListSearchIdentity({ tags: ['a', 'b'], tagMode: 'and', sort: 'newest' })
+    ).not.toBe(bookmarkListSearchIdentity({ tags: ['b', 'a'], tagMode: 'and', sort: 'newest' }))
+    expect(bookmarkListSearchIdentity({ tagMode: 'and', sort: 'newest' })).not.toBe(
+      bookmarkListSearchIdentity({ tags: [], tagMode: 'and', sort: 'newest' })
+    )
   })
 
   test('ルーターの scroll restoration は一覧 pathname では動かさない', () => {

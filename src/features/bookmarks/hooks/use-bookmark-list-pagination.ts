@@ -5,6 +5,7 @@ import { getErrorMessage } from 'react-error-boundary'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { bookmarkListQueryOptions } from '../lib/bookmark-list-query-options'
 import {
+  bookmarkListSearchIdentity,
   consumeBookmarkListScroll,
   rememberBookmarkListScroll
 } from '../lib/bookmark-list-scroll-session'
@@ -12,17 +13,18 @@ import {
 export function useBookmarkListPagination({ search }: { readonly search: BookmarkSearchSchema }) {
   const query = useSuspenseInfiniteQuery(bookmarkListQueryOptions(search))
   const items = query.data.pages.flatMap((page) => page.items)
+  const searchIdentity = bookmarkListSearchIdentity(search)
 
   useLayoutEffect(() => {
-    const scrollY = consumeBookmarkListScroll(search)
+    const scrollY = consumeBookmarkListScroll(searchIdentity)
     if (scrollY != null) {
       window.scrollTo(0, scrollY)
     }
 
     return () => {
-      rememberBookmarkListScroll(search, window.scrollY)
+      rememberBookmarkListScroll(searchIdentity, window.scrollY)
     }
-  }, [search])
+  }, [searchIdentity])
 
   const loadMore = () => {
     if (query.isFetchingNextPage || !query.hasNextPage) {

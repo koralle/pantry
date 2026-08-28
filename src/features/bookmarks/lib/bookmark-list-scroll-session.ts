@@ -1,34 +1,6 @@
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 
-function tagsEqual(
-  left: readonly string[] | undefined,
-  right: readonly string[] | undefined
-): boolean {
-  if (left === right) {
-    return true
-  }
-  if (left === undefined || right === undefined) {
-    return false
-  }
-  if (left.length !== right.length) {
-    return false
-  }
-  return left.every((tag, index) => tag === right[index])
-}
-
-export function bookmarkListSearchEquals(
-  left: BookmarkSearchSchema,
-  right: BookmarkSearchSchema
-): boolean {
-  return (
-    left.q === right.q &&
-    left.tagMode === right.tagMode &&
-    left.sort === right.sort &&
-    tagsEqual(left.tags, right.tags)
-  )
-}
-
-/** React key 用。タグ配列の構造を壊さない。 */
+/** 同じ一覧条件かどうかの正本。React key と scroll session がこれを共有する。 */
 export function bookmarkListSearchIdentity(search: BookmarkSearchSchema): string {
   return JSON.stringify({
     q: search.q,
@@ -39,18 +11,18 @@ export function bookmarkListSearchIdentity(search: BookmarkSearchSchema): string
 }
 
 type BookmarkListScrollSession = {
-  search: BookmarkSearchSchema
+  searchIdentity: string
   scrollY: number
 }
 
 let session: BookmarkListScrollSession | null = null
 
-export function rememberBookmarkListScroll(search: BookmarkSearchSchema, scrollY: number): void {
-  session = { search, scrollY }
+export function rememberBookmarkListScroll(searchIdentity: string, scrollY: number): void {
+  session = { searchIdentity, scrollY }
 }
 
-export function consumeBookmarkListScroll(search: BookmarkSearchSchema): number | null {
-  if (session == null || !bookmarkListSearchEquals(session.search, search)) {
+export function consumeBookmarkListScroll(searchIdentity: string): number | null {
+  if (session === null || session.searchIdentity !== searchIdentity) {
     return null
   }
   const { scrollY } = session
