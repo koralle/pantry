@@ -144,7 +144,9 @@ export const InvalidTagKeepsDraftAndAsksToRepick = Default.extend({
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: '更新' }))
-    await expect(canvas.getByRole('alert')).toHaveTextContent('タグを選び直してください')
+    const alerts = canvas.getAllByRole('alert')
+    await expect(alerts.length).toBeGreaterThanOrEqual(2)
+    await expect(alerts[0]).toHaveTextContent('タグを選び直してください')
     await expect(canvas.getByRole('button', { name: 'Reactを外す' })).toBeInTheDocument()
     await expect(canvas.getByLabelText('URL')).toHaveValue(String(initialData.url))
     const command = (args.onUpdateBookmark as Mock).mock.calls[0]?.[0]

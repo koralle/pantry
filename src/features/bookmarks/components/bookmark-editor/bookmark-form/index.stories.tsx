@@ -499,7 +499,9 @@ export const InvalidTagErrorStaysOnTagField = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent('タグを選び直してください')
+    const alerts = canvas.getAllByRole('alert')
+    await expect(alerts.length).toBeGreaterThanOrEqual(2)
+    await expect(alerts[0]).toHaveTextContent('タグを選び直してください')
     await expect(canvas.getAllByText(/タグを選び直してください/).length).toBeGreaterThanOrEqual(2)
     await expect(canvas.getByLabelText('URL')).toHaveValue(defaultInitialValues.url)
   }
