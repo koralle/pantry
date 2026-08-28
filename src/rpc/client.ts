@@ -1,8 +1,16 @@
 import { createORPCClient, ORPCError, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import type { RouterClient } from '@orpc/server'
+import { createIsomorphicFn } from '@tanstack/react-start'
 
 import type { AppRouter } from './create-app-router'
+
+const rpcFetch = createIsomorphicFn()
+  .server(async (request: Request, _init?: RequestInit) => {
+    const { ssrRpcFetch } = await import('./ssr-rpc-fetch.server')
+    return ssrRpcFetch(request)
+  })
+  .client((request: Request, init?: RequestInit) => globalThis.fetch(request, init))
 
 function redirectToSignIn(): void {
   if (typeof window === 'undefined') {
@@ -21,18 +29,12 @@ const link = new RPCLink({
       return `${window.location.origin}/api/rpc`
     }
 
-    // SSR では url を使わない。ssrRpcFetch が process 内の handler へ直接流す。
+    // SSR では url を使わない。rpcFetch の server 実装が process 内の handler へ直接流す。
     return 'http://pantry.internal/api/rpc'
   },
   // 呼び出し毎に解決する。構築時に bind すると、あとから差し替えられた
   // global fetch（テストや Storybook の stub）を拾えない。
-  fetch: (request, init) => {
-    if (import.meta.env.SSR) {
-      return import('./ssr-rpc-fetch.server').then(({ ssrRpcFetch }) => ssrRpcFetch(request))
-    }
-
-    return globalThis.fetch(request, init)
-  },
+  fetch: (request, init) => rpcFetch(request, init),
   interceptors: [
     onError((error) => {
       if (error instanceof ORPCError && error.defined && error.code === 'UNAUTHORIZED') {
