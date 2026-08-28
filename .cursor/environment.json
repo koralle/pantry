@@ -1,0 +1,8 @@
+{
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "pnpm install --frozen-lockfile",
+  "start": "bash .cursor/start-libsql.sh"
+}
