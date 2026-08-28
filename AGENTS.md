@@ -4,6 +4,16 @@
 
 自分専用のタグベースのブックマークマネージャ。
 
+## エージェントルール
+
+リポジトリ上で作業する前に、作業内容に応じて `.agents/rules/` 配下のルールを読む。
+
+- Issueの仕様策定・更新を行う場合: `.agents/rules/issue-specification.md`
+- GitHub Issueを起点に実装する場合: `.agents/rules/issue-driven-development.md`
+
+`.agents/rules/` 配下を規範的なルールの正本とする。
+この `AGENTS.md` にはルール本文を重複して記載しない。
+
 ## ディレクトリ構造
 
 - `src/` - アプリケーションコード（TanStack Start + Cloudflare Workers）
@@ -31,6 +41,8 @@ T.B.D
 
 ## 詳細ドキュメント
 
+- Issue Driven Development: @docs/issue-driven-development.md
+- ChatGPTプロジェクト指示: @docs/chatgpt-project-instructions.md
 - アーキテクチャ: @docs/architecture.md
 - テスト戦略: @docs/testing.md
 - MVP設計: @docs/superpowers/specs/2026-07-19-turso-rpc-mvp-design.md
