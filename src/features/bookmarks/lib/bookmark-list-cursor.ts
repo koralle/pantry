@@ -7,32 +7,42 @@ export type BookmarkListCursor = {
   readonly id: string
 }
 
-const CURSOR_PATTERN = /^(\d+):(.+)$/
+const CURSOR_PATTERN = /^(?<sortValueMs>\d+):(?<id>.+)$/
 
-export function encodeBookmarkListCursor(cursor: BookmarkListCursor): string {
-  return `${cursor.sortValueMs}:${cursor.id}`
+function parseCursorSortValueMs(value: string | undefined): number | null {
+  if (value === undefined) {
+    return null
+  }
+  const sortValueMs = Number(value)
+  if (!Number.isSafeInteger(sortValueMs) || new Date(sortValueMs).getTime() !== sortValueMs) {
+    return null
+  }
+  return sortValueMs
+}
+
+function parseCursorBookmarkId(value: string | undefined): string | null {
+  if (value === undefined) {
+    return null
+  }
+  const parsedId = v.safeParse(bookmarkIdSchema, value)
+  return parsedId.success ? parsedId.output : null
 }
 
 export function decodeBookmarkListCursor(value: string): BookmarkListCursor | null {
   const matched = CURSOR_PATTERN.exec(value)
-  if (matched == null) {
+  if (matched === null) {
     return null
   }
 
-  const sortValueMs = Number(matched[1])
-  const id = matched[2]
-  if (!Number.isSafeInteger(sortValueMs) || id === undefined) {
+  const sortValueMs = parseCursorSortValueMs(matched.groups?.['sortValueMs'])
+  const id = parseCursorBookmarkId(matched.groups?.['id'])
+  if (sortValueMs === null || id === null) {
     return null
   }
 
-  if (new Date(sortValueMs).getTime() !== sortValueMs) {
-    return null
-  }
+  return { sortValueMs, id }
+}
 
-  const parsedId = v.safeParse(bookmarkIdSchema, id)
-  if (!parsedId.success) {
-    return null
-  }
-
-  return { sortValueMs, id: parsedId.output }
+export function encodeBookmarkListCursor(cursor: BookmarkListCursor): string {
+  return `${cursor.sortValueMs}:${cursor.id}`
 }
