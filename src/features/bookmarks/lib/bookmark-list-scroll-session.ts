@@ -30,3 +30,11 @@ export function consumeBookmarkListScroll(searchKey: string): number | null {
 export function clearBookmarkListScroll(): void {
   session = null
 }
+
+/**
+ * 一覧のスクロールはモジュールスコープで復元する。
+ * ルーターの sessionStorage 復元は Hard Reload で一覧位置を残してしまうので使わない。
+ */
+export function shouldRestoreRouterScroll(location: { readonly pathname: string }): boolean {
+  return location.pathname !== '/'
+}

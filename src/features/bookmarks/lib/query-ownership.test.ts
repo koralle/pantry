@@ -54,4 +54,20 @@ describe('bookmark list query ownership', () => {
       expect(readSource(path)).not.toContain('orpc.bookmarks.list')
     }
   })
+
+  test('一覧復帰のために staleTime Infinity と refetchOnMount false を使う', () => {
+    const helper = readSource('features/bookmarks/lib/bookmark-list-query-options.ts')
+    expect(helper).toContain('Number.POSITIVE_INFINITY')
+    expect(helper).toContain('refetchOnMount: false')
+    expect(readSource('features/bookmarks/lib/reset-bookmark-list-cache.ts')).toContain(
+      'removeQueries'
+    )
+  })
+
+  test('Card / Table 切替は query を捨てずスクロールだけ先頭へ戻す', () => {
+    const source = readSource('features/bookmarks/components/bookmark-list.tsx')
+    expect(source).toContain('window.scrollTo(0, 0)')
+    expect(source).not.toContain('resetBookmarkListCache')
+    expect(source).not.toContain('removeQueries')
+  })
 })

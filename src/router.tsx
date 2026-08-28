@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 
+import { shouldRestoreRouterScroll } from './features/bookmarks/lib/bookmark-list-scroll-session'
 import { routeTree } from './routeTree.gen'
 
 export const getRouter = function getRouter() {
@@ -21,7 +22,7 @@ export const getRouter = function getRouter() {
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     routeTree,
-    scrollRestoration: true
+    scrollRestoration: ({ location }) => shouldRestoreRouterScroll(location)
   })
 
   setupRouterSsrQueryIntegration({

@@ -1,7 +1,10 @@
 import { describe, expect, test, vi } from 'vitest'
 
 import { orpc } from '../../../rpc/query'
-import { rememberBookmarkListScroll } from './bookmark-list-scroll-session'
+import {
+  consumeBookmarkListScroll,
+  rememberBookmarkListScroll
+} from './bookmark-list-scroll-session'
 import { resetBookmarkListCache } from './reset-bookmark-list-cache'
 
 describe('resetBookmarkListCache', () => {
@@ -15,5 +18,6 @@ describe('resetBookmarkListCache', () => {
     expect(removeQueries).toHaveBeenCalledWith({
       queryKey: orpc.bookmarks.list.key({ type: 'infinite' })
     })
+    expect(consumeBookmarkListScroll('q||and|newest')).toBeNull()
   })
 })

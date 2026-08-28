@@ -4,7 +4,8 @@ import {
   bookmarkListSearchKey,
   clearBookmarkListScroll,
   consumeBookmarkListScroll,
-  rememberBookmarkListScroll
+  rememberBookmarkListScroll,
+  shouldRestoreRouterScroll
 } from './bookmark-list-scroll-session'
 
 describe('bookmark list scroll session', () => {
@@ -28,5 +29,11 @@ describe('bookmark list scroll session', () => {
         bookmarkListSearchKey({ q: 'react', tagMode: 'and', sort: 'newest' })
       )
     ).toBeNull()
+  })
+
+  test('ルーターの scroll restoration は一覧 pathname では動かさない', () => {
+    expect(shouldRestoreRouterScroll({ pathname: '/' })).toBe(false)
+    expect(shouldRestoreRouterScroll({ pathname: '/bookmarks/new' })).toBe(true)
+    expect(shouldRestoreRouterScroll({ pathname: '/tags' })).toBe(true)
   })
 })

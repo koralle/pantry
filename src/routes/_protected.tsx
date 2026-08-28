@@ -7,7 +7,10 @@ import { MobileShelfDialog } from '../features/app-shell/components/mobile-shelf
 import { ProtectedShell } from '../features/app-shell/components/protected-shell'
 import { ShelfSidebar } from '../features/app-shell/components/shelf-sidebar'
 import { isInternalPath } from '../features/auth/lib/is-internal-path'
-import { resolveChromeListSearch } from '../features/navigation/lib/bookmark-search-builders'
+import {
+  detailSearchFromList,
+  resolveChromeListSearch
+} from '../features/navigation/lib/bookmark-search-builders'
 import { getRpcClient } from '../rpc/runtime-client'
 
 export const Route = createFileRoute('/_protected')({
@@ -61,8 +64,7 @@ function Layout() {
     tags: indexSearch?.tags
   }
 
-  const newBookmarkSearch =
-    listSearch?.tags !== undefined && listSearch.tags.length > 0 ? { tags: listSearch.tags } : {}
+  const newBookmarkSearch = listSearch === undefined ? {} : detailSearchFromList(listSearch)
 
   return (
     <ProtectedShell

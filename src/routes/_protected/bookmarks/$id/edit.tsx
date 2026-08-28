@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, CircleDashed } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
-import * as v from 'valibot'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
 import type {
@@ -15,7 +14,8 @@ import type {
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
 import { resetBookmarkListCache } from '../../../../features/bookmarks/lib/reset-bookmark-list-cache'
 import { toUpdateBookmarkFailureCode } from '../../../../features/bookmarks/lib/update-bookmark-failure'
-import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
+import { bookmarkDetailSearchSchema } from '../../../../features/navigation/lib/bookmark-search'
+import { listSearchFromDetail } from '../../../../features/navigation/lib/bookmark-search-builders'
 import { orpc } from '../../../../rpc/query'
 import { getRpcClient } from '../../../../rpc/runtime-client'
 import { createErrorFallback } from '../../../../shared/components/error-fallback'
@@ -27,10 +27,6 @@ import {
   workbenchNav,
   workbenchTitle
 } from '../../../../styles/workbench'
-
-const bookmarkEditSearchSchema = v.object({
-  tags: v.optional(v.array(v.string()))
-})
 
 const editorStaleTime = 5000
 
@@ -72,7 +68,7 @@ function isBookmarkNotFound(error: unknown): boolean {
  * Domain・DB・oRPC 実装詳細は注入された port の向こう側に置く。
  */
 export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
-  validateSearch: bookmarkEditSearchSchema,
+  validateSearch: bookmarkDetailSearchSchema,
   loader: async ({ params, context }) => {
     const client = await getRpcClient()
     try {
@@ -103,7 +99,8 @@ export function RouteComponent() {
   const navigate = useNavigate()
   const router = useRouter()
   const queryClient = useQueryClient()
-  const listSearch = buildListBackSearch(search?.tags)
+  const listSearch = listSearchFromDetail(search)
+  const detailSearch = search
 
   const updateMutation = useMutation(orpc.bookmarks.update.mutationOptions())
   const editorQuery = useQuery(
@@ -151,8 +148,6 @@ export function RouteComponent() {
     note: record.note,
     tagIds: record.tagIds
   }
-
-  const detailSearch = search?.tags !== undefined ? { tags: search.tags } : {}
 
   return (
     <section

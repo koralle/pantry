@@ -5,23 +5,16 @@ import { Suspense } from 'react'
 import type { FallbackProps } from 'react-error-boundary'
 import { ErrorBoundary } from 'react-error-boundary'
 import { css } from 'styled-system/css'
-import * as v from 'valibot'
 
 import { BookmarkDetailResolved } from '../../../../features/bookmarks/components/bookmark-detail-resolved'
 import { BookmarkDetailSkeleton } from '../../../../features/bookmarks/components/bookmark-detail-skeleton'
 import { bookmarkDetailQueryOptions } from '../../../../features/bookmarks/lib/bookmark-detail-query-options'
+import { bookmarkDetailSearchSchema } from '../../../../features/navigation/lib/bookmark-search'
 import { listSearchFromDetail } from '../../../../features/navigation/lib/bookmark-search-builders'
 import { StyledLink } from '../../../../shared/components/styled-link'
 import { UiEmpty } from '../../../../shared/components/ui-empty'
 import { UiError } from '../../../../shared/components/ui-error'
 import { flash } from '../../../../styles/flash'
-
-const bookmarkDetailSearchSchema = v.object({
-  q: v.optional(v.string()),
-  tags: v.optional(v.array(v.string())),
-  tagMode: v.optional(v.picklist(['and', 'or'])),
-  sort: v.optional(v.picklist(['newest', 'updated']))
-})
 
 const detailLayout = css({
   maxInlineSize: '42rem',

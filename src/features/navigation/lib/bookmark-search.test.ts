@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 
-import { bookmarkSearchSchema } from './bookmark-search'
+import { bookmarkDetailSearchSchema, bookmarkSearchSchema } from './bookmark-search'
 
 describe('bookmarkSearchSchema', () => {
   test('default values', async () => {
@@ -33,6 +33,19 @@ describe('bookmarkSearchSchema', () => {
     })
     expect(result).not.toHaveProperty('limit')
     expect(result).not.toHaveProperty('offset')
+  })
+
+  test('detail search keeps list conditions without filling defaults', async () => {
+    const result = await v.parseAsync(bookmarkDetailSearchSchema, {
+      q: 'react',
+      tagMode: 'or',
+      sort: 'updated'
+    })
+    expect(result).toStrictEqual({
+      q: 'react',
+      tagMode: 'or',
+      sort: 'updated'
+    })
   })
 
   test('parses all fields', async () => {

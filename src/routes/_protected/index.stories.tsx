@@ -491,6 +491,12 @@ export const HasMore = meta.story({
     })
     await expect(canvas.getByRole('button', { name: 'さらに読み込む' })).toBeEnabled()
     await expect(canvas.queryByRole('link', { name: reactBookmark.title })).not.toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: 'さらに読み込む' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('link', { name: reactBookmark.title })).toBeInTheDocument()
+    })
+    await expect(canvas.getByRole('link', { name: shortBookmark.title })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: 'さらに読み込む' })).not.toBeInTheDocument()
   }
 })
 
@@ -524,6 +530,7 @@ export const LoadMoreError = meta.story({
       await expect(canvas.getByRole('alert')).toHaveTextContent('続きの読み込みに失敗しました')
     })
     await expect(canvas.getByRole('button', { name: '再試行' })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: shortBookmark.title })).toBeInTheDocument()
   }
 })
 
