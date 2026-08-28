@@ -24,7 +24,6 @@ const nodeTests = [
   'src/features/tags/hooks/use-touch-tag-last-used.test.ts',
   'src/rpc/source-boundary.test.ts',
   'src/routes/_protected/bookmarks/new/index.test.ts',
-  'src/routes/route-file-exports.source.test.ts',
   'src/features/bookmarks/orpc-update.source.test.ts',
   'src/features/bookmarks/components/bookmark-delete-dialog.test.ts',
   'src/features/bookmarks/lib/query-ownership.test.ts'
