@@ -1,5 +1,21 @@
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 
+function tagsEqual(
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined
+): boolean {
+  if (left === right) {
+    return true
+  }
+  if (left === undefined || right === undefined) {
+    return false
+  }
+  if (left.length !== right.length) {
+    return false
+  }
+  return left.every((tag, index) => tag === right[index])
+}
+
 export function bookmarkListSearchEquals(
   left: BookmarkSearchSchema,
   right: BookmarkSearchSchema
@@ -10,22 +26,6 @@ export function bookmarkListSearchEquals(
     left.sort === right.sort &&
     tagsEqual(left.tags, right.tags)
   )
-}
-
-function tagsEqual(
-  left: readonly string[] | undefined,
-  right: readonly string[] | undefined
-): boolean {
-  if (left === right) {
-    return true
-  }
-  if (left == null || right == null) {
-    return false
-  }
-  if (left.length !== right.length) {
-    return false
-  }
-  return left.every((tag, index) => tag === right[index])
 }
 
 type BookmarkListScrollSession = {

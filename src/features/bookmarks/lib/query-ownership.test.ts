@@ -71,7 +71,9 @@ describe('bookmark list query ownership', () => {
     expect(helper).toContain('search: BookmarkSearchSchema')
     expect(helper).toContain('tagNames')
     expect(helper).not.toContain('BookmarkListQueryInput')
+  })
 
+  test('loader と hook は search を工場へそのまま渡す', () => {
     const hook = readSource('features/bookmarks/hooks/use-bookmark-list-pagination.ts')
     expect(hook).toContain('bookmarkListQueryOptions(search)')
     expect(hook).not.toContain('searchToQueryInput')
