@@ -8,9 +8,7 @@ import { popover, sheet, sheetBackdrop, sheetHeader, sheetTitle, statusMessage }
 import type { BookmarkTagPickerProps } from './types'
 import { useDesktopTagPicker } from './use-desktop-tag-picker'
 
-export type { NamedTag } from './lib'
 export type { TagCandidate } from './types'
-export { canOfferCreateTag, filterTagCandidates, toggleSelectedTag } from './lib'
 
 export function BookmarkTagPicker({
   selectedTags,

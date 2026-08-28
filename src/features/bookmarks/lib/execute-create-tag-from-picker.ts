@@ -10,7 +10,7 @@ export type CreateTagFromPickerState =
   | { readonly status: 'created'; readonly tag: NamedTag }
   | { readonly status: 'error'; readonly message: string }
 
-export type CreateTagFromPickerPayload = {
+type CreateTagFromPickerPayload = {
   readonly name: string
 }
 
