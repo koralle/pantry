@@ -4,13 +4,15 @@ import {
   ErrorComponentProps,
   getRouteApi
 } from '@tanstack/react-router'
+import { css } from 'styled-system/css'
 import * as v from 'valibot'
 
 import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
 import { bookmarkListQueryOptions } from '../../features/bookmarks/lib/bookmark-list-query-options'
 import { bookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
-import { PantryMotion } from '../../shared/components/pantry-motion'
 import { bookmarkListLoaderDeps } from './-lib/bookmark-list-loader-deps'
+
+const fadeUp = css({ animationStyle: 'fadeUp' })
 
 const protectedRouteApi = getRouteApi('/_protected')
 
@@ -36,11 +38,11 @@ function RouteComponent() {
   const { shelfTagsPromise } = protectedRouteApi.useLoaderData()
 
   return (
-    <PantryMotion kind='fade-up'>
+    <div className={fadeUp}>
       <BookmarkList
         search={search}
         shelfTagsPromise={shelfTagsPromise}
       />
-    </PantryMotion>
+    </div>
   )
 }
