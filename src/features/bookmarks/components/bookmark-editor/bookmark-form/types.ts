@@ -1,5 +1,5 @@
 import type { CreateTagFromPickerAction } from '../../../lib/execute-create-tag-from-picker'
-import type { TagCandidate } from '../../bookmark-tag-picker/types'
+import type { TagCandidate } from '../../bookmark-tag-picker'
 import type { BookmarkFormOutput } from './schema'
 
 export type BookmarkFormFieldKey = 'url' | 'title' | 'note' | 'tags'

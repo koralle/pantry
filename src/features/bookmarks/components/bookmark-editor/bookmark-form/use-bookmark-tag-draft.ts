@@ -1,13 +1,11 @@
 import { startTransition, useActionState, useRef, useState } from 'react'
 
-import { toTagName } from '../../../../tags/domain/tag-values'
 import type {
   CreateTagFromPickerAction,
   CreateTagFromPickerState
 } from '../../../lib/execute-create-tag-from-picker'
 import { canOfferCreateTag, toggleSelectedTag } from '../../bookmark-tag-picker/lib'
-import type { NamedTag } from '../../bookmark-tag-picker/lib'
-import type { TagCandidate } from '../../bookmark-tag-picker/types'
+import type { NamedTag, TagCandidate } from '../../bookmark-tag-picker/lib'
 import type { BookmarkFormFieldKey } from './types'
 
 const initialCreateState: CreateTagFromPickerState = { status: 'idle' }
@@ -28,8 +26,6 @@ export function useBookmarkTagDraft({
   onClearFieldError
 }: UseBookmarkTagDraftOptions) {
   const inFlightRef = useRef(false)
-  const [query, setQuery] = useState('')
-  const [isOpen, setIsOpen] = useState(false)
   const [selectedTags, setSelectedTags] = useState<NamedTag[]>(() =>
     initialTagIds.map((id) => ({
       id,
@@ -47,7 +43,6 @@ export function useBookmarkTagDraft({
         setSelectedTags((current) =>
           current.some((tag) => tag.id === next.tag.id) ? current : [...current, next.tag]
         )
-        setQuery('')
         onClearFieldError?.('tags')
       }
       return next
@@ -69,12 +64,6 @@ export function useBookmarkTagDraft({
         : (tagCandidates.find((candidate) => candidate.id === tag.id)?.name ?? '選択中のタグ')
   }))
 
-  const canCreate = canOfferCreateTag({
-    query,
-    tags: tagCandidates,
-    tagsReady
-  })
-  const createLabel = `「${toTagName(query).display}」を新しいタグとして作成`
   const createError = createState.status === 'error' && !isCreatingTag ? createState.message : null
 
   function handleToggleTag(tag: NamedTag) {
@@ -87,36 +76,27 @@ export function useBookmarkTagDraft({
     onClearFieldError?.('tags')
   }
 
-  function handleOpenChange(next: boolean) {
-    setIsOpen(next)
-    if (!next) {
-      setQuery('')
+  function handleCreateTag(name: string) {
+    if (inFlightRef.current || isCreatingTag) {
+      return
     }
-  }
-
-  function handleCreateTag() {
-    if (inFlightRef.current || isCreatingTag || !canCreate) {
+    if (!canOfferCreateTag({ query: name, tags: tagCandidates, tagsReady })) {
       return
     }
     inFlightRef.current = true
     startTransition(() => {
-      dispatchCreate({ name: query })
+      dispatchCreate({ name })
     })
   }
 
   return {
     selectedTags: resolvedSelectedTags,
     tagIds: resolvedSelectedTags.map((tag) => tag.id),
-    query,
-    setQuery,
-    isOpen,
-    handleOpenChange,
     handleToggleTag,
     handleRemoveTag,
     handleCreateTag,
     isCreatingTag,
     createError,
-    canCreate,
-    createLabel
+    lastCreatedTagId: createState.status === 'created' ? createState.tag.id : null
   }
 }

@@ -4,9 +4,10 @@ import { ListBox, ListBoxItem, SearchField } from 'react-aria-components'
 import { StyledButton } from '../../../../shared/components/styled-button'
 import { StyledInput } from '../../../../shared/components/styled-input'
 import { srOnly } from '../../../../styles/sr-only'
+import { toTagName } from '../../../tags/domain/tag-values'
 import { sortTagsForNav } from '../../../tags/lib/tag-shelf'
-import { filterTagCandidates } from './lib'
-import type { NamedTag } from './lib'
+import { canOfferCreateTag, filterTagCandidates } from './lib'
+import type { NamedTag, TagCandidate } from './lib'
 import {
   candidateItem,
   candidateList,
@@ -17,7 +18,6 @@ import {
   panel,
   sheetList
 } from './styles'
-import type { TagCandidate } from './types'
 
 type TagPickerPanelProps = {
   readonly tagCandidates: readonly TagCandidate[]
@@ -25,11 +25,9 @@ type TagPickerPanelProps = {
   readonly query: string
   readonly onQueryChange: (query: string) => void
   readonly onToggleTag: (tag: NamedTag) => void
-  readonly onCreateTag: () => void
+  readonly onCreateTag: (name: string) => void
   readonly tagsReady: boolean
   readonly isCreatingTag: boolean
-  readonly canCreate: boolean
-  readonly createLabel: string
   readonly listMaxHeight?: 'sheet' | 'popover'
 }
 
@@ -42,12 +40,11 @@ export function TagPickerPanel({
   onCreateTag,
   tagsReady,
   isCreatingTag,
-  canCreate,
-  createLabel,
   listMaxHeight = 'popover'
 }: TagPickerPanelProps) {
   const selectedIds = new Set(selectedTags.map((tag) => tag.id))
   const candidates = filterTagCandidates(sortTagsForNav(tagCandidates), query)
+  const canCreate = canOfferCreateTag({ query, tags: tagCandidates, tagsReady })
 
   function renderEmpty() {
     if (!tagsReady) {
@@ -126,13 +123,15 @@ export function TagPickerPanel({
       {canCreate ? (
         <StyledButton
           type='button'
-          onPress={onCreateTag}
+          onPress={() => {
+            onCreateTag(query)
+          }}
           isDisabled={isCreatingTag}>
           <Plus
             size={16}
             aria-hidden
           />
-          {isCreatingTag ? '作成中…' : createLabel}
+          {isCreatingTag ? '作成中…' : `「${toTagName(query).display}」を新しいタグとして作成`}
         </StyledButton>
       ) : null}
     </div>

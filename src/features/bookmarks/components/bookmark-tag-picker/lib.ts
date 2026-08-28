@@ -7,6 +7,13 @@ export type NamedTag = {
   readonly name: string
 }
 
+export type TagCandidate = {
+  readonly id: number
+  readonly name: string
+  readonly pinned: boolean
+  readonly sortOrder: number
+}
+
 export function filterTagCandidates<T extends { readonly name: string }>(
   sortedTags: readonly T[],
   query: string

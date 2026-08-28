@@ -52,17 +52,12 @@ export function BookmarkForm({
   const {
     selectedTags,
     tagIds,
-    query,
-    setQuery,
-    isOpen,
-    handleOpenChange,
     handleToggleTag,
     handleRemoveTag,
     handleCreateTag,
     isCreatingTag,
     createError,
-    canCreate,
-    createLabel
+    lastCreatedTagId
   } = useBookmarkTagDraft({
     initialTagIds: initialValues.tagIds ?? [],
     tagCandidates,
@@ -173,18 +168,13 @@ export function BookmarkForm({
           selectedTags={selectedTags}
           tagCandidates={tagCandidates}
           tagsReady={tagsReady}
-          query={query}
-          onQueryChange={setQuery}
-          isOpen={isOpen}
-          onOpenChange={handleOpenChange}
           onToggleTag={handleToggleTag}
           onRemoveTag={handleRemoveTag}
           onCreateTag={handleCreateTag}
           isCreatingTag={isCreatingTag}
+          lastCreatedTagId={lastCreatedTagId}
           createError={createError}
           serverError={serverError?.fields?.tags}
-          canCreate={canCreate}
-          createLabel={createLabel}
         />
       </fieldset>
 

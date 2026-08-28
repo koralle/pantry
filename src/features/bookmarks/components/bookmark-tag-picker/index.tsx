@@ -1,33 +1,56 @@
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay, Popover } from 'react-aria-components'
 
 import { StyledButton } from '../../../../shared/components/styled-button'
 import { field, fieldError, fieldLabel } from '../../../../styles/form'
+import type { NamedTag, TagCandidate } from './lib'
 import { TagPickerPanel } from './panel'
 import { SelectedTagChips } from './selected-chips'
 import { popover, sheet, sheetBackdrop, sheetHeader, sheetTitle, statusMessage } from './styles'
-import type { BookmarkTagPickerProps } from './types'
-import { useDesktopTagPicker } from './use-desktop-tag-picker'
 
-export type { TagCandidate } from './types'
+export type { TagCandidate } from './lib'
+
+const desktopQuery = '(min-width: 768px)'
+
+function subscribeDesktop(onStoreChange: () => void): () => void {
+  const media = globalThis.matchMedia(desktopQuery)
+  media.addEventListener('change', onStoreChange)
+  return () => {
+    media.removeEventListener('change', onStoreChange)
+  }
+}
+
+type BookmarkTagPickerProps = {
+  readonly selectedTags: readonly NamedTag[]
+  readonly tagCandidates: readonly TagCandidate[]
+  readonly tagsReady: boolean
+  readonly onToggleTag: (tag: NamedTag) => void
+  readonly onRemoveTag: (tag: NamedTag) => void
+  readonly onCreateTag: (name: string) => void
+  readonly isCreatingTag: boolean
+  readonly lastCreatedTagId: number | null
+  readonly createError: string | null
+  readonly serverError: string | undefined
+}
 
 export function BookmarkTagPicker({
   selectedTags,
   tagCandidates,
   tagsReady,
-  query,
-  onQueryChange,
-  isOpen,
-  onOpenChange,
   onToggleTag,
   onRemoveTag,
   onCreateTag,
   isCreatingTag,
+  lastCreatedTagId,
   createError,
-  serverError,
-  canCreate,
-  createLabel
+  serverError
 }: BookmarkTagPickerProps) {
-  const isDesktop = useDesktopTagPicker()
+  const [query, setQuery] = useState('')
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktop,
+    () => globalThis.matchMedia(desktopQuery).matches,
+    () => true
+  )
   const fieldErrorMessage = serverError ?? createError
   const describedBy = [
     isCreatingTag ? 'bookmark-tag-creating' : null,
@@ -36,18 +59,23 @@ export function BookmarkTagPicker({
     .filter((id): id is string => id !== null)
     .join(' ')
 
+  useEffect(() => {
+    if (lastCreatedTagId === null) {
+      return
+    }
+    setQuery('')
+  }, [lastCreatedTagId])
+
   const panel = (
     <TagPickerPanel
       tagCandidates={tagCandidates}
       selectedTags={selectedTags}
       query={query}
-      onQueryChange={onQueryChange}
+      onQueryChange={setQuery}
       onToggleTag={onToggleTag}
       onCreateTag={onCreateTag}
       tagsReady={tagsReady}
       isCreatingTag={isCreatingTag}
-      canCreate={canCreate}
-      createLabel={createLabel}
       listMaxHeight={isDesktop ? 'popover' : 'sheet'}
     />
   )
@@ -78,8 +106,11 @@ export function BookmarkTagPicker({
         </p>
       ) : null}
       <DialogTrigger
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}>
+        onOpenChange={(open) => {
+          if (!open) {
+            setQuery('')
+          }
+        }}>
         <StyledButton type='button'>タグを選ぶ</StyledButton>
         {isDesktop ? (
           <Popover
