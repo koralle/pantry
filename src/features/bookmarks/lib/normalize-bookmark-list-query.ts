@@ -5,8 +5,7 @@ export type FetchBookmarksInput = {
   tagNames?: string[]
   tagMode: 'and' | 'or'
   sort: 'newest' | 'updated'
-  limit: number
-  offset: number
+  cursor?: string | undefined
 }
 
 export function normalizeListQuery(input: FetchBookmarksInput): FetchBookmarksInput {
@@ -15,9 +14,7 @@ export function normalizeListQuery(input: FetchBookmarksInput): FetchBookmarksIn
 
   const normalized: FetchBookmarksInput = {
     tagMode: input.tagMode,
-    sort: input.sort,
-    limit: input.limit,
-    offset: input.offset
+    sort: input.sort
   }
 
   if (q) {
@@ -26,6 +23,10 @@ export function normalizeListQuery(input: FetchBookmarksInput): FetchBookmarksIn
 
   if (tagNames.length > 0) {
     normalized.tagNames = tagNames
+  }
+
+  if (input.cursor !== undefined && input.cursor !== '') {
+    normalized.cursor = input.cursor
   }
 
   return normalized

@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { css } from 'styled-system/css'
 
@@ -13,7 +12,6 @@ import {
   detailSearchFromList
 } from '../../navigation/lib/bookmark-search-builders'
 import { useBookmarkListPagination } from '../hooks/use-bookmark-list-pagination'
-import { bookmarkListQueryOptions } from '../lib/bookmark-list-query-options'
 import type { ListLayout } from '../lib/list-layout-preference'
 import { BookmarkCardList } from './bookmark-card-list'
 import { BookmarkTable } from './bookmark-table'
@@ -32,27 +30,12 @@ function hasActiveConditions(search: BookmarkSearchSchema): boolean {
 
 export function BookmarkListResults({
   layout,
-  search,
-  pageLimit
+  search
 }: {
   readonly layout: ListLayout
   readonly search: BookmarkSearchSchema
-  readonly pageLimit: number
 }) {
-  // Loader が prefetch した同じ query options を読む。未取得ならここで suspend する。
-  const { data } = useSuspenseQuery(
-    bookmarkListQueryOptions({
-      tagMode: search.tagMode,
-      sort: search.sort,
-      limit: search.limit,
-      offset: search.offset,
-      ...(search.q !== undefined ? { q: search.q } : {}),
-      ...(search.tags !== undefined ? { tags: search.tags } : {})
-    })
-  )
   const { items, hasMore, loadMoreError, isLoadingMore, loadMore } = useBookmarkListPagination({
-    initial: data,
-    pageLimit,
     search
   })
 

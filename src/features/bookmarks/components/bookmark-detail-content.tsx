@@ -7,6 +7,7 @@ import { button } from '../../../styles/button'
 import { dialogActions } from '../../../styles/dialog'
 import { tagChip } from '../../../styles/tag-chip'
 import { workbenchNav, workbenchTitle } from '../../../styles/workbench'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
 import { formatDateTime } from '../lib/format-date-time'
 import type { BookmarkDetail } from '../persistence/get-bookmark-detail'
@@ -45,7 +46,7 @@ export function BookmarkDetailContent({
   listSearch
 }: {
   readonly bookmark: BookmarkDetail
-  readonly listSearch: ReturnType<typeof buildListBackSearch>
+  readonly listSearch: BookmarkSearchSchema
 }) {
   return (
     <>

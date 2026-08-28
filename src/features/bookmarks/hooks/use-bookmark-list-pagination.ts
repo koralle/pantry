@@ -1,60 +1,54 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
+import { useLayoutEffect } from 'react'
 import { getErrorMessage } from 'react-error-boundary'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { bookmarkListQueryOptions } from '../lib/bookmark-list-query-options'
-import type { BookmarkListItem } from '../persistence/list-bookmarks'
+import {
+  bookmarkListSearchKey,
+  consumeBookmarkListScroll,
+  rememberBookmarkListScroll
+} from '../lib/bookmark-list-scroll-session'
 
-export function useBookmarkListPagination({
-  initial,
-  pageLimit,
-  search
-}: {
-  readonly initial: BookmarkListItem[]
-  readonly pageLimit: number
-  readonly search: BookmarkSearchSchema
-}) {
-  const queryClient = useQueryClient()
-  const [items, setItems] = useState(initial)
-  const [hasMore, setHasMore] = useState(initial.length >= pageLimit)
-  const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
+export function useBookmarkListPagination({ search }: { readonly search: BookmarkSearchSchema }) {
+  const query = useSuspenseInfiniteQuery(bookmarkListQueryOptions(searchToQueryInput(search)))
+  const searchKey = bookmarkListSearchKey(search)
+  const items = query.data.pages.flatMap((page) => page.items)
 
-  useEffect(() => {
-    setItems(initial)
-    setHasMore(initial.length >= pageLimit)
-    setLoadMoreError(null)
-  }, [initial, pageLimit])
+  useLayoutEffect(() => {
+    const scrollY = consumeBookmarkListScroll(searchKey)
+    if (scrollY != null) {
+      window.scrollTo(0, scrollY)
+    }
+
+    return () => {
+      rememberBookmarkListScroll(searchKey, window.scrollY)
+    }
+  }, [searchKey])
 
   const loadMore = () => {
-    if (isLoadingMore) {
+    if (query.isFetchingNextPage || !query.hasNextPage) {
       return
     }
-    setLoadMoreError(null)
-    setIsLoadingMore(true)
-    void (async () => {
-      try {
-        // Offset 別の query key で次ページだけを取り、既存の append UI を維持する。
-        const next = await queryClient.fetchQuery(
-          bookmarkListQueryOptions({
-            tagMode: search.tagMode,
-            sort: search.sort,
-            limit: pageLimit,
-            offset: items.length,
-            ...(search.q !== undefined ? { q: search.q } : {}),
-            ...(search.tags !== undefined ? { tags: search.tags } : {})
-          })
-        )
-        setItems((prev) => [...prev, ...next])
-        setHasMore(next.length >= pageLimit)
-      } catch (error) {
-        setLoadMoreError(getErrorMessage(error) ?? '続きの読み込みに失敗しました')
-      } finally {
-        setIsLoadingMore(false)
-      }
-    })()
+    void query.fetchNextPage()
   }
 
-  return { items, hasMore, loadMoreError, isLoadingMore, loadMore }
+  return {
+    items,
+    hasMore: query.hasNextPage,
+    loadMoreError: query.isFetchNextPageError
+      ? (getErrorMessage(query.error) ?? '続きの読み込みに失敗しました')
+      : null,
+    isLoadingMore: query.isFetchingNextPage,
+    loadMore
+  }
+}
+
+function searchToQueryInput(search: BookmarkSearchSchema) {
+  return {
+    tagMode: search.tagMode,
+    sort: search.sort,
+    ...(search.q !== undefined ? { q: search.q } : {}),
+    ...(search.tags !== undefined ? { tags: search.tags } : {})
+  }
 }

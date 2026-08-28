@@ -10,6 +10,8 @@ import { bookmarkTable } from '../../../db/schema/bookmark'
 import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
 import { tagsTable } from '../../../db/schema/tag'
 import { userIdSchema } from '../../auth/domain/auth-values'
+import { decodeBookmarkListCursor } from '../lib/bookmark-list-cursor'
+import { BOOKMARK_LIST_PAGE_SIZE } from '../lib/bookmark-list-page-size'
 import type { BookmarkListQuery } from './list-bookmarks'
 import { listBookmarks } from './list-bookmarks'
 
@@ -122,8 +124,8 @@ async function insertBookmark(
   })
 }
 
-async function attachTag(db: AppDb, bookmarkId: string, tagId: number) {
-  await db.insert(bookmarkTagsTable).values({ bookmarkId, tagId })
+async function attachTag(db: AppDb, id: string, tagId: number) {
+  await db.insert(bookmarkTagsTable).values({ bookmarkId: id, tagId })
 }
 
 function query(
@@ -134,8 +136,6 @@ function query(
     userId: v.parse(userIdSchema, userId),
     tagMode: 'and',
     sort: 'newest',
-    limit: 50,
-    offset: 0,
     ...overrides
   }
 }
@@ -152,10 +152,11 @@ describe('listBookmarks', () => {
     await insertBookmark(db, { id: 'b-new', userId: 'user-a', title: '新しい', createdAt: newer })
     await attachTag(db, 'b-new', readingId)
 
-    const items = await listBookmarks(db, query('user-a'))
+    const page = await listBookmarks(db, query('user-a'))
 
-    expect(items.map((item) => item.id)).toEqual(['b-new', 'b-old'])
-    expect(items[0]).toEqual({
+    expect(page.items.map((item) => item.id)).toEqual(['b-new', 'b-old'])
+    expect(page.nextCursor).toBeNull()
+    expect(page.items[0]).toEqual({
       id: 'b-new',
       url: 'https://example.com/b-new',
       title: '新しい',
@@ -163,7 +164,7 @@ describe('listBookmarks', () => {
       updatedAt: new Date('2026-08-01T00:00:00.000Z').toISOString(),
       tags: [{ id: readingId, name: 'reading' }]
     })
-    expect(items[1]?.tags).toEqual([])
+    expect(page.items[1]?.tags).toEqual([])
   })
 
   test('削除済みと他人のブックマークは返さない', async () => {
@@ -178,9 +179,10 @@ describe('listBookmarks', () => {
     })
     await insertBookmark(db, { id: 'b-other', userId: 'user-b', title: '他人' })
 
-    const items = await listBookmarks(db, query('user-a'))
+    const page = await listBookmarks(db, query('user-a'))
 
-    expect(items.map((item) => item.id)).toEqual([])
+    expect(page.items.map((item) => item.id)).toEqual([])
+    expect(page.nextCursor).toBeNull()
   })
 
   test('q はタイトル、URL、メモの部分一致で絞る', async () => {
@@ -200,10 +202,10 @@ describe('listBookmarks', () => {
     const byNote = await listBookmarks(db, query('user-a', { q: 'zenn' }))
     const none = await listBookmarks(db, query('user-a', { q: '存在しない' }))
 
-    expect(byTitle.map((item) => item.id)).toEqual(['b-title'])
-    expect(byUrl.map((item) => item.id)).toEqual(['b-url'])
-    expect(byNote.map((item) => item.id)).toEqual(['b-note'])
-    expect(none).toEqual([])
+    expect(byTitle.items.map((item) => item.id)).toEqual(['b-title'])
+    expect(byUrl.items.map((item) => item.id)).toEqual(['b-url'])
+    expect(byNote.items.map((item) => item.id)).toEqual(['b-note'])
+    expect(none.items).toEqual([])
   })
 
   test(String.raw`q の % _ \ はワイルドカードではなくリテラルとして一致させる`, async () => {
@@ -214,7 +216,7 @@ describe('listBookmarks', () => {
 
     const items = await listBookmarks(db, query('user-a', { q: '50%_' }))
 
-    expect(items.map((item) => item.id)).toEqual(['b-literal'])
+    expect(items.items.map((item) => item.id)).toEqual(['b-literal'])
   })
 
   test('タグ AND は全て持つブックマークだけ、OR はどれかを含む', async () => {
@@ -237,8 +239,8 @@ describe('listBookmarks', () => {
       query('user-a', { tagNames: ['reading', 'work'], tagMode: 'or' })
     )
 
-    expect(andResult.map((item) => item.id)).toEqual(['b-both'])
-    expect(orResult.map((item) => item.id)).toEqual(['b-both', 'b-reading'])
+    expect(andResult.items.map((item) => item.id)).toEqual(['b-both'])
+    expect(orResult.items.map((item) => item.id)).toEqual(['b-reading', 'b-both'])
   })
 
   test('tagNames は正規化して照合し、q は trim する', async () => {
@@ -253,7 +255,7 @@ describe('listBookmarks', () => {
       query('user-a', { q: '  パディング  ', tagNames: ['Reading', 'reading'] })
     )
 
-    expect(items.map((item) => item.id)).toEqual(['b-1'])
+    expect(items.items.map((item) => item.id)).toEqual(['b-1'])
   })
 
   test('sort updated は updatedAt の降順で返す', async () => {
@@ -276,24 +278,152 @@ describe('listBookmarks', () => {
 
     const items = await listBookmarks(db, query('user-a', { sort: 'updated' }))
 
-    expect(items.map((item) => item.id)).toEqual(['b-new', 'b-old'])
+    expect(items.items.map((item) => item.id)).toEqual(['b-new', 'b-old'])
   })
 
-  test('limit と offset でページングする', async () => {
+  test('21件以上あるとき初回は先頭20件と nextCursor を返す', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-a')
-    for (const [index, id] of ['b-1', 'b-2', 'b-3'].entries()) {
+    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE + 1)
+
+    const page = await listBookmarks(db, query('user-a'))
+
+    expect(page.items.map((item) => item.id)).toEqual(
+      idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 1)
+        .toReversed()
+        .slice(0, BOOKMARK_LIST_PAGE_SIZE)
+    )
+    expect(page.nextCursor).not.toBeNull()
+  })
+
+  test('続きは cursor で取り、offset なしで欠落・重複しない', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE + 5)
+
+    const first = await listBookmarks(db, query('user-a'))
+    const second = await listBookmarks(
+      db,
+      query('user-a', first.nextCursor === null ? {} : { cursor: first.nextCursor })
+    )
+
+    const allIds = [...first.items, ...second.items].map((item) => item.id)
+    expect(allIds).toEqual(idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 5).toReversed())
+    expect(new Set(allIds).size).toBe(allIds.length)
+    expect(second.items).toHaveLength(5)
+    expect(second.nextCursor).toBeNull()
+  })
+
+  test('ちょうど20件のときは nextCursor がなく空の追加取得を要求しない', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE)
+
+    const page = await listBookmarks(db, query('user-a'))
+
+    expect(page.items).toHaveLength(BOOKMARK_LIST_PAGE_SIZE)
+    expect(page.nextCursor).toBeNull()
+  })
+
+  test('同一 createdAt でも id の補助並びでページ境界の欠落・重複がない', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 3)
+    for (const id of ids) {
       await insertBookmark(db, {
         id,
         userId: 'user-a',
         title: id,
-        createdAt: new Date(base.getTime() + index * 1000)
+        createdAt: base,
+        updatedAt: base
       })
     }
 
-    const page = await listBookmarks(db, query('user-a', { limit: 2, offset: 1 }))
+    const first = await listBookmarks(db, query('user-a'))
+    const second = await listBookmarks(
+      db,
+      query('user-a', first.nextCursor === null ? {} : { cursor: first.nextCursor })
+    )
+    const allIds = [...first.items, ...second.items].map((item) => item.id)
 
-    expect(page.map((item) => item.id)).toEqual(['b-2', 'b-1'])
+    expect(allIds).toEqual([...ids].toReversed())
+    expect(new Set(allIds).size).toBe(ids.length)
+  })
+
+  test('同一 updatedAt でも updated 順のページ境界で欠落・重複がない', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 2)
+    for (const [index, id] of ids.entries()) {
+      await insertBookmark(db, {
+        id,
+        userId: 'user-a',
+        title: id,
+        createdAt: new Date(base.getTime() + index),
+        updatedAt: base
+      })
+    }
+
+    const first = await listBookmarks(db, query('user-a', { sort: 'updated' }))
+    const second = await listBookmarks(
+      db,
+      query(
+        'user-a',
+        first.nextCursor === null
+          ? { sort: 'updated' }
+          : { sort: 'updated', cursor: first.nextCursor }
+      )
+    )
+    const allIds = [...first.items, ...second.items].map((item) => item.id)
+
+    expect(allIds).toEqual([...ids].toReversed())
+    expect(new Set(allIds).size).toBe(ids.length)
+  })
+
+  test('cursor があっても現在の検索・タグ条件と所有者境界を迂回しない', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    await insertUser(db, 'user-b')
+    const readingId = await insertTag(db, { userId: 'user-a', name: 'reading' })
+    await insertBookmark(db, { id: 'a-old', userId: 'user-a', title: '古い', createdAt: base })
+    await insertBookmark(db, {
+      id: 'a-tagged',
+      userId: 'user-a',
+      title: 'tagged',
+      createdAt: newer
+    })
+    await insertBookmark(db, { id: 'b-other', userId: 'user-b', title: '他人', createdAt: newer })
+    await attachTag(db, 'a-tagged', readingId)
+
+    const first = await listBookmarks(
+      db,
+      query('user-a', { tagNames: ['reading'], tagMode: 'and' })
+    )
+    const leaked = await listBookmarks(
+      db,
+      query('user-a', {
+        tagNames: ['reading'],
+        tagMode: 'and',
+        cursor: first.nextCursor ?? encodeFromItem('a-old', base)
+      })
+    )
+
+    expect(first.items.map((item) => item.id)).toEqual(['a-tagged'])
+    expect(leaked.items.map((item) => item.id)).not.toContain('a-old')
+    expect(leaked.items.map((item) => item.id)).not.toContain('b-other')
+  })
+
+  test('nextCursor は選択中の並びの末尾位置を表す', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, 'user-a')
+    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE + 1)
+
+    const page = await listBookmarks(db, query('user-a'))
+    const last = page.items.at(-1)
+    const decoded = decodeBookmarkListCursor(page.nextCursor ?? '')
+
+    expect(last).toBeDefined()
+    expect(decoded?.id).toBe(last?.id)
   })
 
   test('projection に不要な列（userId, createdAt, deletedAt）を載せない', async () => {
@@ -301,8 +431,34 @@ describe('listBookmarks', () => {
     await insertUser(db, 'user-a')
     await insertBookmark(db, { id: 'b-1', userId: 'user-a', title: '最小' })
 
-    const [item] = await listBookmarks(db, query('user-a'))
+    const page = await listBookmarks(db, query('user-a'))
+    const [item] = page.items
 
     expect(Object.keys(item ?? {})).toEqual(['id', 'url', 'title', 'note', 'updatedAt', 'tags'])
   })
 })
+
+function idsFrom(start: number, count: number): string[] {
+  return Array.from({ length: count }, (_, index) => bookmarkId(start + index))
+}
+
+function bookmarkId(index: number): string {
+  return `id-${String(index).padStart(3, '0')}`
+}
+
+async function insertSequentialBookmarks(db: AppDb, userId: string, count: number) {
+  for (let index = 0; index < count; index += 1) {
+    const id = bookmarkId(index)
+    await insertBookmark(db, {
+      id,
+      userId,
+      title: id,
+      createdAt: new Date(base.getTime() + index * 1000),
+      updatedAt: new Date(base.getTime() + index * 1000)
+    })
+  }
+}
+
+function encodeFromItem(id: string, at: Date): string {
+  return `${at.getTime()}:${id}`
+}

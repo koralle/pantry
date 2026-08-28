@@ -41,7 +41,7 @@ function baseDeps(): ReadDeps {
       kind: 'bookmark-not-found'
     })),
     findBookmarkEditor: vi.fn(async () => null),
-    listBookmarks: vi.fn(async () => []),
+    listBookmarks: vi.fn(async () => ({ items: [], nextCursor: null })),
     getBookmarkDetail: vi.fn(async () => null),
     softDeleteBookmark: vi.fn(async (): Promise<{ kind: 'bookmark-not-found'; id: string }> => ({
       kind: 'bookmark-not-found',

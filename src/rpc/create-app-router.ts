@@ -21,9 +21,10 @@ import {
 } from '../features/bookmarks/application/update-bookmark'
 import type { UpdateBookmark } from '../features/bookmarks/application/update-bookmark'
 import { bookmarkIdSchema } from '../features/bookmarks/domain/bookmark-values'
+import { decodeBookmarkListCursor } from '../features/bookmarks/lib/bookmark-list-cursor'
 import type { BookmarkDetail } from '../features/bookmarks/persistence/get-bookmark-detail'
 import type {
-  BookmarkListItem,
+  BookmarkListPage,
   BookmarkListQuery
 } from '../features/bookmarks/persistence/list-bookmarks'
 import {
@@ -82,7 +83,7 @@ export type AppRouterDeps = {
   readonly findBookmarkEditor: FindBookmarkEditor
   readonly listBookmarks: (
     input: { readonly userId: UserId } & BookmarkListQuery
-  ) => Promise<BookmarkListItem[]>
+  ) => Promise<BookmarkListPage>
   readonly getBookmarkDetail: (
     userId: UserId,
     input: { readonly id: string }
@@ -353,11 +354,18 @@ export function createAppRouter(deps: AppRouterDeps) {
     })
 
   const bookmarkListInputSchema = v.object({
-    ...offsetPaginationQuerySchema.entries,
     q: v.optional(v.string()),
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
     tagMode: v.picklist(['and', 'or']),
-    sort: v.picklist(['newest', 'updated'])
+    sort: v.picklist(['newest', 'updated']),
+    cursor: v.optional(
+      v.pipe(
+        v.string(),
+        v.minLength(1),
+        v.maxLength(200),
+        v.check((value) => decodeBookmarkListCursor(value) != null)
+      )
+    )
   })
   /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
   const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) })
@@ -370,10 +378,9 @@ export function createAppRouter(deps: AppRouterDeps) {
         userId: context.userId as UserId,
         tagMode: input.tagMode,
         sort: input.sort,
-        limit: input.limit,
-        offset: input.offset,
         ...(input.q !== undefined ? { q: input.q } : {}),
-        ...(input.tagNames !== undefined ? { tagNames: input.tagNames } : {})
+        ...(input.tagNames !== undefined ? { tagNames: input.tagNames } : {}),
+        ...(input.cursor !== undefined ? { cursor: input.cursor } : {})
       })
     )
 

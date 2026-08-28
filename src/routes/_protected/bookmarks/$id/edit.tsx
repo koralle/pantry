@@ -1,6 +1,6 @@
 import { ORPCError } from '@orpc/client'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, CircleDashed } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -13,6 +13,7 @@ import type {
   BookmarkTitleFetchAction
 } from '../../../../features/bookmarks/components/bookmark-editor'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
+import { resetBookmarkListCache } from '../../../../features/bookmarks/lib/reset-bookmark-list-cache'
 import { toUpdateBookmarkFailureCode } from '../../../../features/bookmarks/lib/update-bookmark-failure'
 import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
 import { orpc } from '../../../../rpc/query'
@@ -101,6 +102,7 @@ export function RouteComponent() {
   const params = Route.useParams()
   const navigate = useNavigate()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const listSearch = buildListBackSearch(search?.tags)
 
   const updateMutation = useMutation(orpc.bookmarks.update.mutationOptions())
@@ -204,6 +206,7 @@ export function RouteComponent() {
           fetchTitleAction={fetchTitleAction}
           onCompleted={async (bookmarkId) => {
             // DB commit 済みの成功を refresh failure で覆さない。invalidate は best-effort。
+            resetBookmarkListCache(queryClient)
             void router.invalidate().catch((error: unknown) => {
               console.error('Failed to refresh route data after UpdateBookmark', error)
             })

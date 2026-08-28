@@ -4,6 +4,8 @@ import { defaultBookmarkSearch } from './bookmark-search'
 import {
   allShelfSearch,
   chromeListSearch,
+  detailSearchFromList,
+  listSearchFromDetail,
   resolveChromeListSearch,
   tagShelfSearch
 } from './bookmark-search-builders'
@@ -19,8 +21,6 @@ describe('shelf filter search', () => {
     })
 
     expect(next).toStrictEqual({
-      limit: 50,
-      offset: 0,
       q: 'react',
       tagMode: 'or',
       sort: 'updated'
@@ -36,8 +36,6 @@ describe('shelf filter search', () => {
     })
 
     expect(next).toStrictEqual({
-      limit: 50,
-      offset: 0,
       q: 'react',
       tags: ['typescript'],
       tagMode: 'and',
@@ -89,5 +87,19 @@ describe('resolveChromeListSearch', () => {
       ...defaultBookmarkSearch,
       tags: ['frontend']
     })
+  })
+})
+
+describe('detail search round-trip', () => {
+  test('non-default list conditions travel to detail and back', () => {
+    const current = {
+      ...defaultBookmarkSearch,
+      q: 'react',
+      tags: ['frontend'],
+      tagMode: 'or' as const,
+      sort: 'updated' as const
+    }
+
+    expect(listSearchFromDetail(detailSearchFromList(current))).toStrictEqual(current)
   })
 })

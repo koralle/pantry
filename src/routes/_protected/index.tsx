@@ -18,8 +18,8 @@ export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
   loaderDeps: ({ search }) => bookmarkListLoaderDeps(search),
   loader: async ({ deps, context }) => {
-    // Component が同じ query options を読む。待たずに流すことで streaming を維持する。
-    void context.queryClient.prefetchQuery(bookmarkListQueryOptions(deps))
+    // Component が同じ infinite query options を読む。待たずに流すことで streaming を維持する。
+    void context.queryClient.prefetchInfiniteQuery(bookmarkListQueryOptions(deps))
 
     return {}
   },

@@ -26,13 +26,9 @@ export function BookmarkListFrame({
 }) {
   const shelfTags = use(shelfTagsPromise)
   const router = useRouter()
-  const listKey = [
-    search.q ?? '',
-    search.tags?.join(',') ?? '',
-    search.tagMode,
-    search.sort,
-    String(search.limit)
-  ].join('|')
+  const listKey = [search.q ?? '', search.tags?.join(',') ?? '', search.tagMode, search.sort].join(
+    '|'
+  )
 
   return (
     <>
@@ -55,7 +51,6 @@ export function BookmarkListFrame({
             <BookmarkListResults
               layout={layout}
               search={search}
-              pageLimit={search.limit}
             />
           </PantryMotion>
         </Suspense>

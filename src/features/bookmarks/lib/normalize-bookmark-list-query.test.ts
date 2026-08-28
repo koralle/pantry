@@ -8,9 +8,7 @@ describe('normalizeListQuery', () => {
       normalizeListQuery({
         q: '  ',
         tagMode: 'and',
-        sort: 'newest',
-        limit: 50,
-        offset: 0
+        sort: 'newest'
       }).q
     ).toBeUndefined()
   })
@@ -20,9 +18,7 @@ describe('normalizeListQuery', () => {
       normalizeListQuery({
         tagNames: [' React ', 'react', 'TS', 'TypeScript'],
         tagMode: 'or',
-        sort: 'updated',
-        limit: 50,
-        offset: 0
+        sort: 'updated'
       }).tagNames
     ).toEqual(['react', 'ts', 'typescript'])
   })
@@ -32,9 +28,7 @@ describe('normalizeListQuery', () => {
       normalizeListQuery({
         tagNames: ['ハ\u309A', 'パ'],
         tagMode: 'or',
-        sort: 'updated',
-        limit: 50,
-        offset: 0
+        sort: 'updated'
       }).tagNames
     ).toEqual(['パ'])
   })

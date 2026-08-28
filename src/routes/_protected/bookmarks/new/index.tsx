@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
@@ -62,12 +62,13 @@ function RouteComponent() {
   const search = Route.useSearch()
   const navigate = useNavigate()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const listSearch = buildListBackSearch(search.tags)
   const [serverError, setServerError] = useState<BookmarkFormServerError | null>(null)
   const mutation = useMutation(
     orpc.bookmarks.create.mutationOptions({
       onSuccess: () => {
-        refreshAfterCreateBookmark(router)
+        refreshAfterCreateBookmark(router, queryClient)
       }
     })
   )

@@ -7,8 +7,6 @@ describe('bookmarkSearchSchema', () => {
   test('default values', async () => {
     const result = await v.parseAsync(bookmarkSearchSchema, {})
     expect(result).toStrictEqual({
-      limit: 50,
-      offset: 0,
       tagMode: 'and',
       sort: 'newest'
     })
@@ -17,11 +15,24 @@ describe('bookmarkSearchSchema', () => {
   test('ignores legacy view query and lands on list defaults', async () => {
     const result = await v.parseAsync(bookmarkSearchSchema, { view: 'entrance' })
     expect(result).toStrictEqual({
-      limit: 50,
-      offset: 0,
       tagMode: 'and',
       sort: 'newest'
     })
+  })
+
+  test('strips legacy limit and offset without error', async () => {
+    const result = await v.parseAsync(bookmarkSearchSchema, {
+      limit: 50,
+      offset: 100,
+      q: 'react'
+    })
+    expect(result).toStrictEqual({
+      q: 'react',
+      tagMode: 'and',
+      sort: 'newest'
+    })
+    expect(result).not.toHaveProperty('limit')
+    expect(result).not.toHaveProperty('offset')
   })
 
   test('parses all fields', async () => {
@@ -32,8 +43,6 @@ describe('bookmarkSearchSchema', () => {
       sort: 'updated'
     })
     expect(result).toStrictEqual({
-      limit: 50,
-      offset: 0,
       q: 'react',
       tags: ['frontend', 'typescript'],
       tagMode: 'or',

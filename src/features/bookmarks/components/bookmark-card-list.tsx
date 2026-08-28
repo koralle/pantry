@@ -3,6 +3,7 @@ import { css, cx } from 'styled-system/css'
 
 import { interactiveSurface, surface } from '../../../styles/surface'
 import { tagChip } from '../../../styles/tag-chip'
+import type { BookmarkDetailSearch } from '../../navigation/lib/bookmark-search-builders'
 import { shortenUrl } from '../lib/shorten-url'
 import type { BookmarkListItem } from '../persistence/list-bookmarks'
 
@@ -77,7 +78,7 @@ export function BookmarkCardList({
   detailSearch
 }: {
   readonly bookmarks: BookmarkListItem[]
-  readonly detailSearch: { tags?: string[] }
+  readonly detailSearch: BookmarkDetailSearch
 }) {
   return (
     <ul className={bookmarkCards}>

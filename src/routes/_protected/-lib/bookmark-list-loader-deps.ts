@@ -8,9 +8,7 @@ export function bookmarkListLoaderDeps(search: BookmarkSearchSchema) {
     q: search.q,
     tags: search.tags,
     tagMode: search.tagMode,
-    sort: search.sort,
-    limit: search.limit,
-    offset: search.offset
+    sort: search.sort
   }
 }
 

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-import type { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { bookmarkDetailQueryOptions } from '../lib/bookmark-detail-query-options'
 import { BookmarkDetailContent } from './bookmark-detail-content'
 
@@ -9,7 +9,7 @@ export function BookmarkDetailResolved({
   listSearch
 }: {
   readonly id: string
-  readonly listSearch: ReturnType<typeof buildListBackSearch>
+  readonly listSearch: BookmarkSearchSchema
 }) {
   // Loader が prefetch した同じ query options を読む。未取得ならここで suspend する。
   const { data } = useSuspenseQuery(bookmarkDetailQueryOptions(id))

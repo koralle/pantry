@@ -39,7 +39,7 @@ function capturingSessionRouter() {
     fetchPageTitle: async () => ({ kind: 'unavailable' }),
     updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
     findBookmarkEditor: async () => null,
-    listBookmarks: async () => [],
+    listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
     softDeleteBookmark: async () => ({ kind: 'bookmark-not-found' })
   })
@@ -72,12 +72,10 @@ describe('ssrRpcFetch', () => {
 
     const result = await client.bookmarks.list({
       tagMode: 'and',
-      sort: 'newest',
-      limit: 50,
-      offset: 0
+      sort: 'newest'
     })
 
-    expect(result).toEqual([])
+    expect(result).toEqual({ items: [], nextCursor: null })
     expect(capturedCookies).toEqual(['better-auth.session_token=ssr-cookie'])
   })
 
@@ -88,7 +86,7 @@ describe('ssrRpcFetch', () => {
     const { router, capturedCookies } = capturingSessionRouter()
     const client = clientThroughSsr(router, { cookie: 'link-cookie=explicit' })
 
-    await client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 50, offset: 0 })
+    await client.bookmarks.list({ tagMode: 'and', sort: 'newest' })
 
     expect(capturedCookies).toEqual(['link-cookie=explicit'])
   })
