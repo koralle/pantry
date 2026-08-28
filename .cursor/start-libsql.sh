@@ -5,7 +5,27 @@ readonly container_name="pantry-turso"
 readonly image_tag="pantry-turso:cursor-cloud"
 readonly health_url="http://127.0.0.1:8080/v2"
 
-sudo service docker start
+ensure_docker_daemon() {
+  if docker info >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # `service docker start` は既に起動中だと非 0 を返すため、成否は docker info で判定する。
+  sudo service docker start || true
+
+  for _ in $(seq 1 30); do
+    if docker info >/dev/null 2>&1; then
+      return 0
+    fi
+
+    sleep 0.5
+  done
+
+  echo "Docker デーモンを起動できませんでした。" >&2
+  return 1
+}
+
+ensure_docker_daemon
 
 docker rm -f "${container_name}" >/dev/null 2>&1 || true
 
