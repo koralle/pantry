@@ -63,7 +63,7 @@ function isBookmarkNotFound(error: unknown): boolean {
 }
 
 /**
- * RouteComponent は編集画面のページ境界であり、Storybook の Route Story 起点でもある。
+ * この Route は編集画面のページ境界であり、Storybook の Route Story 起点でもある。
  * params / search / loader / not-found / 画面固有リンク / navigation をここで閉じ、
  * Domain・DB・oRPC 実装詳細は注入された port の向こう側に置く。
  */
@@ -92,7 +92,7 @@ export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
   component: RouteComponent
 })
 
-export function RouteComponent() {
+function RouteComponent() {
   const data = Route.useLoaderData()
   const search = Route.useSearch()
   const params = Route.useParams()
