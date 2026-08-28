@@ -11,19 +11,31 @@ const routeSource = readFileSync(join(dir, 'index.tsx'), 'utf8')
 const editRouteSource = readFileSync(join(dir, '../$id/edit.tsx'), 'utf8')
 
 describe('buildNewBookmarkCommand', () => {
-  test('新規ブックマークではタグを空配列で送る', () => {
+  test('送信時点の tag draft を tags として送る', () => {
     expect(
       buildNewBookmarkCommand({
         url: 'https://example.com/article',
         title: 'Example Article',
-        note: 'メモ'
+        note: 'メモ',
+        tagIds: [2, 5]
       })
     ).toStrictEqual({
       url: 'https://example.com/article',
       title: 'Example Article',
       note: 'メモ',
-      tags: []
+      tags: [2, 5]
     })
+  })
+
+  test('タグ未選択なら空配列で送る', () => {
+    expect(
+      buildNewBookmarkCommand({
+        url: 'https://example.com/article',
+        title: 'Example Article',
+        note: 'メモ',
+        tagIds: []
+      }).tags
+    ).toEqual([])
   })
 })
 
@@ -46,6 +58,13 @@ describe('new bookmark route', () => {
     expect(routeSource).toContain('note: null')
   })
 
+  test('CreateBookmark に送信時点の tagIds を渡す', () => {
+    expect(routeSource).toContain('tagIds: values.tagIds')
+    expect(routeSource).toContain('createTagFromPickerAction')
+    expect(editRouteSource).toContain('createTagFromPickerAction')
+    expect(editRouteSource).toContain('tagCandidates')
+  })
+
   test('CreateBookmark を oRPC mutationOptions 経由で送る', () => {
     expect(routeSource).toContain('orpc.bookmarks.create.mutationOptions')
     expect(routeSource).toContain('refreshAfterBookmarkMutation')
@@ -58,14 +77,14 @@ describe('new bookmark route', () => {
   })
 
   test('Error の class 名と name に依存しない', () => {
-    expect(routeSource).toContain('getCreateBookmarkErrorMessage')
+    expect(routeSource).toContain('mapCreateBookmarkFailure')
     expect(routeSource).not.toContain('error.name')
     expect(routeSource).not.toContain('instanceof Error')
     expect(routeSource).not.toContain('error.message')
   })
 
   test('UNAUTHORIZED はフォームエラーにしない', () => {
-    expect(routeSource).toContain('if (message !== null)')
+    expect(routeSource).toContain('if (formError !== null)')
   })
 
   test('保存成功後の遷移失敗は保存失敗と混ぜない', () => {

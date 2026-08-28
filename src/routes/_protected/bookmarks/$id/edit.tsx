@@ -3,6 +3,7 @@ import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft, CircleDashed } from 'lucide-react'
+import { useMemo } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 
 import { BookmarkEditor } from '../../../../features/bookmarks/components/bookmark-editor'
@@ -11,6 +12,7 @@ import type {
   BookmarkEditorSubmitResult,
   BookmarkTitleFetchAction
 } from '../../../../features/bookmarks/components/bookmark-editor'
+import { createTagFromPickerAction } from '../../../../features/bookmarks/lib/create-tag-from-picker-action'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
 import { refreshAfterBookmarkMutation } from '../../../../features/bookmarks/lib/refresh-after-bookmark-mutation'
 import { toUpdateBookmarkFailureCode } from '../../../../features/bookmarks/lib/update-bookmark-failure'
@@ -106,6 +108,11 @@ export function RouteComponent() {
   const editorQuery = useQuery(
     orpc.bookmarks.editor.queryOptions({ input: { id: params.id }, staleTime: editorStaleTime })
   )
+  const shelfQuery = useQuery(orpc.tags.shelf.queryOptions({ staleTime: 5000 }))
+  const createTagAction = useMemo(
+    () => createTagFromPickerAction({ queryClient, router }),
+    [queryClient, router]
+  )
 
   if (data.kind === 'not-found') {
     return (
@@ -199,6 +206,9 @@ export function RouteComponent() {
             }
           }}
           fetchTitleAction={fetchTitleAction}
+          tagCandidates={shelfQuery.data ?? []}
+          tagsReady={shelfQuery.isSuccess}
+          createTagAction={createTagAction}
           onCompleted={async (bookmarkId) => {
             // DB commit 済みの成功を refresh failure で覆さない。invalidate は best-effort。
             refreshAfterBookmarkMutation(router, queryClient, 'UpdateBookmark')

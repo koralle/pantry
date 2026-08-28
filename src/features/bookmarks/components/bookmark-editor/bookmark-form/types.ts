@@ -1,11 +1,12 @@
+import type { CreateTagFromPickerAction } from '../../../lib/execute-create-tag-from-picker'
+import type { TagCandidate } from '../../bookmark-tag-picker/types'
 import type { BookmarkFormOutput } from './schema'
 
-export type BookmarkFormFieldKey = 'url' | 'title' | 'note'
+export type BookmarkFormFieldKey = 'url' | 'title' | 'note' | 'tags'
 
 /**
  * BookmarkForm が受け取る画面表示用サーバーエラー。
  * Conform の validation error はここに載せず、Conform が所有する。
- * tags は BookmarkForm の責務外なので含めない。
  */
 export type BookmarkFormServerError = {
   readonly summary?: string
@@ -24,9 +25,12 @@ export type BookmarkFormInitialValues = {
   readonly url: string
   readonly title: string
   readonly note: string | null
+  readonly tagIds?: readonly number[]
 }
 
-export type BookmarkFormSubmitValues = BookmarkFormOutput
+export type BookmarkFormSubmitValues = BookmarkFormOutput & {
+  readonly tagIds: readonly number[]
+}
 
 /** タイトル取得 action の payload。useActionState の第2引数に渡すオブジェクト */
 export type BookmarkTitleFetchPayload = {
@@ -69,4 +73,7 @@ export type BookmarkFormProps = {
   readonly onSubmit: (values: BookmarkFormSubmitValues) => void | Promise<void>
   /** タイトル取得 action。hook 側のラッパーを経て useActionState に渡る。Server Function は注入側が持つ */
   readonly fetchTitleAction: BookmarkTitleFetchAction
+  readonly tagCandidates: readonly TagCandidate[]
+  readonly tagsReady: boolean
+  readonly createTagAction: CreateTagFromPickerAction
 }

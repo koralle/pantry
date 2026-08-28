@@ -1,4 +1,5 @@
 import { expect, fn, userEvent, within } from 'storybook/test'
+import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 import { uuidv7 } from 'uuidv7'
 import * as v from 'valibot'
@@ -47,11 +48,15 @@ export const Default = meta.story({
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => ({
       status: 'success',
       title: '取得したタイトル'
-    }))
+    })),
+    tagCandidates: [{ id: 1, name: 'React', pinned: true, sortOrder: 0 }],
+    tagsReady: true,
+    createTagAction: fn(async () => ({ status: 'idle' as const }))
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('URL')).toHaveValue(String(initialData.url))
+    await expect(canvas.getByRole('button', { name: 'Reactを外す' })).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: '更新' })).toBeEnabled()
   }
 })
@@ -126,5 +131,23 @@ export const EditingUrlClearsUrlServerError = Default.extend({
 
     await userEvent.type(canvas.getByLabelText('URL'), '-2')
     await expect(canvas.queryByText('この URL は既に登録されています')).not.toBeInTheDocument()
+  }
+})
+
+export const InvalidTagKeepsDraftAndAsksToRepick = Default.extend({
+  args: {
+    onUpdateBookmark: fn(async () => ({
+      ok: false as const,
+      failureCode: 'invalid-tag' as const
+    }))
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    await expect(canvas.getByRole('alert')).toHaveTextContent('タグを選び直してください')
+    await expect(canvas.getByRole('button', { name: 'Reactを外す' })).toBeInTheDocument()
+    await expect(canvas.getByLabelText('URL')).toHaveValue(String(initialData.url))
+    const command = (args.onUpdateBookmark as Mock).mock.calls[0]?.[0]
+    await expect(command?.tagIds).toEqual([1])
   }
 })
