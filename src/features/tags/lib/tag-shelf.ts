@@ -19,11 +19,13 @@ export type TagRecord = {
   color: string | null
 }
 
-function compareName(a: ShelfTag, b: ShelfTag): number {
+function compareName(a: { name: string }, b: { name: string }): number {
   return a.name.localeCompare(b.name)
 }
 
-export function sortTagsForNav(tags: ShelfTag[]): ShelfTag[] {
+export function sortTagsForNav<T extends { pinned: boolean; sortOrder: number; name: string }>(
+  tags: readonly T[]
+): T[] {
   return [...tags].toSorted((a, b) => {
     if (a.pinned !== b.pinned) {
       return a.pinned ? -1 : 1

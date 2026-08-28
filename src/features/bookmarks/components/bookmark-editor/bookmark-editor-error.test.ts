@@ -18,9 +18,12 @@ describe('mapUpdateBookmarkFailure', () => {
     })
   })
 
-  test('invalid-tag を form summary へ振り分ける', () => {
+  test('invalid-tag をタグフィールドのエラーへ振り分ける', () => {
     expect(mapUpdateBookmarkFailure('invalid-tag')).toStrictEqual({
-      form: { summary: '保存できないタグ情報が含まれています' }
+      form: {
+        summary: '保存できないタグが含まれています。タグを選び直してください',
+        fields: { tags: '保存できないタグが含まれています。タグを選び直してください' }
+      }
     })
   })
 

@@ -19,7 +19,12 @@ export function mapUpdateBookmarkFailure(code: UpdateBookmarkFailureCode): Bookm
       return { form: { summary: 'このブックマークは見つかりません' } }
     }
     case 'invalid-tag': {
-      return { form: { summary: '保存できないタグ情報が含まれています' } }
+      return {
+        form: {
+          summary: '保存できないタグが含まれています。タグを選び直してください',
+          fields: { tags: '保存できないタグが含まれています。タグを選び直してください' }
+        }
+      }
     }
     case 'unexpected': {
       return { form: { summary: '保存に失敗しました。時間をおいて再度お試しください' } }
