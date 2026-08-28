@@ -26,7 +26,9 @@ const nodeTests = [
   'src/routes/_protected/bookmarks/new/index.test.ts',
   'src/features/bookmarks/orpc-update.source.test.ts',
   'src/features/bookmarks/components/bookmark-delete-dialog.test.ts',
-  'src/features/bookmarks/lib/query-ownership.test.ts'
+  'src/features/bookmarks/lib/query-ownership.test.ts',
+  'src/features/auth/passkey-plugin-wiring.test.ts',
+  'src/features/auth/passkey-ui.source.test.ts'
 ]
 
 export default defineConfig({
