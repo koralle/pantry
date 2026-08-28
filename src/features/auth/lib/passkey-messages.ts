@@ -5,6 +5,12 @@ type PasskeyClientError = {
   readonly status?: number | undefined
 }
 
+function isSessionProblem(error: PasskeyClientError): boolean {
+  return (
+    error.code === 'SESSION_REQUIRED' || error.code === 'SESSION_NOT_FRESH' || error.status === 401
+  )
+}
+
 export function getPasskeySignInErrorMessage(error: PasskeyClientError): string | null {
   if (isPasskeyUserCancelled(error)) {
     return null
@@ -25,7 +31,7 @@ export function getPasskeyRegisterErrorMessage(error: PasskeyClientError): strin
     return 'この認証器のパスキーはすでに登録されています'
   }
 
-  if (error.code === 'SESSION_REQUIRED' || error.status === 401) {
+  if (isSessionProblem(error)) {
     return 'セッションの有効期限が切れました。再度ログインしてください'
   }
 
@@ -33,7 +39,7 @@ export function getPasskeyRegisterErrorMessage(error: PasskeyClientError): strin
 }
 
 export function getPasskeyManageErrorMessage(error: PasskeyClientError): string {
-  if (error.code === 'SESSION_REQUIRED' || error.status === 401) {
+  if (isSessionProblem(error)) {
     return 'セッションの有効期限が切れました。再度ログインしてください'
   }
 

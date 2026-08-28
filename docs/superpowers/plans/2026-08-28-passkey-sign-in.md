@@ -4,7 +4,7 @@
 
 **Goal:** Let signed-in users register and manage passkeys, and sign in with a registered passkey without entering email or password, while keeping email + password working.
 
-**Architecture:** Add Better Auth's `@better-auth/passkey` plugin to the existing Cookie session auth. Do not put passkey ceremonies behind oRPC. RP ID and origin come from `BETTER_AUTH_URL`. Display names are resolved at read time (user name, else authenticator AAGUID name, else `パスキー`).
+**Architecture:** Add Better Auth's `@better-auth/passkey` plugin to the existing Cookie session auth. Do not put passkey ceremonies behind oRPC. RP ID and origin come from `BETTER_AUTH_URL`. Display names are resolved at read time from a client-safe AAGUID map (user name, else authenticator name, else `パスキー`).
 
 **Tech Stack:** Better Auth 1.6.27, `@better-auth/passkey`, Drizzle/Turso, TanStack Start, Storybook play functions, Vitest
 
@@ -38,6 +38,7 @@
 ## Implementation notes
 
 - `addPasskey()` is called without a name so stored `name` stays empty until the user renames.
+- Better Auth's passkey register endpoints use `freshSessionMiddleware`. This app sets `session.freshAge: 0` so a still-valid session can register a passkey without a 24-hour freshness cutoff (the spec asks for logged-in users, not a step-up).
 - Cancel codes (`AUTH_CANCELLED`, `ERROR_CEREMONY_ABORTED`, `REGISTRATION_CANCELLED`) stay on the current screen and do not add or remove passkeys.
 - SimpleWebAuthn aborts a previous ceremony when a new one starts; still ignore AUTH_CANCELLED from the Conditional UI promise.
-- Do not persist authenticator names into `name`. Resolve with `getAuthenticatorName` at render time.
+- Do not persist authenticator names into `name`. Resolve from the client-safe AAGUID map at render time.

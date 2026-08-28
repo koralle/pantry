@@ -41,7 +41,7 @@ const passkeyDivider = css({
 
 export function PasskeySignIn({ redirect }: { readonly redirect: string | undefined }) {
   const router = useRouter()
-  const [webAuthnAvailable, setWebAuthnAvailable] = useState(true)
+  const [webAuthnAvailable, setWebAuthnAvailable] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const explicitInFlight = useRef(false)

@@ -44,5 +44,14 @@ describe('passkey user-facing messages', () => {
     expect(getPasskeyRegisterErrorMessage({ code: 'SESSION_REQUIRED' })).toBe(
       'セッションの有効期限が切れました。再度ログインしてください'
     )
+    expect(getPasskeyRegisterErrorMessage({ code: 'SESSION_NOT_FRESH', status: 403 })).toBe(
+      'セッションの有効期限が切れました。再度ログインしてください'
+    )
+  })
+
+  test('stale session is explained for management operations', () => {
+    expect(getPasskeyManageErrorMessage({ code: 'SESSION_NOT_FRESH', status: 403 })).toBe(
+      'セッションの有効期限が切れました。再度ログインしてください'
+    )
   })
 })

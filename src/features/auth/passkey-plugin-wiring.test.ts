@@ -16,6 +16,7 @@ describe('passkey plugin wiring', () => {
     const source = await readFromAuth('server/get-auth.server.ts')
 
     expect(source).toContain('emailAndPassword: {\n      enabled: true\n    }')
+    expect(source).toContain('session: {\n      freshAge: 0\n    }')
     expect(source).toContain("from '@better-auth/passkey'")
     expect(source).toContain('passkey(passkeyPluginOptions(env.BETTER_AUTH_URL))')
     expect(source).toContain('admin()')
@@ -25,6 +26,7 @@ describe('passkey plugin wiring', () => {
     const source = await readFile(join(repoRoot, 'auth.ts'), 'utf8')
 
     expect(source).toContain('emailAndPassword: {\n    enabled: true\n  }')
+    expect(source).toContain('session: {\n    freshAge: 0\n  }')
     expect(source).toContain("from '@better-auth/passkey'")
     expect(source).toContain('passkey(passkeyPluginOptions(env.BETTER_AUTH_URL))')
   })

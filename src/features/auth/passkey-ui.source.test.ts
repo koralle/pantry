@@ -46,6 +46,13 @@ describe('passkey UI contracts', () => {
     expect(settings).not.toContain('addPasskey({')
   })
 
+  test('display names resolve without importing the server passkey plugin', async () => {
+    const source = await readSource('features/auth/lib/passkey-display-name.ts')
+    expect(source).not.toContain("@better-auth/passkey'")
+    expect(source).toContain('Google Password Manager')
+    expect(source).toContain('1Password')
+  })
+
   test('delete asks for confirmation before calling the API', async () => {
     const dialog = await readSource('features/auth/components/passkey-delete-dialog.tsx')
     expect(dialog).toContain('このパスキーを削除しますか？')

@@ -24,6 +24,9 @@ function createAuth() {
     emailAndPassword: {
       enabled: true
     },
+    session: {
+      freshAge: 0
+    },
     plugins: [admin(), passkey(passkeyPluginOptions(env.BETTER_AUTH_URL))]
   })
 }

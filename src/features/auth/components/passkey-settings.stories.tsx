@@ -74,7 +74,7 @@ export const EmptyList = meta.story({
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { name: 'パスキー' })).toBeInTheDocument()
     await expect(await canvas.findByText('パスキーはまだ登録されていません')).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'パスキーを追加' })).toBeEnabled()
+    await expect(await canvas.findByRole('button', { name: 'パスキーを追加' })).toBeEnabled()
     await expect(canvas.queryByLabelText('表示名')).not.toBeInTheDocument()
   }
 })
@@ -285,5 +285,107 @@ export const HideAddWhenWebAuthnUnavailable = meta.story({
     await waitFor(() => {
       expect(canvas.queryByRole('button', { name: 'パスキーを追加' })).not.toBeInTheDocument()
     })
+  }
+})
+
+export const ListLoadError = meta.story({
+  beforeEach: async () => {
+    mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
+      data: null,
+      error: {
+        code: 'FAILED_TO_LIST',
+        message: 'failed',
+        status: 500,
+        statusText: 'Error'
+      }
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('alert')).toHaveTextContent('パスキーの操作に失敗しました')
+    await expect(canvas.queryByText('パスキーはまだ登録されていません')).not.toBeInTheDocument()
+  }
+})
+
+export const AddFailed = meta.story({
+  beforeEach: async () => {
+    mocked(authClient.passkey.addPasskey).mockResolvedValue({
+      data: null,
+      error: {
+        code: 'FAILED_TO_VERIFY_REGISTRATION',
+        message: 'failed',
+        status: 400,
+        statusText: 'Bad Request'
+      }
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(await canvas.findByRole('button', { name: 'パスキーを追加' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('alert')).toHaveTextContent('パスキーの登録に失敗しました')
+    })
+    await expect(canvas.getByText('パスキーはまだ登録されていません')).toBeInTheDocument()
+  }
+})
+
+export const RenameFailed = meta.story({
+  beforeEach: async () => {
+    mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
+      data: [passkey({ id: 'pk-1', name: '仕事用キー' })],
+      error: null
+    })
+    mocked(authClient.passkey.updatePasskey).mockResolvedValue({
+      data: null,
+      error: {
+        code: 'FAILED_TO_UPDATE_PASSKEY',
+        message: 'failed',
+        status: 500,
+        statusText: 'Error'
+      }
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = page(canvasElement)
+    await userEvent.click(await canvas.findByRole('button', { name: '名前を変更' }))
+    const name = await canvas.findByLabelText('表示名')
+    await userEvent.clear(name)
+    await userEvent.type(name, '自宅')
+    await userEvent.click(canvas.getByRole('button', { name: '保存' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('alert')).toHaveTextContent('パスキーの操作に失敗しました')
+    })
+    await expect(canvas.getByRole('article', { name: '仕事用キー' })).toBeInTheDocument()
+    await expect(canvas.getByRole('dialog')).toBeInTheDocument()
+  }
+})
+
+export const DeleteFailed = meta.story({
+  beforeEach: async () => {
+    mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
+      data: [passkey({ id: 'pk-1', name: '自宅' })],
+      error: null
+    })
+    mocked(authClient.passkey.deletePasskey).mockResolvedValue({
+      data: null,
+      error: {
+        code: 'FAILED_TO_DELETE',
+        message: 'failed',
+        status: 500,
+        statusText: 'Error'
+      }
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = page(canvasElement)
+    await userEvent.click(await canvas.findByRole('button', { name: '削除' }))
+    await userEvent.click(await canvas.findByRole('button', { name: '削除を確認' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('alert')).toHaveTextContent('パスキーの操作に失敗しました')
+    })
+    await expect(canvas.getByRole('article', { name: '自宅' })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('heading', { name: 'このパスキーを削除しますか？' })
+    ).toBeInTheDocument()
   }
 })

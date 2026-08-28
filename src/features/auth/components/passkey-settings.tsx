@@ -79,7 +79,7 @@ function toManagedPasskeys(value: unknown): ManagedPasskey[] {
 }
 
 export function PasskeySettings() {
-  const [webAuthnAvailable, setWebAuthnAvailable] = useState(true)
+  const [webAuthnAvailable, setWebAuthnAvailable] = useState(false)
   const [passkeys, setPasskeys] = useState<ManagedPasskey[] | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
@@ -176,11 +176,13 @@ export function PasskeySettings() {
         </div>
       ) : null}
 
-      {passkeys == null ? (
-        <p className={passkeyEmpty}>読み込み中...</p>
-      ) : passkeys.length === 0 ? (
+      {passkeys == null ? <p className={passkeyEmpty}>読み込み中...</p> : null}
+
+      {passkeys != null && passkeys.length === 0 && errorMessage == null ? (
         <p className={passkeyEmpty}>パスキーはまだ登録されていません</p>
-      ) : (
+      ) : null}
+
+      {passkeys != null && passkeys.length > 0 ? (
         <div>
           {passkeys.map((passkey) => (
             <PasskeyListItem
@@ -190,7 +192,7 @@ export function PasskeySettings() {
             />
           ))}
         </div>
-      )}
+      ) : null}
     </>
   )
 }

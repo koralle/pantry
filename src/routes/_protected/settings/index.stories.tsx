@@ -74,7 +74,7 @@ export const Default = meta.story({
     expect(passkeys.compareDocumentPosition(session) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0)
     await expect(canvas.getByText('koralle')).toBeInTheDocument()
     await expect(await canvas.findByText('パスキーはまだ登録されていません')).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'パスキーを追加' })).toBeEnabled()
+    await expect(await canvas.findByRole('button', { name: 'パスキーを追加' })).toBeEnabled()
     await expect(canvas.getByRole('button', { name: 'ログアウト' })).toBeEnabled()
   }
 })
