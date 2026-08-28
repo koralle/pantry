@@ -20,6 +20,16 @@ const storyUser = {
   email: 'koralle@example.com'
 }
 
+const SettingsComponent = Route.options.component!
+
+function SettingsWithQueryClient() {
+  return (
+    <QueryClientProvider client={storyQueryClient}>
+      <SettingsComponent />
+    </QueryClientProvider>
+  )
+}
+
 const meta = preview.meta({
   title: 'Pages / 設定画面',
   parameters: {
@@ -39,19 +49,13 @@ const meta = preview.meta({
           '/_protected/settings/': {
             loader: async () => ({
               user: storyUser
-            })
+            }),
+            component: SettingsWithQueryClient
           }
         }
       }
     }
   },
-  decorators: [
-    (Story) => (
-      <QueryClientProvider client={storyQueryClient}>
-        <Story />
-      </QueryClientProvider>
-    )
-  ],
   beforeEach: async () => {
     mocked(isWebAuthnAvailable).mockReset()
     mocked(isWebAuthnAvailable).mockReturnValue(true)
