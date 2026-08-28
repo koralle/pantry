@@ -36,7 +36,7 @@ function authenticatedRouter(insertBookmark: InsertBookmark, getSession = vi.fn(
     findTagById: async () => null,
     updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
     findBookmarkEditor: async () => null,
-    listBookmarks: async () => [],
+    listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
     softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
   })
@@ -105,7 +105,7 @@ describe('CreateBookmark RPC', () => {
       fetchPageTitle: async () => ({ kind: 'unavailable' }),
       updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
       findBookmarkEditor: async () => null,
-      listBookmarks: async () => [],
+      listBookmarks: async () => ({ items: [], nextCursor: null }),
       getBookmarkDetail: async () => null,
       softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })
@@ -144,7 +144,7 @@ describe('CreateBookmark RPC', () => {
       findTagById: async () => null,
       updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
       findBookmarkEditor: async () => null,
-      listBookmarks: async () => [],
+      listBookmarks: async () => ({ items: [], nextCursor: null }),
       getBookmarkDetail: async () => null,
       softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })

@@ -1,19 +1,12 @@
 import { uniqueNormalizedTagNames } from '../../tags/domain/tag-values'
-import type { BookmarkSearchSchema } from './bookmark-search'
+import type { BookmarkDetailSearch, BookmarkSearchSchema } from './bookmark-search'
 import { defaultBookmarkSearch } from './bookmark-search'
-
-const listDefaults = {
-  limit: 50,
-  offset: 0,
-  tagMode: 'and' as const,
-  sort: 'newest' as const
-}
 
 export type BookmarkSearchPatch = {
   readonly q?: string | undefined
   readonly tags?: string[] | undefined
-  readonly tagMode?: BookmarkSearchSchema['tagMode']
-  readonly sort?: BookmarkSearchSchema['sort']
+  readonly tagMode?: BookmarkSearchSchema['tagMode'] | undefined
+  readonly sort?: BookmarkSearchSchema['sort'] | undefined
   readonly clearQ?: boolean
   readonly clearTags?: boolean
 }
@@ -37,8 +30,6 @@ export function buildListSearch(
   patch: BookmarkSearchPatch
 ): BookmarkSearchSchema {
   const next: BookmarkSearchSchema = {
-    limit: current.limit,
-    offset: 0,
     tagMode: patch.tagMode ?? current.tagMode,
     sort: patch.sort ?? current.sort
   }
@@ -60,36 +51,38 @@ export function buildListSearch(
 }
 
 export function buildListBackSearch(tags?: readonly string[]): BookmarkSearchSchema {
-  const search: BookmarkSearchSchema = {
-    ...defaultBookmarkSearch
-  }
-
-  if (tags !== undefined && tags.length > 0) {
-    const canonicalTags = uniqueNormalizedTagNames(tags)
-    if (canonicalTags.length > 0) {
-      search.tags = canonicalTags
-    }
-  }
-
-  return search
+  return listSearchFromDetail({ tags: tags === undefined ? undefined : [...tags] })
 }
 
-export function detailSearchFromList(search: BookmarkSearchSchema): { tags?: string[] } {
-  if (search.tags !== undefined && search.tags.length > 0) {
-    return { tags: search.tags }
+export function listSearchFromDetail(search: BookmarkDetailSearch): BookmarkSearchSchema {
+  return buildListSearch(defaultBookmarkSearch, {
+    q: search.q,
+    tags: search.tags,
+    tagMode: search.tagMode,
+    sort: search.sort,
+    clearQ: search.q === undefined,
+    clearTags: search.tags === undefined || search.tags.length === 0
+  })
+}
+
+export function detailSearchFromList(search: BookmarkSearchSchema): BookmarkDetailSearch {
+  return {
+    ...(search.q !== undefined && search.q !== '' ? { q: search.q } : {}),
+    ...(search.tags !== undefined && search.tags.length > 0 ? { tags: search.tags } : {}),
+    ...(search.tagMode !== 'and' ? { tagMode: search.tagMode } : {}),
+    ...(search.sort !== 'newest' ? { sort: search.sort } : {})
   }
-  return {}
 }
 
 export function allShelfSearch(current?: BookmarkSearchSchema): BookmarkSearchSchema {
-  return buildListSearch(current ?? listDefaults, { clearTags: true })
+  return buildListSearch(current ?? defaultBookmarkSearch, { clearTags: true })
 }
 
 export function tagShelfSearch(
   tagName: string,
   current?: BookmarkSearchSchema
 ): BookmarkSearchSchema {
-  return buildListSearch(current ?? listDefaults, { tags: [tagName] })
+  return buildListSearch(current ?? defaultBookmarkSearch, { tags: [tagName] })
 }
 
 export function chromeListSearch(

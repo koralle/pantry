@@ -10,7 +10,7 @@ import type { FetchPageTitleOutput } from '../features/bookmarks/application/fet
 import type { UpdateBookmarkOutput } from '../features/bookmarks/application/update-bookmark'
 import type { BookmarkId } from '../features/bookmarks/domain/bookmark-values'
 import type { BookmarkDetail } from '../features/bookmarks/persistence/get-bookmark-detail'
-import type { BookmarkListItem } from '../features/bookmarks/persistence/list-bookmarks'
+import type { BookmarkListPage } from '../features/bookmarks/persistence/list-bookmarks'
 import type { TagId } from '../features/tags/domain/tag-values'
 import { createAppRouter } from './create-app-router'
 import type { AppRouter } from './create-app-router'
@@ -45,7 +45,7 @@ function baseDeps(): MutableDeps {
       kind: 'bookmark-not-found'
     })),
     findBookmarkEditor: vi.fn(async () => null),
-    listBookmarks: vi.fn(async (): Promise<BookmarkListItem[]> => []),
+    listBookmarks: vi.fn(async (): Promise<BookmarkListPage> => ({ items: [], nextCursor: null })),
     getBookmarkDetail: vi.fn(async (): Promise<BookmarkDetail | null> => null),
     softDeleteBookmark: vi.fn(async (): Promise<{ kind: 'bookmark-not-found' }> => ({
       kind: 'bookmark-not-found'
@@ -96,8 +96,9 @@ describe('bookmarks RPC 契約', () => {
     type DetailOutput = Awaited<ReturnType<RouterClient<AppRouter>['bookmarks']['detail']>>
     type DeleteOutput = Awaited<ReturnType<RouterClient<AppRouter>['bookmarks']['delete']>>
 
-    expectTypeOf<ListOutput[number]['updatedAt']>().toEqualTypeOf<string>()
-    expectTypeOf<ListOutput[number]['tags'][number]['id']>().toEqualTypeOf<number>()
+    expectTypeOf<ListOutput['items'][number]['updatedAt']>().toEqualTypeOf<string>()
+    expectTypeOf<ListOutput['items'][number]['tags'][number]['id']>().toEqualTypeOf<number>()
+    expectTypeOf<ListOutput['nextCursor']>().toEqualTypeOf<string | null>()
     expectTypeOf<DetailOutput['tagNames']>().toEqualTypeOf<string[]>()
     expectTypeOf<DeleteOutput['id']>().toEqualTypeOf<string>()
     expectTypeOf<DeleteOutput['id']>().not.toEqualTypeOf<BookmarkId>()
@@ -106,7 +107,7 @@ describe('bookmarks RPC 契約', () => {
   test('未認証のリクエストは 401 UNAUTHORIZED を返す', async () => {
     for (const call of [
       (client: RouterClient<AppRouter>) =>
-        client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 50, offset: 0 }),
+        client.bookmarks.list({ tagMode: 'and', sort: 'newest' }),
       (client: RouterClient<AppRouter>) => client.bookmarks.detail({ id: detailFixtureId }),
       (client: RouterClient<AppRouter>) => client.bookmarks.delete({ id: detailFixtureId })
     ]) {
@@ -136,7 +137,7 @@ describe('bookmarks RPC 契約', () => {
       cookie: 'better-auth.session_token=abc'
     })
 
-    await client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 50, offset: 0 })
+    await client.bookmarks.list({ tagMode: 'and', sort: 'newest' })
 
     expect(getSession).toHaveBeenCalledOnce()
   })
@@ -144,37 +145,42 @@ describe('bookmarks RPC 契約', () => {
 
 describe('bookmarks.list', () => {
   test('一覧 projection を返す', async () => {
-    const items: BookmarkListItem[] = [
-      {
-        id: 'b-1',
-        url: 'https://example.com/b-1',
-        title: '最初',
-        note: null,
-        updatedAt: '2026-08-01T00:00:00.000Z',
-        tags: [{ id: 3, name: 'typescript' }]
-      }
-    ]
+    const page: BookmarkListPage = {
+      items: [
+        {
+          id: 'b-1',
+          url: 'https://example.com/b-1',
+          title: '最初',
+          note: null,
+          updatedAt: '2026-08-01T00:00:00.000Z',
+          tags: [{ id: 3, name: 'typescript' }]
+        }
+      ],
+      nextCursor: '1775001600000:b-1'
+    }
     const deps = baseDeps()
-    deps.listBookmarks = vi.fn(async () => items)
+    deps.listBookmarks = vi.fn(async () => page)
     const { client } = createTestClient(createAppRouter(deps))
 
     const result = await client.bookmarks.list({
       tagMode: 'and',
       sort: 'newest',
-      limit: 50,
-      offset: 0,
       q: 'React'
     })
 
-    expect(result).toEqual(items)
+    expect(result).toEqual(page)
     expect(deps.listBookmarks).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: expect.any(String),
         tagMode: 'and',
         sort: 'newest',
-        limit: 50,
-        offset: 0,
         q: 'React'
+      })
+    )
+    expect(deps.listBookmarks).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        limit: expect.anything(),
+        offset: expect.anything()
       })
     )
   })
@@ -185,22 +191,40 @@ describe('bookmarks.list', () => {
 
     await expect(
       // @ts-expect-error 不正な sort 値
-      client.bookmarks.list({ tagMode: 'and', sort: 'bogus', limit: 50, offset: 0 })
+      client.bookmarks.list({ tagMode: 'and', sort: 'bogus' })
     ).rejects.toBeInstanceOf(Error)
     expect(getResponse().status).toBeGreaterThanOrEqual(400)
     expect(getResponse().status).toBeLessThan(500)
   })
 
-  test('limit が上限 50 を超えると 400 BAD_REQUEST を返す', async () => {
+  test('不正なカーソルは 400 BAD_REQUEST を返し、port を呼ばない', async () => {
     const deps = baseDeps()
     const { client, getResponse } = createTestClient(createAppRouter(deps))
 
     const error = await rejection(
-      client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 51, offset: 0 })
+      client.bookmarks.list({ tagMode: 'and', sort: 'newest', cursor: 'not-a-cursor' })
     )
 
     expect(error.code).toBe('BAD_REQUEST')
     expect(getResponse().status).toBe(400)
+    expect(deps.listBookmarks).not.toHaveBeenCalled()
+  })
+
+  test('Date 範囲外のカーソルは 400 BAD_REQUEST を返し、port を呼ばない', async () => {
+    const deps = baseDeps()
+    const { client, getResponse } = createTestClient(createAppRouter(deps))
+
+    const error = await rejection(
+      client.bookmarks.list({
+        tagMode: 'and',
+        sort: 'newest',
+        cursor: `${String(Number.MAX_SAFE_INTEGER)}:019fae92-3bb0-78cd-b488-65ce0e26a001`
+      })
+    )
+
+    expect(error.code).toBe('BAD_REQUEST')
+    expect(getResponse().status).toBe(400)
+    expect(deps.listBookmarks).not.toHaveBeenCalled()
   })
 
   test('DB 障害は内部メッセージを漏らさず 500 を返す', async () => {
@@ -210,9 +234,9 @@ describe('bookmarks.list', () => {
     })
     const { client, getResponse } = createTestClient(createAppRouter(deps))
 
-    await expect(
-      client.bookmarks.list({ tagMode: 'and', sort: 'newest', limit: 50, offset: 0 })
-    ).rejects.toBeInstanceOf(Error)
+    await expect(client.bookmarks.list({ tagMode: 'and', sort: 'newest' })).rejects.toBeInstanceOf(
+      Error
+    )
 
     expect(getResponse().status).toBe(500)
     expect(await getResponse().text()).not.toContain('disk exploded')

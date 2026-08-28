@@ -23,19 +23,21 @@ const storyQueryClient = new QueryClient({
  * 一覧 read の実 network を止めず、queryFn だけを差し替える。
  * loader の prefetch も load-more も本物の query options / key を通る。
  */
-type ListFixtureInput = { readonly offset?: number }
+type ListFixtureInput = { readonly cursor?: string | undefined }
 
 type ListFixture = (
   input: ListFixtureInput
-) => BookmarkListItem[] | Promise<BookmarkListItem[]> | Promise<never>
+) =>
+  | { items: BookmarkListItem[]; nextCursor: string | null }
+  | Promise<{ items: BookmarkListItem[]; nextCursor: string | null }>
+  | Promise<never>
 
 let listFixture: ListFixture
 
 storyQueryClient.setQueryDefaults(orpc.bookmarks.list.key(), {
-  queryFn: async ({ queryKey }) => {
-    const state = queryKey[1] as { input?: ListFixtureInput }
-    const result = listFixture(state?.input ?? {})
-    return result
+  queryFn: async (context) => {
+    const pageParam = 'pageParam' in context ? (context.pageParam as string | undefined) : undefined
+    return listFixture({ cursor: pageParam })
   }
 })
 
@@ -203,7 +205,7 @@ const noteOnlyBookmark = makeBookmark({
 const bookmarks = [shortBookmark, longBookmark, reactBookmark, noteOnlyBookmark]
 const firstPage = [shortBookmark, longBookmark]
 const nextPage = [reactBookmark, noteOnlyBookmark]
-const pageLimit = 2
+const nextCursor = 'story-next-page'
 
 function neverPromise<T>(): Promise<T> {
   // oxlint-disable-next-line promise/avoid-new -- hang the request so loading UI stays visible
@@ -212,18 +214,18 @@ function neverPromise<T>(): Promise<T> {
 
 function stubListApis() {
   storyQueryClient.clear()
-  listFixture = () => bookmarks
+  listFixture = () => ({ items: bookmarks, nextCursor: null })
 }
 
 function stubPagedBookmarks(next: BookmarkListItem[] | Promise<BookmarkListItem[]> | Error) {
   listFixture = (input) => {
-    if ((input.offset ?? 0) === 0) {
-      return firstPage
+    if (input.cursor == null) {
+      return { items: firstPage, nextCursor }
     }
     if (next instanceof Error) {
       return Promise.reject(next)
     }
-    return next
+    return Promise.resolve(next).then((items) => ({ items, nextCursor: null }))
   }
 }
 
@@ -305,7 +307,7 @@ export const Cards = meta.story({
 
 export const Empty = meta.story({
   beforeEach: async () => {
-    listFixture = () => []
+    listFixture = () => ({ items: [], nextCursor: null })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -319,7 +321,7 @@ export const Empty = meta.story({
 export const EmptyBySearch = meta.story({
   parameters: listQuery({ q: '存在しないキーワード' }),
   beforeEach: async () => {
-    listFixture = () => []
+    listFixture = () => ({ items: [], nextCursor: null })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -339,7 +341,7 @@ export const EmptyBySearch = meta.story({
 export const EmptyByTags = meta.story({
   parameters: listQuery({ tags: ['reading'] }),
   beforeEach: async () => {
-    listFixture = () => []
+    listFixture = () => ({ items: [], nextCursor: null })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -355,7 +357,7 @@ export const EmptyByTags = meta.story({
 export const SearchResults = meta.story({
   parameters: listQuery({ q: 'React' }),
   beforeEach: async () => {
-    listFixture = () => [reactBookmark]
+    listFixture = () => ({ items: [reactBookmark], nextCursor: null })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -370,7 +372,7 @@ export const SearchResults = meta.story({
 export const TagFilterAnd = meta.story({
   parameters: listQuery({ tags: ['reading', 'work'], tagMode: 'and' }),
   beforeEach: async () => {
-    listFixture = () => [longBookmark]
+    listFixture = () => ({ items: [longBookmark], nextCursor: null })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -390,7 +392,7 @@ export const TagFilterAnd = meta.story({
 export const TagFilterOr = meta.story({
   parameters: listQuery({ tags: ['reading'], tagMode: 'or' }),
   beforeEach: async () => {
-    listFixture = () => [longBookmark]
+    listFixture = () => ({ items: [longBookmark], nextCursor: null })
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -479,7 +481,6 @@ export const LoadError = meta.story({
 })
 
 export const HasMore = meta.story({
-  parameters: listQuery({ limit: pageLimit }),
   beforeEach: async () => {
     stubPagedBookmarks(nextPage)
   },
@@ -490,11 +491,16 @@ export const HasMore = meta.story({
     })
     await expect(canvas.getByRole('button', { name: 'さらに読み込む' })).toBeEnabled()
     await expect(canvas.queryByRole('link', { name: reactBookmark.title })).not.toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: 'さらに読み込む' }))
+    await waitFor(async () => {
+      await expect(canvas.getByRole('link', { name: reactBookmark.title })).toBeInTheDocument()
+    })
+    await expect(canvas.getByRole('link', { name: shortBookmark.title })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: 'さらに読み込む' })).not.toBeInTheDocument()
   }
 })
 
 export const LoadingMore = meta.story({
-  parameters: listQuery({ limit: pageLimit }),
   beforeEach: async () => {
     stubPagedBookmarks(neverPromise())
   },
@@ -511,7 +517,6 @@ export const LoadingMore = meta.story({
 })
 
 export const LoadMoreError = meta.story({
-  parameters: listQuery({ limit: pageLimit }),
   beforeEach: async () => {
     stubPagedBookmarks(new Error('続きの読み込みに失敗しました'))
   },
@@ -525,6 +530,7 @@ export const LoadMoreError = meta.story({
       await expect(canvas.getByRole('alert')).toHaveTextContent('続きの読み込みに失敗しました')
     })
     await expect(canvas.getByRole('button', { name: '再試行' })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: shortBookmark.title })).toBeInTheDocument()
   }
 })
 

@@ -19,7 +19,7 @@ const readDeps = {
   findTagById: async () => null,
   updateBookmark: async () => ({ kind: 'bookmark-not-found' }) as const,
   findBookmarkEditor: async (): Promise<null> => null,
-  listBookmarks: async () => [],
+  listBookmarks: async () => ({ items: [], nextCursor: null }),
   getBookmarkDetail: async (): Promise<null> => null,
   softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' }) as const
 }

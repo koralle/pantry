@@ -23,7 +23,7 @@ describe('server direct RPC client', () => {
       fetchPageTitle: async () => ({ kind: 'unavailable' }),
       updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
       findBookmarkEditor: async () => null,
-      listBookmarks: async () => [],
+      listBookmarks: async () => ({ items: [], nextCursor: null }),
       getBookmarkDetail: async () => null,
       softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })

@@ -30,7 +30,7 @@ function authenticatedRouter(fetchPageTitle: FetchPageTitle, getSession = vi.fn(
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
     updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
     findBookmarkEditor: async () => null,
-    listBookmarks: async () => [],
+    listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
     softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' }),
     fetchPageTitle
@@ -61,7 +61,7 @@ describe('FetchPageTitle RPC', () => {
       fetchPageTitle: async () => ({ kind: 'unavailable' }),
       updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
       findBookmarkEditor: async () => null,
-      listBookmarks: async () => [],
+      listBookmarks: async () => ({ items: [], nextCursor: null }),
       getBookmarkDetail: async () => null,
       softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })

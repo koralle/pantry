@@ -7,7 +7,11 @@ import { button } from '../../../styles/button'
 import { dialogActions } from '../../../styles/dialog'
 import { tagChip } from '../../../styles/tag-chip'
 import { workbenchNav, workbenchTitle } from '../../../styles/workbench'
-import { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
+import {
+  buildListBackSearch,
+  detailSearchFromList
+} from '../../navigation/lib/bookmark-search-builders'
 import { formatDateTime } from '../lib/format-date-time'
 import type { BookmarkDetail } from '../persistence/get-bookmark-detail'
 import { BookmarkDeleteDialog } from './bookmark-delete-dialog'
@@ -45,7 +49,7 @@ export function BookmarkDetailContent({
   listSearch
 }: {
   readonly bookmark: BookmarkDetail
-  readonly listSearch: ReturnType<typeof buildListBackSearch>
+  readonly listSearch: BookmarkSearchSchema
 }) {
   return (
     <>
@@ -111,7 +115,7 @@ export function BookmarkDetailContent({
         <Link
           to='/bookmarks/$id/edit'
           params={{ id: bookmark.id }}
-          search={listSearch.tags !== undefined ? { tags: listSearch.tags } : {}}
+          search={detailSearchFromList(listSearch)}
           className={button({ visual: 'accent' })}>
           <Pencil
             size={16}

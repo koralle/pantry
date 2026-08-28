@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm'
 
 import type { AppDb } from '../../../db/app-db'
 import { bookmarkTable } from '../../../db/schema/bookmark'
@@ -7,6 +7,8 @@ import { tagsTable } from '../../../db/schema/tag'
 import type { UserId } from '../../auth/domain/auth-values'
 import type { BookmarkListTag } from '../lib/attach-bookmark-tags'
 import { attachTagsToBookmarks } from '../lib/attach-bookmark-tags'
+import { decodeBookmarkListCursor, encodeBookmarkListCursor } from '../lib/bookmark-list-cursor'
+import { BOOKMARK_LIST_PAGE_SIZE } from '../lib/bookmark-list-page-size'
 import { normalizeListQuery } from '../lib/normalize-bookmark-list-query'
 
 /**
@@ -22,14 +24,20 @@ export type BookmarkListItem = {
   readonly tags: BookmarkListTag[]
 }
 
+export type BookmarkListPage = {
+  readonly items: BookmarkListItem[]
+  readonly nextCursor: string | null
+}
+
 export type BookmarkListQuery = Parameters<typeof normalizeListQuery>[0]
 
 export async function listBookmarks(
   db: AppDb,
   input: { readonly userId: UserId } & BookmarkListQuery
-): Promise<BookmarkListItem[]> {
-  const { q, tagNames, tagMode, sort, limit, offset } = normalizeListQuery(input)
+): Promise<BookmarkListPage> {
+  const { q, tagNames, tagMode, sort, cursor } = normalizeListQuery(input)
   const { userId } = input
+  const decodedCursor = cursor === undefined ? null : decodeBookmarkListCursor(cursor)
 
   const conditions = [eq(bookmarkTable.userId, userId), isNull(bookmarkTable.deletedAt)]
 
@@ -63,25 +71,48 @@ export async function listBookmarks(
     conditions.push(inArray(bookmarkTable.id, matchingIds))
   }
 
+  const sortColumn = sort === 'newest' ? bookmarkTable.createdAt : bookmarkTable.updatedAt
+
+  if (decodedCursor != null) {
+    const cursorDate = new Date(decodedCursor.sortValueMs)
+    conditions.push(
+      or(
+        lt(sortColumn, cursorDate),
+        and(eq(sortColumn, cursorDate), lt(bookmarkTable.id, decodedCursor.id))
+      )!
+    )
+  }
+
   const bookmarks = await db
     .select({
       id: bookmarkTable.id,
       url: bookmarkTable.url,
       title: bookmarkTable.title,
       note: bookmarkTable.note,
+      createdAt: bookmarkTable.createdAt,
       updatedAt: bookmarkTable.updatedAt
     })
     .from(bookmarkTable)
     .where(and(...conditions))
-    .orderBy(sort === 'newest' ? desc(bookmarkTable.createdAt) : desc(bookmarkTable.updatedAt))
-    .limit(limit)
-    .offset(offset)
+    .orderBy(desc(sortColumn), desc(bookmarkTable.id))
+    .limit(BOOKMARK_LIST_PAGE_SIZE + 1)
 
-  if (bookmarks.length === 0) {
-    return []
+  const hasMore = bookmarks.length > BOOKMARK_LIST_PAGE_SIZE
+  const pageRows = hasMore ? bookmarks.slice(0, BOOKMARK_LIST_PAGE_SIZE) : bookmarks
+  const lastRow = pageRows.at(-1)
+  const nextCursor =
+    hasMore && lastRow !== undefined
+      ? encodeBookmarkListCursor({
+          sortValueMs: (sort === 'newest' ? lastRow.createdAt : lastRow.updatedAt).getTime(),
+          id: lastRow.id
+        })
+      : null
+
+  if (pageRows.length === 0) {
+    return { items: [], nextCursor: null }
   }
 
-  const bookmarkIds = bookmarks.map((bookmark) => bookmark.id)
+  const bookmarkIds = pageRows.map((bookmark) => bookmark.id)
   const tagRows = await db
     .select({
       bookmarkId: bookmarkTagsTable.bookmarkId,
@@ -94,9 +125,15 @@ export async function listBookmarks(
     .orderBy(tagsTable.name)
 
   const attached = attachTagsToBookmarks(
-    bookmarks.map((bookmark) => ({ ...bookmark, updatedAt: bookmark.updatedAt.toISOString() })),
+    pageRows.map((bookmark) => ({
+      id: bookmark.id,
+      url: bookmark.url,
+      title: bookmark.title,
+      note: bookmark.note,
+      updatedAt: bookmark.updatedAt.toISOString()
+    })),
     tagRows
   )
 
-  return attached
+  return { items: attached, nextCursor }
 }

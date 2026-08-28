@@ -32,7 +32,7 @@ function authenticatedRouter(insertTag: InsertTag, getSession = vi.fn()) {
     findTagById: async () => null,
     insertBookmark: async () => ({ kind: 'duplicate-url' }),
     fetchPageTitle: async () => ({ kind: 'unavailable' }),
-    listBookmarks: async () => [],
+    listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
     softDeleteBookmark: async () => ({ kind: 'bookmark-not-found' }),
     updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
@@ -103,7 +103,7 @@ describe('CreateTag RPC', () => {
       fetchPageTitle: async () => ({ kind: 'unavailable' }),
       updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
       findBookmarkEditor: async () => null,
-      listBookmarks: async () => [],
+      listBookmarks: async () => ({ items: [], nextCursor: null }),
       getBookmarkDetail: async () => null,
       softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })
@@ -135,7 +135,7 @@ describe('CreateTag RPC', () => {
       fetchPageTitle: async () => ({ kind: 'unavailable' }),
       updateBookmark: async () => ({ kind: 'bookmark-not-found' }),
       findBookmarkEditor: async () => null,
-      listBookmarks: async () => [],
+      listBookmarks: async () => ({ items: [], nextCursor: null }),
       getBookmarkDetail: async () => null,
       softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
     })

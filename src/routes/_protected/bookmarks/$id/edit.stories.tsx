@@ -45,7 +45,7 @@ function buildRpcRouter(): AppRouter {
     fetchPageTitle: async () => ({ kind: 'unavailable' }),
     updateBookmark: updateBookmarkDep,
     findBookmarkEditor: findBookmarkEditorDep,
-    listBookmarks: async () => [],
+    listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
     softDeleteBookmark: async () => ({ kind: 'bookmark-not-found', id: '' })
   })

@@ -11,6 +11,7 @@ import {
 } from '../../../styles/data-table'
 import { srOnly } from '../../../styles/sr-only'
 import { tagChip } from '../../../styles/tag-chip'
+import type { BookmarkDetailSearch } from '../../navigation/lib/bookmark-search'
 import { formatListDateTime } from '../lib/format-date-time'
 import { shortenUrl } from '../lib/shorten-url'
 import type { BookmarkListItem } from '../persistence/list-bookmarks'
@@ -58,11 +59,11 @@ const dateCell = css({
   width: '20%'
 })
 
-const EMPTY_DETAIL_SEARCH: { tags?: string[] } = {}
+const EMPTY_DETAIL_SEARCH: BookmarkDetailSearch = {}
 
 interface BookmarkTableProps {
   readonly bookmarks: BookmarkListItem[]
-  readonly detailSearch?: { tags?: string[] }
+  readonly detailSearch?: BookmarkDetailSearch
 }
 
 export function BookmarkTable({

@@ -52,8 +52,9 @@
 
 ### TanStack Query ownership
 
-- route loaderはcomponentと同じquery options工場（`bookmarkListQueryOptions`、`bookmarkDetailQueryOptions`等）で`queryClient.prefetchQuery`し、componentは同じcacheを`useSuspenseQuery`で読む。
-- load-moreはoffset別のquery keyを`queryClient.fetchQuery`で取得し、既存のappend UIを維持する。`useInfiniteQuery`には作り替えない。
+- route loaderはcomponentと同じquery options工場（`bookmarkListQueryOptions`、`bookmarkDetailQueryOptions`等）でprefetchし、componentは同じcacheを読む。
+- ブックマーク一覧は`useSuspenseInfiniteQuery`でページを蓄積する。query keyは`q` / `tags` / `tagMode` / `sort`のみ。cursorはpageParam。
+- 一覧→詳細→一覧では読み込み済みページを再利用するため、list queryは`staleTime: Infinity`。Create / Update / Delete後は`removeQueries`して先頭20件から再構築する。
 - mutation成功後のrefreshは`void router.invalidate().catch(console.error)`のbest-effortとし、refresh失敗で成功を覆さない。
 
 ### Server Functionの撤廃状況
@@ -73,7 +74,7 @@
 - タグ名は表記（trim + NFC、大小は保持）を正本とし、正規化名（表記の小文字化）で重複判定と `?tags=` 照合を行う。空文字、33文字以上の表記、21件以上を拒否する。正規化後の重複は除く。
 - 登録・更新では指定されたタグIDの所有を検証し、中間テーブルを同期する。
 - 一覧は削除済みを除外する。`q`はタイトル、URL、メモを部分一致検索する。
-- 複数タグはAND/ORを選択できる。新着順/更新順を切り替え、50件ずつ「さらに読み込む」。フィルター変更時は先頭へ戻す。
+- 複数タグはAND/ORを選択できる。新着順/更新順を切り替え、20件ずつ「さらに読み込む」。フィルター変更時は先頭へ戻す。
 - 詳細ではURL、タイトル、メモ、タグ、作成/更新日時を表示する。日時は日本時間で表示する。
 - 削除は確認後に`deleted_at`を設定するソフトデリートとする。
 

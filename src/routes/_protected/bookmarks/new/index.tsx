@@ -1,8 +1,7 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
-import * as v from 'valibot'
 
 import { BookmarkForm } from '../../../../features/bookmarks/components/bookmark-editor/bookmark-form'
 import type {
@@ -13,8 +12,9 @@ import type {
 import { buildNewBookmarkCommand } from '../../../../features/bookmarks/components/new-bookmark-command'
 import { getCreateBookmarkErrorMessage } from '../../../../features/bookmarks/lib/get-create-bookmark-error-message'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
-import { refreshAfterCreateBookmark } from '../../../../features/bookmarks/lib/refresh-after-create-bookmark'
-import { buildListBackSearch } from '../../../../features/navigation/lib/bookmark-search-builders'
+import { refreshAfterBookmarkMutation } from '../../../../features/bookmarks/lib/refresh-after-bookmark-mutation'
+import { bookmarkDetailSearchSchema } from '../../../../features/navigation/lib/bookmark-search'
+import { listSearchFromDetail } from '../../../../features/navigation/lib/bookmark-search-builders'
 import { orpc } from '../../../../rpc/query'
 import { getRpcClient } from '../../../../rpc/runtime-client'
 import { StyledLink } from '../../../../shared/components/styled-link'
@@ -24,10 +24,6 @@ import {
   workbenchNav,
   workbenchTitle
 } from '../../../../styles/workbench'
-
-const bookmarkNewSearchSchema = v.object({
-  tags: v.optional(v.array(v.string()))
-})
 
 const bookmarkTitleFetchFailedMessage = 'タイトルを取得できませんでした。手入力で続けられます'
 
@@ -54,7 +50,7 @@ const fetchTitleAction: BookmarkTitleFetchAction = async (_previousState, { url 
 }
 
 export const Route = createFileRoute('/_protected/bookmarks/new/')({
-  validateSearch: bookmarkNewSearchSchema,
+  validateSearch: bookmarkDetailSearchSchema,
   component: RouteComponent
 })
 
@@ -62,12 +58,13 @@ function RouteComponent() {
   const search = Route.useSearch()
   const navigate = useNavigate()
   const router = useRouter()
-  const listSearch = buildListBackSearch(search.tags)
+  const queryClient = useQueryClient()
+  const listSearch = listSearchFromDetail(search)
   const [serverError, setServerError] = useState<BookmarkFormServerError | null>(null)
   const mutation = useMutation(
     orpc.bookmarks.create.mutationOptions({
       onSuccess: () => {
-        refreshAfterCreateBookmark(router)
+        refreshAfterBookmarkMutation(router, queryClient, 'CreateBookmark')
       }
     })
   )
@@ -97,7 +94,7 @@ function RouteComponent() {
       await navigate({
         to: '/bookmarks/$id',
         params: { id },
-        search: search.tags !== undefined ? { tags: search.tags } : {},
+        search,
         state: { newBookmarkCreated: true }
       })
     } catch {

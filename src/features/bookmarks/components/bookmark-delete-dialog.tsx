@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Trash2, X } from 'lucide-react'
 import { useState, useTransition } from 'react'
@@ -8,18 +8,20 @@ import { orpc } from '../../../rpc/query'
 import { StyledButton } from '../../../shared/components/styled-button'
 import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../styles/dialog'
 import { fieldError } from '../../../styles/form'
-import type { buildListBackSearch } from '../../navigation/lib/bookmark-search-builders'
+import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import { getDeleteBookmarkErrorMessage } from '../lib/get-delete-bookmark-error-message'
+import { refreshAfterBookmarkMutation } from '../lib/refresh-after-bookmark-mutation'
 
 export function BookmarkDeleteDialog({
   bookmark,
   listSearch
 }: {
   readonly bookmark: { readonly id: string; readonly title: string }
-  readonly listSearch: ReturnType<typeof buildListBackSearch>
+  readonly listSearch: BookmarkSearchSchema
 }) {
   const navigate = useNavigate()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [isDeleting, startDeleteTransition] = useTransition()
@@ -28,9 +30,7 @@ export function BookmarkDeleteDialog({
     orpc.bookmarks.delete.mutationOptions({
       onSuccess: () => {
         // DB commit 済みの成功を refresh 失敗で覆さない。invalidate は best-effort。
-        void router.invalidate().catch((error: unknown) => {
-          console.error('Failed to refresh route data after DeleteBookmark', error)
-        })
+        refreshAfterBookmarkMutation(router, queryClient, 'DeleteBookmark')
       }
     })
   )

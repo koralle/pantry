@@ -10,16 +10,15 @@ import { BookmarkList } from '../../features/bookmarks/components/bookmark-list'
 import { bookmarkListQueryOptions } from '../../features/bookmarks/lib/bookmark-list-query-options'
 import { bookmarkSearchSchema } from '../../features/navigation/lib/bookmark-search'
 import { PantryMotion } from '../../shared/components/pantry-motion'
-import { bookmarkListLoaderDeps } from './-lib/bookmark-list-loader-deps'
 
 const protectedRouteApi = getRouteApi('/_protected')
 
 export const Route = createFileRoute('/_protected/')({
   validateSearch: (search) => v.parse(bookmarkSearchSchema, search),
-  loaderDeps: ({ search }) => bookmarkListLoaderDeps(search),
+  loaderDeps: ({ search }) => search,
   loader: async ({ deps, context }) => {
-    // Component が同じ query options を読む。待たずに流すことで streaming を維持する。
-    void context.queryClient.prefetchQuery(bookmarkListQueryOptions(deps))
+    // Component が同じ infinite query options を読む。待たずに流すことで streaming を維持する。
+    void context.queryClient.prefetchInfiniteQuery(bookmarkListQueryOptions(deps))
 
     return {}
   },

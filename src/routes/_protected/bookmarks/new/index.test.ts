@@ -48,7 +48,8 @@ describe('new bookmark route', () => {
 
   test('CreateBookmark を oRPC mutationOptions 経由で送る', () => {
     expect(routeSource).toContain('orpc.bookmarks.create.mutationOptions')
-    expect(routeSource).toContain('refreshAfterCreateBookmark')
+    expect(routeSource).toContain('refreshAfterBookmarkMutation')
+    expect(routeSource).toContain("'CreateBookmark'")
   })
 
   test('旧 Server Function に依存しない', () => {
@@ -69,6 +70,14 @@ describe('new bookmark route', () => {
 
   test('保存成功後の遷移失敗は保存失敗と混ぜない', () => {
     expect(routeSource).toContain('保存は完了しましたが、画面の移動に失敗しました')
+  })
+})
+
+describe('bookmark mutation refresh', () => {
+  test('edit route は共通の一覧 refresh を使う', () => {
+    expect(editRouteSource).toContain('refreshAfterBookmarkMutation')
+    expect(editRouteSource).toContain("'UpdateBookmark'")
+    expect(editRouteSource).not.toContain('resetBookmarkListCache')
   })
 })
 
