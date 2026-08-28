@@ -1,5 +1,5 @@
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query'
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect } from 'react'
 import { getErrorMessage } from 'react-error-boundary'
 
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
@@ -12,19 +12,17 @@ import {
 export function useBookmarkListPagination({ search }: { readonly search: BookmarkSearchSchema }) {
   const query = useSuspenseInfiniteQuery(bookmarkListQueryOptions(search))
   const items = query.data.pages.flatMap((page) => page.items)
-  const searchRef = useRef(search)
-  searchRef.current = search
 
   useLayoutEffect(() => {
-    const scrollY = consumeBookmarkListScroll(searchRef.current)
+    const scrollY = consumeBookmarkListScroll(search)
     if (scrollY != null) {
       window.scrollTo(0, scrollY)
     }
 
     return () => {
-      rememberBookmarkListScroll(searchRef.current, window.scrollY)
+      rememberBookmarkListScroll(search, window.scrollY)
     }
-  }, [search.q, search.tagMode, search.sort, search.tags])
+  }, [search])
 
   const loadMore = () => {
     if (query.isFetchingNextPage || !query.hasNextPage) {

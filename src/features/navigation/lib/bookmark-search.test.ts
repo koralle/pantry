@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 
+import type { BookmarkDetailSearch } from './bookmark-search'
 import { bookmarkDetailSearchSchema, bookmarkSearchSchema } from './bookmark-search'
 
 describe('bookmarkSearchSchema', () => {
@@ -69,5 +70,20 @@ describe('bookmarkSearchSchema', () => {
 
   test('rejects invalid sort', async () => {
     await expect(v.parseAsync(bookmarkSearchSchema, { sort: 'oldest' })).rejects.toThrow()
+  })
+
+  test('BookmarkDetailSearch は schema の出力型である', () => {
+    const parsed: BookmarkDetailSearch = v.parse(bookmarkDetailSearchSchema, {
+      q: 'react',
+      tags: ['frontend'],
+      tagMode: 'or',
+      sort: 'updated'
+    })
+    expect(parsed).toStrictEqual({
+      q: 'react',
+      tags: ['frontend'],
+      tagMode: 'or',
+      sort: 'updated'
+    })
   })
 })

@@ -17,6 +17,8 @@ export const bookmarkDetailSearchSchema = v.object({
   sort: v.optional(v.picklist(['newest', 'updated']))
 })
 
+export type BookmarkDetailSearch = v.InferOutput<typeof bookmarkDetailSearchSchema>
+
 export const defaultBookmarkSearch: BookmarkSearchSchema = {
   tagMode: 'and',
   sort: 'newest'

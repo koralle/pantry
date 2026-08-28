@@ -1,11 +1,6 @@
 import { uniqueNormalizedTagNames } from '../../tags/domain/tag-values'
-import type { BookmarkSearchSchema } from './bookmark-search'
+import type { BookmarkDetailSearch, BookmarkSearchSchema } from './bookmark-search'
 import { defaultBookmarkSearch } from './bookmark-search'
-
-const listDefaults: BookmarkSearchSchema = {
-  tagMode: 'and',
-  sort: 'newest'
-}
 
 export type BookmarkSearchPatch = {
   readonly q?: string | undefined
@@ -14,13 +9,6 @@ export type BookmarkSearchPatch = {
   readonly sort?: BookmarkSearchSchema['sort'] | undefined
   readonly clearQ?: boolean
   readonly clearTags?: boolean
-}
-
-export type BookmarkDetailSearch = {
-  readonly q?: string | undefined
-  readonly tags?: string[] | undefined
-  readonly tagMode?: BookmarkSearchSchema['tagMode'] | undefined
-  readonly sort?: BookmarkSearchSchema['sort'] | undefined
 }
 
 function resolveSearchPatch<T>(
@@ -87,14 +75,14 @@ export function detailSearchFromList(search: BookmarkSearchSchema): BookmarkDeta
 }
 
 export function allShelfSearch(current?: BookmarkSearchSchema): BookmarkSearchSchema {
-  return buildListSearch(current ?? listDefaults, { clearTags: true })
+  return buildListSearch(current ?? defaultBookmarkSearch, { clearTags: true })
 }
 
 export function tagShelfSearch(
   tagName: string,
   current?: BookmarkSearchSchema
 ): BookmarkSearchSchema {
-  return buildListSearch(current ?? listDefaults, { tags: [tagName] })
+  return buildListSearch(current ?? defaultBookmarkSearch, { tags: [tagName] })
 }
 
 export function chromeListSearch(

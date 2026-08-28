@@ -443,7 +443,7 @@ function idsFrom(start: number, count: number): string[] {
 }
 
 function bookmarkId(index: number): string {
-  return `id-${String(index).padStart(3, '0')}`
+  return `019fae92-3bb0-78cd-b488-${index.toString(16).padStart(12, '0')}`
 }
 
 async function insertSequentialBookmarks(db: AppDb, userId: string, count: number) {

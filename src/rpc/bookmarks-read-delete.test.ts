@@ -210,6 +210,23 @@ describe('bookmarks.list', () => {
     expect(deps.listBookmarks).not.toHaveBeenCalled()
   })
 
+  test('Date 範囲外のカーソルは 400 BAD_REQUEST を返し、port を呼ばない', async () => {
+    const deps = baseDeps()
+    const { client, getResponse } = createTestClient(createAppRouter(deps))
+
+    const error = await rejection(
+      client.bookmarks.list({
+        tagMode: 'and',
+        sort: 'newest',
+        cursor: `${String(Number.MAX_SAFE_INTEGER)}:019fae92-3bb0-78cd-b488-65ce0e26a001`
+      })
+    )
+
+    expect(error.code).toBe('BAD_REQUEST')
+    expect(getResponse().status).toBe(400)
+    expect(deps.listBookmarks).not.toHaveBeenCalled()
+  })
+
   test('DB 障害は内部メッセージを漏らさず 500 を返す', async () => {
     const deps = baseDeps()
     deps.listBookmarks = vi.fn(async () => {

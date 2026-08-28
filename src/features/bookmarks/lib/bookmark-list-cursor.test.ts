@@ -22,4 +22,17 @@ describe('bookmark list cursor', () => {
     expect(decodeBookmarkListCursor('123:')).toBeNull()
     expect(decodeBookmarkListCursor('1.5:id')).toBeNull()
   })
+
+  test('Date として無効な sort 値は null を返す', () => {
+    expect(
+      decodeBookmarkListCursor(`${Number.MAX_SAFE_INTEGER}:019fae92-3bb0-78cd-b488-65ce0e26a001`)
+    ).toBeNull()
+  })
+
+  test('Bookmark ID 形式でない id は null を返す', () => {
+    expect(decodeBookmarkListCursor('1775001600000:not-a-uuid')).toBeNull()
+    expect(
+      decodeBookmarkListCursor('1775001600000:019fae92-3bb0-48cd-b488-65ce0e26a001')
+    ).toBeNull()
+  })
 })

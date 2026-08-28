@@ -3,7 +3,7 @@ import { css, cx } from 'styled-system/css'
 
 import { interactiveSurface, surface } from '../../../styles/surface'
 import { tagChip } from '../../../styles/tag-chip'
-import type { BookmarkDetailSearch } from '../../navigation/lib/bookmark-search-builders'
+import type { BookmarkDetailSearch } from '../../navigation/lib/bookmark-search'
 import { shortenUrl } from '../lib/shorten-url'
 import type { BookmarkListItem } from '../persistence/list-bookmarks'
 

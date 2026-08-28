@@ -28,6 +28,16 @@ export function bookmarkListSearchEquals(
   )
 }
 
+/** React key 用。タグ配列の構造を壊さない。 */
+export function bookmarkListSearchIdentity(search: BookmarkSearchSchema): string {
+  return JSON.stringify({
+    q: search.q,
+    tags: search.tags,
+    tagMode: search.tagMode,
+    sort: search.sort
+  })
+}
+
 type BookmarkListScrollSession = {
   search: BookmarkSearchSchema
   scrollY: number

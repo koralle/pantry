@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test } from 'vitest'
 import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
 import {
   bookmarkListSearchEquals,
+  bookmarkListSearchIdentity,
   clearBookmarkListScroll,
   consumeBookmarkListScroll,
   rememberBookmarkListScroll,
@@ -54,6 +55,22 @@ describe('bookmark list scroll session', () => {
 
     expect(consumeBookmarkListScroll(twoTags)).toBeNull()
     expect(consumeBookmarkListScroll(commaInName)).toBe(640)
+  })
+
+  test('一覧 identity はタグ名のカンマと配列区切りを衝突させない', () => {
+    expect(
+      bookmarkListSearchIdentity({
+        tags: ['a,b'],
+        tagMode: 'and',
+        sort: 'newest'
+      })
+    ).not.toBe(
+      bookmarkListSearchIdentity({
+        tags: ['a', 'b'],
+        tagMode: 'and',
+        sort: 'newest'
+      })
+    )
   })
 
   test('タグ配列は要素と並びが同じときだけ同一条件', () => {
