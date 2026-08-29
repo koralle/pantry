@@ -10,6 +10,7 @@ import {
   ModalOverlay,
   NumberField,
   RadioGroup,
+  Popover,
   SearchField,
   Select,
   useFilter
@@ -32,5 +33,6 @@ describe('react-aria-components', () => {
     expect(Modal).toBeTypeOf('object')
     expect(Dialog).toBeTypeOf('object')
     expect(Heading).toBeTypeOf('object')
+    expect(Popover).toBeTypeOf('object')
   })
 })

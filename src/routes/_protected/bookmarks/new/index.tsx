@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { BookmarkForm } from '../../../../features/bookmarks/components/bookmark-editor/bookmark-form'
 import type {
@@ -10,7 +10,8 @@ import type {
   BookmarkTitleFetchAction
 } from '../../../../features/bookmarks/components/bookmark-editor/bookmark-form'
 import { buildNewBookmarkCommand } from '../../../../features/bookmarks/components/new-bookmark-command'
-import { getCreateBookmarkErrorMessage } from '../../../../features/bookmarks/lib/get-create-bookmark-error-message'
+import { createTagFromPickerAction } from '../../../../features/bookmarks/lib/create-tag-from-picker-action'
+import { mapCreateBookmarkFailure } from '../../../../features/bookmarks/lib/get-create-bookmark-error-message'
 import { getTitleFetchErrorMessage } from '../../../../features/bookmarks/lib/get-title-fetch-error-message'
 import { refreshAfterBookmarkMutation } from '../../../../features/bookmarks/lib/refresh-after-bookmark-mutation'
 import { bookmarkDetailSearchSchema } from '../../../../features/navigation/lib/bookmark-search'
@@ -61,6 +62,11 @@ function RouteComponent() {
   const queryClient = useQueryClient()
   const listSearch = listSearchFromDetail(search)
   const [serverError, setServerError] = useState<BookmarkFormServerError | null>(null)
+  const shelfQuery = useQuery(orpc.tags.shelf.queryOptions({ staleTime: 5000 }))
+  const createTagAction = useMemo(
+    () => createTagFromPickerAction({ queryClient, router }),
+    [queryClient, router]
+  )
   const mutation = useMutation(
     orpc.bookmarks.create.mutationOptions({
       onSuccess: () => {
@@ -78,14 +84,15 @@ function RouteComponent() {
         buildNewBookmarkCommand({
           url: values.url,
           title: values.title,
-          note: values.note
+          note: values.note,
+          tagIds: values.tagIds
         })
       )
       id = created.id
     } catch (error: unknown) {
-      const message = getCreateBookmarkErrorMessage(error)
-      if (message !== null) {
-        setServerError({ summary: message })
+      const formError = mapCreateBookmarkFailure(error)
+      if (formError !== null) {
+        setServerError(formError)
       }
       return
     }
@@ -132,6 +139,9 @@ function RouteComponent() {
         legend='ブックマーク新規登録'
         onSubmit={handleSubmit}
         fetchTitleAction={fetchTitleAction}
+        tagCandidates={shelfQuery.data ?? []}
+        tagsReady={shelfQuery.isSuccess}
+        createTagAction={createTagAction}
       />
     </section>
   )

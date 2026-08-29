@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
 import type { BookmarkUrl } from '../../domain/bookmark-values'
+import type { CreateTagFromPickerAction } from '../../lib/execute-create-tag-from-picker'
 import type { UpdateBookmarkFailureCode } from '../../lib/update-bookmark-failure'
+import type { TagCandidate } from '../bookmark-tag-picker'
 import { buildUpdateBookmarkCommand } from './bookmark-editor-command'
 import { mapUpdateBookmarkFailure } from './bookmark-editor-error'
 import { BookmarkForm } from './bookmark-form'
@@ -43,6 +45,9 @@ export type BookmarkEditorProps = {
   readonly onUpdateBookmark: (command: UpdateBookmarkCommand) => Promise<BookmarkEditorSubmitResult>
   readonly onCompleted: (bookmarkId: string) => Promise<void>
   readonly fetchTitleAction: BookmarkTitleFetchAction
+  readonly tagCandidates: readonly TagCandidate[]
+  readonly tagsReady: boolean
+  readonly createTagAction: CreateTagFromPickerAction
 }
 
 /**
@@ -54,7 +59,10 @@ export function BookmarkEditor({
   initialData,
   onUpdateBookmark,
   onCompleted,
-  fetchTitleAction
+  fetchTitleAction,
+  tagCandidates,
+  tagsReady,
+  createTagAction
 }: BookmarkEditorProps) {
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Conform へはコピーしない。
@@ -120,7 +128,8 @@ export function BookmarkEditor({
       initialValues={{
         url: initialData.url,
         title: initialData.title,
-        note: initialData.note
+        note: initialData.note,
+        tagIds: initialData.tagIds
       }}
       serverError={editorError?.form ?? null}
       onClearFieldError={clearFormFieldError}
@@ -128,6 +137,9 @@ export function BookmarkEditor({
       pendingLabel='更新中…'
       onSubmit={handleSubmit}
       fetchTitleAction={fetchTitleAction}
+      tagCandidates={tagCandidates}
+      tagsReady={tagsReady}
+      createTagAction={createTagAction}
     />
   )
 }

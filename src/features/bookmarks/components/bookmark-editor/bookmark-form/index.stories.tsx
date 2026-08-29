@@ -4,6 +4,8 @@ import type { Mock } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
 import preview from '../../../../../storybook/preview'
+import type { CreateTagFromPickerAction } from '../../../lib/execute-create-tag-from-picker'
+import type { TagCandidate } from '../../bookmark-tag-picker'
 import { BookmarkForm } from './index'
 import type {
   BookmarkFormFieldKey,
@@ -31,8 +33,17 @@ const meta = preview.meta({
 const defaultInitialValues = {
   url: 'https://example.com/article',
   title: 'Example Article',
-  note: 'メモの下書き'
+  note: 'メモの下書き',
+  tagIds: [] as number[]
 } as const
+
+const defaultTagCandidates: TagCandidate[] = [
+  { id: 1, name: 'React', pinned: true, sortOrder: 0 },
+  { id: 2, name: 'TypeScript', pinned: false, sortOrder: 0 },
+  { id: 3, name: 'Cloudflare', pinned: false, sortOrder: 1 }
+]
+
+const idleCreateTagAction = fn<CreateTagFromPickerAction>(async () => ({ status: 'idle' }))
 
 // タイトル取得を主目的としない story が共通で使う action。
 const defaultFetchTitleAction = fn<BookmarkTitleFetchAction>(async () => ({
@@ -46,6 +57,9 @@ export const Default = meta.story({
     submitLabel: '更新',
     pendingLabel: '更新中…',
     onSubmit: fn<(...args: Parameters<BookmarkFormProps['onSubmit']>) => void>(),
+    tagCandidates: defaultTagCandidates,
+    tagsReady: true,
+    createTagAction: idleCreateTagAction,
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
       return { status: 'success', title: '取得したタイトル' }
@@ -206,7 +220,7 @@ function ControlledBookmarkForm({
   )
 }
 
-export const ServerFieldErrorShownInFieldAndSummary = meta.story({
+export const ServerFieldErrorShownInFieldAndSummary = Default.extend({
   args: {
     initialValues: defaultInitialValues,
     onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
@@ -231,12 +245,10 @@ export const ServerFieldErrorShownInFieldAndSummary = meta.story({
   }
 })
 
-export const EditingClearsMatchingServerFieldError = meta.story({
+export const EditingClearsMatchingServerFieldError = Default.extend({
   render: (args) => (
     <ControlledBookmarkForm
-      initialValues={args.initialValues}
-      onSubmit={args.onSubmit}
-      fetchTitleAction={defaultFetchTitleAction}
+      {...args}
       initialServerError={{
         summary: '入力内容を確認してください',
         fields: {
@@ -270,12 +282,10 @@ export const EditingClearsMatchingServerFieldError = meta.story({
   }
 })
 
-export const EditingOtherFieldKeepsUnrelatedServerError = meta.story({
+export const EditingOtherFieldKeepsUnrelatedServerError = Default.extend({
   render: (args) => (
     <ControlledBookmarkForm
-      initialValues={args.initialValues}
-      onSubmit={args.onSubmit}
-      fetchTitleAction={defaultFetchTitleAction}
+      {...args}
       initialServerError={{
         fields: {
           url: 'この URL は既に登録されています'
@@ -352,5 +362,171 @@ export const SubmitsBrandedValues = Default.extend({
     await expect(values?.url).toBe(defaultInitialValues.url)
     await expect(values?.title).toBe(defaultInitialValues.title)
     await expect(values?.note).toBe(defaultInitialValues.note)
+    await expect(values?.tagIds).toEqual([])
+  }
+})
+
+async function openTagPicker(canvas: ReturnType<typeof within>) {
+  await userEvent.click(canvas.getByRole('button', { name: 'タグを選ぶ' }))
+}
+
+export const SelectsAndRemovesTags = Default.extend({
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await openTagPicker(canvas)
+    await userEvent.click(body.getByRole('option', { name: /TypeScript/ }))
+    await expect(canvas.getByRole('button', { name: 'TypeScriptを外す' })).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    await expect(canvas.getByRole('button', { name: 'TypeScriptを外す' })).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    const onSubmit = args.onSubmit as Mock<(values: BookmarkFormSubmitValues) => void>
+    await expect(onSubmit.mock.calls[0]?.[0]?.tagIds).toEqual([2])
+    await userEvent.click(canvas.getByRole('button', { name: 'TypeScriptを外す' }))
+    await expect(canvas.queryByRole('button', { name: 'TypeScriptを外す' })).not.toBeInTheDocument()
+  }
+})
+
+export const SearchKeepsCandidateOrder = Default.extend({
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await openTagPicker(canvas)
+    const search = body.getByRole('searchbox', { name: 'タグを検索' })
+    await userEvent.type(search, 't')
+    const options = body.getAllByRole('option')
+    await expect(options.map((option) => option.textContent)).toEqual([
+      expect.stringContaining('React'),
+      expect.stringContaining('TypeScript')
+    ])
+  }
+})
+
+export const CreateCtaWaitsUntilNamesAreReady = Default.extend({
+  args: {
+    tagsReady: false,
+    tagCandidates: []
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await openTagPicker(canvas)
+    await userEvent.type(body.getByRole('searchbox', { name: 'タグを検索' }), 'Python')
+    await expect(
+      body.queryByRole('button', { name: /を新しいタグとして作成/ })
+    ).not.toBeInTheDocument()
+    await expect(body.getByRole('status')).toHaveTextContent('タグ候補を読み込み中です')
+  }
+})
+
+export const CreatesAndSelectsNewTag = Default.extend({
+  args: {
+    createTagAction: fn<CreateTagFromPickerAction>(async (_previous, { name }) => ({
+      status: 'created',
+      tag: { id: 99, name: name.trim() }
+    }))
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await openTagPicker(canvas)
+    await userEvent.type(body.getByRole('searchbox', { name: 'タグを検索' }), 'Python')
+    await userEvent.click(body.getByRole('button', { name: '「Python」を新しいタグとして作成' }))
+    await waitFor(() => {
+      expect(canvas.getByRole('button', { name: 'Pythonを外す' })).toBeInTheDocument()
+    })
+    await userEvent.click(canvas.getByRole('button', { name: '更新' }))
+    const onSubmit = args.onSubmit as Mock<(values: BookmarkFormSubmitValues) => void>
+    await expect(onSubmit.mock.calls[0]?.[0]?.tagIds).toEqual([99])
+  }
+})
+
+export const CreatePendingBlocksBookmarkSubmit = Default.extend({
+  args: {
+    createTagAction: fn<CreateTagFromPickerAction>(async () => {
+      await new Promise(() => {})
+      return { status: 'idle' }
+    })
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await openTagPicker(canvas)
+    await userEvent.type(body.getByRole('searchbox', { name: 'タグを検索' }), 'Python')
+    await userEvent.click(body.getByRole('button', { name: '「Python」を新しいタグとして作成' }))
+    await expect(canvas.getByRole('status')).toHaveTextContent(
+      'タグを作成中です。完了するまで保存を開始できません。'
+    )
+    await expect(canvas.getByRole('button', { name: '更新' })).toBeDisabled()
+    await userEvent.keyboard('{Escape}')
+    await expect(canvas.getByRole('status')).toHaveTextContent(
+      'タグを作成中です。完了するまで保存を開始できません。'
+    )
+    await expect(canvas.getByRole('button', { name: '更新' })).toBeDisabled()
+    await expect(canvas.getByLabelText('URL')).toBeEnabled()
+  }
+})
+
+export const CreateFailureKeepsDraftAndShowsFieldError = Default.extend({
+  args: {
+    createTagAction: fn<CreateTagFromPickerAction>(async () => ({
+      status: 'error',
+      message: 'タグの作成に失敗しました'
+    }))
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const body = within(document.body)
+    await openTagPicker(canvas)
+    await userEvent.click(body.getByRole('option', { name: /React/ }))
+    await userEvent.type(body.getByRole('searchbox', { name: 'タグを検索' }), 'Python')
+    await userEvent.click(body.getByRole('button', { name: '「Python」を新しいタグとして作成' }))
+    await waitFor(() => {
+      expect(canvas.getByRole('alert')).toHaveTextContent('タグの作成に失敗しました')
+    })
+    await userEvent.keyboard('{Escape}')
+    await expect(canvas.getByRole('button', { name: 'Reactを外す' })).toBeInTheDocument()
+    await expect(canvas.getByRole('alert')).toHaveTextContent('タグの作成に失敗しました')
+  }
+})
+
+export const InvalidTagErrorStaysOnTagField = Default.extend({
+  args: {
+    serverError: {
+      summary: '保存できないタグが含まれています。タグを選び直してください',
+      fields: { tags: '保存できないタグが含まれています。タグを選び直してください' }
+    }
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const alerts = canvas.getAllByRole('alert')
+    await expect(alerts.length).toBeGreaterThanOrEqual(2)
+    await expect(alerts[0]).toHaveTextContent('タグを選び直してください')
+    await expect(canvas.getAllByText(/タグを選び直してください/).length).toBeGreaterThanOrEqual(2)
+    await expect(canvas.getByLabelText('URL')).toHaveValue(defaultInitialValues.url)
+  }
+})
+
+export const LongTagNameWrapsInsideForm = Default.extend({
+  args: {
+    initialValues: {
+      ...defaultInitialValues,
+      tagIds: [4]
+    },
+    tagCandidates: [
+      ...defaultTagCandidates,
+      {
+        id: 4,
+        name: 'あ'.repeat(32),
+        pinned: false,
+        sortOrder: 9
+      }
+    ]
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const chip = canvas.getByRole('button', { name: `${'あ'.repeat(32)}を外す` })
+    await expect(chip).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: '更新' })).toBeVisible()
   }
 })

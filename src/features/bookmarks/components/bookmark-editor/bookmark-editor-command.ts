@@ -10,6 +10,6 @@ export function buildUpdateBookmarkCommand(
     url: values.url,
     title: values.title,
     note: values.note,
-    tagIds: initialData.tagIds
+    tagIds: values.tagIds
   }
 }

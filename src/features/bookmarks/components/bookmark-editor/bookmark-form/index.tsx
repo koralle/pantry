@@ -1,15 +1,17 @@
 import { getFormProps, useForm } from '@conform-to/react'
 import { parseWithValibot } from '@conform-to/valibot'
-import { useTransition } from 'react'
+import { useRef, useTransition } from 'react'
 
 import { StyledButton } from '../../../../../shared/components/styled-button'
 import { srOnly } from '../../../../../styles/sr-only'
 import { workbenchFields, workbenchForm } from '../../../../../styles/workbench'
+import { BookmarkTagPicker } from '../../bookmark-tag-picker'
 import { BookmarkFormFields } from './fields'
 import { bookmarkFormSchema } from './schema'
 import type { BookmarkFormOutput } from './schema'
 import { BookmarkFormSummary } from './summary'
 import type { BookmarkFormFieldKey, BookmarkFormProps } from './types'
+import { useBookmarkTagDraft } from './use-bookmark-tag-draft'
 import { useBookmarkTitleFetch } from './use-bookmark-title-fetch'
 
 export { bookmarkFormSchema }
@@ -41,9 +43,31 @@ export function BookmarkForm({
   pendingLabel = '更新中…',
   legend = 'ブックマーク編集',
   onSubmit,
-  fetchTitleAction
+  fetchTitleAction,
+  tagCandidates,
+  tagsReady,
+  createTagAction
 }: BookmarkFormProps) {
   const [pending, startSubmit] = useTransition()
+  const {
+    selectedTags,
+    tagIds,
+    handleToggleTag,
+    handleRemoveTag,
+    handleCreateTag,
+    isCreatingTag,
+    createError,
+    lastCreatedTagId
+  } = useBookmarkTagDraft({
+    initialTagIds: initialValues.tagIds ?? [],
+    tagCandidates,
+    tagsReady,
+    createTagAction,
+    onClearFieldError
+  })
+  const tagIdsRef = useRef(tagIds)
+  tagIdsRef.current = tagIds
+
   const [form, fields] = useForm<BookmarkFormOutput>({
     defaultValue: {
       url: initialValues.url,
@@ -51,12 +75,16 @@ export function BookmarkForm({
       note: initialValues.note ?? ''
     },
     onSubmit(event, { submission }) {
+      if (isCreatingTag) {
+        event.preventDefault()
+        return
+      }
       if (submission?.status !== 'success') {
         return
       }
       event.preventDefault()
       startSubmit(async () => {
-        await onSubmit(submission.value)
+        await onSubmit({ ...submission.value, tagIds: tagIdsRef.current })
       })
     },
     onValidate({ formData }) {
@@ -86,6 +114,7 @@ export function BookmarkForm({
   // よって Conform は Conform の error だけを所有し、serverError は表示だけ扱う。
 
   const busy = pending || isFetchingTitle
+  const submitDisabled = busy || isCreatingTag
 
   // Summary 候補は「重複除去せずに」集めるだけにする。完全一致の除去は
   // BookmarkFormSummary に任せる。責務境界を、
@@ -99,6 +128,7 @@ export function BookmarkForm({
     serverError?.fields?.url,
     serverError?.fields?.title,
     serverError?.fields?.note,
+    serverError?.fields?.tags,
     titleFetchError
   ].filter(
     (message): message is string => message !== null && message !== undefined && message !== ''
@@ -134,12 +164,24 @@ export function BookmarkForm({
           handleFetchTitle={handleFetchTitle}
           onClearServerFieldError={handleClearFieldError}
         />
+        <BookmarkTagPicker
+          selectedTags={selectedTags}
+          tagCandidates={tagCandidates}
+          tagsReady={tagsReady}
+          onToggleTag={handleToggleTag}
+          onRemoveTag={handleRemoveTag}
+          onCreateTag={handleCreateTag}
+          isCreatingTag={isCreatingTag}
+          lastCreatedTagId={lastCreatedTagId}
+          createError={createError}
+          serverError={serverError?.fields?.tags}
+        />
       </fieldset>
 
       <StyledButton
         type='submit'
         visual='accent'
-        isDisabled={busy}>
+        isDisabled={submitDisabled}>
         {pending ? pendingLabel : submitLabel}
       </StyledButton>
     </form>
