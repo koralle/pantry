@@ -11,14 +11,14 @@ catalogMode: strict
 
 catalogs:
   authentication:
-    '@better-auth/drizzle-adapter': 1.6.27
-    '@better-auth/passkey': 1.6.27
+    '@better-auth/drizzle-adapter': 1.7.1
+    '@better-auth/passkey': 1.7.1
     '@simplewebauthn/browser': 13.3.0
-    better-auth: 1.6.27
+    better-auth: 1.7.1
   build:
-    '@cloudflare/vite-plugin': 1.52.1
-    '@vitejs/plugin-react': 6.0.5
-    'vite': 8.2.1
+    '@cloudflare/vite-plugin': 1.54.0
+    '@vitejs/plugin-react': 6.1.0
+    'vite': 8.2.2
   database:
     '@libsql/client': 0.17.4
     '@tursodatabase/database': 0.7.2
@@ -26,26 +26,26 @@ catalogs:
     drizzle-kit: 1.0.0-rc.5-ab785fc
     drizzle-seed: 1.0.0-rc.5-ab785fc
   debug:
-    '@tanstack/devtools-vite': 0.8.3
-    '@tanstack/react-devtools': 0.10.10
-    '@tanstack/react-query-devtools': 5.101.4
+    '@tanstack/devtools-vite': 0.8.5
+    '@tanstack/react-devtools': 0.10.12
+    '@tanstack/react-query-devtools': 5.102.4
     '@tanstack/react-router-devtools': 1.167.1
   envvars:
     '@dotenvx/dotenvx': 1.75.1
     '@t3-oss/env-core': 0.13.11
   errors:
     '@praha/error-factory': 1.4.1
-    'react-error-boundary': 6.1.2
+    'react-error-boundary': 6.1.3
   form:
     '@conform-to/react': 1.21.1
     '@conform-to/valibot': 1.21.1
   format:
-    oxfmt: 0.63.0
+    oxfmt: 0.65.0
   framework:
-    '@tanstack/react-query': 5.101.4
-    '@tanstack/react-router': 1.170.27
+    '@tanstack/react-query': 5.102.4
+    '@tanstack/react-router': 1.170.32
     '@tanstack/react-router-ssr-query': 1.167.1
-    '@tanstack/react-start': 1.168.44
+    '@tanstack/react-start': 1.168.49
   githooks:
     lefthook: 2.1.10
   lint:
@@ -53,7 +53,7 @@ catalogs:
     '@markuplint/react-spec': 4.18.0
     knip: 6.32.2
     markuplint: 4.18.3
-    oxlint: 1.78.0
+    oxlint: 1.80.0
     oxlint-tsgolint: 0.25.0
   react:
     '@types/react': 19.2.17
@@ -62,25 +62,25 @@ catalogs:
     react-dom: 19.2.8
   runtime:
     '@types/node': 25.9.5
-    wrangler: 4.123.0
+    wrangler: 4.126.0
   script:
     tsx: 4.23.12
   test:
-    '@cloudflare/vitest-pool-workers': 0.21.3
-    vitest: 4.1.10
+    '@cloudflare/vitest-pool-workers': 0.22.0
+    vitest: 4.1.11
   typescript:
     '@tsconfig/strictest': 2.0.8
     typescript: 7.0.2
   storybook:
-    '@storybook/addon-docs': 10.5.8
-    '@storybook/builder-vite': 10.5.8
-    '@storybook/tanstack-react': 10.5.8
+    '@storybook/addon-docs': 10.5.10
+    '@storybook/builder-vite': 10.5.10
+    '@storybook/tanstack-react': 10.5.10
     storybook-device-viewports: 0.1.2
-    storybook: 10.5.8
+    storybook: 10.5.10
   ui:
     '@fontsource/noto-sans-jp': 5.3.0
     '@pandacss/dev': 1.12.0
-    lucide-react: 1.31.0
+    lucide-react: 1.34.0
     postcss: 8.5.26
     react-aria-components: 1.20.0
   uuid:
