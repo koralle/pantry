@@ -7,11 +7,11 @@ import { css } from 'styled-system/css'
 import { StyledButton } from '../../../../shared/components/styled-button'
 import { formSummary } from '../../../../styles/form'
 import { authClient } from '../../lib/auth-client'
-import { getPasskeySignInErrorMessage } from '../../lib/passkey.messages'
+import { getPasskeySignInErrorMessage } from '../../lib/passkey/messages'
 import {
   isConditionalMediationAvailable,
   isWebAuthnAvailable
-} from '../../lib/passkey.webauthn-support'
+} from '../../lib/passkey/webauthn-support'
 
 const passkeySignIn = css({
   display: 'flex',

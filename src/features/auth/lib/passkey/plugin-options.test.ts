@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { passkeyPluginOptions } from './passkey.plugin-options'
+import { passkeyPluginOptions } from './plugin-options'
 
 describe('passkeyPluginOptions', () => {
   test('derives rpID and origin from BETTER_AUTH_URL', () => {

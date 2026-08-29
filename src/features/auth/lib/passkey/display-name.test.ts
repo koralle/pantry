@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { passkeyDisplayName } from './passkey.display-name'
+import { passkeyDisplayName } from './display-name'
 
 describe('passkeyDisplayName', () => {
   test('uses the user-set name when it is non-empty', () => {

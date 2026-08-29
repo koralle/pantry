@@ -3,7 +3,7 @@ import { styled } from 'styled-system/jsx'
 
 import preview from '../../../../storybook/preview'
 import { authClient } from '../../lib/auth-client'
-import { isWebAuthnAvailable } from '../../lib/passkey.webauthn-support'
+import { isWebAuthnAvailable } from '../../lib/passkey/webauthn-support'
 import type { ManagedPasskey } from './list-item'
 import { PasskeySettings } from './settings'
 

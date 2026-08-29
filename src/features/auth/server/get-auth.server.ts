@@ -7,7 +7,7 @@ import { env } from 'cloudflare:workers'
 
 import { getDB } from '../../../db/get-db.server'
 import * as schema from '../../../db/schema/auth-schema'
-import { passkeyPluginOptions } from '../lib/passkey.plugin-options'
+import { passkeyPluginOptions } from '../lib/passkey/plugin-options'
 
 type Auth = ReturnType<typeof createAuth>
 

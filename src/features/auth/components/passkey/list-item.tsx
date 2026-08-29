@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { css } from 'styled-system/css'
 
 import { authClient } from '../../lib/auth-client'
-import { passkeyDisplayName } from '../../lib/passkey.display-name'
-import { formatPasskeyCreatedAt } from '../../lib/passkey.format-created-at'
-import { getPasskeyManageErrorMessage } from '../../lib/passkey.messages'
+import { passkeyDisplayName } from '../../lib/passkey/display-name'
+import { formatPasskeyCreatedAt } from '../../lib/passkey/format-created-at'
+import { getPasskeyManageErrorMessage } from '../../lib/passkey/messages'
 import { PasskeyDeleteDialog } from './delete-dialog'
 import { PasskeyRenameDialog } from './rename-dialog'
 

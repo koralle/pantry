@@ -10,8 +10,8 @@ import { authClient } from '../../lib/auth-client'
 import {
   getPasskeyManageErrorMessage,
   getPasskeyRegisterErrorMessage
-} from '../../lib/passkey.messages'
-import { isWebAuthnAvailable } from '../../lib/passkey.webauthn-support'
+} from '../../lib/passkey/messages'
+import { isWebAuthnAvailable } from '../../lib/passkey/webauthn-support'
 import { PasskeyListItem } from './list-item'
 import type { ManagedPasskey } from './list-item'
 
