@@ -12,6 +12,8 @@ catalogMode: strict
 catalogs:
   authentication:
     '@better-auth/drizzle-adapter': 1.6.27
+    '@better-auth/passkey': 1.6.27
+    '@simplewebauthn/browser': 13.3.0
     better-auth: 1.6.27
   build:
     '@cloudflare/vite-plugin': 1.52.1

@@ -3,6 +3,7 @@ import { css } from 'styled-system/css'
 import { grid } from 'styled-system/patterns'
 import * as v from 'valibot'
 
+import { PasskeySignIn } from '../../features/auth/components/passkey-sign-in'
 import { SignInWithEmailAndPasswordForm } from '../../features/auth/components/sign-in-form'
 import { authClient } from '../../features/auth/lib/auth-client'
 import { isInternalPath } from '../../features/auth/lib/is-internal-path'
@@ -104,6 +105,7 @@ function RouteComponent() {
               }
             })}>
             <h1 className={css({ textAlign: 'center' })}>ログイン</h1>
+            <PasskeySignIn redirect={redirect} />
             <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
           </div>
         </section>

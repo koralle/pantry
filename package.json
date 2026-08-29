@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "catalog:authentication",
+    "@better-auth/passkey": "catalog:authentication",
     "@cloudflare/vite-plugin": "catalog:build",
     "@conform-to/react": "catalog:form",
     "@conform-to/valibot": "catalog:form",
@@ -35,6 +36,7 @@
     "@orpc/server": "catalog:rpc",
     "@orpc/tanstack-query": "catalog:rpc",
     "@praha/error-factory": "catalog:errors",
+    "@simplewebauthn/browser": "catalog:authentication",
     "@tanstack/react-devtools": "catalog:debug",
     "@tanstack/react-query": "catalog:framework",
     "@tanstack/react-query-devtools": "catalog:debug",
