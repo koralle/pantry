@@ -6,7 +6,7 @@ import { drizzle } from 'drizzle-orm/libsql'
 
 import { env } from './env'
 import * as schema from './src/db/schema/auth-schema'
-import { passkeyPluginOptions } from './src/features/auth/lib/passkey.plugin-options'
+import { passkeyPluginOptions } from './src/features/auth/lib/passkey/plugin-options'
 
 // Drizzle-orm 1.0: SQLite drizzle() no longer accepts `schema` (use `relations` for RQBv2).
 export const db = drizzle({

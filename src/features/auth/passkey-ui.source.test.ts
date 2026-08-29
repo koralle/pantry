@@ -47,7 +47,7 @@ describe('passkey UI contracts', () => {
   })
 
   test('display names resolve without importing the server passkey plugin', async () => {
-    const source = await readSource('features/auth/lib/passkey.display-name.ts')
+    const source = await readSource('features/auth/lib/passkey/display-name.ts')
     expect(source).not.toContain("@better-auth/passkey'")
     expect(source).toContain('Google Password Manager')
     expect(source).toContain('1Password')

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { isPasskeyUserCancelled } from './passkey.error'
+import { isPasskeyUserCancelled } from './error'
 
 describe('isPasskeyUserCancelled', () => {
   test('treats Better Auth cancel codes as user cancellation', () => {

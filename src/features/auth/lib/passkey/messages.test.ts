@@ -4,7 +4,7 @@ import {
   getPasskeyManageErrorMessage,
   getPasskeyRegisterErrorMessage,
   getPasskeySignInErrorMessage
-} from './passkey.messages'
+} from './messages'
 
 describe('passkey user-facing messages', () => {
   test('sign-in cancel is silent', () => {
