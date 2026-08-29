@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft, LogOut } from 'lucide-react'
 import { css, cx } from 'styled-system/css'
 
-import { PasskeySettings } from '../../../features/auth/components/passkey-settings'
+import { PasskeySettings } from '../../../features/auth/components/passkey/settings'
 import { useSignOut } from '../../../features/auth/hooks/use-sign-out'
 import { defaultBookmarkSearch } from '../../../features/navigation/lib/bookmark-search'
 import { StyledButton } from '../../../shared/components/styled-button'

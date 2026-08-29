@@ -2,18 +2,18 @@ import { CircleAlert, KeyRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { css, cx } from 'styled-system/css'
 
-import { StyledButton } from '../../../shared/components/styled-button'
-import { flash } from '../../../styles/flash'
-import { formSummary } from '../../../styles/form'
-import { sectionLabel } from '../../../styles/type'
-import { authClient } from '../lib/auth-client'
+import { StyledButton } from '../../../../shared/components/styled-button'
+import { flash } from '../../../../styles/flash'
+import { formSummary } from '../../../../styles/form'
+import { sectionLabel } from '../../../../styles/type'
+import { authClient } from '../../lib/auth-client'
 import {
   getPasskeyManageErrorMessage,
   getPasskeyRegisterErrorMessage
-} from '../lib/passkey-messages'
-import { isWebAuthnAvailable } from '../lib/webauthn-support'
-import { PasskeyListItem } from './passkey-list-item'
-import type { ManagedPasskey } from './passkey-list-item'
+} from '../../lib/passkey.messages'
+import { isWebAuthnAvailable } from '../../lib/passkey.webauthn-support'
+import { PasskeyListItem } from './list-item'
+import type { ManagedPasskey } from './list-item'
 
 const passkeySettingsHeading = css({
   marginBlockEnd: '3'

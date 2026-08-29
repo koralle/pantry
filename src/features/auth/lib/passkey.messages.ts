@@ -1,4 +1,4 @@
-import { isPasskeyUserCancelled } from './passkey-error'
+import { isPasskeyUserCancelled } from './passkey.error'
 
 type PasskeyClientError = {
   readonly code?: string | undefined

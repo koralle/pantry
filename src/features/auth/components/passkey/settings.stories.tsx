@@ -1,11 +1,11 @@
 import { expect, mocked, userEvent, waitFor, within } from 'storybook/test'
 import { styled } from 'styled-system/jsx'
 
-import preview from '../../../storybook/preview'
-import { authClient } from '../lib/auth-client'
-import { isWebAuthnAvailable } from '../lib/webauthn-support'
-import type { ManagedPasskey } from './passkey-list-item'
-import { PasskeySettings } from './passkey-settings'
+import preview from '../../../../storybook/preview'
+import { authClient } from '../../lib/auth-client'
+import { isWebAuthnAvailable } from '../../lib/passkey.webauthn-support'
+import type { ManagedPasskey } from './list-item'
+import { PasskeySettings } from './settings'
 
 const googleAaguid = 'ea9b8d66-4d01-1d21-3ce4-b6b48cb575d4'
 const unknownAaguid = '00000000-0000-0000-0000-000000000000'

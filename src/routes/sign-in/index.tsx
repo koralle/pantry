@@ -3,7 +3,7 @@ import { css } from 'styled-system/css'
 import { grid } from 'styled-system/patterns'
 import * as v from 'valibot'
 
-import { PasskeySignIn } from '../../features/auth/components/passkey-sign-in'
+import { PasskeySignIn } from '../../features/auth/components/passkey/sign-in'
 import { SignInWithEmailAndPasswordForm } from '../../features/auth/components/sign-in-form'
 import { authClient } from '../../features/auth/lib/auth-client'
 import { isInternalPath } from '../../features/auth/lib/is-internal-path'

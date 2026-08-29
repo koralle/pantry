@@ -1,9 +1,9 @@
 import { Trash2, X } from 'lucide-react'
 import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay, Text } from 'react-aria-components'
 
-import { StyledButton } from '../../../shared/components/styled-button'
-import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../styles/dialog'
-import { fieldError } from '../../../styles/form'
+import { StyledButton } from '../../../../shared/components/styled-button'
+import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../../styles/dialog'
+import { fieldError } from '../../../../styles/form'
 
 export function PasskeyDeleteDialog({
   displayName,

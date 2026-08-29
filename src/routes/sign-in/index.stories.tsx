@@ -4,7 +4,7 @@ import { authClient } from '../../features/auth/lib/auth-client'
 import {
   isConditionalMediationAvailable,
   isWebAuthnAvailable
-} from '../../features/auth/lib/webauthn-support'
+} from '../../features/auth/lib/passkey.webauthn-support'
 import preview from '../../storybook/preview'
 import { Route } from './index'
 

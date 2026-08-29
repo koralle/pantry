@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { expect, mocked, waitFor, within } from 'storybook/test'
 
 import { authClient } from '../../../features/auth/lib/auth-client'
-import { isWebAuthnAvailable } from '../../../features/auth/lib/webauthn-support'
+import { isWebAuthnAvailable } from '../../../features/auth/lib/passkey.webauthn-support'
 import preview from '../../../storybook/preview'
 import { Route } from './index'
 

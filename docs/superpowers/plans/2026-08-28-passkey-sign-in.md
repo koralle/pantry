@@ -29,7 +29,7 @@
 - Modify: `auth.ts`, `src/features/auth/server/get-auth.server.ts` — `passkey()` plugin
 - Modify: `src/features/auth/lib/auth-client.ts` — `passkeyClient()`
 - Create: display-name / WebAuthn support / error helpers under `src/features/auth/lib/`
-- Create: `src/features/auth/components/passkey-sign-in.tsx`
+- Create: `src/features/auth/components/passkey/sign-in.tsx`
 - Modify: `src/routes/sign-in/index.tsx` and stories
 - Create: settings passkey section components
 - Modify: `src/routes/_protected/settings/index.tsx`
