@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { formatPasskeyCreatedAt } from './format-passkey-created-at'
+import { formatPasskeyCreatedAt } from './passkey.format-created-at'
 
 describe('formatPasskeyCreatedAt', () => {
   test('formats a UTC timestamp in Asia/Tokyo', () => {

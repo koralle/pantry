@@ -2,11 +2,11 @@ import { Pencil, X } from 'lucide-react'
 import { useState } from 'react'
 import { Dialog, DialogTrigger, Heading, Modal, ModalOverlay } from 'react-aria-components'
 
-import { StyledButton } from '../../../shared/components/styled-button'
-import { StyledInput } from '../../../shared/components/styled-input'
-import { StyledLabel } from '../../../shared/components/styled-label'
-import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../styles/dialog'
-import { field, fieldError } from '../../../styles/form'
+import { StyledButton } from '../../../../shared/components/styled-button'
+import { StyledInput } from '../../../../shared/components/styled-input'
+import { StyledLabel } from '../../../../shared/components/styled-label'
+import { dialog, dialogActions, dialogBackdrop, dialogTitle } from '../../../../styles/dialog'
+import { field, fieldError } from '../../../../styles/form'
 
 export function PasskeyRenameDialog({
   currentName,

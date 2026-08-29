@@ -20,7 +20,7 @@ describe('passkey UI contracts', () => {
     expect(passkeyIndex).toBeGreaterThan(-1)
     expect(passwordIndex).toBeGreaterThan(passkeyIndex)
 
-    const signIn = await readSource('features/auth/components/passkey-sign-in.tsx')
+    const signIn = await readSource('features/auth/components/passkey/sign-in.tsx')
     expect(signIn).toContain('パスキーでログイン')
     expect(signIn).toContain('または')
     expect(signIn).toContain("to: redirect ?? '/'")
@@ -40,21 +40,21 @@ describe('passkey UI contracts', () => {
   })
 
   test('registration starts without collecting a display name first', async () => {
-    const settings = await readSource('features/auth/components/passkey-settings.tsx')
+    const settings = await readSource('features/auth/components/passkey/settings.tsx')
     expect(settings).toContain('パスキーを追加')
     expect(settings).toContain('authClient.passkey.addPasskey()')
     expect(settings).not.toContain('addPasskey({')
   })
 
   test('display names resolve without importing the server passkey plugin', async () => {
-    const source = await readSource('features/auth/lib/passkey-display-name.ts')
+    const source = await readSource('features/auth/lib/passkey.display-name.ts')
     expect(source).not.toContain("@better-auth/passkey'")
     expect(source).toContain('Google Password Manager')
     expect(source).toContain('1Password')
   })
 
   test('delete asks for confirmation before calling the API', async () => {
-    const dialog = await readSource('features/auth/components/passkey-delete-dialog.tsx')
+    const dialog = await readSource('features/auth/components/passkey/delete-dialog.tsx')
     expect(dialog).toContain('このパスキーを削除しますか？')
     expect(dialog).toContain('削除を確認')
     expect(dialog).toContain('キャンセル')

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { isConditionalMediationAvailable, isWebAuthnAvailable } from './webauthn-support'
+import { isConditionalMediationAvailable, isWebAuthnAvailable } from './passkey.webauthn-support'
 
 function PublicKeyCredentialStub() {
   return undefined
