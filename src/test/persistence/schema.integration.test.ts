@@ -53,12 +53,13 @@ describe('本番 migration を適用した libSQL', () => {
   })
 
   test('Integration 用ソースは本番 schema を DDL で複製しない', () => {
+    const ddl = new RegExp(['create', 'table'].join(String.raw`\s+`), 'i')
     const sources = fs
       .readdirSync(persistenceDir)
       .filter((name) => name.endsWith('.ts'))
       .map((name) => fs.readFileSync(path.join(persistenceDir, name), 'utf8'))
       .join('\n')
 
-    expect(sources).not.toMatch(/create table/i)
+    expect(sources).not.toMatch(ddl)
   })
 })
