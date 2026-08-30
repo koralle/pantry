@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     name: 'persistence-integration',
     environment: 'node',
-    include: ['src/**/*.integration.test.ts'],
+    include: ['src/test/persistence/**/*.integration.test.ts'],
     fileParallelism: false,
     maxWorkers: 1,
     testTimeout: 30_000,

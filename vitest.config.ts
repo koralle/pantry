@@ -14,7 +14,7 @@ const aliases = {
  * 画面テストはソースを読むだけだが、workers の exclude を足すと Vitest 既定 exclude が消え、
  * `node_modules` まで拾うので、ここへまとめて Node project へ逃がす。
  */
-const persistenceIntegrationTests = 'src/**/*.integration.test.ts'
+const anyIntegrationTests = 'src/**/*.integration.test.ts'
 const nodeTests = [
   'src/features/tags/persistence/**/*.test.ts',
   'src/features/bookmarks/persistence/**/*.test.ts',
@@ -53,7 +53,7 @@ export default defineConfig({
         test: {
           name: 'workers',
           include: ['src/**/*.{test,spec}.ts'],
-          exclude: [...nodeTests, persistenceIntegrationTests]
+          exclude: [...nodeTests, anyIntegrationTests]
         }
       },
       {

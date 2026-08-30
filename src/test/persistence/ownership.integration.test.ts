@@ -19,6 +19,7 @@ import { updateBookmark } from '../../features/bookmarks/persistence/update-book
 import { tagIdSchema, toTagName } from '../../features/tags/domain/tag-values'
 import { selectShelfTags } from '../../features/tags/persistence/select-shelf-tags'
 import { selectTagById } from '../../features/tags/persistence/select-tag-by-id'
+import { selectTags } from '../../features/tags/persistence/select-tags'
 import { touchTag } from '../../features/tags/persistence/touch-tag'
 import { updateTag } from '../../features/tags/persistence/update-tag'
 import { bookmarkId, seedBookmark, seedTag, seedUser, withPersistenceDb } from './migrated-db'
@@ -131,5 +132,17 @@ describe('user ownership on migrated libSQL', () => {
     expect(
       shelf.map((tag) => ({ id: tag.id, name: tag.name, bookmarkCount: tag.bookmarkCount }))
     ).toEqual([{ id: workId, name: 'work', bookmarkCount: 1 }])
+  })
+
+  test('selectTags は他ユーザーの tag を返さない', async () => {
+    const db = persistence.getDb()
+    const actorId = await seedUser(db, actor)
+    await seedUser(db, other)
+    const workId = await seedTag(db, { userId: actor, name: 'work' })
+    await seedTag(db, { userId: other, name: 'secret' })
+
+    const rows = await selectTags(db, actorId, { limit: 1000, offset: 0 })
+
+    expect(rows).toEqual([{ id: workId, name: 'work' }])
   })
 })
