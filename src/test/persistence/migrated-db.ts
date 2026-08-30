@@ -30,7 +30,7 @@ function namesFrom(rows: readonly Record<string, unknown>[]): string[] {
   })
 }
 
-export async function resetPersistenceTables(client: Client): Promise<void> {
+async function resetPersistenceTables(client: Client): Promise<void> {
   const tables = await client.execute(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%'"
   )

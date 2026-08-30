@@ -6,12 +6,7 @@ const config: KnipConfig = {
   // Nested `dotenvx` / `pnpm` wrappers are not fully resolved by the script parser.
   // The tanstack-entry stub is an alias target loaded by the Vitest bundler
   // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
-  entry: [
-    'auth.ts',
-    'scripts/**/*.ts',
-    'vitest/tanstack-entry-stub.ts',
-    'vitest.persistence.config.ts'
-  ],
+  entry: ['auth.ts', 'scripts/**/*.ts', 'vitest/tanstack-entry-stub.ts'],
   vitest: {
     config: ['vitest.config.ts', 'vitest.persistence.config.ts']
   },
