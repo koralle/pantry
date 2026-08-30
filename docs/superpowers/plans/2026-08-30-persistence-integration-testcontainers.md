@@ -57,8 +57,6 @@
 
 ## 必要なテストおよび検証方法
 
-- schema: 空コンテナへ本番 migration 適用後、`bookmarks` / `tags` / `users` / `passkeys` と `__drizzle_migrations` が存在する
-- schema: Integration helper / test に `CREATE TABLE` が無い
 - list: cursor 境界、同一 timestamp の tie-break、タグ AND/OR、`%` `_` のリテラル検索、soft-deleted / 他ユーザー行を返さない
 - ownership: 他ユーザーの bookmark/tag を get/update/delete/touch できない。他ユーザー tag の attach は bookmark を書かない
 - transaction: insert 中の障害で部分書き込みが残らない
