@@ -2,6 +2,8 @@ import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 
 import { user } from '../../db/schema/auth-schema'
+import { bookmarkTable } from '../../db/schema/bookmark'
+import { tagsTable } from '../../db/schema/tag'
 import { userIdSchema } from '../../features/auth/domain/auth-values'
 import { decodeBookmarkListCursor } from '../../features/bookmarks/lib/bookmark-list-cursor'
 import { BOOKMARK_LIST_PAGE_SIZE } from '../../features/bookmarks/lib/bookmark-list-page-size'
@@ -153,8 +155,12 @@ describe('listBookmarks on migrated libSQL', () => {
 
   test('reset 後は前テストの行に依存せず空から始まる', async () => {
     const db = persistence.getDb()
-    const leftover = await db.select({ id: user.id }).from(user)
+    const leftoverUsers = await db.select({ id: user.id }).from(user)
+    const leftoverBookmarks = await db.select({ id: bookmarkTable.id }).from(bookmarkTable)
+    const leftoverTags = await db.select({ id: tagsTable.id }).from(tagsTable)
 
-    expect(leftover).toEqual([])
+    expect(leftoverUsers).toEqual([])
+    expect(leftoverBookmarks).toEqual([])
+    expect(leftoverTags).toEqual([])
   })
 })

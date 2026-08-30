@@ -35,13 +35,8 @@ async function resetPersistenceTables(client: Client): Promise<void> {
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%'"
   )
   const tableNames = namesFrom(tables.rows)
-  const triggers = await client.execute(
-    "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name NOT LIKE 'sqlite_%'"
-  )
-  const triggerNames = namesFrom(triggers.rows)
   const statements = [
     'PRAGMA foreign_keys = OFF',
-    ...triggerNames.map((name) => `DROP TRIGGER IF EXISTS "${name.replaceAll('"', '""')}"`),
     ...tableNames.map((name) => `DELETE FROM "${name.replaceAll('"', '""')}"`),
     'PRAGMA foreign_keys = ON'
   ]

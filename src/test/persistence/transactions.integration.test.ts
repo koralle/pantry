@@ -30,18 +30,22 @@ describe('DB transaction integrity on migrated libSQL', () => {
       END
     `)
 
-    await expect(
-      insertBookmark(db, {
-        userId: actorId,
-        url: v.parse(bookmarkUrlSchema, 'https://example.com/article'),
-        title: v.parse(bookmarkTitleSchema, 'Example Article'),
-        note: v.parse(bookmarkNoteSchema, null),
-        tagIds: [v.parse(tagIdSchema, workTagId)]
-      })
-    ).rejects.toThrow()
+    try {
+      await expect(
+        insertBookmark(db, {
+          userId: actorId,
+          url: v.parse(bookmarkUrlSchema, 'https://example.com/article'),
+          title: v.parse(bookmarkTitleSchema, 'Example Article'),
+          note: v.parse(bookmarkNoteSchema, null),
+          tagIds: [v.parse(tagIdSchema, workTagId)]
+        })
+      ).rejects.toThrow()
 
-    expect(await db.select().from(bookmarkTable)).toEqual([])
-    expect(await db.select().from(bookmarkTagsTable)).toEqual([])
+      expect(await db.select().from(bookmarkTable)).toEqual([])
+      expect(await db.select().from(bookmarkTagsTable)).toEqual([])
+    } finally {
+      await db.run(sql`DROP TRIGGER IF EXISTS block_bookmark_tags`)
+    }
   })
 
   test('update の tag 所有検証失敗では既存の紐付けを残す', async () => {

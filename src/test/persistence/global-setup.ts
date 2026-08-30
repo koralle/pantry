@@ -35,9 +35,14 @@ export default async function setup(project: TestProject): Promise<() => Promise
     .withStartupTimeout(120_000)
     .start()
 
-  const libsqlUrl = libsqlHttpUrl(container)
-  await applyProductionMigrations(libsqlUrl)
-  project.provide('libsqlUrl', libsqlUrl)
+  try {
+    const libsqlUrl = libsqlHttpUrl(container)
+    await applyProductionMigrations(libsqlUrl)
+    project.provide('libsqlUrl', libsqlUrl)
+  } catch (error) {
+    await container.stop()
+    throw error
+  }
 
   return async () => {
     await container.stop()

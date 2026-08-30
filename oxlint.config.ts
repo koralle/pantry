@@ -110,7 +110,12 @@ export default defineConfig({
         'vitest.persistence.config.ts'
       ],
       rules: {
-        'import/no-default-export': 'off',
+        'import/no-default-export': 'off'
+      }
+    },
+    {
+      files: ['vitest.config.ts', 'vitest.persistence.config.ts'],
+      rules: {
         'node/no-process-env': 'off'
       }
     },

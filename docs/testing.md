@@ -33,6 +33,7 @@ DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、sof
 - 通常の `pnpm test` からは分離しており、Docker を起動しない
 - 外部 Turso には接続しない
 - Pull Request CI の `persistence-integration` job で実行する
+- マージ条件にするには、GitHub の branch protection / ruleset へ status check `persistence-integration` を required として追加する
 
 ## 3. Playwright MCP検証
 
