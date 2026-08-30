@@ -37,6 +37,8 @@ export default defineConfig({
   },
   // Required so Knip's Vitest plugin registers default test entry globs.
   test: {
+    reporters:
+      process.env['GITHUB_ACTIONS'] === 'true' ? ['minimal', 'github-actions'] : ['minimal'],
     projects: [
       {
         plugins: [
