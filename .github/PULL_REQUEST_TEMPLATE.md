@@ -67,6 +67,7 @@ Issue本文のチェックボックスは変更しません。
 - [ ] `pnpm run lint`
 - [ ] `pnpm run typecheck`
 - [ ] `pnpm run test`
+- [ ] `pnpm run test:persistence`
 - [ ] `pnpm run build`
 
 ## 仕様との差異
