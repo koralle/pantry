@@ -28,11 +28,19 @@ export default defineConfig({
     gracefulShutdown: { signal: 'SIGTERM', timeout: 20_000 }
   },
   projects: [
+    { name: 'setup', testMatch: /auth\.setup\.ts/ },
     {
       name: 'sign-in',
       testMatch: /sign-in\.spec\.ts/,
-      dependencies: [],
+      dependencies: ['setup'],
       use: { storageState: { cookies: [], origins: [] } }
+    },
+    {
+      name: 'main',
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: [/sign-in\.spec\.ts/, /fetch-title\.smoke\.spec\.ts/],
+      dependencies: ['setup'],
+      use: { storageState: 'e2e/.auth/user.json' }
     }
   ]
 })
