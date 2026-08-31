@@ -1,5 +1,8 @@
+import type { Page } from '@playwright/test'
+
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks, seedTag } from './db'
 import { expect, test } from './fixtures'
+import { waitForReactReady } from './react-ready'
 import { readRuntime } from './runtime'
 
 async function seedSearchBookmarks(): Promise<void> {
@@ -37,15 +40,22 @@ async function seedSearchBookmarks(): Promise<void> {
   }
 }
 
+async function submitKeywordSearch(page: Page, query: string): Promise<void> {
+  const searchField = page.getByPlaceholder('タイトル・URL・メモ')
+  await waitForReactReady(searchField)
+  await searchField.fill(query)
+  await expect(searchField).toHaveValue(query)
+  const searchButton = page.getByRole('button', { name: '検索' })
+  await waitForReactReady(searchButton)
+  await searchButton.click()
+}
+
 test('検索するとクエリに一致するブックマークだけが表示される', async ({ page }) => {
   await seedSearchBookmarks()
   await page.goto('/')
   await expect(page.getByRole('link', { name: 'Alpha rust' })).toBeVisible()
 
-  const searchField = page.getByPlaceholder('タイトル・URL・メモ')
-  await searchField.fill('Alpha')
-  await expect(searchField).toHaveValue('Alpha')
-  await page.getByRole('button', { name: '検索' }).click()
+  await submitKeywordSearch(page, 'Alpha')
   await expect(page).toHaveURL(/(?:\?|&)q=Alpha(?:&|$)/)
 
   await expect(page.getByRole('link', { name: 'Alpha rust' })).toBeVisible()

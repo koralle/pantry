@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test'
 import { BOOKMARK_LIST_PAGE_SIZE } from '../src/features/bookmarks/lib/bookmark-list-page-size'
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks } from './db'
 import { expect, test } from './fixtures'
+import { waitForReactReady } from './react-ready'
 import { readRuntime } from './runtime'
 
 async function seedPaginatedBookmarks(): Promise<void> {
@@ -42,6 +43,7 @@ async function seedPaginatedBookmarks(): Promise<void> {
 
 async function loadNextPage(page: Page): Promise<void> {
   const loadMoreButton = page.getByRole('button', { name: 'さらに読み込む' })
+  await waitForReactReady(loadMoreButton)
   await expect(loadMoreButton).toBeVisible()
   await expect(loadMoreButton).toBeEnabled()
   await loadMoreButton.click()
