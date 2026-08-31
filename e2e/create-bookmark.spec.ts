@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-test('creating a bookmark shows it on the list', async ({ page }) => {
+test('ブックマークを作成すると一覧から確認できる', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('link', { name: '新規' }).first().click()
   await page.getByLabel('URL').fill('https://example.test/created')

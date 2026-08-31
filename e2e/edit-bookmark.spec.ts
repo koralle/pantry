@@ -64,7 +64,7 @@ async function expectUpdatedList(page: Page): Promise<void> {
   await expect(bookmarkRow.getByText('drop-tag', { exact: true })).toHaveCount(0)
 }
 
-test('editing a bookmark updates its tags', async ({ page }) => {
+test('ブックマークを編集するとタグの付与と解除が反映される', async ({ page }) => {
   await seedEditableBookmark()
   await updateBookmarkTags(page)
   await expectUpdatedDetail(page)

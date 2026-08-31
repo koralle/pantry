@@ -2,8 +2,8 @@ import { bookmarkId, createE2eDb, findE2eUserId, seedBookmark } from './db'
 import { expect, test } from './fixtures'
 import { readRuntime } from './runtime'
 
-test.describe.serial('fixture isolation', () => {
-  test('first test inserts a bookmark that must not leak', async ({ page }) => {
+test.describe.serial('fixture の独立性', () => {
+  test('先のテストが入れたブックマークは後続へ漏れない', async ({ page }) => {
     const { libsqlUrl } = await readRuntime()
     const { db, close } = createE2eDb(libsqlUrl)
     try {
@@ -21,7 +21,7 @@ test.describe.serial('fixture isolation', () => {
     await expect(page.getByRole('link', { name: 'LeakProbe' })).toBeVisible()
   })
 
-  test('second test starts from empty bookmark tables', async ({ page }) => {
+  test('後続テストは空のブックマーク表から始まる', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByText('まだブックマークがありません')).toBeVisible()
     await expect(page.getByRole('link', { name: 'LeakProbe' })).toHaveCount(0)

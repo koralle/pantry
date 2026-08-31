@@ -1,7 +1,9 @@
 import { E2E_USER } from './constants'
 import { expect, test } from './fixtures'
 
-test('email and password sign-in shows the bookmark list', async ({ page }) => {
+test('メールアドレスとパスワードでサインインするとブックマーク一覧が表示される', async ({
+  page
+}) => {
   await page.goto('/sign-in')
   await page.getByRole('textbox', { name: 'メール' }).fill(E2E_USER.email)
   await page.getByRole('textbox', { name: 'パスワード' }).fill(E2E_USER.password)

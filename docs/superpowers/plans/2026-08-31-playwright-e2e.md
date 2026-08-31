@@ -206,7 +206,7 @@ Create `e2e/sign-in.spec.ts`:
 ```ts
 import { expect, test } from '@playwright/test'
 
-test('sign-in page renders the login heading', async ({ page }) => {
+test('サインインページにログイン見出しが表示される', async ({ page }) => {
   await page.goto('/sign-in')
   await expect(page.getByRole('heading', { name: 'ログイン' })).toBeVisible()
 })
@@ -417,7 +417,9 @@ import { expect, test } from '@playwright/test'
 
 import { E2E_USER } from './constants'
 
-test('email and password sign-in shows the bookmark list', async ({ page }) => {
+test('メールアドレスとパスワードでサインインするとブックマーク一覧が表示される', async ({
+  page
+}) => {
   await page.goto('/sign-in')
   await page.getByRole('textbox', { name: 'メール' }).fill(E2E_USER.email)
   await page.getByRole('textbox', { name: 'パスワード' }).fill(E2E_USER.password)
@@ -491,7 +493,7 @@ import { readRuntime } from './runtime'
 
 const authFile = path.join(import.meta.dirname, '.auth/user.json')
 
-setup('authenticate', async ({ page }) => {
+setup('認証済み状態を保存する', async ({ page }) => {
   const { libsqlUrl } = await readRuntime()
   const { client, close } = createE2eClient(libsqlUrl)
   try {
@@ -565,8 +567,8 @@ projects: [
 ```ts
 import { expect, test } from './fixtures'
 
-test.describe.serial('fixture isolation', () => {
-  test('first test inserts a bookmark that must not leak', async ({ page }) => {
+test.describe.serial('fixture の独立性', () => {
+  test('先のテストが入れたブックマークは後続へ漏れない', async ({ page }) => {
     const { libsqlUrl } = await readRuntime()
     const { db, close } = createE2eDb(libsqlUrl)
     try {
@@ -584,7 +586,7 @@ test.describe.serial('fixture isolation', () => {
     await expect(page.getByRole('link', { name: 'LeakProbe' })).toBeVisible()
   })
 
-  test('second test starts from empty bookmark tables', async ({ page }) => {
+  test('後続テストは空のブックマーク表から始まる', async ({ page }) => {
     await page.goto('/')
     await expect(page.getByText('まだブックマークがありません')).toBeVisible()
     await expect(page.getByRole('link', { name: 'LeakProbe' })).toHaveCount(0)
@@ -639,7 +641,7 @@ Do not click `タイトルを取得`. Fill タイトル manually. Use URLs on `h
 ```ts
 import { expect, test } from './fixtures'
 
-test('creating a bookmark shows it on the list', async ({ page }) => {
+test('ブックマークを作成すると一覧から確認できる', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('link', { name: '新規' }).click()
   await page.getByLabel('URL').fill('https://example.test/created')
@@ -811,7 +813,7 @@ EOF
 ```ts
 import { expect, test } from './fixtures'
 
-test('fetching https://example.com fills the title field', async ({ page }) => {
+test('https://example.com のタイトル取得結果がフォームに反映される', async ({ page }) => {
   await page.goto('/bookmarks/new')
   await page.getByLabel('URL').fill('https://example.com')
   await page.getByRole('button', { name: 'タイトルを取得' }).click()

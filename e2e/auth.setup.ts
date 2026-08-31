@@ -10,7 +10,7 @@ import { readRuntime } from './runtime'
 
 const authFile = path.join(import.meta.dirname, '.auth/user.json')
 
-setup('authenticate', async ({ page }) => {
+setup('認証済み状態を保存する', async ({ page }) => {
   const { libsqlUrl } = await readRuntime()
   const { client, close } = createE2eClient(libsqlUrl)
   try {

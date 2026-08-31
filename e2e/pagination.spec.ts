@@ -51,9 +51,7 @@ async function loadNextPage(page: Page): Promise<void> {
   }).toPass(passOptions)
 }
 
-test('cursor pagination appends older bookmarks without removing the first page', async ({
-  page
-}) => {
+test('cursor pagination で次ページを読むと既存項目を残したまま追加される', async ({ page }) => {
   await seedPaginatedBookmarks()
   await page.goto('/')
 

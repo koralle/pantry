@@ -40,7 +40,7 @@ async function deleteBookmark(page: Page): Promise<void> {
   await confirmButton.click()
 }
 
-test('deleting a bookmark removes it from the list', async ({ page }) => {
+test('ブックマークを削除すると一覧から消える', async ({ page }) => {
   await seedDoomedBookmark()
   await deleteBookmark(page)
   await expect(page.getByRole('link', { name: 'Doomed' })).toHaveCount(0)

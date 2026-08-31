@@ -38,7 +38,7 @@ async function seedSearchBookmarks(): Promise<void> {
   }
 }
 
-test('search shows only bookmarks matching the query', async ({ page }) => {
+test('検索するとクエリに一致するブックマークだけが表示される', async ({ page }) => {
   await seedSearchBookmarks()
   await page.goto('/')
   const searchField = page.getByPlaceholder('タイトル・URL・メモ')
@@ -54,7 +54,7 @@ test('search shows only bookmarks matching the query', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Gamma both' })).toHaveCount(0)
 })
 
-test('tag filter shows only bookmarks assigned to the tag', async ({ page }) => {
+test('タグで絞り込むと対象のブックマークだけが表示される', async ({ page }) => {
   await seedSearchBookmarks()
   await page.goto('/')
   await page.getByRole('navigation', { name: 'タグ' }).getByRole('link', { name: /rust/ }).click()
