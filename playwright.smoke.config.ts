@@ -6,7 +6,7 @@ export default {
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
     {
       name: 'smoke',
-      testMatch: /fetch-title\.smoke\.spec\.ts/,
+      testMatch: /.*\.smoke\.spec\.ts/,
       dependencies: ['setup'],
       use: { storageState: 'e2e/.auth/user.json' }
     }

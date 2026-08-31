@@ -38,7 +38,7 @@ export default defineConfig({
     {
       name: 'main',
       testMatch: /.*\.spec\.ts/,
-      testIgnore: [/sign-in\.spec\.ts/, /fetch-title\.smoke\.spec\.ts/],
+      testIgnore: [/sign-in\.spec\.ts/, /.*\.smoke\.spec\.ts/],
       dependencies: ['setup'],
       use: { storageState: 'e2e/.auth/user.json' }
     }
