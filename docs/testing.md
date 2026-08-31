@@ -25,6 +25,16 @@ UI のブラウザ検証の正本は Storybook の Story と `play` 関数とす
 - Component Story は注入された port（fake）で更新 Result とフォームエラーを再現する。
 - Server Function / Router / DB は Story 内で mock または fake port に差し替え、本番実装を直接呼ばない。
 
+## 2.2 Persistence Integration（実 libSQL）
+
+DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、soft delete、user ownership、transaction 整合性）は、Testcontainers で起動した libSQL に本番 migration を適用して検証する。
+
+- 実行: `pnpm run test:persistence`（Docker が必要）
+- 通常の `pnpm test` からは分離しており、Docker を起動しない
+- 外部 Turso には接続しない
+- Pull Request CI の `persistence-integration` job で実行する
+- マージ条件にするには、GitHub の branch protection / ruleset へ status check `persistence-integration` を required として追加する
+
 ## 3. Playwright MCP検証
 
 ローカルとデプロイ済みWorkerに対し、Playwright MCPで実ブラウザ検証を実施する。
@@ -40,6 +50,6 @@ UI のブラウザ検証の正本は Storybook の Story と `play` 関数とす
 
 1. Tursoへのマイグレーションが適用できる。
 2. 初期ユーザー作成CLIが成功する。
-3. `pnpm run format:check`、`pnpm run lint`、`pnpm run typecheck`、`pnpm run test`、`pnpm run build`が成功する。
+3. `pnpm run format:check`、`pnpm run lint`、`pnpm run typecheck`、`pnpm run test`、`pnpm run test:persistence`、`pnpm run build`が成功する。
 4. ローカルでPlaywright MCP検証を完了する。
 5. Cloudflare Workersへデプロイし、本番URLでもPlaywright MCPの主要フローを再確認する。

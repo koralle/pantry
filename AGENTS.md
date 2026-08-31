@@ -23,17 +23,18 @@
 
 ## 開発コマンド
 
-| コマンド               | 説明                                                        |
-| ---------------------- | ----------------------------------------------------------- |
-| `pnpm run dev`         | 開発サーバー起動（Vite + workerd）                          |
-| `pnpm run build`       | プロダクションビルド                                        |
-| `pnpm run preview`     | ビルド成果物を preview                                      |
-| `pnpm run deploy`      | Cloudflare Workers にデプロイ                               |
-| `pnpm run test`        | テスト実行（Vitest）                                        |
-| `pnpm run cf-typegen`  | Worker バインディングの型生成                               |
-| `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用                    |
-| `pnpm run db:seed`     | Turso開発DBへテスト／開発データを投入                       |
-| `pnpm run lint:markup` | HTML/JSX のアクセシビリティ・マークアップ検査（markuplint） |
+| コマンド                    | 説明                                                        |
+| --------------------------- | ----------------------------------------------------------- |
+| `pnpm run dev`              | 開発サーバー起動（Vite + workerd）                          |
+| `pnpm run build`            | プロダクションビルド                                        |
+| `pnpm run preview`          | ビルド成果物を preview                                      |
+| `pnpm run deploy`           | Cloudflare Workers にデプロイ                               |
+| `pnpm run test`             | テスト実行（Vitest。Docker 不要）                           |
+| `pnpm run test:persistence` | Persistence Integration test（Testcontainers + 実 libSQL）  |
+| `pnpm run cf-typegen`       | Worker バインディングの型生成                               |
+| `pnpm run migrate:dev`      | Turso開発DBへDrizzleマイグレーション適用                    |
+| `pnpm run db:seed`          | Turso開発DBへテスト／開発データを投入                       |
+| `pnpm run lint:markup`      | HTML/JSX のアクセシビリティ・マークアップ検査（markuplint） |
 
 ## 設計方針
 

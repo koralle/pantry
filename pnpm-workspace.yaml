@@ -1,7 +1,10 @@
 allowBuilds:
+  cpu-features: false
   esbuild: true
   lefthook: true
+  protobufjs: false
   sharp: true
+  ssh2: false
   workerd: true
 
 catalog:
@@ -67,6 +70,7 @@ catalogs:
     tsx: 4.23.12
   test:
     '@cloudflare/vitest-pool-workers': 0.21.3
+    testcontainers: 12.1.0
     vitest: 4.1.10
   typescript:
     '@tsconfig/strictest': 2.0.8

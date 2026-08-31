@@ -78,6 +78,12 @@ export default defineConfig({
       }
     },
     {
+      files: ['src/test/persistence/global-setup.ts'],
+      rules: {
+        'import/no-default-export': 'off'
+      }
+    },
+    {
       files: ['src/routes/**/*.tsx'],
       rules: {
         'no-use-before-define': 'off',
@@ -100,10 +106,17 @@ export default defineConfig({
         'oxlint.config.ts',
         'panda.config.ts',
         'vite.config.ts',
-        'vitest.config.ts'
+        'vitest.config.ts',
+        'vitest.persistence.config.ts'
       ],
       rules: {
         'import/no-default-export': 'off'
+      }
+    },
+    {
+      files: ['vitest.config.ts', 'vitest.persistence.config.ts'],
+      rules: {
+        'node/no-process-env': 'off'
       }
     },
     {

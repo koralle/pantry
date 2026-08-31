@@ -64,6 +64,26 @@ describe('selectBookmarkEditor', () => {
     expect(await selectBookmarkEditor(db, actorId as never, targetId)).toBeNull()
   })
 
+  test('他ユーザーの tag は tagIds に含めない', async () => {
+    const db = await createMemoryDb()
+    await insertUser(db, actorId)
+    await insertUser(db, 'user-b')
+    await insertBookmarkRow(db, {
+      id: targetId,
+      userId: actorId,
+      url: 'https://example.com/article',
+      title: 'Article'
+    })
+    const ownTag = await insertTagRow(db, actorId, 'work')
+    const foreignTag = await insertTagRow(db, 'user-b', 'secret')
+    await insertBookmarkTagRow(db, targetId, ownTag)
+    await insertBookmarkTagRow(db, targetId, foreignTag)
+
+    const record = await selectBookmarkEditor(db, v.parse(v.string(), actorId) as never, targetId)
+
+    expect(record?.tagIds).toEqual([ownTag])
+  })
+
   test('別 user の bookmark も null を返す', async () => {
     const db = await createMemoryDb()
     await insertUser(db, 'user-b')

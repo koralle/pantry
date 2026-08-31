@@ -7,6 +7,9 @@ const config: KnipConfig = {
   // The tanstack-entry stub is an alias target loaded by the Vitest bundler
   // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
   entry: ['auth.ts', 'scripts/**/*.ts', 'vitest/tanstack-entry-stub.ts'],
+  vitest: {
+    config: ['vitest.config.ts', 'vitest.persistence.config.ts']
+  },
   storybook: {
     config: ['src/storybook/main.ts'],
     entry: [
