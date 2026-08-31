@@ -45,3 +45,10 @@ screenshots/
 *storybook.log
 debug-storybook.log
 storybook-static
+
+# Playwright E2E
+/playwright-report/
+/test-results/
+/blob-report/
+/e2e/.auth/
+/e2e/.runtime/

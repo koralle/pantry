@@ -22,6 +22,8 @@
     "storybook": "storybook dev -p 6006 -c src/storybook",
     "studio:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit studio",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --config playwright.smoke.config.ts",
     "test:persistence": "vitest run --config vitest.persistence.config.ts",
     "typecheck": "tsc"
   },
@@ -61,6 +63,7 @@
     "@markuplint/jsx-parser": "catalog:lint",
     "@markuplint/react-spec": "catalog:lint",
     "@pandacss/dev": "catalog:ui",
+    "@playwright/test": "catalog:test",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/builder-vite": "catalog:storybook",
     "@storybook/tanstack-react": "catalog:storybook",

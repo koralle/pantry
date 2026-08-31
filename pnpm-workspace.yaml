@@ -72,6 +72,7 @@ catalogs:
     '@cloudflare/vitest-pool-workers': 0.21.3
     testcontainers: 12.1.0
     vitest: 4.1.10
+    '@playwright/test': 1.62.1
   typescript:
     '@tsconfig/strictest': 2.0.8
     typescript: 7.0.2
