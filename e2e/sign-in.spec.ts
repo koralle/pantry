@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test'
-
 import { E2E_USER } from './constants'
+import { expect, test } from './fixtures'
 
 test('email and password sign-in shows the bookmark list', async ({ page }) => {
   await page.goto('/sign-in')
