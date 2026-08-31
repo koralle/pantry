@@ -40,6 +40,7 @@ async function seedSearchBookmarks(): Promise<void> {
 test('search shows only bookmarks matching the query', async ({ page }) => {
   await seedSearchBookmarks()
   await page.goto('/')
+  await expect(page.getByRole('link', { name: 'Alpha rust' })).toBeVisible()
   await page.getByPlaceholder('タイトル・URL・メモ').fill('Alpha')
   await page.getByRole('button', { name: '検索' }).click()
 
