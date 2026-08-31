@@ -4,6 +4,7 @@ import * as v from 'valibot'
 import type { AppDb } from '../../../db/app-db'
 import { bookmarkTable } from '../../../db/schema/bookmark'
 import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
+import { tagsTable } from '../../../db/schema/tag'
 import type { UserId } from '../../auth/domain/auth-values'
 import { bookmarkIdSchema } from '../domain/bookmark-values'
 
@@ -43,9 +44,10 @@ export async function selectBookmarkEditor(
   }
 
   const tagRows = await db
-    .select({ tagId: bookmarkTagsTable.tagId })
+    .select({ tagId: tagsTable.id })
     .from(bookmarkTagsTable)
-    .where(eq(bookmarkTagsTable.bookmarkId, id))
+    .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+    .where(and(eq(bookmarkTagsTable.bookmarkId, id), eq(tagsTable.userId, userId)))
 
   return {
     id: v.parse(bookmarkIdSchema, id),

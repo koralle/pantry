@@ -13,6 +13,7 @@ import {
 } from '../../features/bookmarks/domain/bookmark-values'
 import { getBookmarkDetail } from '../../features/bookmarks/persistence/get-bookmark-detail'
 import { insertBookmark } from '../../features/bookmarks/persistence/insert-bookmark'
+import { listBookmarks } from '../../features/bookmarks/persistence/list-bookmarks'
 import { selectBookmarkEditor } from '../../features/bookmarks/persistence/select-bookmark-editor'
 import { softDeleteBookmark } from '../../features/bookmarks/persistence/soft-delete-bookmark'
 import { updateBookmark } from '../../features/bookmarks/persistence/update-bookmark'
@@ -132,6 +133,33 @@ describe('user ownership on migrated libSQL', () => {
     expect(
       shelf.map((tag) => ({ id: tag.id, name: tag.name, bookmarkCount: tag.bookmarkCount }))
     ).toEqual([{ id: workId, name: 'work', bookmarkCount: 1 }])
+  })
+
+  test('own bookmark に紐づいた他ユーザーの tag は一覧・詳細・編集 projection に出さない', async () => {
+    const db = persistence.getDb()
+    const actorId = await seedUser(db, actor)
+    await seedUser(db, other)
+    const ownTagId = await seedTag(db, { userId: actor, name: 'work' })
+    const foreignTagId = await seedTag(db, { userId: other, name: 'secret' })
+    await seedBookmark(db, {
+      id: ownBookmarkId,
+      userId: actor,
+      title: '自分',
+      tagIds: [ownTagId, foreignTagId]
+    })
+
+    const page = await listBookmarks(db, {
+      userId: actorId,
+      tagMode: 'and',
+      sort: 'newest'
+    })
+    const detail = await getBookmarkDetail(db, actorId, { id: ownBookmarkId })
+    const editor = await selectBookmarkEditor(db, actorId, ownBookmarkId)
+
+    expect(page.items.map((item) => item.id)).toEqual([ownBookmarkId])
+    expect(page.items[0]?.tags).toEqual([{ id: ownTagId, name: 'work' }])
+    expect(detail?.tagNames).toEqual(['work'])
+    expect(editor?.tagIds).toEqual([ownTagId])
   })
 
   test('selectTags は他ユーザーの tag を返さない', async () => {
