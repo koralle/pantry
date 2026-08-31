@@ -35,7 +35,20 @@ DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、sof
 - Pull Request CI の `persistence-integration` job で実行する
 - マージ条件にするには、GitHub の branch protection / ruleset へ status check `persistence-integration` を required として追加する
 
-## 3. Playwright MCP検証
+## 2.3 Playwright E2E（実ブラウザ + ローカル Worker）
+
+主要ユーザーフローは、Chromium からローカル Worker と実 libSQL までを Playwright Test で自動検証する。
+
+- 実行: `pnpm run test:e2e`（Docker と Chromium が必要）
+- 経路: Chromium → UI → TanStack Query → oRPC → UseCase → Drizzle → Testcontainers libSQL
+- Pantry は `@cloudflare/vite-plugin` を使う `pnpm vite dev` で起動し、Node.js 専用サーバーへ置き換えない
+- Pull Request CI の `e2e` job を blocking check として実行する
+- マージ条件にするには、`persistence-integration` と同様に GitHub の branch protection / ruleset へ status check `e2e` を required として追加する
+- 通常の `pnpm test` は Playwright E2E から分離し、Docker と Browser を起動しない
+- 外部 HTTP smoke は `pnpm run test:e2e:smoke` で `https://example.com` へ実アクセスする
+- workflow `E2E external HTTP smoke` は週次および手動で実行し、Pull Request の merge gate には含めない
+
+## 3. 手動・探索的なPlaywright MCP検証（自動 E2E は Playwright Test）
 
 ローカルとデプロイ済みWorkerに対し、Playwright MCPで実ブラウザ検証を実施する。
 
