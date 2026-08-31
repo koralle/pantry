@@ -124,13 +124,24 @@ describe('listBookmarks on migrated libSQL', () => {
     expect(orResult.items.map((item) => item.id)).toEqual([bookmarkId(2), bookmarkId(1)])
   })
 
-  test(String.raw`q の % _ はワイルドカードではなくリテラルとして一致させる`, async () => {
+  test('q の % はワイルドカードではなくリテラルとして一致させる', async () => {
     const db = persistence.getDb()
     await seedUser(db, 'user-a')
-    await seedBookmark(db, { id: bookmarkId(1), userId: 'user-a', title: '50%_off' })
+    await seedBookmark(db, { id: bookmarkId(1), userId: 'user-a', title: '50%off' })
     await seedBookmark(db, { id: bookmarkId(2), userId: 'user-a', title: '50Xoff' })
 
-    const page = await listBookmarks(db, query('user-a', { q: '50%_' }))
+    const page = await listBookmarks(db, query('user-a', { q: '50%' }))
+
+    expect(page.items.map((item) => item.id)).toEqual([bookmarkId(1)])
+  })
+
+  test('q の _ はワイルドカードではなくリテラルとして一致させる', async () => {
+    const db = persistence.getDb()
+    await seedUser(db, 'user-a')
+    await seedBookmark(db, { id: bookmarkId(1), userId: 'user-a', title: '50_off' })
+    await seedBookmark(db, { id: bookmarkId(2), userId: 'user-a', title: '50Xoff' })
+
+    const page = await listBookmarks(db, query('user-a', { q: '50_' }))
 
     expect(page.items.map((item) => item.id)).toEqual([bookmarkId(1)])
   })
