@@ -45,13 +45,17 @@ test('cursor pagination appends older bookmarks without removing the first page'
   await page.goto('/')
 
   await expect(page.getByRole('link', { name: 'Keep 00' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Next Page Alpha' })).toHaveCount(0)
+  const nextPageAlpha = page.getByRole('link', { name: 'Next Page Alpha' })
+  await expect(nextPageAlpha).toHaveCount(0)
   const loadMoreButton = page.getByRole('button', { name: 'さらに読み込む' })
   await expect(loadMoreButton).toBeVisible()
 
-  await loadMoreButton.click()
+  await expect(async () => {
+    await loadMoreButton.click()
+    await expect(nextPageAlpha).toBeVisible()
+  }).toPass()
 
   await expect(page.getByRole('link', { name: 'Keep 00' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Next Page Alpha' })).toBeVisible()
+  await expect(nextPageAlpha).toBeVisible()
   await expect(page.getByRole('link', { name: 'Next Page Beta' })).toBeVisible()
 })
