@@ -3,7 +3,6 @@ import type { Page } from '@playwright/test'
 import { BOOKMARK_LIST_PAGE_SIZE } from '../src/features/bookmarks/lib/bookmark-list-page-size'
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks } from './db'
 import { expect, test } from './fixtures'
-import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
 import { readRuntime } from './runtime'
 
 async function seedPaginatedBookmarks(): Promise<void> {
@@ -43,12 +42,10 @@ async function seedPaginatedBookmarks(): Promise<void> {
 
 async function loadNextPage(page: Page): Promise<void> {
   const loadMoreButton = page.getByRole('button', { name: 'さらに読み込む' })
-  const nextPageAlpha = page.getByRole('link', { name: 'Next Page Alpha' })
   await expect(loadMoreButton).toBeVisible()
-  await expect(async () => {
-    await loadMoreButton.click()
-    await expect(nextPageAlpha).toBeVisible({ timeout: PASS_EXPECT_TIMEOUT_MS })
-  }).toPass(passOptions)
+  await expect(loadMoreButton).toBeEnabled()
+  await loadMoreButton.click()
+  await expect(page.getByRole('link', { name: 'Next Page Alpha' })).toBeVisible()
 }
 
 test('cursor pagination で次ページを読むと既存項目を残したまま追加される', async ({ page }) => {

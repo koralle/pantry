@@ -1,6 +1,5 @@
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks, seedTag } from './db'
 import { expect, test } from './fixtures'
-import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
 import { readRuntime } from './runtime'
 
 async function seedSearchBookmarks(): Promise<void> {
@@ -41,13 +40,13 @@ async function seedSearchBookmarks(): Promise<void> {
 test('検索するとクエリに一致するブックマークだけが表示される', async ({ page }) => {
   await seedSearchBookmarks()
   await page.goto('/')
+  await expect(page.getByRole('link', { name: 'Alpha rust' })).toBeVisible()
+
   const searchField = page.getByPlaceholder('タイトル・URL・メモ')
-  const searchButton = page.getByRole('button', { name: '検索' })
-  await expect(async () => {
-    await searchField.fill('Alpha')
-    await searchButton.click()
-    await expect(page).toHaveURL(/(?:\?|&)q=Alpha(?:&|$)/, { timeout: PASS_EXPECT_TIMEOUT_MS })
-  }).toPass(passOptions)
+  await searchField.fill('Alpha')
+  await expect(searchField).toHaveValue('Alpha')
+  await page.getByRole('button', { name: '検索' }).click()
+  await expect(page).toHaveURL(/(?:\?|&)q=Alpha(?:&|$)/)
 
   await expect(page.getByRole('link', { name: 'Alpha rust' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Beta python' })).toHaveCount(0)

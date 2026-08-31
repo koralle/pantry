@@ -1,8 +1,8 @@
-import type { Locator, Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
 
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmark } from './db'
 import { expect, test } from './fixtures'
-import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
+import { openDialog } from './open-dialog'
 import { readRuntime } from './runtime'
 
 async function seedDoomedBookmark(): Promise<void> {
@@ -21,20 +21,10 @@ async function seedDoomedBookmark(): Promise<void> {
   }
 }
 
-async function openDialog(trigger: Locator, content: Locator): Promise<void> {
-  await trigger.click()
-  await expect(async () => {
-    if (await content.isVisible()) {
-      return
-    }
-    await trigger.click()
-    await expect(content).toBeVisible({ timeout: PASS_EXPECT_TIMEOUT_MS })
-  }).toPass(passOptions)
-}
-
 async function deleteBookmark(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('link', { name: 'Doomed' }).click()
+  await expect(page.getByRole('heading', { name: 'Doomed' })).toBeVisible()
   const confirmButton = page.getByRole('button', { name: '削除を確認' })
   await openDialog(page.getByRole('button', { name: '削除' }), confirmButton)
   await confirmButton.click()

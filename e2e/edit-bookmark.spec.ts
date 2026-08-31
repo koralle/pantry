@@ -1,8 +1,8 @@
-import type { Locator, Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
 
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmark, seedTag } from './db'
 import { expect, test } from './fixtures'
-import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
+import { openDialog } from './open-dialog'
 import { readRuntime } from './runtime'
 
 async function seedEditableBookmark(): Promise<void> {
@@ -24,21 +24,11 @@ async function seedEditableBookmark(): Promise<void> {
   }
 }
 
-async function openDialog(trigger: Locator, content: Locator): Promise<void> {
-  await trigger.click()
-  await expect(async () => {
-    if (await content.isVisible()) {
-      return
-    }
-    await trigger.click()
-    await expect(content).toBeVisible({ timeout: PASS_EXPECT_TIMEOUT_MS })
-  }).toPass(passOptions)
-}
-
 async function updateBookmarkTags(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('link', { name: 'Editable' }).click()
   await page.getByRole('link', { name: '編集' }).click()
+  await expect(page.getByLabel('タイトル')).toHaveValue('Editable')
   await openDialog(
     page.getByRole('button', { name: 'タグを選ぶ' }),
     page.getByRole('option', { name: 'keep-tag' })
