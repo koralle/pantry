@@ -58,9 +58,9 @@ async function expectUpdatedDetail(page: Page): Promise<void> {
 
 async function expectUpdatedList(page: Page): Promise<void> {
   await page.getByRole('link', { name: '一覧へ戻る' }).click()
-  const bookmarkLink = page.getByRole('link', { name: 'Editable updated' })
-  await expect(bookmarkLink.getByText('keep-tag', { exact: true })).toBeVisible()
-  await expect(bookmarkLink.getByText('drop-tag', { exact: true })).toHaveCount(0)
+  const bookmarkRow = page.getByRole('row', { name: 'Editable updated' })
+  await expect(bookmarkRow.getByText('keep-tag', { exact: true })).toBeVisible()
+  await expect(bookmarkRow.getByText('drop-tag', { exact: true })).toHaveCount(0)
 }
 
 test('editing a bookmark updates its tags', async ({ page }) => {
