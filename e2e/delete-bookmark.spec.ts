@@ -2,6 +2,7 @@ import type { Locator, Page } from '@playwright/test'
 
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmark } from './db'
 import { expect, test } from './fixtures'
+import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
 import { readRuntime } from './runtime'
 
 async function seedDoomedBookmark(): Promise<void> {
@@ -27,8 +28,8 @@ async function openDialog(trigger: Locator, content: Locator): Promise<void> {
       return
     }
     await trigger.click()
-    await expect(content).toBeVisible()
-  }).toPass()
+    await expect(content).toBeVisible({ timeout: PASS_EXPECT_TIMEOUT_MS })
+  }).toPass(passOptions)
 }
 
 async function deleteBookmark(page: Page): Promise<void> {

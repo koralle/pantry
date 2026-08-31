@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test'
 import { BOOKMARK_LIST_PAGE_SIZE } from '../src/features/bookmarks/lib/bookmark-list-page-size'
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks } from './db'
 import { expect, test } from './fixtures'
+import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
 import { readRuntime } from './runtime'
 
 async function seedPaginatedBookmarks(): Promise<void> {
@@ -46,8 +47,8 @@ async function loadNextPage(page: Page): Promise<void> {
   await expect(loadMoreButton).toBeVisible()
   await expect(async () => {
     await loadMoreButton.click()
-    await expect(nextPageAlpha).toBeVisible()
-  }).toPass()
+    await expect(nextPageAlpha).toBeVisible({ timeout: PASS_EXPECT_TIMEOUT_MS })
+  }).toPass(passOptions)
 }
 
 test('cursor pagination appends older bookmarks without removing the first page', async ({

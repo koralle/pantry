@@ -1,5 +1,6 @@
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks, seedTag } from './db'
 import { expect, test } from './fixtures'
+import { PASS_EXPECT_TIMEOUT_MS, passOptions } from './pass'
 import { readRuntime } from './runtime'
 
 async function seedSearchBookmarks(): Promise<void> {
@@ -45,8 +46,8 @@ test('search shows only bookmarks matching the query', async ({ page }) => {
   await expect(async () => {
     await searchField.fill('Alpha')
     await searchButton.click()
-    await expect(page).toHaveURL(/(?:\?|&)q=Alpha(?:&|$)/)
-  }).toPass()
+    await expect(page).toHaveURL(/(?:\?|&)q=Alpha(?:&|$)/, { timeout: PASS_EXPECT_TIMEOUT_MS })
+  }).toPass(passOptions)
 
   await expect(page.getByRole('link', { name: 'Alpha rust' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Beta python' })).toHaveCount(0)
