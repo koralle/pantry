@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test'
+
 import { BOOKMARK_LIST_PAGE_SIZE } from '../src/features/bookmarks/lib/bookmark-list-page-size'
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmarks } from './db'
 import { expect, test } from './fixtures'
@@ -38,6 +40,16 @@ async function seedPaginatedBookmarks(): Promise<void> {
   }
 }
 
+async function loadNextPage(page: Page): Promise<void> {
+  const loadMoreButton = page.getByRole('button', { name: 'さらに読み込む' })
+  const nextPageAlpha = page.getByRole('link', { name: 'Next Page Alpha' })
+  await expect(loadMoreButton).toBeVisible()
+  await expect(async () => {
+    await loadMoreButton.click()
+    await expect(nextPageAlpha).toBeVisible()
+  }).toPass()
+}
+
 test('cursor pagination appends older bookmarks without removing the first page', async ({
   page
 }) => {
@@ -47,13 +59,8 @@ test('cursor pagination appends older bookmarks without removing the first page'
   await expect(page.getByRole('link', { name: 'Keep 00' })).toBeVisible()
   const nextPageAlpha = page.getByRole('link', { name: 'Next Page Alpha' })
   await expect(nextPageAlpha).toHaveCount(0)
-  const loadMoreButton = page.getByRole('button', { name: 'さらに読み込む' })
-  await expect(loadMoreButton).toBeVisible()
 
-  await expect(async () => {
-    await loadMoreButton.click()
-    await expect(nextPageAlpha).toBeVisible()
-  }).toPass()
+  await loadNextPage(page)
 
   await expect(page.getByRole('link', { name: 'Keep 00' })).toBeVisible()
   await expect(nextPageAlpha).toBeVisible()
