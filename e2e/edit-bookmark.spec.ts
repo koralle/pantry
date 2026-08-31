@@ -1,8 +1,10 @@
+import type { Locator, Page } from '@playwright/test'
+
 import { bookmarkId, createE2eDb, findE2eUserId, seedBookmark, seedTag } from './db'
 import { expect, test } from './fixtures'
 import { readRuntime } from './runtime'
 
-test('editing a bookmark updates its tags', async ({ page }) => {
+async function seedEditableBookmark(): Promise<void> {
   const { libsqlUrl } = await readRuntime()
   const { db, close } = createE2eDb(libsqlUrl)
   try {
@@ -19,23 +21,50 @@ test('editing a bookmark updates its tags', async ({ page }) => {
   } finally {
     close()
   }
+}
 
+async function openDialog(trigger: Locator, content: Locator): Promise<void> {
+  await trigger.click()
+  await expect(async () => {
+    if (await content.isVisible()) {
+      return
+    }
+    await trigger.click()
+    await expect(content).toBeVisible()
+  }).toPass()
+}
+
+async function updateBookmarkTags(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('link', { name: 'Editable' }).click()
   await page.getByRole('link', { name: '編集' }).click()
-  await page.getByRole('button', { name: 'タグを選ぶ' }).click()
+  await openDialog(
+    page.getByRole('button', { name: 'タグを選ぶ' }),
+    page.getByRole('option', { name: 'keep-tag' })
+  )
   await page.getByRole('option', { name: 'keep-tag' }).click()
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'drop-tagを外す' }).click()
   await page.getByLabel('タイトル').fill('Editable updated')
   await page.getByRole('button', { name: '更新' }).click()
+}
 
+async function expectUpdatedDetail(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Editable updated' })).toBeVisible()
   await expect(page.getByText('keep-tag', { exact: true })).toBeVisible()
   await expect(page.getByText('drop-tag', { exact: true })).toHaveCount(0)
+}
 
+async function expectUpdatedList(page: Page): Promise<void> {
   await page.getByRole('link', { name: '一覧へ戻る' }).click()
   const bookmarkLink = page.getByRole('link', { name: 'Editable updated' })
   await expect(bookmarkLink.getByText('keep-tag', { exact: true })).toBeVisible()
   await expect(page.getByText('drop-tag', { exact: true })).toHaveCount(0)
+}
+
+test('editing a bookmark updates its tags', async ({ page }) => {
+  await seedEditableBookmark()
+  await updateBookmarkTags(page)
+  await expectUpdatedDetail(page)
+  await expectUpdatedList(page)
 })
