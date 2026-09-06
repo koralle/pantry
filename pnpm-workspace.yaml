@@ -61,7 +61,7 @@ catalogs:
     ultracite: 7.11.0
   react:
     "@types/react": 19.2.18
-    "@types/react-dom": 19.2.5
+    "@types/react-dom": 19.2.7
     react: 19.2.8
     react-dom: 19.2.8
   runtime:
