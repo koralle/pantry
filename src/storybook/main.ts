@@ -1,9 +1,10 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { defineMain } from "@storybook/tanstack-react/node";
 import viteReact from "@vitejs/plugin-react";
 
-const { dirname } = import.meta;
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineMain({
   addons: ["@storybook/addon-docs"],

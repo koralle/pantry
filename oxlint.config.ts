@@ -101,6 +101,12 @@ export default defineConfig({
       },
     },
     {
+      files: ["src/storybook/main.ts"],
+      rules: {
+        "unicorn/prefer-import-meta-properties": "off",
+      },
+    },
+    {
       files: ["src/features/bookmarks/server/fetch-page-title.server.ts"],
       rules: {
         complexity: "off",
