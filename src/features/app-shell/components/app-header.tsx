@@ -96,7 +96,14 @@ const HeaderSearch = ({
   readonly listSearch: BookmarkSearchSchema | undefined;
 }) => {
   const navigate = useNavigate();
-  const [draftQ, setDraftQ] = useState(listSearch?.q ?? "");
+  const committedQ = listSearch?.q ?? "";
+  const [draftQ, setDraftQ] = useState(committedQ);
+  const [prevCommittedQ, setPrevCommittedQ] = useState(committedQ);
+
+  if (committedQ !== prevCommittedQ) {
+    setPrevCommittedQ(committedQ);
+    setDraftQ(committedQ);
+  }
 
   const commitSearch = (raw: string) => {
     const nextQ = raw.trim();
@@ -166,7 +173,7 @@ export const AppHeader = ({
         {shelfTrigger}
       </div>
 
-      <HeaderSearch key={listSearch?.q ?? ""} listSearch={listSearch} />
+      <HeaderSearch listSearch={listSearch} />
 
       <div className={headerActions}>
         <StyledLink
