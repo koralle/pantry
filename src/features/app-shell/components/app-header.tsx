@@ -1,7 +1,7 @@
 import type { LinkProps, RegisteredRouter } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import { LogOut, Plus, Search, Settings, Tags } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { Label, SearchField } from "react-aria-components";
 import { css } from "styled-system/css";
@@ -90,24 +90,13 @@ const searchSubmit = css({
   paddingInline: "3",
 });
 
-export const AppHeader = ({
-  newBookmarkSearch,
+const HeaderSearch = ({
   listSearch,
-  shelfTrigger,
 }: {
-  readonly newBookmarkSearch: NonNullable<
-    LinkProps<"a", RegisteredRouter, string, "/bookmarks/new">["search"]
-  >;
   readonly listSearch: BookmarkSearchSchema | undefined;
-  readonly shelfTrigger: ReactNode;
 }) => {
-  const { handleSignOut, isPending } = useSignOut();
   const navigate = useNavigate();
   const [draftQ, setDraftQ] = useState(listSearch?.q ?? "");
-
-  useEffect(() => {
-    setDraftQ(listSearch?.q ?? "");
-  }, [listSearch?.q]);
 
   const commitSearch = (raw: string) => {
     const nextQ = raw.trim();
@@ -120,6 +109,47 @@ export const AppHeader = ({
       to: "/",
     });
   };
+
+  return (
+    <div className={searchForm}>
+      <SearchField
+        className={searchField}
+        value={draftQ}
+        onChange={setDraftQ}
+        onSubmit={commitSearch}
+      >
+        <Label className={srOnly}>検索</Label>
+        <StyledInput
+          type="search"
+          placeholder="タイトル・URL・メモ"
+          enterKeyHint="search"
+        />
+      </SearchField>
+      <StyledButton
+        className={searchSubmit}
+        aria-label="検索"
+        onPress={() => {
+          commitSearch(draftQ);
+        }}
+      >
+        <Search size={16} aria-hidden />
+      </StyledButton>
+    </div>
+  );
+};
+
+export const AppHeader = ({
+  newBookmarkSearch,
+  listSearch,
+  shelfTrigger,
+}: {
+  readonly newBookmarkSearch: NonNullable<
+    LinkProps<"a", RegisteredRouter, string, "/bookmarks/new">["search"]
+  >;
+  readonly listSearch: BookmarkSearchSchema | undefined;
+  readonly shelfTrigger: ReactNode;
+}) => {
+  const { handleSignOut, isPending } = useSignOut();
 
   return (
     <header className={shellHeader}>
@@ -136,30 +166,7 @@ export const AppHeader = ({
         {shelfTrigger}
       </div>
 
-      <div className={searchForm}>
-        <SearchField
-          className={searchField}
-          value={draftQ}
-          onChange={setDraftQ}
-          onSubmit={commitSearch}
-        >
-          <Label className={srOnly}>検索</Label>
-          <StyledInput
-            type="search"
-            placeholder="タイトル・URL・メモ"
-            enterKeyHint="search"
-          />
-        </SearchField>
-        <StyledButton
-          className={searchSubmit}
-          aria-label="検索"
-          onPress={() => {
-            commitSearch(draftQ);
-          }}
-        >
-          <Search size={16} aria-hidden />
-        </StyledButton>
-      </div>
+      <HeaderSearch key={listSearch?.q ?? ""} listSearch={listSearch} />
 
       <div className={headerActions}>
         <StyledLink
