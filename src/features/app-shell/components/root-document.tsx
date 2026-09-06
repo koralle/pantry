@@ -1,23 +1,18 @@
-import type { TanStackDevtoolsReactInit } from "@tanstack/react-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HeadContent, Scripts } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { lazy, Suspense } from "react";
+import type { ReactNode } from "react";
 
-const tanstackDevtoolsConfig = {
-  position: "bottom-right",
-} satisfies TanStackDevtoolsReactInit["config"];
-
-const tanstackDevtoolsPlugins = [
-  {
-    name: "Tanstack Router",
-    render: <TanStackRouterDevtoolsPanel />,
-  },
-] satisfies TanStackDevtoolsReactInit["plugins"];
+const RootDevtools = import.meta.env.DEV
+  ? lazy(async () => {
+      const { RootDevtools: Devtools } = await import("./root-devtools");
+      return { default: Devtools };
+    })
+  : () => null;
 
 export const RootDocument = ({
   children,
 }: {
-  readonly children: React.ReactNode;
+  readonly children: ReactNode;
 }) => (
   <html lang="ja">
     <head>
@@ -35,10 +30,9 @@ export const RootDocument = ({
     <body>
       {children}
       {import.meta.env.DEV ? (
-        <TanStackDevtools
-          config={tanstackDevtoolsConfig}
-          plugins={tanstackDevtoolsPlugins}
-        />
+        <Suspense fallback={null}>
+          <RootDevtools />
+        </Suspense>
       ) : null}
       <Scripts />
     </body>
