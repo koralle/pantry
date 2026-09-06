@@ -23,12 +23,12 @@
 
 ## エラー所有権
 
-| エラー                                | 所有者                                  | 表示先                                              |
-| ------------------------------------- | --------------------------------------- | --------------------------------------------------- |
-| Formisch schema validation            | `BookmarkForm`のFormisch store          | field、summary                                      |
-| ブックマーク更新のserver/domain error | `BookmarkEditor`の`BookmarkEditorError` | `BookmarkForm`                                      |
-| タイトル取得                          | `useBookmarkTitleFetch`                 | summary                                             |
-| エラーsummary                         | `BookmarkFormSummary`                   | 完全一致メッセージの重複除去と表示。stateを持たない |
+| エラー | 所有者 | 表示先 |
+| --- | --- | --- |
+| Formisch schema validation | `BookmarkForm`のFormisch store | field、summary |
+| ブックマーク更新のserver/domain error | `BookmarkEditor`の`BookmarkEditorError` | `BookmarkForm` |
+| タイトル取得 | `useBookmarkTitleFetch` | summary |
+| エラーsummary | `BookmarkFormSummary` | 完全一致メッセージの重複除去と表示。stateを持たない |
 
 `BookmarkForm`は`BookmarkFormServerError`を受け取って表示するが、Formisch storeへコピーしない。Formischの`getErrors`が返すものはFormisch自身のvalidation errorだけにする。
 
@@ -37,16 +37,16 @@
 Application層の`UpdateBookmarkError`は、現在の判別可能unionを維持する。`BookmarkEditor`はそれを画面用の`BookmarkEditorError`へ変換する。
 
 ```ts
-type BookmarkFormFieldKey = 'url' | 'title' | 'note'
+type BookmarkFormFieldKey = "url" | "title" | "note";
 
 type BookmarkFormServerError = {
-  readonly summary?: string
-  readonly fields?: Partial<Record<BookmarkFormFieldKey, string>>
-}
+  readonly summary?: string;
+  readonly fields?: Partial<Record<BookmarkFormFieldKey, string>>;
+};
 
 type BookmarkEditorError = {
-  readonly form?: BookmarkFormServerError
-}
+  readonly form?: BookmarkFormServerError;
+};
 ```
 
 `BookmarkFormServerError`はBookmarkFormのfieldだけを扱う。Formischのvalidation errorはこのモデルへ変換せず、Formisch storeだけが所有する。
@@ -74,9 +74,9 @@ type BookmarkEditorError = {
 ```ts
 type BookmarkFormProps = {
   // existing props...
-  readonly serverError?: BookmarkFormServerError | null
-  readonly onClearFieldError?: (field: BookmarkFormFieldKey) => void
-}
+  readonly serverError?: BookmarkFormServerError | null;
+  readonly onClearFieldError?: (field: BookmarkFormFieldKey) => void;
+};
 ```
 
 field入力変更時は、Formischのerror clearと同時に`onClearFieldError`を呼ぶ。`BookmarkEditor`はこのcallbackで`BookmarkEditorError.form.fields[field]`だけを削除する。server errorのstateそのものは`BookmarkEditor`に残す。

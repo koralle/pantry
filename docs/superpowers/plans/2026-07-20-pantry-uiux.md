@@ -22,23 +22,23 @@
 
 ## File Structure
 
-| Path                                                   | Responsibility                                                                |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| `src/routes/_protected/-lib/bookmark-search-schema.ts` | URL search: `view`, `q`, `tags`, `tagMode`, `sort`, pagination                |
-| `src/features/bookmarks/bookmark-list-query.ts`        | 一覧フィルタ／ソート用の純関数・入力型（テスト容易）                          |
-| `src/features/bookmarks/bookmark.function.ts`          | `fetchBookmarks` を検索対応に拡張                                             |
-| `src/features/tags/tag-shelf.ts`                       | 棚／玄関用ソートと型                                                          |
-| `src/features/tags/tag.function.ts`                    | `fetchShelfTags`、`touchTagLastUsed`、`updateTag` 拡張（pin/color/sortOrder） |
-| `src/features/bookmarks/list-layout-preference.ts`     | テーブル/カードの localStorage 読み書き                                       |
-| `src/app.css`                                          | デザイントークンと棚／箱／状態のスタイル                                      |
-| `src/routes/_protected.tsx`                            | シェル: 棚ナビ + ヘッダー                                                     |
-| `src/features/tags/components/shelf-nav.tsx`           | Desktop 棚ナビ / Mobile シート内容                                            |
-| `src/features/tags/components/entrance-boxes.tsx`      | 玄関グリッド + Five States                                                    |
-| `src/features/bookmarks/components/bookmark-list.tsx`  | 一覧（テーブル/カード）+ Five States                                          |
-| `src/features/bookmarks/components/bookmark-table.tsx` | 既存テーブルを list の一部として再利用 or 吸収                                |
-| `src/routes/_protected/index.tsx`                      | `view=entrance` / `view=list` の合成                                          |
-| `src/routes/_protected/bookmarks/$id/index.tsx` 他     | 詳細・フォーム・タグ・設定・サインインの見た目揃え                            |
-| `src/components/ui-state.tsx`                          | Loading / Empty / Error の共通枠（小さく）                                    |
+| Path | Responsibility |
+| --- | --- |
+| `src/routes/_protected/-lib/bookmark-search-schema.ts` | URL search: `view`, `q`, `tags`, `tagMode`, `sort`, pagination |
+| `src/features/bookmarks/bookmark-list-query.ts` | 一覧フィルタ／ソート用の純関数・入力型（テスト容易） |
+| `src/features/bookmarks/bookmark.function.ts` | `fetchBookmarks` を検索対応に拡張 |
+| `src/features/tags/tag-shelf.ts` | 棚／玄関用ソートと型 |
+| `src/features/tags/tag.function.ts` | `fetchShelfTags`、`touchTagLastUsed`、`updateTag` 拡張（pin/color/sortOrder） |
+| `src/features/bookmarks/list-layout-preference.ts` | テーブル/カードの localStorage 読み書き |
+| `src/app.css` | デザイントークンと棚／箱／状態のスタイル |
+| `src/routes/_protected.tsx` | シェル: 棚ナビ + ヘッダー |
+| `src/features/tags/components/shelf-nav.tsx` | Desktop 棚ナビ / Mobile シート内容 |
+| `src/features/tags/components/entrance-boxes.tsx` | 玄関グリッド + Five States |
+| `src/features/bookmarks/components/bookmark-list.tsx` | 一覧（テーブル/カード）+ Five States |
+| `src/features/bookmarks/components/bookmark-table.tsx` | 既存テーブルを list の一部として再利用 or 吸収 |
+| `src/routes/_protected/index.tsx` | `view=entrance` / `view=list` の合成 |
+| `src/routes/_protected/bookmarks/$id/index.tsx` 他 | 詳細・フォーム・タグ・設定・サインインの見た目揃え |
+| `src/components/ui-state.tsx` | Loading / Empty / Error の共通枠（小さく） |
 
 ---
 
@@ -58,53 +58,53 @@
 `bookmark-search-schema.test.ts` に追加:
 
 ```ts
-test('defaults view to entrance', async () => {
-  const result = await v.parseAsync(bookmarkSearchSchema, {})
-  expect(result.view).toBe('entrance')
-  expect(result.tagMode).toBe('and')
-  expect(result.sort).toBe('newest')
-})
+test("defaults view to entrance", async () => {
+  const result = await v.parseAsync(bookmarkSearchSchema, {});
+  expect(result.view).toBe("entrance");
+  expect(result.tagMode).toBe("and");
+  expect(result.sort).toBe("newest");
+});
 
-test('parses view=list', async () => {
-  const result = await v.parseAsync(bookmarkSearchSchema, { view: 'list' })
-  expect(result.view).toBe('list')
-})
+test("parses view=list", async () => {
+  const result = await v.parseAsync(bookmarkSearchSchema, { view: "list" });
+  expect(result.view).toBe("list");
+});
 
-test('rejects invalid view', async () => {
-  await expect(v.parseAsync(bookmarkSearchSchema, { view: 'grid' })).rejects.toThrow()
-})
+test("rejects invalid view", async () => {
+  await expect(
+    v.parseAsync(bookmarkSearchSchema, { view: "grid" })
+  ).rejects.toThrow();
+});
 ```
 
 既存の `default values` テストも `view: 'entrance'` を期待するよう更新する。
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `pnpm exec vitest run src/routes/_protected/-lib/bookmark-search-schema.test.ts`
-Expected: FAIL（`view` 未定義）
+Run: `pnpm exec vitest run src/routes/_protected/-lib/bookmark-search-schema.test.ts` Expected: FAIL（`view` 未定義）
 
 - [ ] **Step 3: Implement schema**
 
 ```ts
-import * as v from 'valibot'
+import * as v from "valibot";
 
-import { offsetPaginationQuerySchema } from '../../../schemas/pagination'
+import { offsetPaginationQuerySchema } from "../../../schemas/pagination";
 
 export const bookmarkSearchSchema = v.object({
   ...offsetPaginationQuerySchema.entries,
-  view: v.optional(v.picklist(['entrance', 'list']), 'entrance'),
+  view: v.optional(v.picklist(["entrance", "list"]), "entrance"),
   q: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
-  tagMode: v.optional(v.picklist(['and', 'or']), 'and'),
-  sort: v.optional(v.picklist(['newest', 'updated']), 'newest')
-})
+  tagMode: v.optional(v.picklist(["and", "or"]), "and"),
+  sort: v.optional(v.picklist(["newest", "updated"]), "newest"),
+});
 
-export type BookmarkSearchSchema = v.InferOutput<typeof bookmarkSearchSchema>
+export type BookmarkSearchSchema = v.InferOutput<typeof bookmarkSearchSchema>;
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `pnpm exec vitest run src/routes/_protected/-lib/bookmark-search-schema.test.ts`
-Expected: PASS
+Run: `pnpm exec vitest run src/routes/_protected/-lib/bookmark-search-schema.test.ts` Expected: PASS
 
 - [ ] **Step 5: Commit**
 
@@ -135,41 +135,40 @@ git commit -m "feat(search): add view param for entrance vs list"
 - [ ] **Step 1: Write failing tests for normalizeListQuery**
 
 ```ts
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-import { normalizeListQuery } from './bookmark-list-query'
+import { normalizeListQuery } from "./bookmark-list-query";
 
-describe('normalizeListQuery', () => {
-  test('trims q and drops empty', () => {
+describe("normalizeListQuery", () => {
+  test("trims q and drops empty", () => {
     expect(
       normalizeListQuery({
-        q: '  ',
-        tagMode: 'and',
-        sort: 'newest',
+        q: "  ",
+        tagMode: "and",
+        sort: "newest",
         limit: 50,
-        offset: 0
+        offset: 0,
       }).q
-    ).toBeUndefined()
-  })
+    ).toBeUndefined();
+  });
 
-  test('normalizes tag names', () => {
+  test("normalizes tag names", () => {
     expect(
       normalizeListQuery({
-        tagNames: [' React ', 'react', 'TS'],
-        tagMode: 'or',
-        sort: 'updated',
+        tagNames: [" React ", "react", "TS"],
+        tagMode: "or",
+        sort: "updated",
         limit: 50,
-        offset: 0
+        offset: 0,
       }).tagNames
-    ).toEqual(['react', 'ts'])
-  })
-})
+    ).toEqual(["react", "ts"]);
+  });
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pnpm exec vitest run src/features/bookmarks/bookmark-list-query.test.ts`
-Expected: FAIL（module missing）
+Run: `pnpm exec vitest run src/features/bookmarks/bookmark-list-query.test.ts` Expected: FAIL（module missing）
 
 - [ ] **Step 3: Implement normalizeListQuery + fetchBookmarks**
 
@@ -177,24 +176,28 @@ Expected: FAIL（module missing）
 
 ```ts
 export type FetchBookmarksInput = {
-  q?: string
-  tagNames?: string[]
-  tagMode: 'and' | 'or'
-  sort: 'newest' | 'updated'
-  limit: number
-  offset: number
-}
+  q?: string;
+  tagNames?: string[];
+  tagMode: "and" | "or";
+  sort: "newest" | "updated";
+  limit: number;
+  offset: number;
+};
 
-export function normalizeListQuery(input: FetchBookmarksInput): FetchBookmarksInput {
-  const q = input.q?.trim()
+export function normalizeListQuery(
+  input: FetchBookmarksInput
+): FetchBookmarksInput {
+  const q = input.q?.trim();
   const tagNames = [
-    ...new Set((input.tagNames ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean))
-  ]
+    ...new Set(
+      (input.tagNames ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean)
+    ),
+  ];
   return {
     ...input,
     q: q ? q : undefined,
-    tagNames: tagNames.length > 0 ? tagNames : undefined
-  }
+    tagNames: tagNames.length > 0 ? tagNames : undefined,
+  };
 }
 ```
 
@@ -212,8 +215,7 @@ export function normalizeListQuery(input: FetchBookmarksInput): FetchBookmarksIn
 
 - [ ] **Step 4: Run unit tests + typecheck**
 
-Run: `pnpm exec vitest run src/features/bookmarks/bookmark-list-query.test.ts && pnpm typecheck`
-Expected: PASS
+Run: `pnpm exec vitest run src/features/bookmarks/bookmark-list-query.test.ts && pnpm typecheck` Expected: PASS
 
 - [ ] **Step 5: Commit**
 
@@ -246,57 +248,62 @@ git commit -m "feat(bookmarks): filter and sort bookmark list queries"
 - [ ] **Step 1: Write failing sort tests**
 
 ```ts
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-import { sortTagsForEntrance, sortTagsForNav, type ShelfTag } from './tag-shelf'
+import {
+  sortTagsForEntrance,
+  sortTagsForNav,
+  type ShelfTag,
+} from "./tag-shelf";
 
-const base = (partial: Partial<ShelfTag> & Pick<ShelfTag, 'id' | 'name'>): ShelfTag => ({
+const base = (
+  partial: Partial<ShelfTag> & Pick<ShelfTag, "id" | "name">
+): ShelfTag => ({
   pinned: false,
   sortOrder: 0,
   color: null,
   lastUsedAt: null,
   bookmarkCount: 0,
-  ...partial
-})
+  ...partial,
+});
 
-describe('sortTagsForNav', () => {
-  test('pinned first then sortOrder then name', () => {
+describe("sortTagsForNav", () => {
+  test("pinned first then sortOrder then name", () => {
     const sorted = sortTagsForNav([
-      base({ id: 1, name: 'b', pinned: false, sortOrder: 0 }),
-      base({ id: 2, name: 'a', pinned: true, sortOrder: 2 }),
-      base({ id: 3, name: 'c', pinned: true, sortOrder: 1 })
-    ])
-    expect(sorted.map((t) => t.id)).toEqual([3, 2, 1])
-  })
-})
+      base({ id: 1, name: "b", pinned: false, sortOrder: 0 }),
+      base({ id: 2, name: "a", pinned: true, sortOrder: 2 }),
+      base({ id: 3, name: "c", pinned: true, sortOrder: 1 }),
+    ]);
+    expect(sorted.map((t) => t.id)).toEqual([3, 2, 1]);
+  });
+});
 
-describe('sortTagsForEntrance', () => {
-  test('pinned then lastUsedAt desc then count desc then name', () => {
+describe("sortTagsForEntrance", () => {
+  test("pinned then lastUsedAt desc then count desc then name", () => {
     const sorted = sortTagsForEntrance([
-      base({ id: 1, name: 'z', bookmarkCount: 9 }),
-      base({ id: 2, name: 'a', pinned: true, bookmarkCount: 1 }),
+      base({ id: 1, name: "z", bookmarkCount: 9 }),
+      base({ id: 2, name: "a", pinned: true, bookmarkCount: 1 }),
       base({
         id: 3,
-        name: 'm',
-        lastUsedAt: new Date('2026-01-02'),
-        bookmarkCount: 2
+        name: "m",
+        lastUsedAt: new Date("2026-01-02"),
+        bookmarkCount: 2,
       }),
       base({
         id: 4,
-        name: 'n',
-        lastUsedAt: new Date('2026-01-03'),
-        bookmarkCount: 2
-      })
-    ])
-    expect(sorted.map((t) => t.id)).toEqual([2, 4, 3, 1])
-  })
-})
+        name: "n",
+        lastUsedAt: new Date("2026-01-03"),
+        bookmarkCount: 2,
+      }),
+    ]);
+    expect(sorted.map((t) => t.id)).toEqual([2, 4, 3, 1]);
+  });
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `pnpm exec vitest run src/features/tags/tag-shelf.test.ts`
-Expected: FAIL
+Run: `pnpm exec vitest run src/features/tags/tag-shelf.test.ts` Expected: FAIL
 
 - [ ] **Step 3: Implement sort helpers + server functions**
 
@@ -307,8 +314,7 @@ Expected: FAIL
 
 - [ ] **Step 4: Run tests + typecheck**
 
-Run: `pnpm exec vitest run src/features/tags/tag-shelf.test.ts && pnpm typecheck`
-Expected: PASS
+Run: `pnpm exec vitest run src/features/tags/tag-shelf.test.ts && pnpm typecheck` Expected: PASS
 
 - [ ] **Step 5: Commit**
 
@@ -334,7 +340,7 @@ git commit -m "feat(tags): shelf query helpers and last-used updates"
 - [ ] **Step 1: Add tokens and reduced-motion rules to `src/app.css`**
 
 ```css
-@import 'kiso.css';
+@import "kiso.css";
 
 :root {
   --pantry-bg: #f7f6f3;
@@ -376,48 +382,52 @@ body {
 - [ ] **Step 2: Implement `ui-state.tsx`**
 
 ```tsx
-export function UiLoading({ label = '読み込み中' }: { label?: string }) {
+export function UiLoading({ label = "読み込み中" }: { label?: string }) {
   return (
-    <div
-      className='pantry-skeleton'
-      role='status'
-      aria-live='polite'>
+    <div className="pantry-skeleton" role="status" aria-live="polite">
       {label}
     </div>
-  )
+  );
 }
 
-export function UiEmpty({ title, action }: { title: string; action?: React.ReactNode }) {
+export function UiEmpty({
+  title,
+  action,
+}: {
+  title: string;
+  action?: React.ReactNode;
+}) {
   return (
-    <div className='pantry-empty'>
+    <div className="pantry-empty">
       <p>{title}</p>
       {action}
     </div>
-  )
+  );
 }
 
-export function UiError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+export function UiError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry?: () => void;
+}) {
   return (
-    <div
-      className='pantry-error'
-      role='alert'>
+    <div className="pantry-error" role="alert">
       <p>{message}</p>
       {onRetry ? (
-        <button
-          type='button'
-          onClick={onRetry}>
+        <button type="button" onClick={onRetry}>
           再試行
         </button>
       ) : null}
     </div>
-  )
+  );
 }
 ```
 
 - [ ] **Step 3: Typecheck**
 
-Run: `pnpm typecheck`
-Expected: PASS
+Run: `pnpm typecheck` Expected: PASS
 
 - [ ] **Step 4: Commit**
 
@@ -459,8 +469,7 @@ loader または layout 内で `fetchShelfTags` を取得し、`ShelfNav` に渡
 
 - [ ] **Step 3: Manual / Playwright smoke**
 
-Run: `pnpm run dev` 後、デスクトップ幅で左ナビ、狭い幅でシートが使えること。
-Expected: 未ログインは従来どおり sign-in。ログイン後に棚が見える。
+Run: `pnpm run dev` 後、デスクトップ幅で左ナビ、狭い幅でシートが使えること。Expected: 未ログインは従来どおり sign-in。ログイン後に棚が見える。
 
 - [ ] **Step 4: Commit**
 
@@ -494,19 +503,18 @@ git commit -m "feat(shell): add pantry shelf navigation"
 - [ ] **Step 2: Route switch on `view`**
 
 ```tsx
-const search = Route.useSearch()
-if (search.view === 'entrance') {
-  return <EntranceBoxes />
+const search = Route.useSearch();
+if (search.view === "entrance") {
+  return <EntranceBoxes />;
 }
-return <BookmarkList /* Task 7 */ />
+return <BookmarkList /* Task 7 */ />;
 ```
 
 デフォルト着陸を `view=entrance` にする（スキーマ default）。既存リンクで `search` 不足の箇所は型エラーを直す。
 
 - [ ] **Step 3: Typecheck + vitest**
 
-Run: `pnpm typecheck && pnpm test`
-Expected: PASS
+Run: `pnpm typecheck && pnpm test` Expected: PASS
 
 - [ ] **Step 4: Commit**
 
@@ -538,33 +546,33 @@ git commit -m "feat(home): add entrance box grid for tags"
 - [ ] **Step 1: Tests for list layout preference**
 
 ```ts
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { readListLayout, writeListLayout } from './list-layout-preference'
+import { readListLayout, writeListLayout } from "./list-layout-preference";
 
-describe('list-layout-preference', () => {
+describe("list-layout-preference", () => {
   beforeEach(() => {
-    const store = new Map<string, string>()
-    vi.stubGlobal('localStorage', {
+    const store = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
       getItem: (k: string) => store.get(k) ?? null,
       setItem: (k: string, v: string) => {
-        store.set(k, v)
+        store.set(k, v);
       },
       removeItem: (k: string) => {
-        store.delete(k)
-      }
-    })
-  })
+        store.delete(k);
+      },
+    });
+  });
 
-  test('defaults to table', () => {
-    expect(readListLayout()).toBe('table')
-  })
+  test("defaults to table", () => {
+    expect(readListLayout()).toBe("table");
+  });
 
-  test('persists card', () => {
-    writeListLayout('card')
-    expect(readListLayout()).toBe('card')
-  })
-})
+  test("persists card", () => {
+    writeListLayout("card");
+    expect(readListLayout()).toBe("card");
+  });
+});
 ```
 
 - [ ] **Step 2: Implement preference + BookmarkList**
@@ -578,8 +586,7 @@ describe('list-layout-preference', () => {
 
 - [ ] **Step 3: Run tests**
 
-Run: `pnpm exec vitest run src/features/bookmarks/list-layout-preference.test.ts && pnpm typecheck`
-Expected: PASS
+Run: `pnpm exec vitest run src/features/bookmarks/list-layout-preference.test.ts && pnpm typecheck` Expected: PASS
 
 - [ ] **Step 4: Commit**
 
@@ -614,8 +621,7 @@ git commit -m "feat(bookmarks): table/card list with five UI states"
 
 - [ ] **Step 3: Typecheck**
 
-Run: `pnpm typecheck`
-Expected: PASS
+Run: `pnpm typecheck` Expected: PASS
 
 - [ ] **Step 4: Commit**
 
@@ -656,8 +662,7 @@ git commit -m "feat(bookmarks): polish detail and form UI states"
 
 - [ ] **Step 3: Typecheck + unit tests**
 
-Run: `pnpm test && pnpm typecheck`
-Expected: PASS
+Run: `pnpm test && pnpm typecheck` Expected: PASS
 
 - [ ] **Step 4: Commit**
 
@@ -699,8 +704,7 @@ git commit -m "feat(ui): polish tags, settings, and sign-in"
 
 - [ ] **Step 3: Final verification**
 
-Run: `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`
-Expected: all success
+Run: `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build` Expected: all success
 
 - [ ] **Step 4: Commit**
 

@@ -1,9 +1,9 @@
-export function passkeyPluginOptions(betterAuthUrl: string) {
-  const url = new URL(betterAuthUrl)
+export const passkeyPluginOptions = (betterAuthUrl: string) => {
+  const url = new URL(betterAuthUrl);
 
   return {
+    origin: url.origin,
     rpID: url.hostname,
-    rpName: 'Pantry',
-    origin: url.origin
-  }
-}
+    rpName: "Pantry",
+  };
+};

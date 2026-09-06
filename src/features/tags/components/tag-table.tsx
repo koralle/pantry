@@ -1,122 +1,124 @@
-import { Link } from '@tanstack/react-router'
-import { Pencil, Pin } from 'lucide-react'
-import { use } from 'react'
-import { css, cx } from 'styled-system/css'
+import { Link } from "@tanstack/react-router";
+import { Pencil, Pin } from "lucide-react";
+import { use } from "react";
+import { css, cx } from "styled-system/css";
 
-import { StyledLink } from '../../../shared/components/styled-link'
-import { UiEmpty } from '../../../shared/components/ui-empty'
+import { StyledLink } from "../../../shared/components/styled-link";
+import { UiEmpty } from "../../../shared/components/ui-empty";
 import {
   dataTable,
   dataTableCell,
   dataTableHeadCell,
   dataTableRow,
   dataTableRowLink,
-  dataTableWrap
-} from '../../../styles/data-table'
-import { srOnly } from '../../../styles/sr-only'
-import { tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
-import { sortTagsForNav } from '../lib/tag-shelf'
-import type { ShelfTag } from '../lib/tag-shelf'
+  dataTableWrap,
+} from "../../../styles/data-table";
+import { srOnly } from "../../../styles/sr-only";
+import { tagShelfSearch } from "../../navigation/lib/bookmark-search-builders";
+import { sortTagsForNav } from "../lib/tag-shelf";
+import type { ShelfTag } from "../lib/tag-shelf";
 
 const tagTableCount = css({
-  fontVariantNumeric: 'tabular-nums',
-  color: 'fg.muted',
-  width: '14%'
-})
+  color: "fg.muted",
+  fontVariantNumeric: "tabular-nums",
+  width: "14%",
+});
 
 const nameCol = css({
-  minInlineSize: '0',
-  width: '48%'
-})
+  minInlineSize: "0",
+  width: "48%",
+});
 
 const pinCol = css({
-  width: '14%'
-})
+  width: "14%",
+});
 
 const actionsCell = css({
-  borderBlockEndWidth: 'thin',
-  borderBlockEndStyle: 'solid',
-  borderBlockEndColor: 'border.default',
-  minInlineSize: '0',
-  padding: '0',
-  position: 'relative',
-  textAlign: 'start',
-  verticalAlign: 'middle',
-  width: '24%'
-})
+  borderBlockEndColor: "border.default",
+  borderBlockEndStyle: "solid",
+  borderBlockEndWidth: "thin",
+  minInlineSize: "0",
+  padding: "0",
+  position: "relative",
+  textAlign: "start",
+  verticalAlign: "middle",
+  width: "24%",
+});
 
 const nameCell = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  minInlineSize: '0',
-  overflowWrap: 'anywhere'
-})
+  alignItems: "center",
+  display: "flex",
+  gap: "2",
+  minInlineSize: "0",
+  overflowWrap: "anywhere",
+});
 
 const shelfDot = css({
-  inlineSize: '2.5',
-  blockSize: '2.5',
-  borderRadius: 'full',
-  background: 'border.default',
-  flexShrink: '0'
-})
+  background: "border.default",
+  blockSize: "2.5",
+  borderRadius: "full",
+  flexShrink: "0",
+  inlineSize: "2.5",
+});
 
 const editLink = css({
-  position: 'absolute',
-  inset: '0',
-  zIndex: '2',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '1',
-  color: 'accent.solid',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
-  textDecoration: 'none',
-  minBlockSize: 'touch',
-  minInlineSize: 'touch',
-  boxSizing: 'border-box',
+  "@media (any-hover: hover)": {
+    "&:hover": {
+      textDecoration: "underline",
+      textUnderlineOffset: "3px",
+    },
+  },
   _focusVisible: {
-    outlineWidth: 'medium',
-    outlineStyle: 'solid',
-    outlineColor: 'accent.solid',
-    outlineOffset: '-2px'
+    outlineColor: "accent.solid",
+    outlineOffset: "-2px",
+    outlineStyle: "solid",
+    outlineWidth: "medium",
   },
-  '@media (any-hover: hover)': {
-    '&:hover': {
-      textDecoration: 'underline',
-      textUnderlineOffset: '3px'
-    }
-  },
+  alignItems: "center",
+  boxSizing: "border-box",
+  color: "accent.solid",
+  display: "flex",
+  fontSize: "xs",
+  fontWeight: "semibold",
+  gap: "1",
+  inset: "0",
+  justifyContent: "center",
+  minBlockSize: "touch",
+  minInlineSize: "touch",
+  position: "absolute",
   sm: {
-    justifyContent: 'flex-start',
-    paddingInline: '3'
-  }
-})
+    justifyContent: "flex-start",
+    paddingInline: "3",
+  },
+  textDecoration: "none",
+  zIndex: "2",
+});
 
 const editLabel = css({
-  display: 'none',
+  display: "none",
   sm: {
-    display: 'inline'
-  }
-})
+    display: "inline",
+  },
+});
 
-export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag[]> }) {
-  const tags = sortTagsForNav(use(tagPromise))
+export const TagTable = ({
+  tagPromise,
+}: {
+  readonly tagPromise: Promise<ShelfTag[]>;
+}) => {
+  const tags = sortTagsForNav(use(tagPromise));
 
   if (tags.length === 0) {
     return (
       <UiEmpty
-        title='まだタグがありません'
+        title="まだタグがありません"
         action={
-          <StyledLink
-            to='/tags/new'
-            visual='accent'>
+          <StyledLink to="/tags/new" visual="accent">
             タグを作成
           </StyledLink>
         }
       />
-    )
+    );
   }
 
   return (
@@ -126,56 +128,59 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
         <thead>
           <tr>
             <th
-              scope='col'
-              className={cx(dataTableCell, dataTableHeadCell, nameCol)}>
+              scope="col"
+              className={cx(dataTableCell, dataTableHeadCell, nameCol)}
+            >
               名前
             </th>
             <th
-              scope='col'
-              className={cx(dataTableCell, dataTableHeadCell, tagTableCount)}>
+              scope="col"
+              className={cx(dataTableCell, dataTableHeadCell, tagTableCount)}
+            >
               件数
             </th>
             <th
-              scope='col'
-              className={cx(dataTableCell, dataTableHeadCell, pinCol)}>
+              scope="col"
+              className={cx(dataTableCell, dataTableHeadCell, pinCol)}
+            >
               ピン
             </th>
-            <th
-              scope='col'
-              className={cx(dataTableHeadCell, actionsCell)}>
+            <th scope="col" className={cx(dataTableHeadCell, actionsCell)}>
               <span className={srOnly}>操作</span>
             </th>
           </tr>
         </thead>
         <tbody>
           {tags.map((tag) => (
-            <tr
-              key={tag.id}
-              className={dataTableRow}>
+            <tr key={tag.id} className={dataTableRow}>
               <td className={cx(dataTableCell, nameCol)}>
                 <div className={nameCell}>
                   <span
                     className={shelfDot}
-                    style={tag.color != null ? { backgroundColor: tag.color } : undefined}
-                    aria-hidden='true'
+                    style={
+                      tag.color === null || tag.color === undefined
+                        ? undefined
+                        : { backgroundColor: tag.color }
+                    }
+                    aria-hidden="true"
                   />
                   <Link
-                    to='/'
+                    to="/"
                     search={tagShelfSearch(tag.name)}
                     aria-label={tag.name}
-                    className={dataTableRowLink}>
+                    className={dataTableRowLink}
+                  >
                     {tag.name}
                   </Link>
                 </div>
               </td>
-              <td className={cx(dataTableCell, tagTableCount)}>{tag.bookmarkCount}</td>
+              <td className={cx(dataTableCell, tagTableCount)}>
+                {tag.bookmarkCount}
+              </td>
               <td className={cx(dataTableCell, pinCol)}>
                 {tag.pinned ? (
                   <span>
-                    <Pin
-                      size={16}
-                      aria-hidden
-                    />
+                    <Pin size={16} aria-hidden />
                     <span className={srOnly}>ピン留め中</span>
                   </span>
                 ) : (
@@ -184,14 +189,12 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
               </td>
               <td className={actionsCell}>
                 <Link
-                  to='/tags/$id/edit'
+                  to="/tags/$id/edit"
                   params={{ id: String(tag.id) }}
                   aria-label={`${tag.name}を編集`}
-                  className={editLink}>
-                  <Pencil
-                    size={16}
-                    aria-hidden
-                  />
+                  className={editLink}
+                >
+                  <Pencil size={16} aria-hidden />
                   <span className={editLabel}>編集</span>
                 </Link>
               </td>
@@ -200,5 +203,5 @@ export function TagTable({ tagPromise }: { readonly tagPromise: Promise<ShelfTag
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};

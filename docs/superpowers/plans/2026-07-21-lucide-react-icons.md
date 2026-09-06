@@ -21,29 +21,29 @@
 
 ## File Structure
 
-| ファイル                                                                  | 変更内容                                                      |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `src/app.css`                                                             | spinner keyframe、スウォッチ中央揃え、サインインブランド flex |
-| `src/components/ui-state.tsx`                                             | UiLoading/UiEmpty/UiError にアイコン                          |
-| `src/components/error-fallback.tsx`                                       | ErrorFallback に TriangleAlert                                |
-| `src/routes/_protected.tsx`                                               | シェル（新規/設定/ログアウト/棚切替/閉じる/タグ管理）         |
-| `src/features/bookmarks/components/bookmark-list.tsx`                     | ツールバー・チップ・読み込み                                  |
-| `src/features/bookmarks/components/bookmark-table.tsx`                    | URL カラムに Globe                                            |
-| `src/features/tags/components/entrance-boxes.tsx`                         | 玄関ボックス・空状態                                          |
-| `src/features/tags/tag-table.tsx`                                         | ピン列・編集                                                  |
-| `src/features/tags/components/tag-edit-fields.tsx`                        | ピントグル・ステッパー・スウォッチ                            |
-| `src/features/tags/components/inline-add-tag.tsx`                         | 追加ボタン                                                    |
-| `src/routes/_protected/bookmarks/$id/index.tsx`                           | 詳細（戻る/フラッシュ/URL/編集/削除/キャンセル）              |
-| `src/routes/_protected/bookmarks/$id/edit.tsx`                            | 編集ワークベンチ（戻るリンク）                                |
-| `src/routes/_protected/bookmarks/new/index.tsx`                           | 新規ワークベンチ（戻るリンク）                                |
-| `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx` | エラーサマリー・タイトル取得                                  |
-| `src/routes/_protected/tags/index.tsx`                                    | 新規タグリンク                                                |
-| `src/routes/_protected/tags/new.tsx`                                      | 戻る・エラーサマリー                                          |
-| `src/routes/_protected/tags/$id.edit.tsx`                                 | 戻る・エラーサマリー                                          |
-| `src/routes/_protected/tags/$id/index.tsx`                                | フラッシュ・戻る・ピン状態・編集                              |
-| `src/routes/sign-in/index.tsx`                                            | ブランド Package                                              |
-| `src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx` | Mail/Lock/LogIn/CircleAlert                                   |
-| `src/routes/_protected/settings/index.tsx`                                | ログアウト・玄関へ戻る                                        |
+| ファイル | 変更内容 |
+| --- | --- |
+| `src/app.css` | spinner keyframe、スウォッチ中央揃え、サインインブランド flex |
+| `src/components/ui-state.tsx` | UiLoading/UiEmpty/UiError にアイコン |
+| `src/components/error-fallback.tsx` | ErrorFallback に TriangleAlert |
+| `src/routes/_protected.tsx` | シェル（新規/設定/ログアウト/棚切替/閉じる/タグ管理） |
+| `src/features/bookmarks/components/bookmark-list.tsx` | ツールバー・チップ・読み込み |
+| `src/features/bookmarks/components/bookmark-table.tsx` | URL カラムに Globe |
+| `src/features/tags/components/entrance-boxes.tsx` | 玄関ボックス・空状態 |
+| `src/features/tags/tag-table.tsx` | ピン列・編集 |
+| `src/features/tags/components/tag-edit-fields.tsx` | ピントグル・ステッパー・スウォッチ |
+| `src/features/tags/components/inline-add-tag.tsx` | 追加ボタン |
+| `src/routes/_protected/bookmarks/$id/index.tsx` | 詳細（戻る/フラッシュ/URL/編集/削除/キャンセル） |
+| `src/routes/_protected/bookmarks/$id/edit.tsx` | 編集ワークベンチ（戻るリンク） |
+| `src/routes/_protected/bookmarks/new/index.tsx` | 新規ワークベンチ（戻るリンク） |
+| `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx` | エラーサマリー・タイトル取得 |
+| `src/routes/_protected/tags/index.tsx` | 新規タグリンク |
+| `src/routes/_protected/tags/new.tsx` | 戻る・エラーサマリー |
+| `src/routes/_protected/tags/$id.edit.tsx` | 戻る・エラーサマリー |
+| `src/routes/_protected/tags/$id/index.tsx` | フラッシュ・戻る・ピン状態・編集 |
+| `src/routes/sign-in/index.tsx` | ブランド Package |
+| `src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx` | Mail/Lock/LogIn/CircleAlert |
+| `src/routes/_protected/settings/index.tsx` | ログアウト・玄関へ戻る |
 
 ---
 
@@ -105,8 +105,7 @@
 
 - [ ] **Step 4: 既存スタイルと衝突しないことを確認**
 
-Run: `pnpm run lint`
-Expected: エラーなし（CSS は oxlint 対象外だが、構文崩れがないことを確認するため通す）
+Run: `pnpm run lint` Expected: エラーなし（CSS は oxlint 対象外だが、構文崩れがないことを確認するため通す）
 
 - [ ] **Step 5: コミット**
 
@@ -129,60 +128,56 @@ git commit -m "feat(ui): add icon groundwork styles (spinner, swatch center, bra
 `src/components/ui-state.tsx` を次で置き換える:
 
 ```tsx
-import { LoaderCircle, PackageOpen, RefreshCw, TriangleAlert } from 'lucide-react'
-import type { ReactNode } from 'react'
+import {
+  LoaderCircle,
+  PackageOpen,
+  RefreshCw,
+  TriangleAlert,
+} from "lucide-react";
+import type { ReactNode } from "react";
 
-export function UiLoading({ label = '読み込み中' }: { label?: string }) {
+export function UiLoading({ label = "読み込み中" }: { label?: string }) {
   return (
-    <output
-      className='pantry-skeleton'
-      aria-live='polite'>
-      <LoaderCircle
-        size={16}
-        className='pantry-spinner'
-        aria-hidden
-      />{' '}
-      {label}
+    <output className="pantry-skeleton" aria-live="polite">
+      <LoaderCircle size={16} className="pantry-spinner" aria-hidden /> {label}
     </output>
-  )
+  );
 }
 
-export function UiEmpty({ title, action }: { title: string; action?: ReactNode }) {
+export function UiEmpty({
+  title,
+  action,
+}: {
+  title: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className='pantry-empty'>
-      <PackageOpen
-        size={20}
-        aria-hidden
-      />
+    <div className="pantry-empty">
+      <PackageOpen size={20} aria-hidden />
       <p>{title}</p>
       {action}
     </div>
-  )
+  );
 }
 
-export function UiError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+export function UiError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry?: () => void;
+}) {
   return (
-    <div
-      className='pantry-error'
-      role='alert'>
-      <TriangleAlert
-        size={20}
-        aria-hidden
-      />
+    <div className="pantry-error" role="alert">
+      <TriangleAlert size={20} aria-hidden />
       <p>{message}</p>
       {onRetry ? (
-        <button
-          type='button'
-          onClick={onRetry}>
-          <RefreshCw
-            size={16}
-            aria-hidden
-          />{' '}
-          再試行
+        <button type="button" onClick={onRetry}>
+          <RefreshCw size={16} aria-hidden /> 再試行
         </button>
       ) : undefined}
     </div>
-  )
+  );
 }
 ```
 
@@ -191,26 +186,22 @@ export function UiError({ message, onRetry }: { message: string; onRetry?: () =>
 `src/components/error-fallback.tsx` を次で置き換える:
 
 ```tsx
-import { TriangleAlert } from 'lucide-react'
-import { FallbackProps, getErrorMessage } from 'react-error-boundary'
+import { TriangleAlert } from "lucide-react";
+import { FallbackProps, getErrorMessage } from "react-error-boundary";
 
 export function ErrorFallback({ error }: FallbackProps) {
   return (
-    <div role='alert'>
-      <TriangleAlert
-        size={20}
-        aria-hidden
-      />
+    <div role="alert">
+      <TriangleAlert size={20} aria-hidden />
       <p>{getErrorMessage(error)}</p>
     </div>
-  )
+  );
 }
 ```
 
 - [ ] **Step 3: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 4: コミット**
 
@@ -232,7 +223,7 @@ git commit -m "feat(ui): add icons to shared state components"
 `src/routes/_protected.tsx` 先頭の import 群に追加する（既存 import の後、相対 import の前）:
 
 ```tsx
-import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
+import { LogOut, Menu, Plus, Settings, Tags, X } from "lucide-react";
 ```
 
 - [ ] **Step 2: サイドバーの「タグ管理」リンクに Tags アイコン**
@@ -240,9 +231,7 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 次を探す:
 
 ```tsx
-<Link
-  to='/tags'
-  search={{ limit: 50, offset: 0 }}>
+<Link to="/tags" search={{ limit: 50, offset: 0 }}>
   タグ管理
 </Link>
 ```
@@ -250,14 +239,8 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 次で置き換える:
 
 ```tsx
-<Link
-  to='/tags'
-  search={{ limit: 50, offset: 0 }}>
-  <Tags
-    size={16}
-    aria-hidden
-  />{' '}
-  タグ管理
+<Link to="/tags" search={{ limit: 50, offset: 0 }}>
+  <Tags size={16} aria-hidden /> タグ管理
 </Link>
 ```
 
@@ -266,18 +249,14 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 次を探す:
 
 ```tsx
-<Link to='/settings'>設定</Link>
+<Link to="/settings">設定</Link>
 ```
 
 次で置き換える:
 
 ```tsx
-<Link to='/settings'>
-  <Settings
-    size={16}
-    aria-hidden
-  />{' '}
-  設定
+<Link to="/settings">
+  <Settings size={16} aria-hidden /> 設定
 </Link>
 ```
 
@@ -286,18 +265,14 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 次を探す:
 
 ```tsx
-<Dialog.Trigger className='pantry-shelf-changer'>棚を変える</Dialog.Trigger>
+<Dialog.Trigger className="pantry-shelf-changer">棚を変える</Dialog.Trigger>
 ```
 
 次で置き換える:
 
 ```tsx
-<Dialog.Trigger className='pantry-shelf-changer'>
-  <Menu
-    size={16}
-    aria-hidden
-  />{' '}
-  棚を変える
+<Dialog.Trigger className="pantry-shelf-changer">
+  <Menu size={16} aria-hidden /> 棚を変える
 </Dialog.Trigger>
 ```
 
@@ -306,18 +281,14 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 次を探す:
 
 ```tsx
-<Dialog.Close className='pantry-shelf-sheet__close'>閉じる</Dialog.Close>
+<Dialog.Close className="pantry-shelf-sheet__close">閉じる</Dialog.Close>
 ```
 
 次で置き換える:
 
 ```tsx
-<Dialog.Close className='pantry-shelf-sheet__close'>
-  <X
-    size={16}
-    aria-hidden
-  />{' '}
-  閉じる
+<Dialog.Close className="pantry-shelf-sheet__close">
+  <X size={16} aria-hidden /> 閉じる
 </Dialog.Close>
 ```
 
@@ -389,8 +360,7 @@ import { LogOut, Menu, Plus, Settings, Tags, X } from 'lucide-react'
 
 - [ ] **Step 9: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 10: コミット**
 
@@ -412,7 +382,7 @@ git commit -m "feat(ui): add icons to app shell header and sidebar"
 `src/features/bookmarks/components/bookmark-list.tsx` の import 群に追加:
 
 ```tsx
-import { ChevronDown, LayoutGrid, List, Plus, Search, X } from 'lucide-react'
+import { ChevronDown, LayoutGrid, List, Plus, Search, X } from "lucide-react";
 ```
 
 - [ ] **Step 2: タイトル行「新規」リンクに Plus**
@@ -442,18 +412,14 @@ import { ChevronDown, LayoutGrid, List, Plus, Search, X } from 'lucide-react'
 次を探す:
 
 ```tsx
-<button type='submit'>検索</button>
+<button type="submit">検索</button>
 ```
 
 次で置き換える:
 
 ```tsx
-<button type='submit'>
-  <Search
-    size={16}
-    aria-hidden
-  />{' '}
-  検索
+<button type="submit">
+  <Search size={16} aria-hidden /> 検索
 </button>
 ```
 
@@ -554,8 +520,7 @@ import { ChevronDown, LayoutGrid, List, Plus, Search, X } from 'lucide-react'
 
 - [ ] **Step 8: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 9: コミット**
 
@@ -577,7 +542,7 @@ git commit -m "feat(ui): add icons to bookmark list toolbar and chips"
 `src/features/bookmarks/components/bookmark-table.tsx` の import 群に追加:
 
 ```tsx
-import { Globe } from 'lucide-react'
+import { Globe } from "lucide-react";
 ```
 
 - [ ] **Step 2: URL カラムのリンクに Globe**
@@ -604,8 +569,7 @@ import { Globe } from 'lucide-react'
 
 - [ ] **Step 3: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 4: コミット**
 
@@ -627,7 +591,7 @@ git commit -m "feat(ui): add globe icon to bookmark table url column"
 `src/features/tags/components/entrance-boxes.tsx` の import 群に追加:
 
 ```tsx
-import { Package, Plus } from 'lucide-react'
+import { Package, Plus } from "lucide-react";
 ```
 
 - [ ] **Step 2: 空状態アクションに Plus**
@@ -635,29 +599,21 @@ import { Package, Plus } from 'lucide-react'
 次を探す:
 
 ```tsx
-<div className='pantry-entrance-empty-actions'>
-  <Link to='/tags/new'>タグを作成</Link>
-  <Link to='/bookmarks/new'>新規ブックマーク</Link>
+<div className="pantry-entrance-empty-actions">
+  <Link to="/tags/new">タグを作成</Link>
+  <Link to="/bookmarks/new">新規ブックマーク</Link>
 </div>
 ```
 
 次で置き換える:
 
 ```tsx
-<div className='pantry-entrance-empty-actions'>
-  <Link to='/tags/new'>
-    <Plus
-      size={16}
-      aria-hidden
-    />{' '}
-    タグを作成
+<div className="pantry-entrance-empty-actions">
+  <Link to="/tags/new">
+    <Plus size={16} aria-hidden /> タグを作成
   </Link>
-  <Link to='/bookmarks/new'>
-    <Plus
-      size={16}
-      aria-hidden
-    />{' '}
-    新規ブックマーク
+  <Link to="/bookmarks/new">
+    <Plus size={16} aria-hidden /> 新規ブックマーク
   </Link>
 </div>
 ```
@@ -667,25 +623,20 @@ import { Package, Plus } from 'lucide-react'
 次を探す:
 
 ```tsx
-<span className='pantry-entrance-box__name'>{tag.name}</span>
+<span className="pantry-entrance-box__name">{tag.name}</span>
 ```
 
 次で置き換える:
 
 ```tsx
-<span className='pantry-entrance-box__name'>
-  <Package
-    size={16}
-    aria-hidden
-  />{' '}
-  {tag.name}
+<span className="pantry-entrance-box__name">
+  <Package size={16} aria-hidden /> {tag.name}
 </span>
 ```
 
 - [ ] **Step 4: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 5: コミット**
 
@@ -710,7 +661,7 @@ git commit -m "feat(ui): add package icons to entrance boxes"
 `src/features/tags/tag-table.tsx` の import 群に追加:
 
 ```tsx
-import { Pencil, Pin } from 'lucide-react'
+import { Pencil, Pin } from "lucide-react";
 ```
 
 - [ ] **Step 2: ピン列を Pin アイコンに置換**
@@ -720,10 +671,10 @@ import { Pencil, Pin } from 'lucide-react'
 ```tsx
 {
   tag.pinned ? (
-    <span aria-label='ピン留め中'>ピン</span>
+    <span aria-label="ピン留め中">ピン</span>
   ) : (
-    <span className='pantry-tag-table__muted'>—</span>
-  )
+    <span className="pantry-tag-table__muted">—</span>
+  );
 }
 ```
 
@@ -733,15 +684,12 @@ import { Pencil, Pin } from 'lucide-react'
 {
   tag.pinned ? (
     <span>
-      <Pin
-        size={16}
-        aria-hidden
-      />
-      <span className='pantry-sr-only'>ピン留め中</span>
+      <Pin size={16} aria-hidden />
+      <span className="pantry-sr-only">ピン留め中</span>
     </span>
   ) : (
-    <span className='pantry-tag-table__muted'>—</span>
-  )
+    <span className="pantry-tag-table__muted">—</span>
+  );
 }
 ```
 
@@ -772,7 +720,7 @@ import { Pencil, Pin } from 'lucide-react'
 `src/features/tags/components/tag-edit-fields.tsx` の import 群に追加:
 
 ```tsx
-import { Check, Minus, Pin, PinOff, Plus } from 'lucide-react'
+import { Check, Minus, Pin, PinOff, Plus } from "lucide-react";
 ```
 
 - [ ] **Step 5: ピントグルに Pin/PinOff**
@@ -888,7 +836,7 @@ import { Check, Minus, Pin, PinOff, Plus } from 'lucide-react'
 `src/features/tags/components/inline-add-tag.tsx` の import 群に追加:
 
 ```tsx
-import { Plus } from 'lucide-react'
+import { Plus } from "lucide-react";
 ```
 
 次を探す:
@@ -916,7 +864,7 @@ import { Plus } from 'lucide-react'
 `src/routes/_protected/tags/index.tsx` の import 群に追加:
 
 ```tsx
-import { Plus } from 'lucide-react'
+import { Plus } from "lucide-react";
 ```
 
 次を探す:
@@ -941,8 +889,7 @@ import { Plus } from 'lucide-react'
 
 - [ ] **Step 11: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 12: コミット**
 
@@ -966,7 +913,14 @@ git commit -m "feat(ui): add icons to tag management screens"
 `src/routes/_protected/bookmarks/$id/index.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft, CircleCheck, ExternalLink, Pencil, Trash2, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  CircleCheck,
+  ExternalLink,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
 ```
 
 - [ ] **Step 2: 登録フラッシュに CircleCheck**
@@ -1152,7 +1106,7 @@ import { ArrowLeft, CircleCheck, ExternalLink, Pencil, Trash2, X } from 'lucide-
 `src/routes/_protected/bookmarks/$id/edit.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from "lucide-react";
 ```
 
 次を探す:
@@ -1202,7 +1156,7 @@ import { ArrowLeft } from 'lucide-react'
 `src/routes/_protected/bookmarks/new/index.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from "lucide-react";
 ```
 
 次を探す:
@@ -1229,8 +1183,7 @@ import { ArrowLeft } from 'lucide-react'
 
 - [ ] **Step 12: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 13: コミット**
 
@@ -1252,7 +1205,7 @@ git commit -m "feat(ui): add icons to bookmark detail and workbench nav"
 `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx` の import 群に追加:
 
 ```tsx
-import { CircleAlert, Download } from 'lucide-react'
+import { CircleAlert, Download } from "lucide-react";
 ```
 
 - [ ] **Step 2: フォームエラーサマリーに CircleAlert**
@@ -1301,8 +1254,7 @@ import { CircleAlert, Download } from 'lucide-react'
 
 - [ ] **Step 4: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 5: コミット**
 
@@ -1326,7 +1278,7 @@ git commit -m "feat(ui): add icons to workbench form"
 `src/routes/_protected/tags/new.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft, CircleAlert } from 'lucide-react'
+import { ArrowLeft, CircleAlert } from "lucide-react";
 ```
 
 - [ ] **Step 2: 戻るリンクに ArrowLeft**
@@ -1382,7 +1334,7 @@ import { ArrowLeft, CircleAlert } from 'lucide-react'
 `src/routes/_protected/tags/$id.edit.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft, CircleAlert } from 'lucide-react'
+import { ArrowLeft, CircleAlert } from "lucide-react";
 ```
 
 次を探す:
@@ -1434,7 +1386,7 @@ import { ArrowLeft, CircleAlert } from 'lucide-react'
 `src/routes/_protected/tags/$id/index.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
+import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from "lucide-react";
 ```
 
 - [ ] **Step 6: タグ登録フラッシュに CircleCheck**
@@ -1443,7 +1395,9 @@ import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 
 ```tsx
 {
-  newTagCreated ? <output className='pantry-flash'>タグを登録しました</output> : null
+  newTagCreated ? (
+    <output className="pantry-flash">タグを登録しました</output>
+  ) : null;
 }
 ```
 
@@ -1452,14 +1406,10 @@ import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 ```tsx
 {
   newTagCreated ? (
-    <output className='pantry-flash'>
-      <CircleCheck
-        size={16}
-        aria-hidden
-      />{' '}
-      タグを登録しました
+    <output className="pantry-flash">
+      <CircleCheck size={16} aria-hidden /> タグを登録しました
     </output>
-  ) : null
+  ) : null;
 }
 ```
 
@@ -1469,7 +1419,9 @@ import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 
 ```tsx
 {
-  tagUpdated ? <output className='pantry-flash'>タグを更新しました</output> : null
+  tagUpdated ? (
+    <output className="pantry-flash">タグを更新しました</output>
+  ) : null;
 }
 ```
 
@@ -1478,14 +1430,10 @@ import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 ```tsx
 {
   tagUpdated ? (
-    <output className='pantry-flash'>
-      <CircleCheck
-        size={16}
-        aria-hidden
-      />{' '}
-      タグを更新しました
+    <output className="pantry-flash">
+      <CircleCheck size={16} aria-hidden /> タグを更新しました
     </output>
-  ) : null
+  ) : null;
 }
 ```
 
@@ -1589,8 +1537,7 @@ import { ArrowLeft, Bookmark, CircleCheck, Pencil, Pin } from 'lucide-react'
 
 - [ ] **Step 12: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 13: コミット**
 
@@ -1614,23 +1561,20 @@ git commit -m "feat(ui): add icons to tag workbench and tag detail"
 `src/routes/sign-in/index.tsx` の import 群に追加:
 
 ```tsx
-import { Package } from 'lucide-react'
+import { Package } from "lucide-react";
 ```
 
 次を探す:
 
 ```tsx
-<p className='pantry-sign-in__brand'>Pantry</p>
+<p className="pantry-sign-in__brand">Pantry</p>
 ```
 
 次で置き換える:
 
 ```tsx
-<p className='pantry-sign-in__brand'>
-  <Package
-    size={28}
-    aria-hidden
-  />
+<p className="pantry-sign-in__brand">
+  <Package size={28} aria-hidden />
   Pantry
 </p>
 ```
@@ -1640,7 +1584,7 @@ import { Package } from 'lucide-react'
 `src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx` の import 群に追加:
 
 ```tsx
-import { CircleAlert, Lock, LogIn, Mail } from 'lucide-react'
+import { CircleAlert, Lock, LogIn, Mail } from "lucide-react";
 ```
 
 - [ ] **Step 3: フォームエラーサマリーに CircleAlert**
@@ -1738,7 +1682,7 @@ import { CircleAlert, Lock, LogIn, Mail } from 'lucide-react'
 `src/routes/_protected/settings/index.tsx` の import 群に追加:
 
 ```tsx
-import { ArrowLeft, LogOut } from 'lucide-react'
+import { ArrowLeft, LogOut } from "lucide-react";
 ```
 
 - [ ] **Step 8: ログアウトボタンに LogOut**
@@ -1787,8 +1731,7 @@ import { ArrowLeft, LogOut } from 'lucide-react'
 
 - [ ] **Step 10: テスト・型チェック**
 
-Run: `pnpm run test && pnpm run typecheck`
-Expected: 全テスト PASS、型エラーなし
+Run: `pnpm run test && pnpm run typecheck` Expected: 全テスト PASS、型エラーなし
 
 - [ ] **Step 11: コミット**
 
@@ -1803,15 +1746,13 @@ git commit -m "feat(ui): add icons to sign-in and settings"
 
 - [ ] **Step 1: リント・フォーマット・テスト・型チェックを全実行**
 
-Run: `pnpm run lint && pnpm run format:check && pnpm run test && pnpm run typecheck`
-Expected: すべて成功
+Run: `pnpm run lint && pnpm run format:check && pnpm run test && pnpm run typecheck` Expected: すべて成功
 
 - [ ] **Step 2: フォーマットが崩れていれば修正**
 
 もし `format:check` が失敗したら:
 
-Run: `pnpm run format`
-Expected: フォーマット適用後、再度 `pnpm run format:check` が通る
+Run: `pnpm run format` Expected: フォーマット適用後、再度 `pnpm run format:check` が通る
 
 - [ ] **Step 3: dev サーバーで全画面を目視確認**
 
@@ -1832,8 +1773,7 @@ Run: `pnpm run dev`（バックグラウンド）
 
 - [ ] **Step 5: 変更がないか最終確認し、必要ならコミット**
 
-Run: `git status`
-Expected: フォーマット修正があればそれをコミット:
+Run: `git status` Expected: フォーマット修正があればそれをコミット:
 
 ```bash
 git add -A

@@ -1,63 +1,63 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ArrowLeft, LogOut } from 'lucide-react'
-import { css, cx } from 'styled-system/css'
+import { createFileRoute } from "@tanstack/react-router";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { css, cx } from "styled-system/css";
 
-import { PasskeySettings } from '../../../features/auth/components/passkey/settings'
-import { useSignOut } from '../../../features/auth/hooks/use-sign-out'
-import { defaultBookmarkSearch } from '../../../features/navigation/lib/bookmark-search'
-import { StyledButton } from '../../../shared/components/styled-button'
-import { StyledLink } from '../../../shared/components/styled-link'
-import { pageLead, pageTitle, sectionLabel } from '../../../styles/type'
+import { PasskeySettings } from "../../../features/auth/components/passkey/settings";
+import { useSignOut } from "../../../features/auth/hooks/use-sign-out";
+import { defaultBookmarkSearch } from "../../../features/navigation/lib/bookmark-search";
+import { StyledButton } from "../../../shared/components/styled-button";
+import { StyledLink } from "../../../shared/components/styled-link";
+import { pageLead, pageTitle, sectionLabel } from "../../../styles/type";
 
-export const Route = createFileRoute('/_protected/settings/')({
+export const Route = createFileRoute("/_protected/settings/")({
   loader: async ({ context }) => ({
-    user: context.user
+    user: context.user,
   }),
-  component: RouteComponent
-})
+  component: RouteComponent,
+});
 
 const settings = css({
-  maxInlineSize: '28rem',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '5'
-})
+  maxInlineSize: "28rem",
+  display: "flex",
+  flexDirection: "column",
+  gap: "5",
+});
 
 const settingsHeading = css({
-  marginBlockEnd: '3'
-})
+  marginBlockEnd: "3",
+});
 
 const settingsSection = css({
-  borderBlockStartWidth: 'thin',
-  borderBlockStartStyle: 'solid',
-  borderBlockStartColor: 'border.default',
-  paddingBlockStart: '5'
-})
+  borderBlockStartWidth: "thin",
+  borderBlockStartStyle: "solid",
+  borderBlockStartColor: "border.default",
+  paddingBlockStart: "5",
+});
 
 const settingsAccount = css({
-  display: 'grid',
-  gap: '3.5',
-  margin: '0'
-})
+  display: "grid",
+  gap: "3.5",
+  margin: "0",
+});
 
 const settingsAccountRow = css({
-  display: 'grid',
-  gap: '1'
-})
+  display: "grid",
+  gap: "1",
+});
 
 const settingsAccountDt = css({
-  color: 'fg.muted',
-  fontSize: 'xs2'
-})
+  color: "fg.muted",
+  fontSize: "xs2",
+});
 
 const settingsAccountDd = css({
-  margin: '0',
-  wordBreak: 'break-word'
-})
+  margin: "0",
+  wordBreak: "break-word",
+});
 
 function RouteComponent() {
-  const { user } = Route.useLoaderData()
-  const { handleSignOut, isPending } = useSignOut()
+  const { user } = Route.useLoaderData();
+  const { handleSignOut, isPending } = useSignOut();
 
   return (
     <div className={settings}>
@@ -85,27 +85,18 @@ function RouteComponent() {
       <section className={settingsSection}>
         <h2 className={cx(sectionLabel, settingsHeading)}>セッション</h2>
         <StyledButton
-          visual='accent'
+          visual="accent"
           onPress={handleSignOut}
-          isDisabled={isPending}>
-          <LogOut
-            size={16}
-            aria-hidden
-          />{' '}
-          {isPending ? 'ログアウト中...' : 'ログアウト'}
+          isDisabled={isPending}
+        >
+          <LogOut size={16} aria-hidden />{" "}
+          {isPending ? "ログアウト中..." : "ログアウト"}
         </StyledButton>
       </section>
 
-      <StyledLink
-        to='/'
-        search={defaultBookmarkSearch}
-        visual='accent'>
-        <ArrowLeft
-          size={16}
-          aria-hidden
-        />{' '}
-        一覧へ戻る
+      <StyledLink to="/" search={defaultBookmarkSearch} visual="accent">
+        <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
       </StyledLink>
     </div>
-  )
+  );
 }

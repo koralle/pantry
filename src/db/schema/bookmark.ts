@@ -1,35 +1,41 @@
-import { sql } from 'drizzle-orm'
-import { sqliteTable, integer, text, unique, index } from 'drizzle-orm/sqlite-core'
-import { createInsertSchema, createSelectSchema } from 'drizzle-orm/valibot'
+import { sql } from "drizzle-orm";
+import {
+  sqliteTable,
+  integer,
+  text,
+  unique,
+  index,
+} from "drizzle-orm/sqlite-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-orm/valibot";
 
-import { user } from './auth-schema'
+import { user } from "./auth-schema";
 
 export const bookmarkTable = sqliteTable(
-  'bookmarks',
+  "bookmarks",
   {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    url: text().notNull(),
-    title: text().notNull(),
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
+    deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+    id: text("id").primaryKey(),
     note: text(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    title: text().notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+    url: text().notNull(),
+    userId: text("user_id")
       .notNull()
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
-    deletedAt: integer('deleted_at', { mode: 'timestamp_ms' })
+      .references(() => user.id, { onDelete: "cascade" }),
   },
   (t) => [
     unique().on(t.userId, t.url),
-    index('bookmarks_user_id_created_at_idx').on(t.userId, t.createdAt),
-    index('bookmarks_user_id_updated_at_idx').on(t.userId, t.updatedAt)
+    index("bookmarks_user_id_created_at_idx").on(t.userId, t.createdAt),
+    index("bookmarks_user_id_updated_at_idx").on(t.userId, t.updatedAt),
   ]
-)
+);
 
-export type BookmarkSelectType = typeof bookmarkTable.$inferSelect
+export type BookmarkSelectType = typeof bookmarkTable.$inferSelect;
 
-export const bookmarkSelectSchema = createSelectSchema(bookmarkTable)
-export const bookmarkInsertSchema = createInsertSchema(bookmarkTable)
+export const bookmarkSelectSchema = createSelectSchema(bookmarkTable);
+export const bookmarkInsertSchema = createInsertSchema(bookmarkTable);

@@ -1,122 +1,116 @@
-import { ChevronDown } from 'lucide-react'
-import { css } from 'styled-system/css'
+import { ChevronDown } from "lucide-react";
+import { css } from "styled-system/css";
 
-import { PantryMotion } from '../../../shared/components/pantry-motion'
-import { StyledButton } from '../../../shared/components/styled-button'
-import { StyledLink } from '../../../shared/components/styled-link'
-import { UiEmpty } from '../../../shared/components/ui-empty'
-import { UiError } from '../../../shared/components/ui-error'
-import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
+import { PantryMotion } from "../../../shared/components/pantry-motion";
+import { StyledButton } from "../../../shared/components/styled-button";
+import { StyledLink } from "../../../shared/components/styled-link";
+import { UiEmpty } from "../../../shared/components/ui-empty";
+import { UiError } from "../../../shared/components/ui-error";
+import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import {
   buildListSearch,
-  detailSearchFromList
-} from '../../navigation/lib/bookmark-search-builders'
-import { useBookmarkListPagination } from '../hooks/use-bookmark-list-pagination'
-import type { ListLayout } from '../lib/list-layout-preference'
-import { BookmarkCardList } from './bookmark-card-list'
-import { BookmarkTable } from './bookmark-table'
+  detailSearchFromList,
+} from "../../navigation/lib/bookmark-search-builders";
+import { useBookmarkListPagination } from "../hooks/use-bookmark-list-pagination";
+import type { ListLayout } from "../lib/list-layout-preference";
+import { BookmarkCardList } from "./bookmark-card-list";
+import { BookmarkTable } from "./bookmark-table";
 
-const partialSection = css({ marginBlockStart: '5', display: 'flex', justifyContent: 'center' })
+const partialSection = css({
+  display: "flex",
+  justifyContent: "center",
+  marginBlockStart: "5",
+});
 const loadMoreButton = css({
-  borderColor: 'accent.solid',
-  color: 'accent.solid',
-  fontWeight: 'semibold',
-  minInlineSize: '12rem'
-})
+  borderColor: "accent.solid",
+  color: "accent.solid",
+  fontWeight: "semibold",
+  minInlineSize: "12rem",
+});
 
-function hasActiveConditions(search: BookmarkSearchSchema): boolean {
-  return Boolean(search.q?.trim()) || (search.tags !== undefined && search.tags.length > 0)
-}
+const hasActiveConditions = (search: BookmarkSearchSchema): boolean =>
+  Boolean(search.q?.trim()) ||
+  (search.tags !== undefined && search.tags.length > 0);
 
-export function BookmarkListResults({
+export const BookmarkListResults = ({
   layout,
-  search
+  search,
 }: {
-  readonly layout: ListLayout
-  readonly search: BookmarkSearchSchema
-}) {
-  const { items, hasMore, loadMoreError, isLoadingMore, loadMore } = useBookmarkListPagination({
-    search
-  })
+  readonly layout: ListLayout;
+  readonly search: BookmarkSearchSchema;
+}) => {
+  const { items, hasMore, loadMoreError, isLoadingMore, loadMore } =
+    useBookmarkListPagination({
+      search,
+    });
 
   if (items.length === 0) {
     if (hasActiveConditions(search)) {
-      const hasQ = Boolean(search.q?.trim())
-      const hasTags = search.tags !== undefined && search.tags.length > 0
+      const hasQ = Boolean(search.q?.trim());
+      const hasTags = search.tags !== undefined && search.tags.length > 0;
       return (
         <UiEmpty
-          title='条件に合うブックマークがありません'
+          title="条件に合うブックマークがありません"
           action={
             <StyledLink
-              to='/'
+              to="/"
               search={buildListSearch(search, {
                 clearQ: hasQ,
-                clearTags: hasTags
+                clearTags: hasTags,
               })}
-              visual='accent'>
+              visual="accent"
+            >
               条件をクリア
             </StyledLink>
           }
         />
-      )
+      );
     }
 
     return (
       <UiEmpty
-        title='まだブックマークがありません'
+        title="まだブックマークがありません"
         action={
           <StyledLink
-            to='/bookmarks/new'
+            to="/bookmarks/new"
             search={detailSearchFromList(search)}
-            visual='accent'>
+            visual="accent"
+          >
             新規
           </StyledLink>
         }
       />
-    )
+    );
   }
 
-  const detailSearch = detailSearchFromList(search)
+  const detailSearch = detailSearchFromList(search);
 
   return (
     <div>
-      <PantryMotion
-        key={layout}
-        kind='crossfade'>
-        {layout === 'card' ? (
-          <BookmarkCardList
-            bookmarks={items}
-            detailSearch={detailSearch}
-          />
+      <PantryMotion key={layout} kind="crossfade">
+        {layout === "card" ? (
+          <BookmarkCardList bookmarks={items} detailSearch={detailSearch} />
         ) : (
-          <BookmarkTable
-            bookmarks={items}
-            detailSearch={detailSearch}
-          />
+          <BookmarkTable bookmarks={items} detailSearch={detailSearch} />
         )}
       </PantryMotion>
 
       {hasMore ? (
         <div className={partialSection}>
-          {loadMoreError != null ? (
-            <UiError
-              message={loadMoreError}
-              onRetry={loadMore}
-            />
-          ) : (
+          {loadMoreError === null || loadMoreError === undefined ? (
             <StyledButton
               className={loadMoreButton}
               isDisabled={isLoadingMore}
-              onPress={loadMore}>
-              <ChevronDown
-                size={16}
-                aria-hidden
-              />{' '}
-              {isLoadingMore ? '読み込み中…' : 'さらに読み込む'}
+              onPress={loadMore}
+            >
+              <ChevronDown size={16} aria-hidden />{" "}
+              {isLoadingMore ? "読み込み中…" : "さらに読み込む"}
             </StyledButton>
+          ) : (
+            <UiError message={loadMoreError} onRetry={loadMore} />
           )}
         </div>
       ) : null}
     </div>
-  )
-}
+  );
+};

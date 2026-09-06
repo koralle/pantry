@@ -1,19 +1,18 @@
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-const dir = dirname(fileURLToPath(import.meta.url))
+const dir = import.meta.dirname;
 
-describe('edit tag route', () => {
-  test('UpdateTagをoRPC mutationとして所有する', () => {
-    const source = readFileSync(join(dir, '$id.edit.tsx'), 'utf8')
+describe("edit tag route", () => {
+  test("UpdateTagをoRPC mutationとして所有する", () => {
+    const source = readFileSync(join(dir, "$id.edit.tsx"), "utf-8");
 
-    expect(source).not.toContain('../functions/update-tag')
-    expect(source).not.toContain('TagNameAlreadyExistsError')
-    expect(source).not.toContain('error.name')
-    expect(source).toContain('orpc.tags.update.mutationOptions')
-    expect(source).toContain('refreshAfterUpdateTag')
-  })
-})
+    expect(source).not.toContain("../functions/update-tag");
+    expect(source).not.toContain("TagNameAlreadyExistsError");
+    expect(source).not.toContain("error.name");
+    expect(source).toContain("orpc.tags.update.mutationOptions");
+    expect(source).toContain("refreshAfterUpdateTag");
+  });
+});

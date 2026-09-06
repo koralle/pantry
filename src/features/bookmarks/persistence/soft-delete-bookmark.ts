@@ -1,22 +1,22 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull } from "drizzle-orm";
 
-import type { AppDb } from '../../../db/app-db'
-import { bookmarkTable } from '../../../db/schema/bookmark'
+import type { AppDb } from "../../../db/app-db";
+import { bookmarkTable } from "../../../db/schema/bookmark";
 import type {
   SoftDeleteBookmarkInput,
-  SoftDeleteBookmarkOutput
-} from '../application/delete-bookmark'
+  SoftDeleteBookmarkOutput,
+} from "../application/delete-bookmark";
 
 /**
  * 事前 SELECT は行わない。actor と未削除条件を UPDATE の WHERE に載せ、
  * returning の有無だけで deleted / not-found を決める。
  * 削除済み行は updatedAt も動かさない。
  */
-export async function softDeleteBookmark(
+export const softDeleteBookmark = async (
   db: AppDb,
   input: SoftDeleteBookmarkInput
-): Promise<SoftDeleteBookmarkOutput> {
-  const now = new Date()
+): Promise<SoftDeleteBookmarkOutput> => {
+  const now = new Date();
   const updated = await db
     .update(bookmarkTable)
     .set({ deletedAt: now, updatedAt: now })
@@ -27,12 +27,12 @@ export async function softDeleteBookmark(
         isNull(bookmarkTable.deletedAt)
       )
     )
-    .returning({ id: bookmarkTable.id })
-  const [row] = updated
+    .returning({ id: bookmarkTable.id });
+  const [row] = updated;
 
   if (row === undefined) {
-    return { kind: 'bookmark-not-found' }
+    return { kind: "bookmark-not-found" };
   }
 
-  return { kind: 'deleted', id: row.id }
-}
+  return { id: row.id, kind: "deleted" };
+};

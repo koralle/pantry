@@ -1,11 +1,11 @@
-import { ErrorFactory } from '@praha/error-factory'
+import { ErrorFactory } from "@praha/error-factory";
 
 export class SignInError extends ErrorFactory({
-  name: 'SignInError',
-  message: 'Failed to authentication',
   fields: ErrorFactory.fields<{
-    status: number
-    statusText: string
-    code?: string | undefined
-  }>()
+    status: number;
+    statusText: string;
+    code?: string | undefined;
+  }>(),
+  message: "Failed to authentication",
+  name: "SignInError",
 }) {}

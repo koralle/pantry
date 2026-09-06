@@ -1,70 +1,85 @@
-import { createTanstackQueryUtils } from '@orpc/tanstack-query'
-import { createFileRoute, Outlet, redirect, useSearch } from '@tanstack/react-router'
-import { useRef } from 'react'
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  useSearch,
+} from "@tanstack/react-router";
+import { useRef } from "react";
 
-import { AppHeader } from '../features/app-shell/components/app-header'
-import { MobileShelfDialog } from '../features/app-shell/components/mobile-shelf-dialog'
-import { ProtectedShell } from '../features/app-shell/components/protected-shell'
-import { ShelfSidebar } from '../features/app-shell/components/shelf-sidebar'
-import { isInternalPath } from '../features/auth/lib/is-internal-path'
+import { AppHeader } from "../features/app-shell/components/app-header";
+import { MobileShelfDialog } from "../features/app-shell/components/mobile-shelf-dialog";
+import { ProtectedShell } from "../features/app-shell/components/protected-shell";
+import { ShelfSidebar } from "../features/app-shell/components/shelf-sidebar";
+import { isInternalPath } from "../features/auth/lib/is-internal-path";
 import {
   detailSearchFromList,
-  resolveChromeListSearch
-} from '../features/navigation/lib/bookmark-search-builders'
-import { getRpcClient } from '../rpc/runtime-client'
+  resolveChromeListSearch,
+} from "../features/navigation/lib/bookmark-search-builders";
+import { getRpcClient } from "../rpc/runtime-client";
 
-export const Route = createFileRoute('/_protected')({
+export const Route = createFileRoute("/_protected")({
   beforeLoad: async ({ location }) => {
-    const client = await getRpcClient()
-    const session = await client.auth.session()
+    const client = await getRpcClient();
+    const session = await client.auth.session();
 
     if (session === null) {
       throw redirect({
-        to: '/sign-in',
+        to: "/sign-in",
         search: {
-          redirect: isInternalPath(location.href) ? location.href : '/'
-        }
-      })
+          redirect: isInternalPath(location.href) ? location.href : "/",
+        },
+      });
     }
 
-    return session
+    return session;
   },
   loader: async ({ context }) => {
-    const client = await getRpcClient()
-    const orpc = createTanstackQueryUtils(client)
+    const client = await getRpcClient();
+    const orpc = createTanstackQueryUtils(client);
     const shelfTagsPromise = context.queryClient.ensureQueryData(
       orpc.tags.shelf.queryOptions({ staleTime: 5000 })
-    )
+    );
 
-    return { shelfTagsPromise }
+    return { shelfTagsPromise };
   },
-  component: () => <Layout />
-})
+  component: () => <Layout />,
+});
 
 function Layout() {
-  const { shelfTagsPromise } = Route.useLoaderData()
-  const indexSearch = useSearch({ from: '/_protected/', shouldThrow: false })
-  const detailSearch = useSearch({ from: '/_protected/bookmarks/$id/', shouldThrow: false })
-  const newSearch = useSearch({ from: '/_protected/bookmarks/new/', shouldThrow: false })
-  const editSearch = useSearch({ from: '/_protected/bookmarks/$id/edit', shouldThrow: false })
-  const rememberedListSearch = useRef(indexSearch)
+  const { shelfTagsPromise } = Route.useLoaderData();
+  const indexSearch = useSearch({ from: "/_protected/", shouldThrow: false });
+  const detailSearch = useSearch({
+    from: "/_protected/bookmarks/$id/",
+    shouldThrow: false,
+  });
+  const newSearch = useSearch({
+    from: "/_protected/bookmarks/new/",
+    shouldThrow: false,
+  });
+  const editSearch = useSearch({
+    from: "/_protected/bookmarks/$id/edit",
+    shouldThrow: false,
+  });
+  const rememberedListSearch = useRef(indexSearch);
 
   if (indexSearch !== undefined) {
-    rememberedListSearch.current = indexSearch
+    rememberedListSearch.current = indexSearch;
   }
 
-  const listSearch = resolveChromeListSearch(indexSearch, rememberedListSearch.current, [
-    detailSearch,
-    newSearch,
-    editSearch
-  ])
+  const listSearch = resolveChromeListSearch(
+    indexSearch,
+    rememberedListSearch.current,
+    [detailSearch, newSearch, editSearch]
+  );
 
   const selection = {
     listActive: indexSearch !== undefined,
-    tags: indexSearch?.tags
-  }
+    tags: indexSearch?.tags,
+  };
 
-  const newBookmarkSearch = listSearch === undefined ? {} : detailSearchFromList(listSearch)
+  const newBookmarkSearch =
+    listSearch === undefined ? {} : detailSearchFromList(listSearch);
 
   return (
     <ProtectedShell
@@ -87,8 +102,9 @@ function Layout() {
             />
           }
         />
-      }>
+      }
+    >
       <Outlet />
     </ProtectedShell>
-  )
+  );
 }

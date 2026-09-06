@@ -43,13 +43,13 @@ BETTER_AUTH_SECRET=dev-secret-min-32-chars-for-local-only
 - [ ] **Step 1: 必要な import を追加する**
 
 ```ts
-import { reset, seed } from 'drizzle-seed'
+import { reset, seed } from "drizzle-seed";
 
-import { auth, db } from '../auth'
-import * as authSchema from '../src/db/schema/auth-schema'
-import { bookmarkTagsTable } from '../src/db/schema/bookmark-tag'
-import { bookmarkTable } from '../src/db/schema/bookmark'
-import { tagsTable } from '../src/db/schema/tag'
+import { auth, db } from "../auth";
+import * as authSchema from "../src/db/schema/auth-schema";
+import { bookmarkTagsTable } from "../src/db/schema/bookmark-tag";
+import { bookmarkTable } from "../src/db/schema/bookmark";
+import { tagsTable } from "../src/db/schema/tag";
 ```
 
 - [ ] **Step 2: スキーマ定数とターゲットユーザーを定義する**
@@ -59,83 +59,89 @@ const fullSchema = {
   ...authSchema,
   bookmark: bookmarkTable,
   bookmarkTags: bookmarkTagsTable,
-  tags: tagsTable
-}
+  tags: tagsTable,
+};
 
 const TARGET = {
-  email: 'koralle@example.com',
-  name: 'koralle',
-  password: 'password'
-} as const
+  email: "koralle@example.com",
+  name: "koralle",
+  password: "password",
+} as const;
 
 const COUNTS = {
   tags: 500,
   bookmarks: 200,
-  bookmarkTags: 300
-} as const
+  bookmarkTags: 300,
+} as const;
 ```
 
 - [ ] **Step 3: 一意な名前・URL リストを作るヘルパーを定義する**
 
 ```ts
-const range = (length: number) => Array.from({ length }, (_, i) => i)
+const range = (length: number) => Array.from({ length }, (_, i) => i);
 
-const tagNames = range(COUNTS.tags).map((i) => `tag-${String(i + 1).padStart(3, '0')}`)
-const bookmarkUrls = range(COUNTS.bookmarks).map((i) => `https://example.com/bookmark/${i + 1}`)
+const tagNames = range(COUNTS.tags).map(
+  (i) => `tag-${String(i + 1).padStart(3, "0")}`
+);
+const bookmarkUrls = range(COUNTS.bookmarks).map(
+  (i) => `https://example.com/bookmark/${i + 1}`
+);
 ```
 
 - [ ] **Step 4: メイン処理を書く**
 
 ```ts
 const main = async (): Promise<void> => {
-  console.log('Resetting database...')
-  await reset(db, fullSchema)
+  console.log("Resetting database...");
+  await reset(db, fullSchema);
 
-  console.log('Creating user...')
+  console.log("Creating user...");
   const { user } = await auth.api.signUpEmail({
     body: {
       email: TARGET.email,
       password: TARGET.password,
-      name: TARGET.name
-    }
-  })
+      name: TARGET.name,
+    },
+  });
 
   if (!user) {
-    throw new Error('User creation failed')
+    throw new Error("User creation failed");
   }
 
-  console.log(`User created: ${user.id} (${user.email})`)
+  console.log(`User created: ${user.id} (${user.email})`);
 
-  console.log('Seeding tags, bookmarks, and bookmark_tags...')
-  await seed(db, { tagsTable, bookmarkTable, bookmarkTagsTable }).refine((funcs) => ({
-    tagsTable: {
-      count: COUNTS.tags,
-      columns: {
-        userId: funcs.valuesFromArray({ values: [user.id] }),
-        name: funcs.valuesFromArray({ values: tagNames, isUnique: true })
-      }
-    },
-    bookmarkTable: {
-      count: COUNTS.bookmarks,
-      columns: {
-        id: funcs.uuid(),
-        userId: funcs.valuesFromArray({ values: [user.id] }),
-        url: funcs.valuesFromArray({ values: bookmarkUrls, isUnique: true }),
-        title: funcs.string({ isUnique: false })
-      }
-    },
-    bookmarkTagsTable: {
-      count: COUNTS.bookmarkTags
-    }
-  }))
+  console.log("Seeding tags, bookmarks, and bookmark_tags...");
+  await seed(db, { tagsTable, bookmarkTable, bookmarkTagsTable }).refine(
+    (funcs) => ({
+      tagsTable: {
+        count: COUNTS.tags,
+        columns: {
+          userId: funcs.valuesFromArray({ values: [user.id] }),
+          name: funcs.valuesFromArray({ values: tagNames, isUnique: true }),
+        },
+      },
+      bookmarkTable: {
+        count: COUNTS.bookmarks,
+        columns: {
+          id: funcs.uuid(),
+          userId: funcs.valuesFromArray({ values: [user.id] }),
+          url: funcs.valuesFromArray({ values: bookmarkUrls, isUnique: true }),
+          title: funcs.string({ isUnique: false }),
+        },
+      },
+      bookmarkTagsTable: {
+        count: COUNTS.bookmarkTags,
+      },
+    })
+  );
 
-  console.log('Seed complete.')
-}
+  console.log("Seed complete.");
+};
 
 main().catch((error) => {
-  console.error('Seed failed:', error)
-  process.exit(1)
-})
+  console.error("Seed failed:", error);
+  process.exit(1);
+});
 ```
 
 ---
@@ -171,18 +177,21 @@ Seed complete.
 - [ ] **Step 4: エラーが出た場合は `bookmarkTagsTable` を直接 INSERT するフォールバックに切り替える**
 
 ```ts
-const tagRows = await db.select({ id: tagsTable.id }).from(tagsTable).limit(COUNTS.bookmarkTags)
+const tagRows = await db
+  .select({ id: tagsTable.id })
+  .from(tagsTable)
+  .limit(COUNTS.bookmarkTags);
 const bookmarkRows = await db
   .select({ id: bookmarkTable.id })
   .from(bookmarkTable)
-  .limit(COUNTS.bookmarkTags)
+  .limit(COUNTS.bookmarkTags);
 
 const bookmarkTagValues = tagRows.map((tag, i) => ({
   bookmarkId: bookmarkRows[i % bookmarkRows.length].id,
-  tagId: tag.id
-}))
+  tagId: tag.id,
+}));
 
-await db.insert(bookmarkTagsTable).values(bookmarkTagValues)
+await db.insert(bookmarkTagsTable).values(bookmarkTagValues);
 ```
 
 ---

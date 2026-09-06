@@ -1,38 +1,38 @@
-import { css } from 'styled-system/css'
+import { css } from "styled-system/css";
 
 export const dialogBackdrop = css({
-  position: 'fixed',
-  inset: '0',
-  background: 'overlay.backdrop'
-})
+  background: "overlay.backdrop",
+  inset: "0",
+  position: "fixed",
+});
 
 export const dialog = css({
-  position: 'fixed',
-  inset: '0',
-  margin: 'auto',
-  maxInlineSize: '24rem',
-  width: 'dialog-width',
-  height: 'fit',
-  borderWidth: 'thin',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'box',
-  background: 'bg.surface',
-  padding: '5',
-  boxSizing: 'border-box',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '3'
-})
+  background: "bg.surface",
+  borderColor: "border.default",
+  borderRadius: "box",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  boxSizing: "border-box",
+  display: "flex",
+  flexDirection: "column",
+  gap: "3",
+  height: "fit",
+  inset: "0",
+  margin: "auto",
+  maxInlineSize: "24rem",
+  padding: "5",
+  position: "fixed",
+  width: "dialog-width",
+});
 
 export const dialogTitle = css({
-  margin: '0',
-  fontSize: 'md'
-})
+  fontSize: "md",
+  margin: "0",
+});
 
 export const dialogActions = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '3',
-  alignItems: 'center'
-})
+  alignItems: "center",
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "3",
+});

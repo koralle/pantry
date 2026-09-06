@@ -1,32 +1,35 @@
-import { Suspense } from 'react'
+import { Suspense } from "react";
 
-import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
-import { useTouchTagLastUsedOnce } from '../../tags/hooks/use-touch-tag-last-used'
-import type { ShelfTag } from '../../tags/lib/tag-shelf'
-import { useListLayout } from '../hooks/use-list-layout'
+import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
+import { useTouchTagLastUsedOnce } from "../../tags/hooks/use-touch-tag-last-used";
+import type { ShelfTag } from "../../tags/lib/tag-shelf";
+import { useListLayout } from "../hooks/use-list-layout";
 import {
   bookmarkListSearchIdentity,
-  rememberBookmarkListScroll
-} from '../lib/bookmark-list-scroll-session'
-import { BookmarkListFrame } from './bookmark-list-frame'
-import { ListLoading } from './bookmark-list-loading'
-import { ListToolbar } from './bookmark-list-toolbar'
+  rememberBookmarkListScroll,
+} from "../lib/bookmark-list-scroll-session";
+import { BookmarkListFrame } from "./bookmark-list-frame";
+import { ListLoading } from "./bookmark-list-loading";
+import { ListToolbar } from "./bookmark-list-toolbar";
 
-type BookmarkListProps = {
-  readonly search: BookmarkSearchSchema
-  readonly shelfTagsPromise: Promise<ShelfTag[]>
+interface BookmarkListProps {
+  readonly search: BookmarkSearchSchema;
+  readonly shelfTagsPromise: Promise<ShelfTag[]>;
 }
 
-export function BookmarkList({ search, shelfTagsPromise }: BookmarkListProps) {
-  const [layout, setLayout] = useListLayout()
+export const BookmarkList = ({
+  search,
+  shelfTagsPromise,
+}: BookmarkListProps) => {
+  const [layout, setLayout] = useListLayout();
 
   const changeLayout = (next: typeof layout) => {
-    setLayout(next)
-    rememberBookmarkListScroll(bookmarkListSearchIdentity(search), 0)
-    window.scrollTo(0, 0)
-  }
+    setLayout(next);
+    rememberBookmarkListScroll(bookmarkListSearchIdentity(search), 0);
+    window.scrollTo(0, 0);
+  };
 
-  useTouchTagLastUsedOnce(search, shelfTagsPromise)
+  useTouchTagLastUsedOnce(search, shelfTagsPromise);
 
   return (
     <section>
@@ -41,7 +44,8 @@ export function BookmarkList({ search, shelfTagsPromise }: BookmarkListProps) {
             />
             <ListLoading layout={layout} />
           </>
-        }>
+        }
+      >
         <BookmarkListFrame
           search={search}
           layout={layout}
@@ -50,5 +54,5 @@ export function BookmarkList({ search, shelfTagsPromise }: BookmarkListProps) {
         />
       </Suspense>
     </section>
-  )
-}
+  );
+};

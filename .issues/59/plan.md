@@ -29,61 +29,60 @@
 - [ ] **Step 1: `addTag` を追加**
 
 ```typescript
-import { createServerFn } from '@tanstack/react-start'
-import { eq } from 'drizzle-orm'
-import * as v from 'valibot'
+import { createServerFn } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import * as v from "valibot";
 
-import { getDB } from '../../db/index.server'
-import { tagsTable, tagInsertSchema } from '../../db/schema/tag'
-import { offsetPaginationQuerySchema } from '../../schemas/pagination'
-import { ensureSession } from '../auth/auth.function'
+import { getDB } from "../../db/index.server";
+import { tagsTable, tagInsertSchema } from "../../db/schema/tag";
+import { offsetPaginationQuerySchema } from "../../schemas/pagination";
+import { ensureSession } from "../auth/auth.function";
 
-const addTagInputSchema = v.pick(tagInsertSchema, ['name'])
+const addTagInputSchema = v.pick(tagInsertSchema, ["name"]);
 
-export const fetchTags = createServerFn({ method: 'GET' })
+export const fetchTags = createServerFn({ method: "GET" })
   .validator(offsetPaginationQuerySchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
+    const session = await ensureSession();
 
-    const { limit, offset } = ctx.data
+    const { limit, offset } = ctx.data;
 
-    const db = getDB()
+    const db = getDB();
 
     return db
       .select()
       .from(tagsTable)
       .where(eq(tagsTable.userId, session.user.id))
       .limit(limit)
-      .offset(offset)
-  })
+      .offset(offset);
+  });
 
-export const addTag = createServerFn({ method: 'POST' })
+export const addTag = createServerFn({ method: "POST" })
   .validator(addTagInputSchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
-    const { name } = ctx.data
+    const { name } = ctx.data;
 
     const result = await db
       .insert(tagsTable)
       .values({ name, userId: session.user.id })
-      .returning({ id: tagsTable.id })
+      .returning({ id: tagsTable.id });
 
-    const [first] = result
+    const [first] = result;
 
     if (first == null) {
-      throw new Error('Failed to insert tag')
+      throw new Error("Failed to insert tag");
     }
 
-    return { id: first.id }
-  })
+    return { id: first.id };
+  });
 ```
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -96,29 +95,29 @@ Expected: PASS
 - [ ] **Step 1: ファイル全体をブックマーク新規登録画面と同じ構成に置き換える**
 
 ```tsx
-import { Input } from '@base-ui/react'
-import { Field, getInput, useForm } from '@formisch/react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useActionState } from 'react'
-import * as v from 'valibot'
+import { Input } from "@base-ui/react";
+import { Field, getInput, useForm } from "@formisch/react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useActionState } from "react";
+import * as v from "valibot";
 
-import { addTag } from '../../../features/tags/tag.function'
+import { addTag } from "../../../features/tags/tag.function";
 
-export const Route = createFileRoute('/_protected/tags/new')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/tags/new")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   async function submitAction({ name }: { name: string }) {
-    const { id } = await addTag({ data: { name } })
+    const { id } = await addTag({ data: { name } });
 
     await navigate({
-      to: '/tags/$id',
+      to: "/tags/$id",
       params: { id: String(id) },
-      state: { newTagCreated: true }
-    })
+      state: { newTagCreated: true },
+    });
   }
 
   return (
@@ -127,54 +126,51 @@ function RouteComponent() {
 
       <RegisterNewTagForm submitAction={submitAction} />
 
-      <Link
-        to='/tags'
-        search={{ limit: 50, offset: 0 }}>
+      <Link to="/tags" search={{ limit: 50, offset: 0 }}>
         一覧へ戻る
       </Link>
     </div>
-  )
+  );
 }
 
 interface RegisterNewTagFormProps {
-  submitAction: ({ name }: { name: string }) => Promise<void>
+  submitAction: ({ name }: { name: string }) => Promise<void>;
 }
 
 function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
   const registerNewTagFormSchema = v.object({
-    name: v.string()
-  })
+    name: v.string(),
+  });
 
   const registerNewTagForm = useForm({
     initialInput: {
-      name: ''
+      name: "",
     },
-    schema: registerNewTagFormSchema
-  })
+    schema: registerNewTagFormSchema,
+  });
 
   const [_, throwError, isPending] = useActionState(async () => {
-    const currentRawName = getInput(registerNewTagForm, { path: ['name'] }) ?? ''
+    const currentRawName =
+      getInput(registerNewTagForm, { path: ["name"] }) ?? "";
 
-    await submitAction({ name: currentRawName })
-  }, null)
+    await submitAction({ name: currentRawName });
+  }, null);
 
   return (
     <form action={throwError}>
       <fieldset>
         <legend>タグ新規登録</legend>
 
-        <Field
-          of={registerNewTagForm}
-          path={['name']}>
+        <Field of={registerNewTagForm} path={["name"]}>
           {(field) => (
             <label htmlFor={field.props.name}>
               タグ名
               <Input
                 id={field.props.name}
                 value={field.input}
-                type='text'
+                type="text"
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  field.onChange(newValue);
                 }}
                 required
               />
@@ -183,20 +179,17 @@ function RegisterNewTagForm({ submitAction }: RegisterNewTagFormProps) {
         </Field>
       </fieldset>
 
-      <button
-        type='submit'
-        disabled={isPending}>
-        {isPending ? '登録中...' : '登録'}
+      <button type="submit" disabled={isPending}>
+        {isPending ? "登録中..." : "登録"}
       </button>
     </form>
-  )
+  );
 }
 ```
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -209,55 +202,50 @@ Expected: PASS
 - [ ] **Step 1: ブックマーク詳細画面と同じ構成でファイルを作成**
 
 ```tsx
-import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
-import * as v from 'valibot'
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import * as v from "valibot";
 
 const tagDetailSearchSchema = v.object({
-  created: v.optional(v.boolean())
-})
+  created: v.optional(v.boolean()),
+});
 
-export const Route = createFileRoute('/_protected/tags/$id/')({
+export const Route = createFileRoute("/_protected/tags/$id/")({
   validateSearch: tagDetailSearchSchema,
-  component: RouteComponent
-})
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { id } = Route.useParams()
+  const { id } = Route.useParams();
 
   const { newTagCreated } = useRouterState({
-    select: (s) => s.location.state
-  })
+    select: (s) => s.location.state,
+  });
 
   return (
     <div>
-      {newTagCreated && <div role='alert'>タグを登録しました</div>}
+      {newTagCreated && <div role="alert">タグを登録しました</div>}
 
       <h1>タグ詳細</h1>
 
       <p>ID: {id}</p>
 
       <nav>
-        <Link
-          to='/tags/$id/edit'
-          params={{ id }}>
+        <Link to="/tags/$id/edit" params={{ id }}>
           編集
         </Link>
 
-        <Link
-          to='/tags'
-          search={{ limit: 50, offset: 0 }}>
+        <Link to="/tags" search={{ limit: 50, offset: 0 }}>
           一覧へ戻る
         </Link>
       </nav>
     </div>
-  )
+  );
 }
 ```
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -271,8 +259,8 @@ Expected: PASS
 
 ```typescript
 interface HistoryState {
-  newBookmarkCreated?: boolean
-  newTagCreated?: boolean
+  newBookmarkCreated?: boolean;
+  newTagCreated?: boolean;
 }
 ```
 
@@ -280,8 +268,7 @@ interface HistoryState {
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -293,8 +280,7 @@ Expected: PASS
 
 - [ ] **Step 1: TanStack Router のルート定義を再生成**
 
-Run: `pnpm run build`
-Expected: BUILD SUCCESS
+Run: `pnpm run build` Expected: BUILD SUCCESS
 
 - [ ] **Step 2: Lint / Format / Typecheck / Test を実行**
 

@@ -1,27 +1,26 @@
-import { createClient } from '@libsql/client'
-import { sql } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as v from 'valibot'
+import { createClient } from "@libsql/client";
+import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import * as v from "valibot";
 
-import { user } from '../../../db/schema/auth-schema'
-import { bookmarkTable } from '../../../db/schema/bookmark'
-import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
-import { tagsTable } from '../../../db/schema/tag'
-import { userIdSchema } from '../../auth/domain/auth-values'
-import type { UserId } from '../../auth/domain/auth-values'
+import { user } from "../../../db/schema/auth-schema";
+import { bookmarkTable } from "../../../db/schema/bookmark";
+import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
+import { tagsTable } from "../../../db/schema/tag";
+import { userIdSchema } from "../../auth/domain/auth-values";
+import type { UserId } from "../../auth/domain/auth-values";
 
-export function parseUserId(value: string): UserId {
-  return v.parse(userIdSchema, value)
-}
+export const parseUserId = (value: string): UserId =>
+  v.parse(userIdSchema, value);
 
 /**
  * Libsql の `:memory:` は workerd で動かないので、このヘルパーは Node project で使う。
  * 本番スキーマと同じ unique 制約と foreign key を置き、読み取り系 query service の
  * actor 分離と集計を本物の制約・行に乗せて検証する。
  */
-export async function createMemoryDb() {
-  const client = createClient({ url: ':memory:' })
-  const db = drizzle({ client })
+export const createMemoryDb = async () => {
+  const client = createClient({ url: ":memory:" });
+  const db = drizzle({ client });
 
   await db.run(sql`
     CREATE TABLE users (
@@ -37,7 +36,7 @@ export async function createMemoryDb() {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE tags (
@@ -54,7 +53,7 @@ export async function createMemoryDb() {
       version INTEGER NOT NULL DEFAULT 1,
       UNIQUE (user_id, normalized_name)
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmarks (
@@ -68,7 +67,7 @@ export async function createMemoryDb() {
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmark_tags (
@@ -76,64 +75,67 @@ export async function createMemoryDb() {
       tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
       UNIQUE (bookmark_id, tag_id)
     )
-  `)
+  `);
 
-  return db
-}
+  return db;
+};
 
-export async function seedUser(db: Awaited<ReturnType<typeof createMemoryDb>>, id: string) {
-  await db.insert(user).values({ id, name: id, email: `${id}@example.com` })
-}
+export const seedUser = async (
+  db: Awaited<ReturnType<typeof createMemoryDb>>,
+  id: string
+) => {
+  await db.insert(user).values({ email: `${id}@example.com`, id, name: id });
+};
 
-export async function seedTag(
+export const seedTag = async (
   db: Awaited<ReturnType<typeof createMemoryDb>>,
   input: {
-    userId: string
-    name: string
-    pinned?: boolean
-    sortOrder?: number
-    color?: string | null
-    lastUsedAt?: Date | null
+    userId: string;
+    name: string;
+    pinned?: boolean;
+    sortOrder?: number;
+    color?: string | null;
+    lastUsedAt?: Date | null;
   }
-) {
+) => {
   const inserted = await db
     .insert(tagsTable)
     .values({
-      userId: input.userId,
+      color: input.color ?? null,
+      lastUsedAt: input.lastUsedAt ?? null,
       name: input.name,
       normalizedName: input.name.toLowerCase(),
       pinned: input.pinned ?? false,
       sortOrder: input.sortOrder ?? 0,
-      color: input.color ?? null,
-      lastUsedAt: input.lastUsedAt ?? null
+      userId: input.userId,
     })
-    .returning({ id: tagsTable.id })
-  const [row] = inserted
+    .returning({ id: tagsTable.id });
+  const [row] = inserted;
 
   if (row === undefined) {
-    throw new Error('seedTag failed to return the inserted row')
+    throw new Error("seedTag failed to return the inserted row");
   }
 
-  return row.id
-}
+  return row.id;
+};
 
-export async function seedBookmark(
+export const seedBookmark = async (
   db: Awaited<ReturnType<typeof createMemoryDb>>,
   input: {
-    id: string
-    userId: string
-    deleted?: boolean
-    tagIds: number[]
+    id: string;
+    userId: string;
+    deleted?: boolean;
+    tagIds: number[];
   }
-) {
+) => {
   await db.insert(bookmarkTable).values({
+    deletedAt: input.deleted ? new Date() : null,
     id: input.id,
-    userId: input.userId,
-    url: `https://example.com/${input.id}`,
     title: input.id,
-    deletedAt: input.deleted ? new Date() : null
-  })
+    url: `https://example.com/${input.id}`,
+    userId: input.userId,
+  });
   await db
     .insert(bookmarkTagsTable)
-    .values(input.tagIds.map((tagId) => ({ bookmarkId: input.id, tagId })))
-}
+    .values(input.tagIds.map((tagId) => ({ bookmarkId: input.id, tagId })));
+};

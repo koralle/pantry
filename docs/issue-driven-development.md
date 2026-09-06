@@ -296,8 +296,7 @@ Issue本文を上書きしない。
 代表例:
 
 ```sh
-pnpm run format:check
-pnpm run lint
+pnpm run check
 pnpm run typecheck
 pnpm run test
 pnpm run build

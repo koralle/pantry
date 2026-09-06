@@ -1,16 +1,14 @@
-import { defineConfig } from 'oxfmt'
+import { defineConfig } from "oxfmt";
+import ultracite from "ultracite/oxfmt";
 
 export default defineConfig({
-  bracketSameLine: true,
-  bracketSpacing: true,
-  ignorePatterns: ['pnpm-lock.yaml', 'src/routeTree.gen.ts'],
-  jsxSingleQuote: true,
-  semi: false,
-  singleAttributePerLine: true,
-  singleQuote: true,
-  sortImports: true,
-  sortPackageJson: {
-    sortScripts: true
-  },
-  trailingComma: 'none'
-})
+  ...ultracite,
+  ignorePatterns: [
+    ...(ultracite.ignorePatterns ?? []),
+    ".agents/**",
+    "pnpm-lock.yaml",
+    "src/db/schema/auth-schema.ts",
+    "src/routeTree.gen.ts",
+    "worker-configuration.d.ts",
+  ],
+});

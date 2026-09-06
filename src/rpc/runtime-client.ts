@@ -1,8 +1,8 @@
-import type { RouterClient } from '@orpc/server'
-import { createIsomorphicFn } from '@tanstack/react-start'
+import type { RouterClient } from "@orpc/server";
+import { createIsomorphicFn } from "@tanstack/react-start";
 
-import { rpcClient } from './client'
-import type { AppRouter } from './create-app-router'
+import { rpcClient } from "./client";
+import type { AppRouter } from "./create-app-router";
 
 /**
  * Loader / beforeLoad は SSR でも client navigation でも走る。
@@ -12,7 +12,7 @@ import type { AppRouter } from './create-app-router'
  */
 export const getRpcClient = createIsomorphicFn()
   .server(async (): Promise<RouterClient<AppRouter>> => {
-    const { serverRpcClient } = await import('./client.server')
-    return serverRpcClient
+    const { serverRpcClient } = await import("./client.server");
+    return serverRpcClient;
   })
-  .client(async (): Promise<RouterClient<AppRouter>> => rpcClient)
+  .client(async (): Promise<RouterClient<AppRouter>> => rpcClient);

@@ -1,13 +1,16 @@
-import { and, eq, inArray } from 'drizzle-orm'
-import { uuidv7 } from 'uuidv7'
-import * as v from 'valibot'
+import { and, eq, inArray } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
+import * as v from "valibot";
 
-import type { AppDb } from '../../../db/app-db'
-import { bookmarkTable } from '../../../db/schema/bookmark'
-import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
-import { tagsTable } from '../../../db/schema/tag'
-import type { InsertBookmarkInput, InsertBookmarkOutput } from '../application/create-bookmark'
-import { bookmarkIdSchema } from '../domain/bookmark-values'
+import type { AppDb } from "../../../db/app-db";
+import { bookmarkTable } from "../../../db/schema/bookmark";
+import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
+import { tagsTable } from "../../../db/schema/tag";
+import type {
+  InsertBookmarkInput,
+  InsertBookmarkOutput,
+} from "../application/create-bookmark";
+import { bookmarkIdSchema } from "../domain/bookmark-values";
 
 /**
  * 衝突と所有権の正本は DB 制約。
@@ -18,53 +21,62 @@ import { bookmarkIdSchema } from '../domain/bookmark-values'
  *   別 user の tag を関連付けない。
  * - transaction 内の未知障害は rollback のために throw し、外側でも再 throw する。
  */
-export async function insertBookmark(
+export const insertBookmark = async (
   db: AppDb,
   input: InsertBookmarkInput
-): Promise<InsertBookmarkOutput> {
-  return db.transaction(async (tx) => {
-    const tagIds = [...new Set(input.tagIds)]
+): Promise<InsertBookmarkOutput> =>
+  await db.transaction(async (tx) => {
+    const tagIds = [...new Set(input.tagIds)];
     if (tagIds.length > 0) {
       const owned = await tx
         .select({ id: tagsTable.id })
         .from(tagsTable)
-        .where(and(eq(tagsTable.userId, input.userId), inArray(tagsTable.id, [...tagIds])))
+        .where(
+          and(
+            eq(tagsTable.userId, input.userId),
+            inArray(tagsTable.id, [...tagIds])
+          )
+        );
       if (owned.length !== tagIds.length) {
-        return { kind: 'invalid-tag' }
+        return { kind: "invalid-tag" };
       }
     }
 
     const inserted = await tx
-        .insert(bookmarkTable)
-        .values({
-          id: uuidv7(),
-          userId: input.userId,
-          url: input.url,
-          title: input.title,
-          note: input.note
-        })
-        .onConflictDoNothing({
-          target: [bookmarkTable.userId, bookmarkTable.url]
-        })
-        .returning({ id: bookmarkTable.id }),
-      [created] = inserted
+      .insert(bookmarkTable)
+      .values({
+        id: uuidv7(),
+        note: input.note,
+        title: input.title,
+        url: input.url,
+        userId: input.userId,
+      })
+      .onConflictDoNothing({
+        target: [bookmarkTable.userId, bookmarkTable.url],
+      })
+      .returning({ id: bookmarkTable.id });
+    const [created] = inserted;
     if (created === undefined) {
-      return { kind: 'duplicate-url' }
+      return { kind: "duplicate-url" };
     }
 
     if (tagIds.length > 0) {
       await tx
         .insert(bookmarkTagsTable)
-        .values(tagIds.map((tagId) => ({ bookmarkId: created.id, tagId })))
+        .values(tagIds.map((tagId) => ({ bookmarkId: created.id, tagId })));
       await tx
         .update(tagsTable)
         .set({ lastUsedAt: new Date() })
-        .where(and(eq(tagsTable.userId, input.userId), inArray(tagsTable.id, [...tagIds])))
+        .where(
+          and(
+            eq(tagsTable.userId, input.userId),
+            inArray(tagsTable.id, [...tagIds])
+          )
+        );
     }
 
     return {
-      kind: 'created',
-      id: v.parse(bookmarkIdSchema, created.id)
-    }
-  })
-}
+      id: v.parse(bookmarkIdSchema, created.id),
+      kind: "created",
+    };
+  });

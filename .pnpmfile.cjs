@@ -8,34 +8,34 @@
  */
 function readPackage(pkg) {
   const needsClassicTypescript = new Set([
-    '@typescript-eslint/project-service',
-    '@typescript-eslint/tsconfig-utils',
-    '@typescript-eslint/typescript-estree',
-    'ts-api-utils'
-  ])
+    "@typescript-eslint/project-service",
+    "@typescript-eslint/tsconfig-utils",
+    "@typescript-eslint/typescript-estree",
+    "ts-api-utils",
+  ]);
 
   if (!needsClassicTypescript.has(pkg.name)) {
-    return pkg
+    return pkg;
   }
 
   pkg.dependencies = {
     ...pkg.dependencies,
-    typescript: '5.9.3'
-  }
+    typescript: "5.9.3",
+  };
 
   if (pkg.peerDependencies) {
-    delete pkg.peerDependencies.typescript
+    delete pkg.peerDependencies.typescript;
   }
 
   if (pkg.peerDependenciesMeta) {
-    delete pkg.peerDependenciesMeta.typescript
+    delete pkg.peerDependenciesMeta.typescript;
   }
 
-  return pkg
+  return pkg;
 }
 
 module.exports = {
   hooks: {
-    readPackage
-  }
-}
+    readPackage,
+  },
+};

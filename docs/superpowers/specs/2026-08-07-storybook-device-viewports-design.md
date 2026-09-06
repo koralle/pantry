@@ -2,8 +2,7 @@
 
 ## 目的
 
-Storybook の viewport selector から、Apple iPhone、Apple iPad、Google Pixel の各端末サイズを選択できるようにする。
-全 Story に同じ viewport 定義を適用し、既存の Story ごとの viewport override も妨げない。
+Storybook の viewport selector から、Apple iPhone、Apple iPad、Google Pixel の各端末サイズを選択できるようにする。全 Story に同じ viewport 定義を適用し、既存の Story ごとの viewport override も妨げない。
 
 ## 決定事項
 
@@ -17,17 +16,15 @@ Storybook の viewport selector から、Apple iPhone、Apple iPad、Google Pixe
 
 ### Dependency
 
-`package.json` の devDependencies に `storybook-device-viewports` を追加し、`pnpm-lock.yaml` を更新する。
-パッケージの Storybook peer 要件は `^10.1.11` であり、プロジェクトの Storybook `10.5.5` と互換性がある。
+`package.json` の devDependencies に `storybook-device-viewports` を追加し、`pnpm-lock.yaml` を更新する。パッケージの Storybook peer 要件は `^10.1.11` であり、プロジェクトの Storybook `10.5.5` と互換性がある。
 
 ### Preview configuration
 
-`src/storybook/preview.tsx` で `AWESOME_DEVICE_VIEWPORTS` を import し、既存の parameters に次を追加する。
-Storybook 10 では viewport 定義の parameter key に `options` を使う。
+`src/storybook/preview.tsx` で `AWESOME_DEVICE_VIEWPORTS` を import し、既存の parameters に次を追加する。Storybook 10 では viewport 定義の parameter key に `options` を使う。
 
 ```ts
 viewport: {
-  options: AWESOME_DEVICE_VIEWPORTS
+  options: AWESOME_DEVICE_VIEWPORTS;
 }
 ```
 

@@ -63,8 +63,7 @@ Issue本文のチェックボックスは変更しません。
 実際に実行していない項目をチェックしないでください。
 -->
 
-- [ ] `pnpm run format:check`
-- [ ] `pnpm run lint`
+- [ ] `pnpm run check`
 - [ ] `pnpm run typecheck`
 - [ ] `pnpm run test`
 - [ ] `pnpm run test:persistence`

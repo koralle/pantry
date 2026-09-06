@@ -30,119 +30,134 @@
 - [ ] **Step 1: `and` の import と更新入力スキーマを追加**
 
 ```typescript
-import { and, eq } from 'drizzle-orm'
+import { and, eq } from "drizzle-orm";
 ```
 
 - [ ] **Step 2: ファイル全体を以下のように置き換える**
 
 ```typescript
-import { createServerFn } from '@tanstack/react-start'
-import { and, eq } from 'drizzle-orm'
-import { uuidv7 } from 'uuidv7'
-import * as v from 'valibot'
+import { createServerFn } from "@tanstack/react-start";
+import { and, eq } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
+import * as v from "valibot";
 
-import { getDB } from '../../db/index.server'
-import { bookmarkTable, bookmarkInsertSchema } from '../../db/schema/bookmark'
-import { offsetPaginationQuerySchema } from '../../schemas/pagination'
-import { ensureSession } from '../auth/auth.function'
+import { getDB } from "../../db/index.server";
+import { bookmarkTable, bookmarkInsertSchema } from "../../db/schema/bookmark";
+import { offsetPaginationQuerySchema } from "../../schemas/pagination";
+import { ensureSession } from "../auth/auth.function";
 
-const addBookmarkInputSchema = v.pick(bookmarkInsertSchema, ['url', 'title', 'note'])
+const addBookmarkInputSchema = v.pick(bookmarkInsertSchema, [
+  "url",
+  "title",
+  "note",
+]);
 
 export const updateBookmarkInputSchema = v.object({
   id: v.string(),
   url: v.pipe(v.string(), v.url()),
   title: v.string(),
-  note: v.nullable(v.string())
-})
+  note: v.nullable(v.string()),
+});
 
-export const fetchBookmarks = createServerFn({ method: 'GET' })
+export const fetchBookmarks = createServerFn({ method: "GET" })
   .validator(offsetPaginationQuerySchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
+    const session = await ensureSession();
 
-    const { limit, offset } = ctx.data
+    const { limit, offset } = ctx.data;
 
-    const db = getDB()
+    const db = getDB();
 
     return db
       .select()
       .from(bookmarkTable)
       .where(eq(bookmarkTable.userId, session.user.id))
       .limit(limit)
-      .offset(offset)
-  })
+      .offset(offset);
+  });
 
-export const addBookmark = createServerFn({ method: 'POST' })
+export const addBookmark = createServerFn({ method: "POST" })
   .validator(addBookmarkInputSchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
-    const id = uuidv7()
-    const { url, title, note } = ctx.data
+    const id = uuidv7();
+    const { url, title, note } = ctx.data;
 
-    await db.insert(bookmarkTable).values({ id, url, title, note, userId: session.user.id })
+    await db
+      .insert(bookmarkTable)
+      .values({ id, url, title, note, userId: session.user.id });
 
-    return { id }
-  })
+    return { id };
+  });
 
-export const getBookmark = createServerFn({ method: 'GET' })
+export const getBookmark = createServerFn({ method: "GET" })
   .validator(v.object({ id: v.string() }))
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
     const [bookmark] = await db
       .select()
       .from(bookmarkTable)
-      .where(and(eq(bookmarkTable.id, ctx.data.id), eq(bookmarkTable.userId, session.user.id)))
-      .limit(1)
+      .where(
+        and(
+          eq(bookmarkTable.id, ctx.data.id),
+          eq(bookmarkTable.userId, session.user.id)
+        )
+      )
+      .limit(1);
 
     if (bookmark == null) {
-      throw new Error('Bookmark not found')
+      throw new Error("Bookmark not found");
     }
 
-    return bookmark
-  })
+    return bookmark;
+  });
 
-export const updateBookmark = createServerFn({ method: 'POST' })
+export const updateBookmark = createServerFn({ method: "POST" })
   .validator(updateBookmarkInputSchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
-    const { id, url, title, note } = ctx.data
+    const { id, url, title, note } = ctx.data;
 
     const [existing] = await db
       .select()
       .from(bookmarkTable)
-      .where(and(eq(bookmarkTable.id, id), eq(bookmarkTable.userId, session.user.id)))
-      .limit(1)
+      .where(
+        and(eq(bookmarkTable.id, id), eq(bookmarkTable.userId, session.user.id))
+      )
+      .limit(1);
 
     if (existing == null) {
-      throw new Error('Bookmark not found')
+      throw new Error("Bookmark not found");
     }
 
     try {
       await db
         .update(bookmarkTable)
         .set({ url, title, note, updatedAt: new Date() })
-        .where(eq(bookmarkTable.id, id))
+        .where(eq(bookmarkTable.id, id));
     } catch (error) {
-      if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
-        throw new Error('URL already exists')
+      if (
+        error instanceof Error &&
+        error.message.includes("UNIQUE constraint failed")
+      ) {
+        throw new Error("URL already exists");
       }
-      throw error
+      throw error;
     }
 
-    return { id }
-  })
+    return { id };
+  });
 ```
 
 - [ ] **Step 3: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -155,110 +170,111 @@ Expected: PASS
 - [ ] **Step 1: ファイル全体を以下のように置き換える**
 
 ```tsx
-import { Input } from '@base-ui/react'
-import { Field, getInput, useForm } from '@formisch/react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useActionState } from 'react'
-import * as v from 'valibot'
+import { Input } from "@base-ui/react";
+import { Field, getInput, useForm } from "@formisch/react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useActionState } from "react";
+import * as v from "valibot";
 
-import { getBookmark, updateBookmark } from '../../../../features/bookmarks/bookmark.function'
-import type { BookmarkSelectType } from '../../../../db/schema/bookmark'
+import {
+  getBookmark,
+  updateBookmark,
+} from "../../../../features/bookmarks/bookmark.function";
+import type { BookmarkSelectType } from "../../../../db/schema/bookmark";
 
-export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
+export const Route = createFileRoute("/_protected/bookmarks/$id/edit")({
   loader: async ({ params }) => {
-    const bookmark = await getBookmark({ data: { id: params.id } })
-    return { bookmark }
+    const bookmark = await getBookmark({ data: { id: params.id } });
+    return { bookmark };
   },
-  component: RouteComponent
-})
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { bookmark } = Route.useLoaderData()
-  const navigate = useNavigate()
+  const { bookmark } = Route.useLoaderData();
+  const navigate = useNavigate();
 
   async function submitAction({
     url,
     title,
-    note
+    note,
   }: {
-    url: string
-    title: string
-    note: string | null
+    url: string;
+    title: string;
+    note: string | null;
   }) {
-    await updateBookmark({ data: { id: bookmark.id, url, title, note } })
+    await updateBookmark({ data: { id: bookmark.id, url, title, note } });
 
     await navigate({
-      to: '/bookmarks/$id',
+      to: "/bookmarks/$id",
       params: { id: bookmark.id },
-      state: { bookmarkUpdated: true }
-    })
+      state: { bookmarkUpdated: true },
+    });
   }
 
   return (
     <div>
       <h1>ブックマーク編集</h1>
 
-      <EditBookmarkForm
-        bookmark={bookmark}
-        submitAction={submitAction}
-      />
+      <EditBookmarkForm bookmark={bookmark} submitAction={submitAction} />
 
-      <Link
-        to='/bookmarks/$id'
-        params={{ id: bookmark.id }}>
+      <Link to="/bookmarks/$id" params={{ id: bookmark.id }}>
         詳細へ戻る
       </Link>
     </div>
-  )
+  );
 }
 
 interface EditBookmarkFormProps {
-  bookmark: BookmarkSelectType
-  submitAction: (values: { url: string; title: string; note: string | null }) => Promise<void>
+  bookmark: BookmarkSelectType;
+  submitAction: (values: {
+    url: string;
+    title: string;
+    note: string | null;
+  }) => Promise<void>;
 }
 
 function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
   const editBookmarkFormSchema = v.object({
     url: v.pipe(v.string(), v.url()),
     title: v.string(),
-    note: v.nullable(v.string())
-  })
+    note: v.nullable(v.string()),
+  });
 
   const editBookmarkForm = useForm({
     initialInput: {
       url: bookmark.url,
       title: bookmark.title,
-      note: bookmark.note ?? ''
+      note: bookmark.note ?? "",
     },
-    schema: editBookmarkFormSchema
-  })
+    schema: editBookmarkFormSchema,
+  });
 
   const [_, throwError, isPending] = useActionState(async () => {
-    const currentRawUrl = getInput(editBookmarkForm, { path: ['url'] }) ?? ''
-    const currentRawTitle = getInput(editBookmarkForm, { path: ['title'] }) ?? ''
-    const currentRawNote = getInput(editBookmarkForm, { path: ['note'] })
-    const note = currentRawNote === '' ? null : currentRawNote
+    const currentRawUrl = getInput(editBookmarkForm, { path: ["url"] }) ?? "";
+    const currentRawTitle =
+      getInput(editBookmarkForm, { path: ["title"] }) ?? "";
+    const currentRawNote = getInput(editBookmarkForm, { path: ["note"] });
+    const note = currentRawNote === "" ? null : currentRawNote;
 
-    await submitAction({ url: currentRawUrl, title: currentRawTitle, note })
-  }, null)
+    await submitAction({ url: currentRawUrl, title: currentRawTitle, note });
+  }, null);
 
   return (
     <form action={throwError}>
       <fieldset>
         <legend>ブックマーク編集</legend>
 
-        <Field
-          of={editBookmarkForm}
-          path={['url']}>
+        <Field of={editBookmarkForm} path={["url"]}>
           {(field) => (
             <label htmlFor={field.props.name}>
               URL
               <Input
                 id={field.props.name}
                 value={field.input}
-                type='url'
+                type="url"
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  field.onChange(newValue);
                 }}
                 required
               />
@@ -266,18 +282,16 @@ function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
           )}
         </Field>
 
-        <Field
-          of={editBookmarkForm}
-          path={['title']}>
+        <Field of={editBookmarkForm} path={["title"]}>
           {(field) => (
             <label htmlFor={field.props.name}>
               タイトル
               <Input
                 id={field.props.name}
                 value={field.input}
-                type='text'
+                type="text"
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  field.onChange(newValue);
                 }}
                 required
               />
@@ -285,18 +299,16 @@ function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
           )}
         </Field>
 
-        <Field
-          of={editBookmarkForm}
-          path={['note']}>
+        <Field of={editBookmarkForm} path={["note"]}>
           {(field) => (
             <label htmlFor={field.props.name}>
               メモ
               <Input
                 id={field.props.name}
-                value={field.input ?? ''}
-                type='text'
+                value={field.input ?? ""}
+                type="text"
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  field.onChange(newValue);
                 }}
               />
             </label>
@@ -304,20 +316,17 @@ function EditBookmarkForm({ bookmark, submitAction }: EditBookmarkFormProps) {
         </Field>
       </fieldset>
 
-      <button
-        type='submit'
-        disabled={isPending}>
-        {isPending ? '更新中...' : '更新'}
+      <button type="submit" disabled={isPending}>
+        {isPending ? "更新中..." : "更新"}
       </button>
     </form>
-  )
+  );
 }
 ```
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -330,23 +339,22 @@ Expected: PASS
 - [ ] **Step 1: `HistoryState` に `bookmarkUpdated` を追加**
 
 ```typescript
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
-    router: ReturnType<typeof getRouter>
+    router: ReturnType<typeof getRouter>;
   }
 
   interface HistoryState {
-    newBookmarkCreated?: boolean
-    newTagCreated?: boolean
-    bookmarkUpdated?: boolean
+    newBookmarkCreated?: boolean;
+    newTagCreated?: boolean;
+    bookmarkUpdated?: boolean;
   }
 }
 ```
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -359,56 +367,51 @@ Expected: PASS
 - [ ] **Step 1: `bookmarkUpdated` 状態を読み取ってメッセージを表示**
 
 ```tsx
-import { createFileRoute, Link, useRouterState } from '@tanstack/react-router'
-import * as v from 'valibot'
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import * as v from "valibot";
 
 const bookmarkDetailSearchSchema = v.object({
-  created: v.optional(v.boolean())
-})
+  created: v.optional(v.boolean()),
+});
 
-export const Route = createFileRoute('/_protected/bookmarks/$id/')({
+export const Route = createFileRoute("/_protected/bookmarks/$id/")({
   validateSearch: bookmarkDetailSearchSchema,
-  component: RouteComponent
-})
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { id } = Route.useParams()
+  const { id } = Route.useParams();
 
   const { newBookmarkCreated, bookmarkUpdated } = useRouterState({
-    select: (s) => s.location.state
-  })
+    select: (s) => s.location.state,
+  });
 
   return (
     <div>
-      {newBookmarkCreated && <div role='alert'>ブックマークを登録しました</div>}
-      {bookmarkUpdated && <div role='alert'>ブックマークを更新しました</div>}
+      {newBookmarkCreated && <div role="alert">ブックマークを登録しました</div>}
+      {bookmarkUpdated && <div role="alert">ブックマークを更新しました</div>}
 
       <h1>ブックマーク詳細</h1>
 
       <p>ID: {id}</p>
 
       <nav>
-        <Link
-          to='/bookmarks/$id/edit'
-          params={{ id }}>
+        <Link to="/bookmarks/$id/edit" params={{ id }}>
           編集
         </Link>
 
-        <Link
-          to='/'
-          search={{ tagMode: 'and', sort: 'newest' }}>
+        <Link to="/" search={{ tagMode: "and", sort: "newest" }}>
           一覧へ戻る
         </Link>
       </nav>
     </div>
-  )
+  );
 }
 ```
 
 - [ ] **Step 2: 型エラーがないことを確認**
 
-Run: `pnpm run typecheck`
-Expected: PASS
+Run: `pnpm run typecheck` Expected: PASS
 
 ---
 
@@ -421,67 +424,66 @@ Expected: PASS
 - [ ] **Step 1: テストファイルを作成**
 
 ```typescript
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import { updateBookmarkInputSchema } from './bookmark.function'
+import { updateBookmarkInputSchema } from "./bookmark.function";
 
-describe('updateBookmarkInputSchema', () => {
-  test('accepts valid input', async () => {
+describe("updateBookmarkInputSchema", () => {
+  test("accepts valid input", async () => {
     const result = await v.parseAsync(updateBookmarkInputSchema, {
-      id: 'test-bookmark-id',
-      url: 'https://example.com',
-      title: 'Example Site',
-      note: 'memo'
-    })
+      id: "test-bookmark-id",
+      url: "https://example.com",
+      title: "Example Site",
+      note: "memo",
+    });
 
     expect(result).toStrictEqual({
-      id: 'test-bookmark-id',
-      url: 'https://example.com',
-      title: 'Example Site',
-      note: 'memo'
-    })
-  })
+      id: "test-bookmark-id",
+      url: "https://example.com",
+      title: "Example Site",
+      note: "memo",
+    });
+  });
 
-  test('accepts null note', async () => {
+  test("accepts null note", async () => {
     const result = await v.parseAsync(updateBookmarkInputSchema, {
-      id: 'test-bookmark-id',
-      url: 'https://example.com',
-      title: 'Example Site',
-      note: null
-    })
+      id: "test-bookmark-id",
+      url: "https://example.com",
+      title: "Example Site",
+      note: null,
+    });
 
-    expect(result.note).toBeNull()
-  })
+    expect(result.note).toBeNull();
+  });
 
-  test('rejects invalid url', async () => {
+  test("rejects invalid url", async () => {
     await expect(
       v.parseAsync(updateBookmarkInputSchema, {
-        id: 'test-bookmark-id',
-        url: 'not-a-url',
-        title: 'Example Site',
-        note: null
+        id: "test-bookmark-id",
+        url: "not-a-url",
+        title: "Example Site",
+        note: null,
       })
-    ).rejects.toThrow()
-  })
+    ).rejects.toThrow();
+  });
 
-  test('rejects empty title', async () => {
+  test("rejects empty title", async () => {
     await expect(
       v.parseAsync(updateBookmarkInputSchema, {
-        id: 'test-bookmark-id',
-        url: 'https://example.com',
-        title: '',
-        note: null
+        id: "test-bookmark-id",
+        url: "https://example.com",
+        title: "",
+        note: null,
       })
-    ).rejects.toThrow()
-  })
-})
+    ).rejects.toThrow();
+  });
+});
 ```
 
 - [ ] **Step 2: テストが通ることを確認**
 
-Run: `pnpm run test -- src/features/bookmarks/bookmark.function.test.ts`
-Expected: PASS
+Run: `pnpm run test -- src/features/bookmarks/bookmark.function.test.ts` Expected: PASS
 
 ---
 
@@ -493,8 +495,7 @@ Expected: PASS
 
 - [ ] **Step 1: TanStack Router のルート定義を再生成**
 
-Run: `pnpm run build`
-Expected: BUILD SUCCESS
+Run: `pnpm run build` Expected: BUILD SUCCESS
 
 - [ ] **Step 2: Lint / Format / Typecheck / Test を実行**
 

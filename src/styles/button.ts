@@ -1,4 +1,4 @@
-import { cva } from 'styled-system/css'
+import { cva } from "styled-system/css";
 
 /**
  * Shared button surface recipe.
@@ -12,118 +12,118 @@ import { cva } from 'styled-system/css'
  */
 export const button = cva({
   base: {
-    borderRadius: 'box',
-    borderWidth: 'thin',
-    borderStyle: 'solid',
-    borderColor: 'border.default',
-    background: 'bg.surface',
-    color: 'fg.default',
-    fontWeight: 'semibold',
-    cursor: 'pointer',
-    textDecoration: 'none',
-    display: 'inline-flex',
-    columnGap: '[0.25em]',
-    alignItems: 'center',
-    justifyContent: 'center',
-    scale: '1',
-    transitionProperty: 'scale, background-color, border-color, color, opacity',
-    transitionDuration: 'hover',
-    transitionTimingFunction: 'press',
-    '@media (any-hover: hover)': {
-      '&:hover:not(:disabled)': {
-        borderColor: 'border.accent',
-        background: 'accent.subtle'
-      }
+    "@media (any-hover: hover)": {
+      "&:hover:not(:disabled)": {
+        background: "accent.subtle",
+        borderColor: "border.accent",
+      },
     },
     _active: {
-      scale: '0.98'
+      scale: "0.98",
     },
     _disabled: {
-      opacity: '0.6',
-      cursor: 'wait'
-    }
-  },
-  variants: {
-    visual: {
-      default: {},
-      accent: {
-        borderColor: 'accent.solid',
-        background: 'accent.solid',
-        color: 'accent.fg',
-        '@media (any-hover: hover)': {
-          '&:hover:not(:disabled)': {
-            borderColor: 'accent.solidHover',
-            background: 'accent.solidHover',
-            color: 'accent.fg'
-          }
-        }
-      },
-      danger: {
-        borderColor: 'border.danger',
-        color: 'danger.solid',
-        background: 'bg.surface',
-        '@media (any-hover: hover)': {
-          '&:hover:not(:disabled)': {
-            background: 'danger.surface',
-            borderColor: 'border.danger',
-            color: 'danger.solid'
-          }
-        }
-      },
-      toggle: {
-        background: 'transparent',
-        color: 'fg.muted',
-        fontSize: 'xs',
-        paddingInline: '3',
-        '&[aria-pressed="true"]': {
-          borderColor: 'accent.solid',
-          background: 'accent.subtle',
-          color: 'accent.solid'
-        },
-        '@media (any-hover: hover)': {
-          '&:hover:not(:disabled):not([aria-pressed="true"])': {
-            color: 'fg.default',
-            borderColor: 'border.accent',
-            background: 'transparent'
-          }
-        }
-      },
-      chip: {
-        borderColor: 'border.accent',
-        background: 'surface.tag',
-        fontSize: 'xs',
-        paddingInline: '3',
-        columnGap: '1'
-      }
+      cursor: "wait",
+      opacity: "0.6",
     },
-    size: {
-      xs: {
-        minBlockSize: '[1.75rem]',
-        fontSize: 'xs',
-        paddingBlock: '1',
-        paddingInline: '2'
-      },
-      sm: {
-        minBlockSize: '[2.25rem]',
-        fontSize: 'xs',
-        paddingBlock: '1.5',
-        paddingInline: '3'
-      },
-      md: {
-        minBlockSize: 'touch',
-        paddingBlock: '2',
-        paddingInline: '4'
-      },
-      lg: {
-        minBlockSize: '[3.5rem]',
-        fontSize: 'md',
-        paddingBlock: '3',
-        paddingInline: '5'
-      }
-    }
+    alignItems: "center",
+    background: "bg.surface",
+    borderColor: "border.default",
+    borderRadius: "box",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    color: "fg.default",
+    columnGap: "[0.25em]",
+    cursor: "pointer",
+    display: "inline-flex",
+    fontWeight: "semibold",
+    justifyContent: "center",
+    scale: "1",
+    textDecoration: "none",
+    transitionDuration: "hover",
+    transitionProperty: "scale, background-color, border-color, color, opacity",
+    transitionTimingFunction: "press",
   },
   defaultVariants: {
-    visual: 'default',
-    size: 'md'
-  }
-})
+    size: "md",
+    visual: "default",
+  },
+  variants: {
+    size: {
+      lg: {
+        fontSize: "md",
+        minBlockSize: "[3.5rem]",
+        paddingBlock: "3",
+        paddingInline: "5",
+      },
+      md: {
+        minBlockSize: "touch",
+        paddingBlock: "2",
+        paddingInline: "4",
+      },
+      sm: {
+        fontSize: "xs",
+        minBlockSize: "[2.25rem]",
+        paddingBlock: "1.5",
+        paddingInline: "3",
+      },
+      xs: {
+        fontSize: "xs",
+        minBlockSize: "[1.75rem]",
+        paddingBlock: "1",
+        paddingInline: "2",
+      },
+    },
+    visual: {
+      accent: {
+        "@media (any-hover: hover)": {
+          "&:hover:not(:disabled)": {
+            background: "accent.solidHover",
+            borderColor: "accent.solidHover",
+            color: "accent.fg",
+          },
+        },
+        background: "accent.solid",
+        borderColor: "accent.solid",
+        color: "accent.fg",
+      },
+      chip: {
+        background: "surface.tag",
+        borderColor: "border.accent",
+        columnGap: "1",
+        fontSize: "xs",
+        paddingInline: "3",
+      },
+      danger: {
+        "@media (any-hover: hover)": {
+          "&:hover:not(:disabled)": {
+            background: "danger.surface",
+            borderColor: "border.danger",
+            color: "danger.solid",
+          },
+        },
+        background: "bg.surface",
+        borderColor: "border.danger",
+        color: "danger.solid",
+      },
+      default: {},
+      toggle: {
+        '&[aria-pressed="true"]': {
+          background: "accent.subtle",
+          borderColor: "accent.solid",
+          color: "accent.solid",
+        },
+        "@media (any-hover: hover)": {
+          '&:hover:not(:disabled):not([aria-pressed="true"])': {
+            background: "transparent",
+            borderColor: "border.accent",
+            color: "fg.default",
+          },
+        },
+        background: "transparent",
+        color: "fg.muted",
+        fontSize: "xs",
+        paddingInline: "3",
+      },
+    },
+  },
+});

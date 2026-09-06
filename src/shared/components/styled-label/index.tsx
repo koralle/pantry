@@ -1,19 +1,17 @@
-import { styled } from 'styled-system/jsx'
-import { HTMLStyledProps } from 'styled-system/types'
+import { styled } from "styled-system/jsx";
+import type { HTMLStyledProps } from "styled-system/types";
 
-const RawLabel = styled('label', {
+const RawLabel = styled("label", {
   base: {
-    display: 'inline-flex',
-    alignContent: 'center',
-    color: 'fg.default',
-    fontWeight: 'semibold',
-    fontSize: 'xs',
-    gap: '0.25rem'
-  }
-})
+    alignContent: "center",
+    color: "fg.default",
+    display: "inline-flex",
+    fontSize: "xs",
+    fontWeight: "semibold",
+    gap: "0.25rem",
+  },
+});
 
-type StyledLabelProps = HTMLStyledProps<typeof RawLabel>
+type StyledLabelProps = HTMLStyledProps<typeof RawLabel>;
 
-export function StyledLabel(props: StyledLabelProps) {
-  return <RawLabel {...props} />
-}
+export const StyledLabel = (props: StyledLabelProps) => <RawLabel {...props} />;

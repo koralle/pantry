@@ -1,13 +1,13 @@
-import { createClient } from '@libsql/client'
-import { sql } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as v from 'valibot'
+import { createClient } from "@libsql/client";
+import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import * as v from "valibot";
 
-import type { AppDb } from '../../../db/app-db'
-import { user } from '../../../db/schema/auth-schema'
-import { bookmarkTable } from '../../../db/schema/bookmark'
-import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
-import { tagsTable } from '../../../db/schema/tag'
+import type { AppDb } from "../../../db/app-db";
+import { user } from "../../../db/schema/auth-schema";
+import { bookmarkTable } from "../../../db/schema/bookmark";
+import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
+import { tagsTable } from "../../../db/schema/tag";
 
 /**
  * Libsql のローカル client は transaction のたびに接続を張り直すため、
@@ -15,26 +15,26 @@ import { tagsTable } from '../../../db/schema/tag'
  * shared cache 付きの `file::memory:` で全接続から同じ DB を見るようにし、
  * テスト終了時に client を閉じて DB も捨てる。
  */
-const memoryUrl = 'file::memory:?cache=shared'
-const clients: ReturnType<typeof createClient>[] = []
+const memoryUrl = "file::memory:?cache=shared";
+const clients: ReturnType<typeof createClient>[] = [];
 
-export async function closeMemoryClients(): Promise<void> {
+export const closeMemoryClients = async (): Promise<void> => {
   try {
     await clients[0]?.executeMultiple(
-      'DROP TABLE IF EXISTS bookmark_tags; DROP TABLE IF EXISTS bookmarks; DROP TABLE IF EXISTS tags; DROP TABLE IF EXISTS users;'
-    )
+      "DROP TABLE IF EXISTS bookmark_tags; DROP TABLE IF EXISTS bookmarks; DROP TABLE IF EXISTS tags; DROP TABLE IF EXISTS users;"
+    );
   } finally {
     for (const client of clients) {
-      client.close()
+      client.close();
     }
-    clients.length = 0
+    clients.length = 0;
   }
-}
+};
 
-export async function createMemoryDb(): Promise<AppDb> {
-  const client = createClient({ url: memoryUrl })
-  clients.push(client)
-  const db = drizzle({ client })
+export const createMemoryDb = async (): Promise<AppDb> => {
+  const client = createClient({ url: memoryUrl });
+  clients.push(client);
+  const db = drizzle({ client });
 
   await db.run(sql`
     CREATE TABLE users (
@@ -50,7 +50,7 @@ export async function createMemoryDb(): Promise<AppDb> {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE tags (
@@ -67,7 +67,7 @@ export async function createMemoryDb(): Promise<AppDb> {
       version INTEGER NOT NULL DEFAULT 1,
       UNIQUE (user_id, normalized_name)
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmarks (
@@ -81,7 +81,7 @@ export async function createMemoryDb(): Promise<AppDb> {
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmark_tags (
@@ -89,57 +89,62 @@ export async function createMemoryDb(): Promise<AppDb> {
       tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
       UNIQUE (bookmark_id, tag_id)
     )
-  `)
+  `);
 
-  return db
-}
+  return db;
+};
 
-type MemoryDb = Awaited<ReturnType<typeof createMemoryDb>>
+type MemoryDb = Awaited<ReturnType<typeof createMemoryDb>>;
 
-export async function insertUser(db: MemoryDb, id: string): Promise<void> {
+export const insertUser = async (db: MemoryDb, id: string): Promise<void> => {
   await db.insert(user).values({
+    email: `${id}@example.com`,
     id,
     name: id,
-    email: `${id}@example.com`
-  })
-}
+  });
+};
 
-export function insertTagRow(db: MemoryDb, userId: string, name: string): Promise<number> {
-  return db
+export const insertTagRow = async (
+  db: MemoryDb,
+  userId: string,
+  name: string
+): Promise<number> =>
+  await db
     .insert(tagsTable)
-    .values({ userId, name, normalizedName: name.toLowerCase() })
+    .values({ name, normalizedName: name.toLowerCase(), userId })
     .returning({ id: tagsTable.id })
-    .then(([row]) => v.parse(v.number(), row?.id))
-}
+    .then(([row]) => v.parse(v.number(), row?.id));
 
-export async function insertBookmarkRow(
+export const insertBookmarkRow = async (
   db: MemoryDb,
   values: {
-    readonly id: string
-    readonly userId: string
-    readonly url: string
-    readonly title?: string
-    readonly note?: string | null
-    readonly deletedAt?: Date | null
+    readonly id: string;
+    readonly userId: string;
+    readonly url: string;
+    readonly title?: string;
+    readonly note?: string | null;
+    readonly deletedAt?: Date | null;
   }
-): Promise<void> {
+): Promise<void> => {
   await db.insert(bookmarkTable).values({
     id: values.id,
-    userId: values.userId,
-    url: values.url,
-    title: values.title ?? 'Seed Title',
     note: values.note ?? null,
-    ...(values.deletedAt === undefined ? {} : { deletedAt: values.deletedAt })
-  })
-}
+    title: values.title ?? "Seed Title",
+    url: values.url,
+    userId: values.userId,
+    ...(values.deletedAt === undefined ? {} : { deletedAt: values.deletedAt }),
+  });
+};
 
-export function insertBookmarkTagRow(
+export const insertBookmarkTagRow = async (
   db: MemoryDb,
   bookmarkId: string,
   tagId: number
-): Promise<void> {
-  return db
+): Promise<void> => {
+  await db
     .insert(bookmarkTagsTable)
     .values({ bookmarkId, tagId })
-    .then(() => undefined)
-}
+    .then(() => {
+      /* empty */
+    });
+};

@@ -1,21 +1,21 @@
-import { css } from 'styled-system/css'
+import { css } from "styled-system/css";
 
 export const surface = css({
-  borderWidth: 'thin',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'box',
-  background: 'bg.surface'
-})
+  background: "bg.surface",
+  borderColor: "border.default",
+  borderRadius: "box",
+  borderStyle: "solid",
+  borderWidth: "thin",
+});
 
 export const interactiveSurface = css({
-  transitionProperty: 'border-color, background-color',
-  transitionDuration: 'hover',
-  transitionTimingFunction: 'press',
-  '@media (any-hover: hover)': {
-    '&:hover': {
-      borderColor: 'border.accent',
-      background: 'accent.hover'
-    }
-  }
-})
+  "@media (any-hover: hover)": {
+    "&:hover": {
+      background: "accent.hover",
+      borderColor: "border.accent",
+    },
+  },
+  transitionDuration: "hover",
+  transitionProperty: "border-color, background-color",
+  transitionTimingFunction: "press",
+});

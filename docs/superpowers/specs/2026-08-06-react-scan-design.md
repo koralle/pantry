@@ -30,12 +30,12 @@
 
 ```tsx
 <head>
-  <meta charSet='UTF-8' />
+  <meta charSet="UTF-8" />
   <title>Pantry</title>
   {import.meta.env.DEV ? (
     <script
-      crossOrigin='anonymous'
-      src='//unpkg.com/react-scan/dist/auto.global.js'
+      crossOrigin="anonymous"
+      src="//unpkg.com/react-scan/dist/auto.global.js"
     />
   ) : null}
   <HeadContent />
@@ -67,10 +67,10 @@
 
 テストコードは追加しない。次の手動・コマンド検証のみ行う。
 
-| 検証項目       | 方法                                          | 期待結果                            |
-| -------------- | --------------------------------------------- | ----------------------------------- |
+| 検証項目 | 方法 | 期待結果 |
+| --- | --- | --- |
 | 開発時の有効化 | `pnpm run dev` でアプリを開き、画面を確認する | React Scan のツールバーが表示される |
-| 本番ビルド     | `pnpm run build`                              | ビルドが成功する（exit code 0）     |
+| 本番ビルド | `pnpm run build` | ビルドが成功する（exit code 0） |
 
 ビルド成果物の HTML に `auto.global.js` が含まれないことは、上記の `import.meta.env.DEV` ゲートにより保証する。必要ならビルド成果を目視確認してよいが、必須の自動化テストは設けない。
 

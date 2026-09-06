@@ -8,27 +8,27 @@ Issue: [#101 アイコンとしてLucide (lucide-react) を導入する](https:/
 
 ## Constraints and Decisions
 
-| 項目             | 決定                                                                                                                                            |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| 導入方法         | `lucide-react` のコンポーネントを各ファイルで直接 import。ラッパーコンポーネントは作らない                                                      |
-| 導入範囲         | 全画面に一括（1 PR）                                                                                                                            |
-| テキストとの関係 | テキスト併記。アイコンは装飾として `aria-hidden`                                                                                                |
-| サイズ           | 基本 `size={16}`。見出し・空状態など強調箇所は `size={20}`                                                                                      |
-| Unicode 記号     | `＋` `×` `−` を Lucide アイコンに置換。`—`（空セル）はテキストのまま                                                                            |
-| CSS              | レイアウト用は追加不要（ボタン・リンクは既に `inline-flex; align-items: center`）。`UiLoading` のローダー spin 用 keyframe を app.css に1つ追加 |
-| 依存             | `lucide-react` は package.json に存在済み。追加インストール不要                                                                                 |
+| 項目 | 決定 |
+| --- | --- |
+| 導入方法 | `lucide-react` のコンポーネントを各ファイルで直接 import。ラッパーコンポーネントは作らない |
+| 導入範囲 | 全画面に一括（1 PR） |
+| テキストとの関係 | テキスト併記。アイコンは装飾として `aria-hidden` |
+| サイズ | 基本 `size={16}`。見出し・空状態など強調箇所は `size={20}` |
+| Unicode 記号 | `＋` `×` `−` を Lucide アイコンに置換。`—`（空セル）はテキストのまま |
+| CSS | レイアウト用は追加不要（ボタン・リンクは既に `inline-flex; align-items: center`）。`UiLoading` のローダー spin 用 keyframe を app.css に1つ追加 |
+| 依存 | `lucide-react` は package.json に存在済み。追加インストール不要 |
 
 ## Icon Mapping
 
 ### 共通コンポーネント
 
-| ファイル                            | 箇所                 | アイコン                                    |
-| ----------------------------------- | -------------------- | ------------------------------------------- |
-| `src/components/ui-state.tsx`       | UiLoading            | `LoaderCircle`（+ CSS spin アニメーション） |
-| 同上                                | UiEmpty              | `PackageOpen`                               |
-| 同上                                | UiError メッセージ   | `TriangleAlert`                             |
-| 同上                                | UiError 再試行ボタン | `RefreshCw`                                 |
-| `src/components/error-fallback.tsx` | ErrorFallback        | `TriangleAlert`                             |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
+| `src/components/ui-state.tsx` | UiLoading | `LoaderCircle`（+ CSS spin アニメーション） |
+| 同上 | UiEmpty | `PackageOpen` |
+| 同上 | UiError メッセージ | `TriangleAlert` |
+| 同上 | UiError 再試行ボタン | `RefreshCw` |
+| `src/components/error-fallback.tsx` | ErrorFallback | `TriangleAlert` |
 
 ### アプリシェル
 
@@ -43,66 +43,66 @@ Issue: [#101 アイコンとしてLucide (lucide-react) を導入する](https:/
 
 ### ブックマーク一覧
 
-| ファイル                                               | 箇所                              | アイコン              |
-| ------------------------------------------------------ | --------------------------------- | --------------------- |
-| `src/features/bookmarks/components/bookmark-list.tsx`  | 「新規」リンク                    | `Plus`                |
-| 同上                                                   | 検索ボタン                        | `Search`              |
-| 同上                                                   | レイアウト切替（テーブル/カード） | `List` / `LayoutGrid` |
-| 同上                                                   | タグチップ削除 `×`                | `X`                   |
-| 同上                                                   | 「さらに読み込む」                | `ChevronDown`         |
-| `src/features/bookmarks/components/bookmark-table.tsx` | URL カラム（詳細への内部リンク）  | `Globe`               |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
+| `src/features/bookmarks/components/bookmark-list.tsx` | 「新規」リンク | `Plus` |
+| 同上 | 検索ボタン | `Search` |
+| 同上 | レイアウト切替（テーブル/カード） | `List` / `LayoutGrid` |
+| 同上 | タグチップ削除 `×` | `X` |
+| 同上 | 「さらに読み込む」 | `ChevronDown` |
+| `src/features/bookmarks/components/bookmark-table.tsx` | URL カラム（詳細への内部リンク） | `Globe` |
 
 ### 玄関（ホーム）
 
-| ファイル                                          | 箇所             | アイコン  |
-| ------------------------------------------------- | ---------------- | --------- |
-| `src/features/tags/components/entrance-boxes.tsx` | 各ボックス       | `Package` |
-| 同上                                              | 空状態アクション | `Plus`    |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
+| `src/features/tags/components/entrance-boxes.tsx` | 各ボックス | `Package` |
+| 同上 | 空状態アクション | `Plus` |
 
 ### タグ管理
 
-| ファイル                                           | 箇所                        | アイコン         |
-| -------------------------------------------------- | --------------------------- | ---------------- |
-| `src/routes/_protected/tags/index.tsx`             | 「新規タグ」リンク          | `Plus`           |
-| `src/features/tags/tag-table.tsx`                  | ピン列                      | `Pin`            |
-| 同上                                               | 「編集」リンク              | `Pencil`         |
-| `src/features/tags/components/tag-edit-fields.tsx` | ピントグル                  | `Pin` / `PinOff` |
-| 同上                                               | ソート順ステッパー `−`/`＋` | `Minus` / `Plus` |
-| 同上                                               | カラー選択中スウォッチ      | `Check`          |
-| `src/features/tags/components/inline-add-tag.tsx`  | 「追加」ボタン              | `Plus`           |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
+| `src/routes/_protected/tags/index.tsx` | 「新規タグ」リンク | `Plus` |
+| `src/features/tags/tag-table.tsx` | ピン列 | `Pin` |
+| 同上 | 「編集」リンク | `Pencil` |
+| `src/features/tags/components/tag-edit-fields.tsx` | ピントグル | `Pin` / `PinOff` |
+| 同上 | ソート順ステッパー `−`/`＋` | `Minus` / `Plus` |
+| 同上 | カラー選択中スウォッチ | `Check` |
+| `src/features/tags/components/inline-add-tag.tsx` | 「追加」ボタン | `Plus` |
 
 ### ブックマーク詳細・編集
 
-| ファイル                                        | 箇所                         | アイコン       |
-| ----------------------------------------------- | ---------------------------- | -------------- |
-| `src/routes/_protected/bookmarks/$id/index.tsx` | 「一覧へ戻る」               | `ArrowLeft`    |
-| 同上                                            | フラッシュメッセージ         | `CircleCheck`  |
-| 同上                                            | 外部 URL リンク              | `ExternalLink` |
-| 同上                                            | 「編集」                     | `Pencil`       |
-| 同上                                            | 「削除」トリガー・確認ボタン | `Trash2`       |
-| 同上                                            | ダイアログ「キャンセル」     | `X`            |
-| `src/routes/_protected/bookmarks/$id.edit.tsx`  | 戻るリンク群                 | `ArrowLeft`    |
-| `src/routes/_protected/bookmarks/new/index.tsx` | 戻るリンク                   | `ArrowLeft`    |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
+| `src/routes/_protected/bookmarks/$id/index.tsx` | 「一覧へ戻る」 | `ArrowLeft` |
+| 同上 | フラッシュメッセージ | `CircleCheck` |
+| 同上 | 外部 URL リンク | `ExternalLink` |
+| 同上 | 「編集」 | `Pencil` |
+| 同上 | 「削除」トリガー・確認ボタン | `Trash2` |
+| 同上 | ダイアログ「キャンセル」 | `X` |
+| `src/routes/_protected/bookmarks/$id.edit.tsx` | 戻るリンク群 | `ArrowLeft` |
+| `src/routes/_protected/bookmarks/new/index.tsx` | 戻るリンク | `ArrowLeft` |
 
 ### ワークベンチフォーム
 
-| ファイル                                                                  | 箇所                   | アイコン      |
-| ------------------------------------------------------------------------- | ---------------------- | ------------- |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
 | `src/routes/_protected/bookmarks/-components/bookmark-workbench-form.tsx` | フォームエラーサマリー | `CircleAlert` |
-| 同上                                                                      | 「タイトルを取得」     | `Download`    |
-| `src/routes/_protected/tags/new.tsx`                                      | 戻るリンク             | `ArrowLeft`   |
-| `src/routes/_protected/tags/$id.edit.tsx`                                 | 戻るリンク             | `ArrowLeft`   |
-| 同上                                                                      | フォームエラーサマリー | `CircleAlert` |
+| 同上 | 「タイトルを取得」 | `Download` |
+| `src/routes/_protected/tags/new.tsx` | 戻るリンク | `ArrowLeft` |
+| `src/routes/_protected/tags/$id.edit.tsx` | 戻るリンク | `ArrowLeft` |
+| 同上 | フォームエラーサマリー | `CircleAlert` |
 
 ### 認証
 
-| ファイル                                                                  | 箇所                   | アイコン      |
-| ------------------------------------------------------------------------- | ---------------------- | ------------- |
-| `src/routes/sign-in/index.tsx`                                            | ブランド領域           | `Package`     |
-| `src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx` | メールフィールド       | `Mail`        |
-| 同上                                                                      | パスワードフィールド   | `Lock`        |
-| 同上                                                                      | サインイン送信         | `LogIn`       |
-| 同上                                                                      | フォームエラーサマリー | `CircleAlert` |
+| ファイル | 箇所 | アイコン |
+| --- | --- | --- |
+| `src/routes/sign-in/index.tsx` | ブランド領域 | `Package` |
+| `src/routes/sign-in/-components/sign-in-with-email-and-password-form.tsx` | メールフィールド | `Mail` |
+| 同上 | パスワードフィールド | `Lock` |
+| 同上 | サインイン送信 | `LogIn` |
+| 同上 | フォームエラーサマリー | `CircleAlert` |
 
 ### 設定
 

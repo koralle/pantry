@@ -12,19 +12,19 @@
 
 ## ファイル構成
 
-| ファイル                                                    | 責務                                        |
-| ----------------------------------------------------------- | ------------------------------------------- |
-| `src/routes/_protected/-lib/bookmark-search-schema.ts`      | 一覧画面クエリパラメータの Valibot スキーマ |
-| `src/routes/_protected/-lib/bookmark-search-schema.test.ts` | スキーマの単体テスト                        |
-| `src/routes/_protected/index.tsx`                           | `/` ブックマーク一覧（既存を置き換え）      |
-| `src/routes/_protected/bookmarks/index.tsx`                 | `/bookmarks` → `/` への 301 リダイレクト    |
-| `src/routes/_protected/bookmarks/new.tsx`                   | `/bookmarks/new` 新規作成画面シェル         |
-| `src/routes/_protected/bookmarks/$id.tsx`                   | `/bookmarks/:id` 詳細画面シェル             |
-| `src/routes/_protected/bookmarks/$id.edit.tsx`              | `/bookmarks/:id/edit` 編集画面シェル        |
-| `src/routes/_protected/settings/index.tsx`                  | `/settings` 設定画面シェル                  |
-| `src/routes/_protected/tags/new.tsx`                        | `/tags/new` タグ新規登録画面シェル          |
-| `src/routes/_protected/tags/$id.edit.tsx`                   | `/tags/:id/edit` タグ編集画面シェル         |
-| `src/routes/_protected.tsx`                                 | 保護レイアウト（ナビゲーション導線を追加）  |
+| ファイル | 責務 |
+| --- | --- |
+| `src/routes/_protected/-lib/bookmark-search-schema.ts` | 一覧画面クエリパラメータの Valibot スキーマ |
+| `src/routes/_protected/-lib/bookmark-search-schema.test.ts` | スキーマの単体テスト |
+| `src/routes/_protected/index.tsx` | `/` ブックマーク一覧（既存を置き換え） |
+| `src/routes/_protected/bookmarks/index.tsx` | `/bookmarks` → `/` への 301 リダイレクト |
+| `src/routes/_protected/bookmarks/new.tsx` | `/bookmarks/new` 新規作成画面シェル |
+| `src/routes/_protected/bookmarks/$id.tsx` | `/bookmarks/:id` 詳細画面シェル |
+| `src/routes/_protected/bookmarks/$id.edit.tsx` | `/bookmarks/:id/edit` 編集画面シェル |
+| `src/routes/_protected/settings/index.tsx` | `/settings` 設定画面シェル |
+| `src/routes/_protected/tags/new.tsx` | `/tags/new` タグ新規登録画面シェル |
+| `src/routes/_protected/tags/$id.edit.tsx` | `/tags/:id/edit` タグ編集画面シェル |
+| `src/routes/_protected.tsx` | 保護レイアウト（ナビゲーション導線を追加） |
 
 ---
 
@@ -39,56 +39,60 @@
 
 ```typescript
 // src/routes/_protected/-lib/bookmark-search-schema.ts
-import * as v from 'valibot'
+import * as v from "valibot";
 
 export const bookmarkSearchSchema = v.object({
   q: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
-  tagMode: v.optional(v.picklist(['and', 'or']), 'and'),
-  sort: v.optional(v.picklist(['newest', 'updated']), 'newest')
-})
+  tagMode: v.optional(v.picklist(["and", "or"]), "and"),
+  sort: v.optional(v.picklist(["newest", "updated"]), "newest"),
+});
 
-export type BookmarkSearchSchema = v.InferOutput<typeof bookmarkSearchSchema>
+export type BookmarkSearchSchema = v.InferOutput<typeof bookmarkSearchSchema>;
 ```
 
 - [ ] **Step 2: テストファイルを作成する**
 
 ```typescript
 // src/routes/_protected/-lib/bookmark-search-schema.test.ts
-import { describe, expect, test } from 'vitest'
-import * as v from 'valibot'
+import { describe, expect, test } from "vitest";
+import * as v from "valibot";
 
-import { bookmarkSearchSchema } from './bookmark-search-schema'
+import { bookmarkSearchSchema } from "./bookmark-search-schema";
 
-describe('bookmarkSearchSchema', () => {
-  test('default values', async () => {
-    const result = await v.parseAsync(bookmarkSearchSchema, {})
-    expect(result).toStrictEqual({ tagMode: 'and', sort: 'newest' })
-  })
+describe("bookmarkSearchSchema", () => {
+  test("default values", async () => {
+    const result = await v.parseAsync(bookmarkSearchSchema, {});
+    expect(result).toStrictEqual({ tagMode: "and", sort: "newest" });
+  });
 
-  test('parses all fields', async () => {
+  test("parses all fields", async () => {
     const result = await v.parse(bookmarkSearchSchema, {
-      q: 'react',
-      tags: ['frontend', 'typescript'],
-      tagMode: 'or',
-      sort: 'updated'
-    })
+      q: "react",
+      tags: ["frontend", "typescript"],
+      tagMode: "or",
+      sort: "updated",
+    });
     expect(result).toStrictEqual({
-      q: 'react',
-      tags: ['frontend', 'typescript'],
-      tagMode: 'or',
-      sort: 'updated'
-    })
-  })
+      q: "react",
+      tags: ["frontend", "typescript"],
+      tagMode: "or",
+      sort: "updated",
+    });
+  });
 
-  test('rejects invalid tagMode', async () => {
-    expect(() => await v.parseAsync(bookmarkSearchSchema, { tagMode: 'xor' })).toThrow()
-  })
+  test("rejects invalid tagMode", async () => {
+    expect(
+      () => await v.parseAsync(bookmarkSearchSchema, { tagMode: "xor" })
+    ).toThrow();
+  });
 
-  test('rejects invalid sort', async () => {
-    expect(() => await v.parseAsync(bookmarkSearchSchema, { sort: 'oldest' })).toThrow()
-  })
-})
+  test("rejects invalid sort", async () => {
+    expect(
+      () => await v.parseAsync(bookmarkSearchSchema, { sort: "oldest" })
+    ).toThrow();
+  });
+});
 ```
 
 - [ ] **Step 3: テストを実行して失敗を確認する**
@@ -122,17 +126,17 @@ git commit -m "feat(routes): add bookmark list search params schema"
 
 ```tsx
 // src/routes/_protected/bookmarks/index.tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { redirect } from '@tanstack/react-start'
+import { createFileRoute } from "@tanstack/react-router";
+import { redirect } from "@tanstack/react-start";
 
-export const Route = createFileRoute('/_protected/bookmarks/')({
+export const Route = createFileRoute("/_protected/bookmarks/")({
   beforeLoad: () => {
     throw redirect({
-      to: '/',
-      statusCode: 301
-    })
-  }
-})
+      to: "/",
+      statusCode: 301,
+    });
+  },
+});
 ```
 
 - [ ] **Step 2: 開発サーバーでリダイレクトを確認する**
@@ -164,33 +168,33 @@ git commit -m "feat(routes): add /bookmarks redirect to /"
 
 ```tsx
 // src/routes/_protected/index.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
-import * as v from 'valibot'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import * as v from "valibot";
 
-import { bookmarkSearchSchema } from './-lib/bookmark-search-schema'
+import { bookmarkSearchSchema } from "./-lib/bookmark-search-schema";
 
-export const Route = createFileRoute('/_protected/')({
+export const Route = createFileRoute("/_protected/")({
   validateSearch: (search) => v.parseAsync(bookmarkSearchSchema, search),
-  component: RouteComponent
-})
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const search = Route.useSearch()
+  const search = Route.useSearch();
 
   return (
     <div>
       <h1>ブックマーク一覧</h1>
       <div>
-        <p>検索: {search.q ?? '（なし）'}</p>
-        <p>タグ: {search.tags?.join(', ') ?? '（なし）'}</p>
+        <p>検索: {search.q ?? "（なし）"}</p>
+        <p>タグ: {search.tags?.join(", ") ?? "（なし）"}</p>
         <p>タグモード: {search.tagMode}</p>
         <p>並び順: {search.sort}</p>
       </div>
       <nav>
-        <Link to='/bookmarks/new'>新規作成</Link>
+        <Link to="/bookmarks/new">新規作成</Link>
       </nav>
     </div>
-  )
+  );
 }
 ```
 
@@ -228,11 +232,11 @@ git commit -m "feat(routes): implement bookmark list page with query params"
 
 ```tsx
 // src/routes/_protected/bookmarks/new.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_protected/bookmarks/new')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/bookmarks/new")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
   return (
@@ -241,17 +245,13 @@ function RouteComponent() {
       <form>
         <label>
           URL
-          <input
-            type='url'
-            name='url'
-            required
-          />
+          <input type="url" name="url" required />
         </label>
-        <button type='submit'>保存</button>
+        <button type="submit">保存</button>
       </form>
-      <Link to='/'>一覧へ戻る</Link>
+      <Link to="/">一覧へ戻る</Link>
     </div>
-  )
+  );
 }
 ```
 
@@ -284,29 +284,27 @@ git commit -m "feat(routes): add /bookmarks/new create page shell"
 
 ```tsx
 // src/routes/_protected/bookmarks/$id.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_protected/bookmarks/$id')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/bookmarks/$id")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { id } = Route.useParams()
+  const { id } = Route.useParams();
 
   return (
     <div>
       <h1>ブックマーク詳細</h1>
       <p>ID: {id}</p>
       <nav>
-        <Link
-          to='/bookmarks/$id/edit'
-          params={{ id }}>
+        <Link to="/bookmarks/$id/edit" params={{ id }}>
           編集
         </Link>
-        <Link to='/'>一覧へ戻る</Link>
+        <Link to="/">一覧へ戻る</Link>
       </nav>
     </div>
-  )
+  );
 }
 ```
 
@@ -339,14 +337,14 @@ git commit -m "feat(routes): add /bookmarks/:id detail page shell"
 
 ```tsx
 // src/routes/_protected/bookmarks/$id.edit.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_protected/bookmarks/$id/edit')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/bookmarks/$id/edit")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { id } = Route.useParams()
+  const { id } = Route.useParams();
 
   return (
     <div>
@@ -355,20 +353,15 @@ function RouteComponent() {
       <form>
         <label>
           タイトル
-          <input
-            type='text'
-            name='title'
-          />
+          <input type="text" name="title" />
         </label>
-        <button type='submit'>更新</button>
+        <button type="submit">更新</button>
       </form>
-      <Link
-        to='/bookmarks/$id'
-        params={{ id }}>
+      <Link to="/bookmarks/$id" params={{ id }}>
         詳細へ戻る
       </Link>
     </div>
-  )
+  );
 }
 ```
 
@@ -402,11 +395,11 @@ git commit -m "feat(routes): add /bookmarks/:id/edit edit page shell"
 
 ```tsx
 // src/routes/_protected/settings/index.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_protected/settings/')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/settings/")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
   return (
@@ -420,9 +413,9 @@ function RouteComponent() {
         <h2>Better Auth 連携</h2>
         <p>連携状態をここに表示する</p>
       </section>
-      <Link to='/'>一覧へ戻る</Link>
+      <Link to="/">一覧へ戻る</Link>
     </div>
-  )
+  );
 }
 ```
 
@@ -458,62 +451,65 @@ git commit -m "feat(routes): add /settings page shell"
 
 ```tsx
 // src/routes/_protected.tsx
-import { useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router'
-import { useTransition } from 'react'
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useRouter,
+} from "@tanstack/react-router";
+import { useTransition } from "react";
 
-import { authClient } from '../features/auth/auth-client'
-import { getSession } from '../features/auth/auth.function'
+import { authClient } from "../features/auth/auth-client";
+import { getSession } from "../features/auth/auth.function";
 
-export const Route = createFileRoute('/_protected')({
+export const Route = createFileRoute("/_protected")({
   beforeLoad: async ({ location }) => {
-    const session = await getSession()
+    const session = await getSession();
 
     if (!session) {
       throw redirect({
-        to: '/sign-in',
-        search: { redirect: location.href }
-      })
+        to: "/sign-in",
+        search: { redirect: location.href },
+      });
     }
 
-    return { user: session.user }
+    return { user: session.user };
   },
-  component: () => <Layout />
-})
+  component: () => <Layout />,
+});
 
 function Layout() {
-  const queryClient = useQueryClient()
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const handleClick = async () => {
     startTransition(async () => {
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            queryClient.clear()
-          }
-        }
-      })
+            queryClient.clear();
+          },
+        },
+      });
 
       startTransition(async () => {
-        await router.navigate({ to: '/sign-in' })
-      })
-    })
-  }
+        await router.navigate({ to: "/sign-in" });
+      });
+    });
+  };
 
   return (
     <div>
       <header>
         <nav>
-          <Link to='/'>Pantry</Link>
-          <Link to='/tags'>タグ</Link>
-          <Link to='/settings'>設定</Link>
+          <Link to="/">Pantry</Link>
+          <Link to="/tags">タグ</Link>
+          <Link to="/settings">設定</Link>
         </nav>
-        <button
-          type='button'
-          onClick={handleClick}
-          disabled={isPending}>
+        <button type="button" onClick={handleClick} disabled={isPending}>
           Sign Out
         </button>
       </header>
@@ -521,7 +517,7 @@ function Layout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }
 ```
 
@@ -622,11 +618,11 @@ Run: `pnpm run dev`
 
 ```tsx
 // src/routes/_protected/tags/new.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_protected/tags/new')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/tags/new")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
   return (
@@ -635,17 +631,13 @@ function RouteComponent() {
       <form>
         <label>
           タグ名
-          <input
-            type='text'
-            name='name'
-            required
-          />
+          <input type="text" name="name" required />
         </label>
-        <button type='submit'>保存</button>
+        <button type="submit">保存</button>
       </form>
-      <Link to='/tags'>一覧へ戻る</Link>
+      <Link to="/tags">一覧へ戻る</Link>
     </div>
-  )
+  );
 }
 ```
 
@@ -678,14 +670,14 @@ git commit -m "feat(routes): add /tags/new create page shell"
 
 ```tsx
 // src/routes/_protected/tags/$id.edit.tsx
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_protected/tags/$id/edit')({
-  component: RouteComponent
-})
+export const Route = createFileRoute("/_protected/tags/$id/edit")({
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { id } = Route.useParams()
+  const { id } = Route.useParams();
 
   return (
     <div>
@@ -694,16 +686,13 @@ function RouteComponent() {
       <form>
         <label>
           タグ名
-          <input
-            type='text'
-            name='name'
-          />
+          <input type="text" name="name" />
         </label>
-        <button type='submit'>更新</button>
+        <button type="submit">更新</button>
       </form>
-      <Link to='/tags'>一覧へ戻る</Link>
+      <Link to="/tags">一覧へ戻る</Link>
     </div>
-  )
+  );
 }
 ```
 

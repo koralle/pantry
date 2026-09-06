@@ -1,130 +1,164 @@
-import { defineConfig } from 'oxlint'
+import { defineConfig } from "oxlint";
+import core from "ultracite/oxlint/core";
+import react from "ultracite/oxlint/react";
+import tanstack from "ultracite/oxlint/tanstack";
 
 export default defineConfig({
-  categories: {
-    correctness: 'error',
-    nursery: 'off',
-    pedantic: 'off',
-    perf: 'warn',
-    restriction: 'warn',
-    style: 'warn',
-    suspicious: 'error'
-  },
+  extends: [core, react, tanstack],
   ignorePatterns: [
-    'src/routeTree.gen.ts',
-    'worker-configuration.d.ts',
-    'postcss.config.cjs',
-    // Empty-module alias target for TanStack virtual modules under Vitest (see vitest.config.ts).
-    'vitest/tanstack-entry-stub.ts'
+    ...(core.ignorePatterns ?? []),
+    ".agents/skills/**",
+    ".pnpmfile.cjs",
+    "postcss.config.cjs",
+    "src/db/schema/auth-schema.ts",
+    "src/routeTree.gen.ts",
+    "vitest/tanstack-entry-stub.ts",
+    "worker-configuration.d.ts",
   ],
-  plugins: [
-    'eslint',
-    'unicorn',
-    'react',
-    'react-perf',
-    'oxc',
-    'import',
-    'jsdoc',
-    'jsx-a11y',
-    'node',
-    'promise'
-  ],
-  rules: {
-    // Suspicious
-    'react/react-in-jsx-scope': 'off',
-
-    // Perf
-    'react-perf/jsx-no-new-array-as-prop': 'off',
-    'react-perf/jsx-no-new-function-as-prop': 'off',
-
-    // Import
-    'import/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
-
-    // Restriction
-    'react/jsx-filename-extension': 'off',
-    'react/jsx-max-depth': 'off',
-    'react/jsx-no-literals': 'off',
-    'react/only-export-components': 'off',
-    // Panda CSS は className によるスタイリングが前提のため無効化
-    'react/forbid-component-props': 'off',
-    'oxc/no-async-await': 'off',
-    'oxc/no-optional-chaining': 'off',
-    'oxc/no-rest-spread-properties': 'off',
-    'unicorn/no-null': 'off',
-    'no-ternary': 'off',
-    'no-undefined': 'off',
-    'import/exports-last': 'off',
-    'import/no-relative-parent-imports': 'off',
-
-    // Style
-    // 既定の always は const をカンマ結合する。1変数1宣言のままにする。
-    'one-var': 'off',
-    'func-style': 'off',
-    'id-length': 'off',
-    'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
-    'no-magic-numbers': 'off',
-    'sort-imports': 'off',
-    'sort-keys': 'off',
-    'import/group-exports': 'off',
-    'import/no-named-export': 'off',
-    'import/no-namespace': 'off',
-    'import/prefer-default-export': 'off'
-  },
   overrides: [
     {
-      files: ['src/router.tsx'],
+      files: ["src/routes/**/*.ts", "src/routes/**/*.tsx"],
       rules: {
-        'func-style': 'off'
-      }
-    },
-    {
-      files: ['src/test/persistence/global-setup.ts'],
-      rules: {
-        'import/no-default-export': 'off'
-      }
-    },
-    {
-      files: ['src/routes/**/*.tsx'],
-      rules: {
-        'no-use-before-define': 'off',
-        // TanStack Router のファイルルーティング規約上、Route 定義と
-        // コンポーネント / errorComponent を同ファイルに置くため許容する
-        'react/no-multi-comp': 'off'
-      }
-    },
-    {
-      files: ['env.ts'],
-      rules: {
-        'node/no-process-env': 'off'
-      }
+        "func-style": "off",
+        "no-use-before-define": "off",
+        "react/function-component-definition": "off",
+        "require-await": "off",
+        "unicorn/no-await-expression-member": "off",
+      },
     },
     {
       files: [
-        'drizzle.config.ts',
-        'knip.config.ts',
-        'oxfmt.config.ts',
-        'oxlint.config.ts',
-        'panda.config.ts',
-        'vite.config.ts',
-        'vitest.config.ts',
-        'vitest.persistence.config.ts'
+        "**/*.stories.ts",
+        "**/*.stories.tsx",
+        "src/stories/**/*.ts",
+        "src/stories/**/*.tsx",
+        "src/storybook/**/*.ts",
+        "src/storybook/**/*.tsx",
       ],
       rules: {
-        'import/no-default-export': 'off'
-      }
+        "func-style": "off",
+        "no-await-in-loop": "off",
+        "no-bitwise": "off",
+        "no-empty-function": "off",
+        "no-eq-null": "off",
+        "no-nested-ternary": "off",
+        "no-promise-executor-return": "off",
+        "no-use-before-define": "off",
+        "prefer-named-capture-group": "off",
+        "promise/avoid-new": "off",
+        "react/function-component-definition": "off",
+        "require-await": "off",
+        "require-unicode-regexp": "off",
+        "typescript/array-type": "off",
+        "typescript/await-thenable": "off",
+        "typescript/no-confusing-void-expression": "off",
+        "typescript/no-floating-promises": "off",
+        "typescript/no-non-null-assertion": "off",
+        "typescript/no-unnecessary-type-conversion": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/prefer-nullish-coalescing": "off",
+        "typescript/promise-function-async": "off",
+        "typescript/strict-void-return": "off",
+        "unicorn/filename-case": "off",
+        "unicorn/import-style": "off",
+      },
     },
     {
-      files: ['vitest.config.ts', 'vitest.persistence.config.ts'],
+      files: [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/test-helpers.ts",
+        "**/__mocks__/**/*.ts",
+        "src/test/**/*.ts",
+        "src/test/**/*.tsx",
+        "scripts/**/*.ts",
+      ],
       rules: {
-        'node/no-process-env': 'off'
-      }
+        "func-style": "off",
+        "no-await-in-loop": "off",
+        "no-promise-executor-return": "off",
+        "no-use-before-define": "off",
+        "no-useless-return": "off",
+        "promise/avoid-new": "off",
+        "require-await": "off",
+        "require-unicode-regexp": "off",
+        "sort-keys": "off",
+        "typescript/await-thenable": "off",
+        "typescript/consistent-type-imports": "off",
+        "typescript/no-base-to-string": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-return": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/strict-void-return": "off",
+        "unicorn/import-style": "off",
+        "unicorn/no-immediate-mutation": "off",
+      },
     },
     {
-      files: ['scripts/**/*.ts'],
+      files: ["src/storybook/main.ts"],
       rules: {
-        'no-console': 'off',
-        'unicorn/no-process-exit': 'off'
-      }
-    }
-  ]
-})
+        "unicorn/prefer-import-meta-properties": "off",
+      },
+    },
+    {
+      files: ["src/features/bookmarks/server/fetch-page-title.server.ts"],
+      rules: {
+        complexity: "off",
+        eqeqeq: "off",
+        "no-await-in-loop": "off",
+        "no-bitwise": "off",
+        "no-eq-null": "off",
+        "no-use-before-define": "off",
+        "prefer-named-capture-group": "off",
+        "require-unicode-regexp": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "unicorn/no-lonely-if": "off",
+      },
+    },
+  ],
+  rules: {
+    complexity: "off",
+    "default-case": "off",
+    eqeqeq: "off",
+    "import/first": "off",
+    "no-empty-function": "off",
+    "no-eq-null": "off",
+    "no-use-before-define": "off",
+    "prefer-destructuring": "off",
+    "promise/prefer-await-to-callbacks": "off",
+    "promise/prefer-await-to-then": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react/exhaustive-effect-dependencies": "off",
+    "react/hooks": "off",
+    "react/refs": "off",
+    "react/set-state-in-effect": "off",
+    "react/todo": "off",
+    "require-await": "off",
+    "require-unicode-regexp": "off",
+    "sort-keys": "off",
+    "typescript/consistent-return": "off",
+    "typescript/no-deprecated": "off",
+    "typescript/no-misused-promises": "off",
+    "typescript/no-non-null-assertion": "off",
+    "typescript/no-unsafe-argument": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-return": "off",
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/only-throw-error": "off",
+    "typescript/strict-boolean-expressions": "off",
+    "typescript/strict-void-return": "off",
+    "unicorn/no-await-expression-member": "off",
+  },
+});

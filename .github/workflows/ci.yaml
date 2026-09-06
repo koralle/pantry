@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-24.04
 
     steps:
@@ -19,10 +19,10 @@ jobs:
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
-      - name: Lint with Oxlint
+      - name: Check with Ultracite
         shell: bash
         run: |
-          pnpm oxlint . --format=github
+          pnpm run check
 
   markuplint:
     runs-on: ubuntu-24.04
@@ -38,21 +38,6 @@ jobs:
         shell: bash
         run: |
           pnpm markuplint "**/*.{tsx,jsx}" --format=github
-
-  format-check:
-    runs-on: ubuntu-24.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup
-        uses: ./.github/composite-actions/cache-and-install
-
-      - name: Format check with Oxfmt
-        shell: bash
-        run: |
-          pnpm run format:check
 
   typecheck:
     runs-on: ubuntu-24.04

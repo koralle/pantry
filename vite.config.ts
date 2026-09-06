@@ -1,29 +1,29 @@
-import path from 'node:path'
+import path from "node:path";
 
-import { cloudflare } from '@cloudflare/vite-plugin'
-import { devtools } from '@tanstack/devtools-vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { devtools } from "@tanstack/devtools-vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 const config = defineConfig({
   plugins: [
     devtools(),
-    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart({
       router: {
         // File-based routing treats dots as path segments, so
         // `index.stories.tsx` would otherwise be crawled as `/stories`.
-        routeFileIgnorePattern: '\\.stories\\.(tsx|ts|jsx|js)$'
-      }
+        routeFileIgnorePattern: "\\.stories\\.(tsx|ts|jsx|js)$",
+      },
     }),
-    viteReact()
+    viteReact(),
   ],
   resolve: {
     alias: {
-      'styled-system': path.resolve(import.meta.dirname, 'styled-system')
-    }
-  }
-})
+      "styled-system": path.resolve(import.meta.dirname, "styled-system"),
+    },
+  },
+});
 
-export default config
+export default config;

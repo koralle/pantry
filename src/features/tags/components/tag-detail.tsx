@@ -1,72 +1,76 @@
-import { Link } from '@tanstack/react-router'
-import { Bookmark, Pencil, Pin } from 'lucide-react'
-import { use } from 'react'
-import { css, cx } from 'styled-system/css'
+import { Link } from "@tanstack/react-router";
+import { Bookmark, Pencil, Pin } from "lucide-react";
+import { use } from "react";
+import { css, cx } from "styled-system/css";
 
-import { button } from '../../../styles/button'
-import { workbenchTitle } from '../../../styles/workbench'
-import { tagShelfSearch } from '../../navigation/lib/bookmark-search-builders'
-import type { TagRecord } from '../lib/tag-shelf'
+import { button } from "../../../styles/button";
+import { workbenchTitle } from "../../../styles/workbench";
+import { tagShelfSearch } from "../../navigation/lib/bookmark-search-builders";
+import type { TagRecord } from "../lib/tag-shelf";
 
 const shelfDot = css({
-  inlineSize: '2.5',
-  blockSize: '2.5',
-  borderRadius: 'full',
-  background: 'border.default',
-  flexShrink: '0'
-})
+  background: "border.default",
+  blockSize: "2.5",
+  borderRadius: "full",
+  flexShrink: "0",
+  inlineSize: "2.5",
+});
 
 const tagDetailHeader = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '3'
-})
+  alignItems: "center",
+  display: "flex",
+  gap: "3",
+});
 
 const tagDetailDot = css({
-  inlineSize: '3.5',
-  blockSize: '3.5'
-})
+  blockSize: "3.5",
+  inlineSize: "3.5",
+});
 
 const tagDetailMeta = css({
-  display: 'grid',
-  gap: '3',
-  margin: '0',
-  '& div': {
-    display: 'grid',
-    gap: '1'
+  "& dd": {
+    margin: "0",
   },
-  '& dt': {
-    color: 'fg.muted',
-    fontSize: 'xs2'
+  "& div": {
+    display: "grid",
+    gap: "1",
   },
-  '& dd': {
-    margin: '0'
-  }
-})
+  "& dt": {
+    color: "fg.muted",
+    fontSize: "xs2",
+  },
+  display: "grid",
+  gap: "3",
+  margin: "0",
+});
 
 const detailActions = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '3',
-  alignItems: 'center'
-})
+  alignItems: "center",
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "3",
+});
 
-export function TagDetail({
+export const TagDetail = ({
   id,
-  tagPromise
+  tagPromise,
 }: {
-  readonly id: string
-  readonly tagPromise: Promise<TagRecord>
-}) {
-  const tag = use(tagPromise)
+  readonly id: string;
+  readonly tagPromise: Promise<TagRecord>;
+}) => {
+  const tag = use(tagPromise);
 
   return (
     <>
       <header className={tagDetailHeader}>
         <span
           className={cx(shelfDot, tagDetailDot)}
-          style={tag.color != null ? { backgroundColor: tag.color } : undefined}
-          aria-hidden='true'
+          style={
+            tag.color === null || tag.color === undefined
+              ? undefined
+              : { backgroundColor: tag.color }
+          }
+          aria-hidden="true"
         />
         <h1 className={workbenchTitle}>{tag.name}</h1>
       </header>
@@ -77,14 +81,10 @@ export function TagDetail({
           <dd>
             {tag.pinned ? (
               <>
-                <Pin
-                  size={16}
-                  aria-hidden
-                />{' '}
-                留めている
+                <Pin size={16} aria-hidden /> 留めている
               </>
             ) : (
-              'なし'
+              "なし"
             )}
           </dd>
         </div>
@@ -96,26 +96,16 @@ export function TagDetail({
 
       <div className={detailActions}>
         <Link
-          to='/'
+          to="/"
           search={tagShelfSearch(tag.name)}
-          className={button({ visual: 'accent' })}>
-          <Bookmark
-            size={16}
-            aria-hidden
-          />{' '}
-          このタグのブックマークを見る
+          className={button({ visual: "accent" })}
+        >
+          <Bookmark size={16} aria-hidden /> このタグのブックマークを見る
         </Link>
-        <Link
-          to='/tags/$id/edit'
-          params={{ id }}
-          className={button()}>
-          <Pencil
-            size={16}
-            aria-hidden
-          />{' '}
-          編集
+        <Link to="/tags/$id/edit" params={{ id }} className={button()}>
+          <Pencil size={16} aria-hidden /> 編集
         </Link>
       </div>
     </>
-  )
-}
+  );
+};

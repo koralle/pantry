@@ -11,17 +11,17 @@
  * Last synced props: visual (default | accent | danger | toggle | chip), size, type, className, css, plus every Panda style prop
  */
 
-import { Button as AriaButton } from 'react-aria-components'
-import { styled } from 'styled-system/jsx'
-import type { HTMLStyledProps } from 'styled-system/types'
+import { Button as AriaButton } from "react-aria-components";
+import { styled } from "styled-system/jsx";
+import type { HTMLStyledProps } from "styled-system/types";
 
-import { button } from '../../../styles/button'
+import { button } from "../../../styles/button";
 
 /**
  * Intentionally not exported. Consumers get `StyledButton` (or the `button`
  * recipe for className composition) instead of a bare styled RAC Button.
  */
-const RawButton = styled(AriaButton, button)
+const RawButton = styled(AriaButton, button);
 
 /**
  * NOT `StyledVariantProps`: that helper resolves to the recipe's variant record
@@ -29,7 +29,7 @@ const RawButton = styled(AriaButton, button)
  * `HTMLStyledProps` keeps those attributes and style props while still
  * carrying the recipe variants.
  */
-type StyledButtonProps = HTMLStyledProps<typeof RawButton>
+type StyledButtonProps = HTMLStyledProps<typeof RawButton>;
 
 /**
  * Deliberately a plain pass-through (plus a safe `type` default).
@@ -51,11 +51,7 @@ type StyledButtonProps = HTMLStyledProps<typeof RawButton>
  * <StyledButton type="submit" visual="accent">送信</StyledButton>
  * ```
  */
-export function StyledButton({ type = 'button', ...props }: StyledButtonProps) {
-  return (
-    <RawButton
-      type={type}
-      {...props}
-    />
-  )
-}
+export const StyledButton = ({
+  type = "button",
+  ...props
+}: StyledButtonProps) => <RawButton type={type} {...props} />;

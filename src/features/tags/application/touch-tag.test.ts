@@ -1,17 +1,17 @@
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from '../../auth/domain/auth-values'
-import { tagIdSchema } from '../domain/tag-values'
-import { executeTouchTag, touchTagInputSchema } from './touch-tag'
-import type { TouchTag, TouchTagInput, TouchTagOutput } from './touch-tag'
+import { userIdSchema } from "../../auth/domain/auth-values";
+import { tagIdSchema } from "../domain/tag-values";
+import { executeTouchTag, touchTagInputSchema } from "./touch-tag";
+import type { TouchTag, TouchTagInput, TouchTagOutput } from "./touch-tag";
 
 function parseUserId(value: string) {
-  return v.parse(userIdSchema, value)
+  return v.parse(userIdSchema, value);
 }
 
 function parseTagId(value: number) {
-  return v.parse(tagIdSchema, value)
+  return v.parse(tagIdSchema, value);
 }
 
 /**
@@ -19,73 +19,75 @@ function parseTagId(value: number) {
  * Application は SQL の組み立てを知らない、という境界をテストが壊さないため。
  */
 function fakeTouchTag(output: TouchTagOutput): TouchTag {
-  return async (_input: TouchTagInput) => output
+  return async (_input: TouchTagInput) => output;
 }
 
-describe('touchTagInputSchema', () => {
-  test('正の整数の id を受け付ける', () => {
-    expect(v.parse(touchTagInputSchema, { id: 3 })).toEqual({ id: parseTagId(3) })
-  })
+describe("touchTagInputSchema", () => {
+  test("正の整数の id を受け付ける", () => {
+    expect(v.parse(touchTagInputSchema, { id: 3 })).toStrictEqual({
+      id: parseTagId(3),
+    });
+  });
 
-  test('0 以下や小数の id は拒否する', () => {
-    expect(() => v.parse(touchTagInputSchema, { id: 0 })).toThrow()
-    expect(() => v.parse(touchTagInputSchema, { id: 1.5 })).toThrow()
-  })
-})
+  test("0 以下や小数の id は拒否する", () => {
+    expect(() => v.parse(touchTagInputSchema, { id: 0 })).toThrow();
+    expect(() => v.parse(touchTagInputSchema, { id: 1.5 })).toThrow();
+  });
+});
 
-describe('executeTouchTag', () => {
-  test('touched を成功 Result に写す', async () => {
+describe(executeTouchTag, () => {
+  test("touched を成功 Result に写す", async () => {
     const result = await executeTouchTag({
-      touchTag: fakeTouchTag({ kind: 'touched' }),
-      userId: parseUserId('user-1'),
-      id: parseTagId(7)
-    })
+      id: parseTagId(7),
+      touchTag: fakeTouchTag({ kind: "touched" }),
+      userId: parseUserId("user-1"),
+    });
 
-    expect(result).toEqual({ ok: true, value: undefined })
-  })
+    expect(result).toStrictEqual({ ok: true, value: undefined });
+  });
 
-  test('not-found を tag-not-found に写す', async () => {
+  test("not-found を tag-not-found に写す", async () => {
     const result = await executeTouchTag({
-      touchTag: fakeTouchTag({ kind: 'not-found' }),
-      userId: parseUserId('user-1'),
-      id: parseTagId(7)
-    })
+      id: parseTagId(7),
+      touchTag: fakeTouchTag({ kind: "not-found" }),
+      userId: parseUserId("user-1"),
+    });
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
+      error: { code: "tag-not-found" },
       ok: false,
-      error: { code: 'tag-not-found' }
-    })
-  })
+    });
+  });
 
-  test('actor の userId と tag id を port へ渡す', async () => {
-    let received: TouchTagInput | undefined
+  test("actor の userId と tag id を port へ渡す", async () => {
+    let received: TouchTagInput | undefined;
 
     await executeTouchTag({
+      id: parseTagId(12),
       touchTag: async (input) => {
-        received = input
-        return { kind: 'touched' }
+        received = input;
+        return { kind: "touched" };
       },
-      userId: parseUserId('user-9'),
-      id: parseTagId(12)
-    })
+      userId: parseUserId("user-9"),
+    });
 
-    expect(received).toEqual({
-      userId: parseUserId('user-9'),
-      id: parseTagId(12)
-    })
-  })
+    expect(received).toStrictEqual({
+      id: parseTagId(12),
+      userId: parseUserId("user-9"),
+    });
+  });
 
-  test('未知の障害は潰さず伝播する', async () => {
-    const touchTag = fakeTouchTag({ kind: 'touched' })
+  test("未知の障害は潰さず伝播する", async () => {
+    const touchTag = fakeTouchTag({ kind: "touched" });
     await expect(
       executeTouchTag({
+        id: parseTagId(7),
         touchTag: async (input) => {
-          await touchTag(input)
-          throw new Error('disk exploded')
+          await touchTag(input);
+          throw new Error("disk exploded");
         },
-        userId: parseUserId('user-1'),
-        id: parseTagId(7)
+        userId: parseUserId("user-1"),
       })
-    ).rejects.toThrow('disk exploded')
-  })
-})
+    ).rejects.toThrow("disk exploded");
+  });
+});

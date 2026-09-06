@@ -1,55 +1,68 @@
-import { ORPCError } from '@orpc/client'
+import { ORPCError } from "@orpc/client";
 
-import type { BookmarkFormServerError } from '../components/bookmark-editor/bookmark-form/types'
+import type { BookmarkFormServerError } from "../components/bookmark-editor/bookmark-form/types";
 
-const invalidTagMessage = '保存できないタグが含まれています。タグを選び直してください'
+const invalidTagMessage =
+  "保存できないタグが含まれています。タグを選び直してください";
 
 /**
  * `UNAUTHORIZED` は null を返す。クライアントが sign-in へ飛ばしたあと、
  * 同じ画面に「保存に失敗しました」が残ると、失敗原因が二重になる。
  * Error の class 名は見ない。transport が変わっても code 契約だけを見る。
  */
-export function getCreateBookmarkErrorMessage(error: unknown): string | null {
+export const getCreateBookmarkErrorMessage = (
+  error: unknown
+): string | null => {
   if (error instanceof ORPCError && error.defined) {
-    if (error.code === 'UNAUTHORIZED') {
-      return null
+    if (error.code === "UNAUTHORIZED") {
+      return null;
     }
 
-    if (error.code === 'duplicate-url') {
-      return '同じURLのブックマークが既にあります'
+    if (error.code === "duplicate-url") {
+      return "同じURLのブックマークが既にあります";
     }
 
-    if (error.code === 'invalid-tag') {
-      return invalidTagMessage
+    if (error.code === "invalid-tag") {
+      return invalidTagMessage;
     }
   }
 
-  return 'ブックマークの保存に失敗しました'
-}
+  return "ブックマークの保存に失敗しました";
+};
 
 /**
  * 新規作成画面が BookmarkForm に渡す serverError。
  * 無効タグは summary だけでなく tags フィールドへも載せる。
  */
-export function mapCreateBookmarkFailure(error: unknown): BookmarkFormServerError | null {
-  const summary = getCreateBookmarkErrorMessage(error)
+export const mapCreateBookmarkFailure = (
+  error: unknown
+): BookmarkFormServerError | null => {
+  const summary = getCreateBookmarkErrorMessage(error);
   if (summary === null) {
-    return null
+    return null;
   }
 
-  if (error instanceof ORPCError && error.defined && error.code === 'duplicate-url') {
+  if (
+    error instanceof ORPCError &&
+    error.defined &&
+    error.code === "duplicate-url"
+  ) {
     return {
+      fields: { url: "この URL は既に登録されています" },
       summary,
-      fields: { url: 'この URL は既に登録されています' }
-    }
+    };
   }
 
-  if (error instanceof ORPCError && error.defined && error.code === 'invalid-tag') {
+  if (
+    error instanceof ORPCError &&
+    error.defined &&
+    error.code === "invalid-tag"
+  ) {
     return {
+      fields: { tags: invalidTagMessage },
       summary,
-      fields: { tags: invalidTagMessage }
-    }
+    };
   }
 
-  return { summary }
-}
+  return { summary };
+};

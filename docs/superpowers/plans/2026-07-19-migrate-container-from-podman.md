@@ -14,11 +14,11 @@
 
 ## File Structure
 
-| 操作   | パス           | 責務                                                        |
-| ------ | -------------- | ----------------------------------------------------------- |
-| Create | `Dockerfile`   | 公式 libsql-server を digest pin した薄いイメージ定義       |
-| Modify | `justfile`     | `local-db-build` / `local-db-clean` を container CLI に置換 |
-| Delete | `compose.yaml` | Podman Compose 定義を除去                                   |
+| 操作 | パス | 責務 |
+| --- | --- | --- |
+| Create | `Dockerfile` | 公式 libsql-server を digest pin した薄いイメージ定義 |
+| Modify | `justfile` | `local-db-build` / `local-db-clean` を container CLI に置換 |
+| Delete | `compose.yaml` | Podman Compose 定義を除去 |
 
 ---
 

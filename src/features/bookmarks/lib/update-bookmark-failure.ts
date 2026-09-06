@@ -1,4 +1,4 @@
-import { ORPCError } from '@orpc/client'
+import { ORPCError } from "@orpc/client";
 
 /**
  * 更新 mutation の失敗を、画面が分岐できる code だけへ写す。
@@ -7,27 +7,29 @@ import { ORPCError } from '@orpc/client'
  * Error の class 名は見ない。transport が変わっても code 契約だけを見る。
  */
 export type UpdateBookmarkFailureCode =
-  | 'bookmark-not-found'
-  | 'duplicate-url'
-  | 'invalid-tag'
-  | 'unexpected'
+  | "bookmark-not-found"
+  | "duplicate-url"
+  | "invalid-tag"
+  | "unexpected";
 
-export function toUpdateBookmarkFailureCode(error: unknown): UpdateBookmarkFailureCode | null {
+export const toUpdateBookmarkFailureCode = (
+  error: unknown
+): UpdateBookmarkFailureCode | null => {
   if (!(error instanceof ORPCError) || !error.defined) {
-    return 'unexpected'
+    return "unexpected";
   }
 
   switch (error.code) {
-    case 'UNAUTHORIZED': {
-      return null
+    case "UNAUTHORIZED": {
+      return null;
     }
-    case 'bookmark-not-found':
-    case 'duplicate-url':
-    case 'invalid-tag': {
-      return error.code
+    case "bookmark-not-found":
+    case "duplicate-url":
+    case "invalid-tag": {
+      return error.code;
     }
     default: {
-      return 'unexpected'
+      return "unexpected";
     }
   }
-}
+};
