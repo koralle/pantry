@@ -19,6 +19,7 @@ export const spinner = css({
   animationIterationCount: "infinite",
   animationName: "spin",
   animationTimingFunction: "linear",
+  display: "inline-flex",
 });
 
 export const stateBox = css({
