@@ -34,12 +34,12 @@
 
 ### procedure契約
 
-| 分類             | 表現                                                                                            | HTTP      |
-| ---------------- | ----------------------------------------------------------------------------------------------- | --------- |
-| 未認証           | `UNAUTHORIZED`                                                                                  | 401       |
-| input validation | oRPC validation error（`BAD_REQUEST`等）                                                        | 4xx       |
-| 衝突・対象なし   | procedure-specific defined error（例: `tag-name-already-exists` 409、`bookmark-not-found` 404） | 409 / 404 |
-| 未知障害         | throw                                                                                           | 500       |
+| 分類 | 表現 | HTTP |
+| --- | --- | --- |
+| 未認証 | `UNAUTHORIZED` | 401 |
+| input validation | oRPC validation error（`BAD_REQUEST`等） | 4xx |
+| 衝突・対象なし | procedure-specific defined error（例: `tag-name-already-exists` 409、`bookmark-not-found` 404） | 409 / 404 |
+| 未知障害 | throw | 500 |
 
 - Unknown Errorを握りつぶさない。procedureはcatchせず500として抜け、内部messageやcauseをclientへ返さない。
 - UIは`ORPCError.code`だけを表示メッセージへ写す（`get-*-error-message.ts`）。`UNAUTHORIZED`はnullを返し、client interceptorのsign-in redirectと二重表示しない。

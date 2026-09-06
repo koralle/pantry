@@ -23,11 +23,11 @@
 
 ## File Structure
 
-| 操作   | パス                                                  | 責務                                                                    |
-| ------ | ----------------------------------------------------- | ----------------------------------------------------------------------- |
-| Modify | `package.json`                                        | `react-scan` を `devDependencies` に追加（`dependencies` には入れない） |
-| Modify | `pnpm-lock.yaml`                                      | `pnpm add -D react-scan` による lockfile 更新                           |
-| Modify | `src/features/app-shell/components/root-document.tsx` | `<head>` に DEV 限定の公式 `auto.global.js` script を追加               |
+| 操作 | パス | 責務 |
+| --- | --- | --- |
+| Modify | `package.json` | `react-scan` を `devDependencies` に追加（`dependencies` には入れない） |
+| Modify | `pnpm-lock.yaml` | `pnpm add -D react-scan` による lockfile 更新 |
+| Modify | `src/features/app-shell/components/root-document.tsx` | `<head>` に DEV 限定の公式 `auto.global.js` script を追加 |
 
 ---
 
@@ -105,32 +105,36 @@ EOF
 `src/features/app-shell/components/root-document.tsx` の `<head>` を次のとおりにする（ファイル全体の最終形）:
 
 ```tsx
-import type { TanStackDevtoolsReactInit } from '@tanstack/react-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
-import { HeadContent, Scripts } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import type { TanStackDevtoolsReactInit } from "@tanstack/react-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { HeadContent, Scripts } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 const tanstackDevtoolsConfig = {
-  position: 'bottom-right'
-} satisfies TanStackDevtoolsReactInit['config']
+  position: "bottom-right",
+} satisfies TanStackDevtoolsReactInit["config"];
 
 const tanstackDevtoolsPlugins = [
   {
-    name: 'Tanstack Router',
-    render: <TanStackRouterDevtoolsPanel />
-  }
-] satisfies TanStackDevtoolsReactInit['plugins']
+    name: "Tanstack Router",
+    render: <TanStackRouterDevtoolsPanel />,
+  },
+] satisfies TanStackDevtoolsReactInit["plugins"];
 
-export function RootDocument({ children }: { readonly children: React.ReactNode }) {
+export function RootDocument({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}) {
   return (
-    <html lang='ja'>
+    <html lang="ja">
       <head>
-        <meta charSet='UTF-8' />
+        <meta charSet="UTF-8" />
         <title>Pantry</title>
         {import.meta.env.DEV ? (
           <script
-            crossOrigin='anonymous'
-            src='//unpkg.com/react-scan/dist/auto.global.js'
+            crossOrigin="anonymous"
+            src="//unpkg.com/react-scan/dist/auto.global.js"
           />
         ) : null}
         <HeadContent />
@@ -144,7 +148,7 @@ export function RootDocument({ children }: { readonly children: React.ReactNode 
         <Scripts />
       </body>
     </html>
-  )
+  );
 }
 ```
 
@@ -240,16 +244,16 @@ Expected: `nothing to commit, working tree clean`（検証でファイルを変�
 
 ## Spec Coverage (self-review)
 
-| 設計書の要件                                                                    | 対応タスク                                  |
-| ------------------------------------------------------------------------------- | ------------------------------------------- |
-| `react-scan` を `devDependencies` に追加 / production dependencies に入れない   | Task 1                                      |
-| `RootDocument` head へ公式 `auto.global.js` を `import.meta.env.DEV` 時のみ出力 | Task 2                                      |
-| `<HeadContent />` より前に置く / `crossOrigin` + unpkg src                      | Task 2                                      |
-| 計測対象コード・TanStack Devtools は変更しない                                  | Task 2 Do not change                        |
-| 本番 HTML / 本番ランタイムに含めない                                            | Global Constraints + Task 2 + Task 3 Step 2 |
-| 外部 script 失敗時の独自 fallback なし                                          | Global Constraints + Task 2                 |
-| 新規テスト追加なし。`pnpm run dev` ツールバー + `pnpm run build` 成功           | Task 3                                      |
-| module import / Vite plugin / 専用 env はスコープ外                             | Global Constraints                          |
+| 設計書の要件 | 対応タスク |
+| --- | --- |
+| `react-scan` を `devDependencies` に追加 / production dependencies に入れない | Task 1 |
+| `RootDocument` head へ公式 `auto.global.js` を `import.meta.env.DEV` 時のみ出力 | Task 2 |
+| `<HeadContent />` より前に置く / `crossOrigin` + unpkg src | Task 2 |
+| 計測対象コード・TanStack Devtools は変更しない | Task 2 Do not change |
+| 本番 HTML / 本番ランタイムに含めない | Global Constraints + Task 2 + Task 3 Step 2 |
+| 外部 script 失敗時の独自 fallback なし | Global Constraints + Task 2 |
+| 新規テスト追加なし。`pnpm run dev` ツールバー + `pnpm run build` 成功 | Task 3 |
+| module import / Vite plugin / 専用 env はスコープ外 | Global Constraints |
 
 ## Placeholder / Ambiguity / Path Review
 

@@ -1,44 +1,48 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-import { selectTagById } from './select-tag-by-id'
-import { createMemoryDb, parseUserId, seedTag, seedUser } from './test-helpers'
+import { selectTagById } from "./select-tag-by-id";
+import { createMemoryDb, parseUserId, seedTag, seedUser } from "./test-helpers";
 
-describe('selectTagById', () => {
-  test('本人のタグなら画面 projection を返す', async () => {
-    const db = await createMemoryDb()
-    await seedUser(db, 'user-a')
+describe(selectTagById, () => {
+  test("本人のタグなら画面 projection を返す", async () => {
+    const db = await createMemoryDb();
+    await seedUser(db, "user-a");
     const id = await seedTag(db, {
-      userId: 'user-a',
-      name: 'reading',
+      color: "#c45c26",
+      name: "reading",
       pinned: true,
       sortOrder: 2,
-      color: '#c45c26'
-    })
+      userId: "user-a",
+    });
 
-    const record = await selectTagById(db, parseUserId('user-a'), id)
+    const record = await selectTagById(db, parseUserId("user-a"), id);
 
-    expect(record).toEqual({
+    expect(record).toStrictEqual({
+      color: "#c45c26",
       id,
-      name: 'reading',
+      name: "reading",
       pinned: true,
       sortOrder: 2,
-      color: '#c45c26'
-    })
-  })
+    });
+  });
 
-  test('他人のタグは null を返す', async () => {
-    const db = await createMemoryDb()
-    await seedUser(db, 'user-a')
-    await seedUser(db, 'user-b')
-    const id = await seedTag(db, { userId: 'user-b', name: 'secret' })
+  test("他人のタグは null を返す", async () => {
+    const db = await createMemoryDb();
+    await seedUser(db, "user-a");
+    await seedUser(db, "user-b");
+    const id = await seedTag(db, { name: "secret", userId: "user-b" });
 
-    await expect(selectTagById(db, parseUserId('user-a'), id)).resolves.toBeNull()
-  })
+    await expect(
+      selectTagById(db, parseUserId("user-a"), id)
+    ).resolves.toBeNull();
+  });
 
-  test('存在しない id は null を返す', async () => {
-    const db = await createMemoryDb()
-    await seedUser(db, 'user-a')
+  test("存在しない id は null を返す", async () => {
+    const db = await createMemoryDb();
+    await seedUser(db, "user-a");
 
-    await expect(selectTagById(db, parseUserId('user-a'), 999)).resolves.toBeNull()
-  })
-})
+    await expect(
+      selectTagById(db, parseUserId("user-a"), 999)
+    ).resolves.toBeNull();
+  });
+});

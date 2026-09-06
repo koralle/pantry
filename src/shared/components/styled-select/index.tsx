@@ -13,9 +13,9 @@
  * Last synced props: label, placeholder, selectedKey, onSelectionChange, searchPlaceholder, searchLabel, className, css
  */
 
-import { ChevronDown } from 'lucide-react'
-import { useRef } from 'react'
-import type { ComponentProps, ReactNode } from 'react'
+import { ChevronDown } from "lucide-react";
+import { useRef } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import {
   Autocomplete,
   Button as AriaButton,
@@ -26,223 +26,219 @@ import {
   SearchField,
   Select,
   SelectValue,
-  useFilter
-} from 'react-aria-components'
-import { css } from 'styled-system/css'
-import { styled } from 'styled-system/jsx'
-import type { HTMLStyledProps } from 'styled-system/types'
+  useFilter,
+} from "react-aria-components";
+import { css } from "styled-system/css";
+import { styled } from "styled-system/jsx";
+import type { HTMLStyledProps } from "styled-system/types";
 
-import { StyledInput } from '../styled-input'
+import { StyledInput } from "../styled-input";
 
 const RawSelect = styled(Select, {
   base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '1.5',
-    minInlineSize: '0'
-  }
-})
+    alignItems: "center",
+    display: "inline-flex",
+    gap: "1.5",
+    minInlineSize: "0",
+  },
+});
 
 const RawLabel = styled(AriaLabel, {
   base: {
-    color: 'fg.muted',
-    fontSize: 'xs',
-    fontWeight: 'semibold',
-    flexShrink: '0'
-  }
-})
+    color: "fg.muted",
+    flexShrink: "0",
+    fontSize: "xs",
+    fontWeight: "semibold",
+  },
+});
 
 const RawTrigger = styled(AriaButton, {
   base: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '2',
-    minBlockSize: 'touch',
-    minInlineSize: '10rem',
-    borderWidth: 'thin',
-    borderStyle: 'solid',
-    borderColor: 'border.default',
-    borderRadius: 'box',
-    paddingBlock: '2',
-    paddingInline: '3',
-    background: 'bg.surface',
-    color: 'fg.default',
-    cursor: 'pointer',
-    textAlign: 'start',
     _focusVisible: {
-      outlineWidth: 'medium',
-      outlineStyle: 'solid',
-      outlineColor: 'accent.solid',
-      outlineOffset: '2px'
-    }
-  }
-})
+      outlineColor: "accent.solid",
+      outlineOffset: "2px",
+      outlineStyle: "solid",
+      outlineWidth: "medium",
+    },
+    alignItems: "center",
+    background: "bg.surface",
+    borderColor: "border.default",
+    borderRadius: "box",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    color: "fg.default",
+    cursor: "pointer",
+    display: "inline-flex",
+    gap: "2",
+    justifyContent: "space-between",
+    minBlockSize: "touch",
+    minInlineSize: "10rem",
+    paddingBlock: "2",
+    paddingInline: "3",
+    textAlign: "start",
+  },
+});
 
 const RawValue = styled(SelectValue, {
   base: {
-    flex: '1',
-    minInlineSize: '0',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  }
-})
+    flex: "1",
+    minInlineSize: "0",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+});
 
-const RawChevron = styled('span', {
+const RawChevron = styled("span", {
   base: {
-    display: 'inline-flex',
-    color: 'fg.muted',
-    flexShrink: '0'
-  }
-})
+    color: "fg.muted",
+    display: "inline-flex",
+    flexShrink: "0",
+  },
+});
 
 const RawPopover = styled(Popover, {
   base: {
-    display: 'flex',
-    flexDirection: 'column',
-    minInlineSize: '[var(--trigger-width)]',
-    maxBlockSize: '18rem',
-    overflow: 'hidden',
-    zIndex: '20',
-    margin: '0',
-    padding: '1',
-    borderWidth: 'thin',
-    borderStyle: 'solid',
-    borderColor: 'border.default',
-    borderRadius: 'box',
-    background: 'bg.surface',
-    boxSizing: 'border-box'
-  }
-})
+    background: "bg.surface",
+    borderColor: "border.default",
+    borderRadius: "box",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    margin: "0",
+    maxBlockSize: "18rem",
+    minInlineSize: "[var(--trigger-width)]",
+    overflow: "hidden",
+    padding: "1",
+    zIndex: "20",
+  },
+});
 
 const RawList = styled(ListBox, {
   base: {
-    margin: '0',
-    padding: '0',
-    outline: 'none',
-    flex: '1',
-    minBlockSize: '0',
-    overflow: 'auto'
-  }
-})
+    flex: "1",
+    margin: "0",
+    minBlockSize: "0",
+    outline: "none",
+    overflow: "auto",
+    padding: "0",
+  },
+});
 
 const filterRoot = css({
-  display: 'flex',
-  flexDirection: 'column',
-  flex: '1',
-  minBlockSize: '0',
-  overflow: 'hidden',
+  display: "flex",
+  flexDirection: "column",
+  flex: "1",
+  minBlockSize: "0",
+  overflow: "hidden",
   // SearchField autofocuses; keep the 2px + 2px focus ring inside overflow:hidden.
-  padding: '2'
-})
+  padding: "2",
+});
 
 const filterSearch = css({
-  flexShrink: '0',
-  marginBlockEnd: '1'
-})
+  flexShrink: "0",
+  marginBlockEnd: "1",
+});
 
 const emptyState = css({
-  paddingBlock: '2',
-  paddingInline: '3',
-  color: 'fg.muted',
-  fontSize: 'xs'
-})
+  color: "fg.muted",
+  fontSize: "xs",
+  paddingBlock: "2",
+  paddingInline: "3",
+});
 
 const itemClass = css({
-  display: 'flex',
-  alignItems: 'center',
-  minBlockSize: 'touch',
-  paddingBlock: '2',
-  paddingInline: '3',
-  borderRadius: 'box',
-  cursor: 'pointer',
-  outline: 'none',
-  '&[data-focused]': {
-    background: 'accent.hover'
+  "&[data-focused]": {
+    background: "accent.hover",
   },
-  '&[data-selected]': {
-    background: 'accent.subtle',
-    color: 'accent.solid',
-    fontWeight: 'semibold'
-  }
-})
+  "&[data-selected]": {
+    background: "accent.subtle",
+    color: "accent.solid",
+    fontWeight: "semibold",
+  },
+  alignItems: "center",
+  borderRadius: "box",
+  cursor: "pointer",
+  display: "flex",
+  minBlockSize: "touch",
+  outline: "none",
+  paddingBlock: "2",
+  paddingInline: "3",
+});
 
 type StyledSelectRootProps = HTMLStyledProps<typeof RawSelect> & {
-  readonly label: string
-  readonly placeholder?: string
-  readonly children: ReactNode
-}
+  readonly label: string;
+  readonly placeholder?: string;
+  readonly children: ReactNode;
+};
 
-type SelectChromeProps = Omit<StyledSelectRootProps, 'children'> & {
-  readonly children: ReactNode
-}
+type SelectChromeProps = Omit<StyledSelectRootProps, "children"> & {
+  readonly children: ReactNode;
+};
 
-function SelectChrome({ label, placeholder, children, ...props }: SelectChromeProps) {
-  return (
-    <RawSelect
-      {...props}
-      {...(placeholder === undefined ? {} : { placeholder })}>
-      <RawLabel>{label}</RawLabel>
-      <RawTrigger>
-        <RawValue />
-        <RawChevron aria-hidden='true'>
-          <ChevronDown size={16} />
-        </RawChevron>
-      </RawTrigger>
-      <RawPopover offset={4}>{children}</RawPopover>
-    </RawSelect>
-  )
-}
+const SelectChrome = ({
+  label,
+  placeholder,
+  children,
+  ...props
+}: SelectChromeProps) => (
+  <RawSelect {...props} {...(placeholder === undefined ? {} : { placeholder })}>
+    <RawLabel>{label}</RawLabel>
+    <RawTrigger>
+      <RawValue />
+      <RawChevron aria-hidden="true">
+        <ChevronDown size={16} />
+      </RawChevron>
+    </RawTrigger>
+    <RawPopover offset={4}>{children}</RawPopover>
+  </RawSelect>
+);
 
-function StyledSelectRoot({ children, ...props }: StyledSelectRootProps) {
-  return (
-    <SelectChrome {...props}>
-      <RawList>{children}</RawList>
-    </SelectChrome>
-  )
-}
+const StyledSelectRoot = ({ children, ...props }: StyledSelectRootProps) => (
+  <SelectChrome {...props}>
+    <RawList>{children}</RawList>
+  </SelectChrome>
+);
 
 type StyledFilterableSelectProps = StyledSelectRootProps & {
-  readonly searchPlaceholder?: string
-  readonly searchLabel?: string
-}
+  readonly searchPlaceholder?: string;
+  readonly searchLabel?: string;
+};
 
-function filterEmptyState() {
-  return <div className={emptyState}>該当なし</div>
-}
+const filterEmptyState = () => <div className={emptyState}>該当なし</div>;
 
-function StyledFilterableSelect({
+const StyledFilterableSelect = ({
   children,
-  searchPlaceholder = '検索…',
+  searchPlaceholder = "検索…",
   searchLabel,
   onOpenChange,
   ...props
-}: StyledFilterableSelectProps) {
-  const { contains } = useFilter({ sensitivity: 'base' })
-  const filterLabel = searchLabel ?? `${props.label}を検索`
-  const searchInputRef = useRef<HTMLInputElement>(null)
+}: StyledFilterableSelectProps) => {
+  const { contains } = useFilter({ sensitivity: "base" });
+  const filterLabel = searchLabel ?? `${props.label}を検索`;
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <SelectChrome
       {...props}
       onOpenChange={(isOpen) => {
-        onOpenChange?.(isOpen)
+        onOpenChange?.(isOpen);
         if (!isOpen) {
-          return
+          return;
         }
         requestAnimationFrame(() => {
-          searchInputRef.current?.focus()
-        })
-      }}>
+          searchInputRef.current?.focus();
+        });
+      }}
+    >
       <Autocomplete filter={contains}>
         <div className={filterRoot}>
-          <SearchField
-            aria-label={filterLabel}
-            className={filterSearch}>
+          <SearchField aria-label={filterLabel} className={filterSearch}>
             <StyledInput
               ref={searchInputRef}
-              type='search'
+              type="search"
               placeholder={searchPlaceholder}
             />
           </SearchField>
@@ -250,19 +246,14 @@ function StyledFilterableSelect({
         </div>
       </Autocomplete>
     </SelectChrome>
-  )
-}
+  );
+};
 
-type StyledSelectItemProps = ComponentProps<typeof ListBoxItem>
+type StyledSelectItemProps = ComponentProps<typeof ListBoxItem>;
 
-function StyledSelectItem(props: Omit<StyledSelectItemProps, 'className'>) {
-  return (
-    <ListBoxItem
-      {...props}
-      className={itemClass}
-    />
-  )
-}
+const StyledSelectItem = (props: Omit<StyledSelectItemProps, "className">) => (
+  <ListBoxItem {...props} className={itemClass} />
+);
 
 /**
  * A labelled React Aria `Select` with pantry chrome.
@@ -283,6 +274,6 @@ function StyledSelectItem(props: Omit<StyledSelectItemProps, 'className'>) {
  * ```
  */
 export const StyledSelect = Object.assign(StyledSelectRoot, {
+  Filterable: StyledFilterableSelect,
   Item: StyledSelectItem,
-  Filterable: StyledFilterableSelect
-})
+});

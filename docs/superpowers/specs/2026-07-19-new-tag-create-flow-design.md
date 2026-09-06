@@ -1,12 +1,10 @@
 # 新しいタグ作成フロー設計
 
-日付: 2026-07-19
-ブランチ: feat/new-tag-create-flow
+日付: 2026-07-19ブランチ: feat/new-tag-create-flow
 
 ## 概要
 
-ユーザーが新しいタグを登録するためのユーザーフローを、正式なものに仕上げる。
-現在 `/tags/new` に基本フォームと `addTag` サーバー関数は存在するが、以下の課題がある：
+ユーザーが新しいタグを登録するためのユーザーフローを、正式なものに仕上げる。現在 `/tags/new` に基本フォームと `addTag` サーバー関数は存在するが、以下の課題がある：
 
 - `addTag` に重複チェックがなく、同名タグが複数作成できてしまう（アプリ層で事前に弾いていない）
 - タグ一覧画面から「その場で追加」する導線・UI がない
@@ -32,20 +30,16 @@
 
 ### 1. サーバー層：`addTag` の重複ガード
 
-`src/features/tags/tag.function.ts` の `addTag` ハンドラーに、insert 前の重複チェックを追加する。
-`updateTag` と同じ `tagsTable` クエリパターンを使い、自身の ID 除外（`ne`）は不要。
+`src/features/tags/tag.function.ts` の `addTag` ハンドラーに、insert 前の重複チェックを追加する。 `updateTag` と同じ `tagsTable` クエリパターンを使い、自身の ID 除外（`ne`）は不要。
 
-カスタムエラーは `@praha/error-factory` の `ErrorFactory` を使って定義する
-（本パッケージは `package.json` の `catalog:errors` で既に導入済み）。
-専用エラー `TagNameAlreadyExistsError` を `tag.function.ts`（または `src/features/errors/` 等の共有場所）に定義し、
-重複検出時に投げる。これによりクライアント側で `instanceof` 判定しやすくなる。
+カスタムエラーは `@praha/error-factory` の `ErrorFactory` を使って定義する（本パッケージは `package.json` の `catalog:errors` で既に導入済み）。専用エラー `TagNameAlreadyExistsError` を `tag.function.ts`（または `src/features/errors/` 等の共有場所）に定義し、重複検出時に投げる。これによりクライアント側で `instanceof` 判定しやすくなる。
 
 ```ts
-import { ErrorFactory } from '@praha/error-factory'
+import { ErrorFactory } from "@praha/error-factory";
 
 export class TagNameAlreadyExistsError extends ErrorFactory({
-  name: 'TagNameAlreadyExistsError',
-  message: 'タグ名が既に存在します'
+  name: "TagNameAlreadyExistsError",
+  message: "タグ名が既に存在します",
 }) {}
 ```
 
@@ -56,10 +50,10 @@ const [duplicate] = await db
   .select({ id: tagsTable.id })
   .from(tagsTable)
   .where(and(eq(tagsTable.name, name), eq(tagsTable.userId, session.user.id)))
-  .limit(1)
+  .limit(1);
 
 if (duplicate != null) {
-  throw new TagNameAlreadyExistsError()
+  throw new TagNameAlreadyExistsError();
 }
 ```
 
@@ -67,8 +61,7 @@ if (duplicate != null) {
 
 ### 2. タグ一覧画面：常設インライン入力
 
-新規コンポーネント `src/features/tags/components/inline-add-tag.tsx` を作成し、
-`src/routes/_protected/tags/index.tsx` の一覧エリアに配置する。
+新規コンポーネント `src/features/tags/components/inline-add-tag.tsx` を作成し、 `src/routes/_protected/tags/index.tsx` の一覧エリアに配置する。
 
 挙動：
 
@@ -82,14 +75,12 @@ UI ライブラリは既存と同じ `@base-ui/react` の `Input` を使用す�
 
 ### 3. ブックマーク サーバー関数のタグ契約
 
-`addBookmark`（`bookmark.function.ts:33`）と `updateBookmark`（`:66`）の入力スキーマに
-`tags: v.array(v.number())` を追加する。
+`addBookmark`（`bookmark.function.ts:33`）と `updateBookmark`（`:66`）の入力スキーマに `tags: v.array(v.number())` を追加する。
 
 - `addBookmark`：insert 後に `bookmarkTagsTable` へ `{ bookmarkId, tagId }` を一括 insert
 - `updateBookmark`：既存の紐付けを `delete`（bookmarkId 一致）した上で、新しい tagId 配列を一括 insert（置換セマンティクス）
 
-両者とも `ensureSession` で `userId` を取得済み。tagId が自ユーザー所有かの検証は、
-MVP スコープでは既存タグ選択 UI からのみ渡される前提とし、厳密な所有権検証は将来課題とする（YAGNI）。
+両者とも `ensureSession` で `userId` を取得済み。tagId が自ユーザー所有かの検証は、MVP スコープでは既存タグ選択 UI からのみ渡される前提とし、厳密な所有権検証は将来課題とする（YAGNI）。
 
 ### 4. テスト戦略
 

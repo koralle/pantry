@@ -12,14 +12,14 @@
 
 ## File Structure
 
-| File                                        | Responsibility                                                      |
-| ------------------------------------------- | ------------------------------------------------------------------- |
-| `src/features/tags/tag-name.schema.ts`      | タグ名の共通スキーマ（trim + lowercase + 空文字禁止 + 32 文字制限） |
-| `src/features/tags/tag.function.ts`         | `fetchTags` / `addTag` / `getTag` / `updateTag` のサーバー関数      |
-| `src/routes/_protected/tags/$id.edit.tsx`   | タグ編集画面（loader + form + 更新後遷移）                          |
-| `src/routes/_protected/tags/$id/index.tsx`  | タグ詳細画面の「更新しました」フラッシュ表示                        |
-| `src/router.tsx`                            | `HistoryState` に `tagUpdated` を追加                               |
-| `src/features/tags/tag-name.schema.test.ts` | タグ名スキーマの単体テスト                                          |
+| File | Responsibility |
+| --- | --- |
+| `src/features/tags/tag-name.schema.ts` | タグ名の共通スキーマ（trim + lowercase + 空文字禁止 + 32 文字制限） |
+| `src/features/tags/tag.function.ts` | `fetchTags` / `addTag` / `getTag` / `updateTag` のサーバー関数 |
+| `src/routes/_protected/tags/$id.edit.tsx` | タグ編集画面（loader + form + 更新後遷移） |
+| `src/routes/_protected/tags/$id/index.tsx` | タグ詳細画面の「更新しました」フラッシュ表示 |
+| `src/router.tsx` | `HistoryState` に `tagUpdated` を追加 |
+| `src/features/tags/tag-name.schema.test.ts` | タグ名スキーマの単体テスト |
 
 ---
 
@@ -33,22 +33,21 @@
 - [ ] **Step 1: スキーマファイルを作成**
 
 ```ts
-import * as v from 'valibot'
+import * as v from "valibot";
 
 export const tagNameSchema = v.pipe(
-  v.string('タグ名を入力してください'),
+  v.string("タグ名を入力してください"),
   v.transform((value) => value.trim().toLowerCase()),
-  v.nonEmpty('タグ名を入力してください'),
-  v.maxLength(32, 'タグ名は32文字以内で入力してください')
-)
+  v.nonEmpty("タグ名を入力してください"),
+  v.maxLength(32, "タグ名は32文字以内で入力してください")
+);
 
-export type TagName = v.InferOutput<typeof tagNameSchema>
+export type TagName = v.InferOutput<typeof tagNameSchema>;
 ```
 
 - [ ] **Step 2: 型チェックを実行**
 
-Run: `pnpm run typecheck`
-Expected: 成功（`src/features/tags/tag-name.schema.ts` に型エラーがない）
+Run: `pnpm run typecheck` Expected: 成功（`src/features/tags/tag-name.schema.ts` に型エラーがない）
 
 - [ ] **Step 3: Commit**
 
@@ -72,80 +71,79 @@ git commit -m "feat(tags): add shared tag name validation schema"
 変更前:
 
 ```ts
-const addTagInputSchema = v.pick(tagInsertSchema, ['name'])
+const addTagInputSchema = v.pick(tagInsertSchema, ["name"]);
 ```
 
 変更後:
 
 ```ts
-import { tagNameSchema } from './tag-name.schema'
+import { tagNameSchema } from "./tag-name.schema";
 
 const addTagInputSchema = v.object({
-  name: tagNameSchema
-})
+  name: tagNameSchema,
+});
 ```
 
 `src/features/tags/tag.function.ts` の `addTag` 部分は以下のようになる:
 
 ```ts
-import { createServerFn } from '@tanstack/react-start'
-import { eq } from 'drizzle-orm'
-import * as v from 'valibot'
+import { createServerFn } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import * as v from "valibot";
 
-import { getDB } from '../../db/index.server'
-import { tagsTable } from '../../db/schema/tag'
-import { offsetPaginationQuerySchema } from '../../schemas/pagination'
-import { ensureSession } from '../auth/auth.function'
-import { tagNameSchema } from './tag-name.schema'
+import { getDB } from "../../db/index.server";
+import { tagsTable } from "../../db/schema/tag";
+import { offsetPaginationQuerySchema } from "../../schemas/pagination";
+import { ensureSession } from "../auth/auth.function";
+import { tagNameSchema } from "./tag-name.schema";
 
 const addTagInputSchema = v.object({
-  name: tagNameSchema
-})
+  name: tagNameSchema,
+});
 
-export const fetchTags = createServerFn({ method: 'GET' })
+export const fetchTags = createServerFn({ method: "GET" })
   .validator(offsetPaginationQuerySchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
+    const session = await ensureSession();
 
-    const { limit, offset } = ctx.data
+    const { limit, offset } = ctx.data;
 
-    const db = getDB()
+    const db = getDB();
 
     return db
       .select()
       .from(tagsTable)
       .where(eq(tagsTable.userId, session.user.id))
       .limit(limit)
-      .offset(offset)
-  })
+      .offset(offset);
+  });
 
-export const addTag = createServerFn({ method: 'POST' })
+export const addTag = createServerFn({ method: "POST" })
   .validator(addTagInputSchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
-    const { name } = ctx.data
+    const { name } = ctx.data;
 
     const result = await db
       .insert(tagsTable)
       .values({ name, userId: session.user.id })
-      .returning({ id: tagsTable.id })
+      .returning({ id: tagsTable.id });
 
-    const [first] = result
+    const [first] = result;
 
     if (first == null) {
-      throw new Error('Failed to insert tag')
+      throw new Error("Failed to insert tag");
     }
 
-    return { id: first.id }
-  })
+    return { id: first.id };
+  });
 ```
 
 - [ ] **Step 2: 型チェックを実行**
 
-Run: `pnpm run typecheck`
-Expected: 成功
+Run: `pnpm run typecheck` Expected: 成功
 
 - [ ] **Step 3: Commit**
 
@@ -167,42 +165,46 @@ git commit -m "feat(tags): normalize and validate addTag input with shared schem
 追加コード:
 
 ```ts
-import { and, eq } from 'drizzle-orm'
+import { and, eq } from "drizzle-orm";
 
 const tagIdSchema = v.object({
-  id: v.number()
-})
+  id: v.number(),
+});
 
-export const getTag = createServerFn({ method: 'GET' })
+export const getTag = createServerFn({ method: "GET" })
   .validator(tagIdSchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
     const [tag] = await db
       .select()
       .from(tagsTable)
-      .where(and(eq(tagsTable.id, ctx.data.id), eq(tagsTable.userId, session.user.id)))
-      .limit(1)
+      .where(
+        and(
+          eq(tagsTable.id, ctx.data.id),
+          eq(tagsTable.userId, session.user.id)
+        )
+      )
+      .limit(1);
 
     if (tag == null) {
-      throw new Error('Tag not found')
+      throw new Error("Tag not found");
     }
 
-    return tag
-  })
+    return tag;
+  });
 ```
 
 `and` を `drizzle-orm` から import する行を確認:
 
 ```ts
-import { and, eq } from 'drizzle-orm'
+import { and, eq } from "drizzle-orm";
 ```
 
 - [ ] **Step 2: 型チェックを実行**
 
-Run: `pnpm run typecheck`
-Expected: 成功
+Run: `pnpm run typecheck` Expected: 成功
 
 - [ ] **Step 3: Commit**
 
@@ -224,60 +226,63 @@ git commit -m "feat(tags): add getTag server function"
 追加コード:
 
 ```ts
-import { and, eq, ne, sql } from 'drizzle-orm'
+import { and, eq, ne, sql } from "drizzle-orm";
 
 const updateTagInputSchema = v.object({
   id: v.number(),
-  name: tagNameSchema
-})
+  name: tagNameSchema,
+});
 
-export const updateTag = createServerFn({ method: 'POST' })
+export const updateTag = createServerFn({ method: "POST" })
   .validator(updateTagInputSchema)
   .handler(async (ctx) => {
-    const session = await ensureSession()
-    const db = getDB()
+    const session = await ensureSession();
+    const db = getDB();
 
-    const { id, name } = ctx.data
+    const { id, name } = ctx.data;
 
     const [duplicate] = await db
       .select({ id: tagsTable.id })
       .from(tagsTable)
       .where(
-        and(eq(tagsTable.name, name), eq(tagsTable.userId, session.user.id), ne(tagsTable.id, id))
+        and(
+          eq(tagsTable.name, name),
+          eq(tagsTable.userId, session.user.id),
+          ne(tagsTable.id, id)
+        )
       )
-      .limit(1)
+      .limit(1);
 
     if (duplicate != null) {
-      throw new Error('Tag name already exists')
+      throw new Error("Tag name already exists");
     }
 
     const [updated] = await db
       .update(tagsTable)
       .set({
         name,
-        updatedAt: sql`(cast(unixepoch('subsecond') * 1000 as integer))`
+        updatedAt: sql`(cast(unixepoch('subsecond') * 1000 as integer))`,
       })
       .where(and(eq(tagsTable.id, id), eq(tagsTable.userId, session.user.id)))
-      .returning({ id: tagsTable.id })
+      .returning({ id: tagsTable.id });
 
     if (updated == null) {
-      throw new Error('Tag not found')
+      throw new Error("Tag not found");
     }
 
-    return { id: updated.id }
-  })
+    return { id: updated.id };
+  });
 ```
 
 `drizzle-orm` の import を以下に更新:
 
 ```ts
-import { and, eq, ne, sql } from 'drizzle-orm'
+import { and, eq, ne, sql } from "drizzle-orm";
 ```
 
 - [ ] **Step 2: 型チェックを実行**
 
-Run: `pnpm run typecheck`
-Expected: 成功
+Run: `pnpm run typecheck` Expected: 成功
 
 - [ ] **Step 3: Commit**
 
@@ -297,102 +302,99 @@ git commit -m "feat(tags): add updateTag server function with duplicate check"
 - [ ] **Step 1: ルートファイルを全面的に書き換え**
 
 ```tsx
-import { Input } from '@base-ui/react'
-import { Field, getInput, useForm } from '@formisch/react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { use, useActionState } from 'react'
-import * as v from 'valibot'
+import { Input } from "@base-ui/react";
+import { Field, getInput, useForm } from "@formisch/react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { use, useActionState } from "react";
+import * as v from "valibot";
 
-import { getTag, updateTag } from '../../../features/tags/tag.function'
+import { getTag, updateTag } from "../../../features/tags/tag.function";
 
-const tagIdParamSchema = v.pipe(v.string(), v.transform(Number), v.integer('Invalid tag id'))
+const tagIdParamSchema = v.pipe(
+  v.string(),
+  v.transform(Number),
+  v.integer("Invalid tag id")
+);
 
-export const Route = createFileRoute('/_protected/tags/$id/edit')({
+export const Route = createFileRoute("/_protected/tags/$id/edit")({
   loader: async ({ params }) => {
-    const id = v.parse(tagIdParamSchema, params.id)
-    const tagPromise = getTag({ data: { id } })
+    const id = v.parse(tagIdParamSchema, params.id);
+    const tagPromise = getTag({ data: { id } });
 
     return {
-      tagPromise
-    }
+      tagPromise,
+    };
   },
-  component: RouteComponent
-})
+  component: RouteComponent,
+});
 
 function RouteComponent() {
-  const { tagPromise } = Route.useLoaderData()
-  const navigate = useNavigate()
+  const { tagPromise } = Route.useLoaderData();
+  const navigate = useNavigate();
 
   async function submitAction({ id, name }: { id: number; name: string }) {
-    const { id: updatedId } = await updateTag({ data: { id, name } })
+    const { id: updatedId } = await updateTag({ data: { id, name } });
 
     await navigate({
-      to: '/tags/$id',
+      to: "/tags/$id",
       params: { id: String(updatedId) },
-      state: { tagUpdated: true }
-    })
+      state: { tagUpdated: true },
+    });
   }
 
   return (
     <div>
       <h1>タグ編集</h1>
 
-      <EditTagForm
-        tagPromise={tagPromise}
-        submitAction={submitAction}
-      />
+      <EditTagForm tagPromise={tagPromise} submitAction={submitAction} />
 
-      <Link
-        to='/tags'
-        search={{ limit: 50, offset: 0 }}>
+      <Link to="/tags" search={{ limit: 50, offset: 0 }}>
         一覧へ戻る
       </Link>
     </div>
-  )
+  );
 }
 
 interface EditTagFormProps {
-  readonly tagPromise: Promise<{ id: number; name: string }>
-  readonly submitAction: (input: { id: number; name: string }) => Promise<void>
+  readonly tagPromise: Promise<{ id: number; name: string }>;
+  readonly submitAction: (input: { id: number; name: string }) => Promise<void>;
 }
 
 function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
-  const tag = use(tagPromise)
+  const tag = use(tagPromise);
 
   const editTagFormSchema = v.object({
-    name: v.string()
-  })
+    name: v.string(),
+  });
 
   const editTagForm = useForm({
     initialInput: {
-      name: tag.name
+      name: tag.name,
     },
-    schema: editTagFormSchema
-  })
+    schema: editTagFormSchema,
+  });
 
   const [_, throwError, isPending] = useActionState(async () => {
-    const currentRawName = getInput(editTagForm, { path: ['name'] }) ?? ''
+    const currentRawName = getInput(editTagForm, { path: ["name"] }) ?? "";
 
-    await submitAction({ id: tag.id, name: currentRawName })
-  }, null)
+    await submitAction({ id: tag.id, name: currentRawName });
+  }, null);
 
   return (
     <form action={throwError}>
       <fieldset>
         <legend>タグ編集</legend>
 
-        <Field
-          of={editTagForm}
-          path={['name']}>
+        <Field of={editTagForm} path={["name"]}>
           {(field) => (
             <label htmlFor={field.props.name}>
               タグ名
               <Input
                 id={field.props.name}
                 value={field.input}
-                type='text'
+                type="text"
                 onValueChange={(newValue) => {
-                  field.onChange(newValue)
+                  field.onChange(newValue);
                 }}
                 required
               />
@@ -401,20 +403,17 @@ function EditTagForm({ tagPromise, submitAction }: EditTagFormProps) {
         </Field>
       </fieldset>
 
-      <button
-        type='submit'
-        disabled={isPending}>
-        {isPending ? '更新中...' : '更新'}
+      <button type="submit" disabled={isPending}>
+        {isPending ? "更新中..." : "更新"}
       </button>
     </form>
-  )
+  );
 }
 ```
 
 - [ ] **Step 2: 型チェックを実行**
 
-Run: `pnpm run typecheck`
-Expected: 成功
+Run: `pnpm run typecheck` Expected: 成功
 
 - [ ] **Step 3: Commit**
 
@@ -438,8 +437,8 @@ git commit -m "feat(tags): implement tag edit screen with loader and form"
 
 ```ts
 interface HistoryState {
-  newBookmarkCreated?: boolean
-  newTagCreated?: boolean
+  newBookmarkCreated?: boolean;
+  newTagCreated?: boolean;
 }
 ```
 
@@ -447,9 +446,9 @@ interface HistoryState {
 
 ```ts
 interface HistoryState {
-  newBookmarkCreated?: boolean
-  newTagCreated?: boolean
-  tagUpdated?: boolean
+  newBookmarkCreated?: boolean;
+  newTagCreated?: boolean;
+  tagUpdated?: boolean;
 }
 ```
 
@@ -459,23 +458,23 @@ interface HistoryState {
 
 ```tsx
 const { newTagCreated } = useRouterState({
-  select: (s) => s.location.state
-})
+  select: (s) => s.location.state,
+});
 ```
 
 変更後:
 
 ```tsx
 const { newTagCreated, tagUpdated } = useRouterState({
-  select: (s) => s.location.state
-})
+  select: (s) => s.location.state,
+});
 ```
 
 そして新規登録フラッシュの下に更新フラッシュを追加:
 
 ```tsx
 {
-  tagUpdated && <div role='alert'>タグを更新しました</div>
+  tagUpdated && <div role="alert">タグを更新しました</div>;
 }
 ```
 
@@ -483,43 +482,38 @@ const { newTagCreated, tagUpdated } = useRouterState({
 
 ```tsx
 function RouteComponent() {
-  const { id } = Route.useParams()
+  const { id } = Route.useParams();
 
   const { newTagCreated, tagUpdated } = useRouterState({
-    select: (s) => s.location.state
-  })
+    select: (s) => s.location.state,
+  });
 
   return (
     <div>
-      {newTagCreated && <div role='alert'>タグを登録しました</div>}
-      {tagUpdated && <div role='alert'>タグを更新しました</div>}
+      {newTagCreated && <div role="alert">タグを登録しました</div>}
+      {tagUpdated && <div role="alert">タグを更新しました</div>}
 
       <h1>タグ詳細</h1>
 
       <p>ID: {id}</p>
 
       <nav>
-        <Link
-          to='/tags/$id/edit'
-          params={{ id }}>
+        <Link to="/tags/$id/edit" params={{ id }}>
           編集
         </Link>
 
-        <Link
-          to='/tags'
-          search={{ limit: 50, offset: 0 }}>
+        <Link to="/tags" search={{ limit: 50, offset: 0 }}>
           一覧へ戻る
         </Link>
       </nav>
     </div>
-  )
+  );
 }
 ```
 
 - [ ] **Step 3: 型チェックを実行**
 
-Run: `pnpm run typecheck`
-Expected: 成功
+Run: `pnpm run typecheck` Expected: 成功
 
 - [ ] **Step 4: Commit**
 
@@ -539,37 +533,36 @@ git commit -m "feat(tags): show updated flash on tag detail after edit"
 - [ ] **Step 1: テストファイルを作成**
 
 ```ts
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import { tagNameSchema } from './tag-name.schema'
+import { tagNameSchema } from "./tag-name.schema";
 
-describe('tagNameSchema', () => {
-  test('trims and lowercases the input', () => {
-    const result = v.parse(tagNameSchema, '  TypeScript  ')
-    expect(result).toBe('typescript')
-  })
+describe("tagNameSchema", () => {
+  test("trims and lowercases the input", () => {
+    const result = v.parse(tagNameSchema, "  TypeScript  ");
+    expect(result).toBe("typescript");
+  });
 
-  test('accepts a 32-character name', () => {
-    const name = 'a'.repeat(32)
-    const result = v.parse(tagNameSchema, name)
-    expect(result).toBe(name)
-  })
+  test("accepts a 32-character name", () => {
+    const name = "a".repeat(32);
+    const result = v.parse(tagNameSchema, name);
+    expect(result).toBe(name);
+  });
 
-  test('rejects an empty string after trimming', () => {
-    expect(() => v.parse(tagNameSchema, '   ')).toThrow()
-  })
+  test("rejects an empty string after trimming", () => {
+    expect(() => v.parse(tagNameSchema, "   ")).toThrow();
+  });
 
-  test('rejects a name longer than 32 characters', () => {
-    expect(() => v.parse(tagNameSchema, 'a'.repeat(33))).toThrow()
-  })
-})
+  test("rejects a name longer than 32 characters", () => {
+    expect(() => v.parse(tagNameSchema, "a".repeat(33))).toThrow();
+  });
+});
 ```
 
 - [ ] **Step 2: テストを実行**
 
-Run: `pnpm run test -- src/features/tags/tag-name.schema.test.ts`
-Expected: 全テスト PASS
+Run: `pnpm run test -- src/features/tags/tag-name.schema.test.ts` Expected: 全テスト PASS
 
 - [ ] **Step 3: Commit**
 
@@ -584,28 +577,23 @@ git commit -m "test(tags): add unit tests for tag name schema"
 
 - [ ] **Step 1: 型チェック**
 
-Run: `pnpm run typecheck`
-Expected: 成功
+Run: `pnpm run typecheck` Expected: 成功
 
 - [ ] **Step 2: Linter**
 
-Run: `pnpm run lint`
-Expected: 成功
+Run: `pnpm run lint` Expected: 成功
 
 - [ ] **Step 3: Formatter check**
 
-Run: `pnpm run format:check`
-Expected: 成功
+Run: `pnpm run format:check` Expected: 成功
 
 - [ ] **Step 4: 全テスト**
 
-Run: `pnpm run test`
-Expected: 全テスト PASS
+Run: `pnpm run test` Expected: 全テスト PASS
 
 - [ ] **Step 5: 手動確認（開発サーバー）**
 
-Run: `pnpm run dev`
-手動で以下を確認:
+Run: `pnpm run dev` 手動で以下を確認:
 
 1. `/tags` から既存タグの詳細 `/tags/$id` へ遷移
 2. 「編集」リンクから `/tags/$id/edit` を開く
@@ -626,14 +614,14 @@ git commit -m "chore: apply formatter/linter fixes for tag edit screen"
 
 Issue #62「タグ編集画面を作る」の要件と対応タスク:
 
-| 要件                                                              | 実装タスク                                                                    |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 既存タグを読み込んで編集フォームを表示                            | Task 3 (`getTag`), Task 5 (loader + form の初期値)                            |
-| タグ名を更新できる                                                | Task 4 (`updateTag`), Task 5 (form submit)                                    |
+| 要件 | 実装タスク |
+| --- | --- |
+| 既存タグを読み込んで編集フォームを表示 | Task 3 (`getTag`), Task 5 (loader + form の初期値) |
+| タグ名を更新できる | Task 4 (`updateTag`), Task 5 (form submit) |
 | タグ名の正規化・制約（trim + lowercase、空文字禁止、32 文字制限） | Task 1 (`tagNameSchema`), Task 2 (`addTag` 共通化), Task 4 (`updateTag` 検証) |
-| 同一ユーザー内での重複防止                                        | Task 4 (`updateTag` の重複チェック)                                           |
-| 更新後のフィードバック                                            | Task 6 (詳細画面フラッシュ)                                                   |
-| 品質担保                                                          | Task 7 (単体テスト), Task 8 (品質ゲート)                                      |
+| 同一ユーザー内での重複防止 | Task 4 (`updateTag` の重複チェック) |
+| 更新後のフィードバック | Task 6 (詳細画面フラッシュ) |
+| 品質担保 | Task 7 (単体テスト), Task 8 (品質ゲート) |
 
 ---
 

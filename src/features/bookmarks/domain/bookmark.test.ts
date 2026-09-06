@@ -1,24 +1,24 @@
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import { tagIdSchema } from '../../tags/domain/tag-values'
-import { assertUniqueTagIds } from './bookmark'
+import { tagIdSchema } from "../../tags/domain/tag-values";
+import { assertUniqueTagIds } from "./bookmark";
 
 function tagId(value: number) {
-  return v.parse(tagIdSchema, value)
+  return v.parse(tagIdSchema, value);
 }
 
-describe('assertUniqueTagIds', () => {
-  test('accepts unique tag ids including empty', () => {
-    expect(assertUniqueTagIds([]).ok).toBe(true)
-    expect(assertUniqueTagIds([tagId(1), tagId(2)]).ok).toBe(true)
-  })
+describe(assertUniqueTagIds, () => {
+  test("accepts unique tag ids including empty", () => {
+    expect(assertUniqueTagIds([]).ok).toBeTruthy();
+    expect(assertUniqueTagIds([tagId(1), tagId(2)]).ok).toBeTruthy();
+  });
 
-  test('rejects duplicate tag ids', () => {
-    const result = assertUniqueTagIds([tagId(1), tagId(2), tagId(1)])
+  test("rejects duplicate tag ids", () => {
+    const result = assertUniqueTagIds([tagId(1), tagId(2), tagId(1)]);
     expect(result).toStrictEqual({
+      error: { code: "duplicate-tag-id", field: "tags", tagId: 1 },
       ok: false,
-      error: { code: 'duplicate-tag-id', field: 'tags', tagId: 1 }
-    })
-  })
-})
+    });
+  });
+});

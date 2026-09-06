@@ -1,8 +1,8 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq } from "drizzle-orm";
 
-import type { AppDb } from '../../../db/app-db'
-import { tagsTable } from '../../../db/schema/tag'
-import type { TouchTagInput, TouchTagOutput } from '../application/touch-tag'
+import type { AppDb } from "../../../db/app-db";
+import { tagsTable } from "../../../db/schema/tag";
+import type { TouchTagInput, TouchTagOutput } from "../application/touch-tag";
 
 /**
  * 存在確認と actor スコープの確定を単一 UPDATE で済ませ、returning の有無を結果とする。
@@ -12,16 +12,19 @@ import type { TouchTagInput, TouchTagOutput } from '../application/touch-tag'
  * updatedAt / version を bump しないのは意図的: last_used_at は利用履歴であり内容変更ではないため、
  * 更新日時や楽観ロックの対象に含めない。
  */
-export async function touchTag(db: AppDb, input: TouchTagInput): Promise<TouchTagOutput> {
+export const touchTag = async (
+  db: AppDb,
+  input: TouchTagInput
+): Promise<TouchTagOutput> => {
   const updated = await db
     .update(tagsTable)
     .set({ lastUsedAt: new Date() })
     .where(and(eq(tagsTable.id, input.id), eq(tagsTable.userId, input.userId)))
-    .returning({ id: tagsTable.id })
+    .returning({ id: tagsTable.id });
 
   if (updated.length === 0) {
-    return { kind: 'not-found' }
+    return { kind: "not-found" };
   }
 
-  return { kind: 'touched' }
-}
+  return { kind: "touched" };
+};

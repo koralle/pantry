@@ -1,24 +1,24 @@
-import { use } from 'react'
+import { use } from "react";
 
-import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
-import type { ShelfTag } from '../lib/tag-shelf'
-import { ShelfNav } from './shelf-nav'
-import type { ShelfNavSelection } from './shelf-nav'
+import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
+import type { ShelfTag } from "../lib/tag-shelf";
+import { ShelfNav } from "./shelf-nav";
+import type { ShelfNavSelection } from "./shelf-nav";
 
-type ShelfNavAsyncProps = {
-  readonly shelfTagsPromise: Promise<ShelfTag[]>
-  readonly selection: ShelfNavSelection
-  readonly listSearch: BookmarkSearchSchema | undefined
-  readonly onNavigate?: (() => void) | undefined
+interface ShelfNavAsyncProps {
+  readonly shelfTagsPromise: Promise<ShelfTag[]>;
+  readonly selection: ShelfNavSelection;
+  readonly listSearch: BookmarkSearchSchema | undefined;
+  readonly onNavigate?: (() => void) | undefined;
 }
 
-export function ShelfNavAsync({
+export const ShelfNavAsync = ({
   shelfTagsPromise,
   selection,
   listSearch,
-  onNavigate
-}: ShelfNavAsyncProps) {
-  const tags = use(shelfTagsPromise)
+  onNavigate,
+}: ShelfNavAsyncProps) => {
+  const tags = use(shelfTagsPromise);
   return (
     <ShelfNav
       tags={tags}
@@ -26,5 +26,5 @@ export function ShelfNavAsync({
       listSearch={listSearch}
       onNavigate={onNavigate}
     />
-  )
-}
+  );
+};

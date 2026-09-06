@@ -1,37 +1,32 @@
-import { css } from 'styled-system/css'
+import { css } from "styled-system/css";
 
-import { pageLead, pageTitle } from './type'
-
+export { pageLead as workbenchLead, pageTitle as workbenchTitle } from "./type";
 export const workbench = css({
-  maxInlineSize: '36rem',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '5'
-})
+  display: "flex",
+  flexDirection: "column",
+  gap: "5",
+  maxInlineSize: "36rem",
+});
 
 export const workbenchNav = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  rowGap: '3',
-  columnGap: '5'
-})
-
-export const workbenchTitle = pageTitle
-
-export const workbenchLead = pageLead
+  columnGap: "5",
+  display: "flex",
+  flexWrap: "wrap",
+  rowGap: "3",
+});
 
 export const workbenchForm = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '5'
-})
+  display: "flex",
+  flexDirection: "column",
+  gap: "5",
+});
 
 export const workbenchFields = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4',
-  margin: '0',
-  padding: '0',
-  borderWidth: 'none',
-  minInlineSize: '0'
-})
+  borderWidth: "none",
+  display: "flex",
+  flexDirection: "column",
+  gap: "4",
+  margin: "0",
+  minInlineSize: "0",
+  padding: "0",
+});

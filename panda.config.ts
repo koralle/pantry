@@ -1,405 +1,425 @@
-import { defineConfig, defineGlobalStyles } from '@pandacss/dev'
+import { defineConfig, defineGlobalStyles } from "@pandacss/dev";
 
 const globalCss = defineGlobalStyles({
-  '*, ::before, ::after': {
-    boxSizing: 'border-box'
+  "*, ::before, ::after": {
+    boxSizing: "border-box",
   },
-  ':root': {
-    fontFamily: 'body',
-    fontSizeAdjust: 'from-font',
-    lineHeight: 'body',
-    textSpacingTrim: 'trim-start',
-    textAutospace: 'normal',
-    lineBreak: 'strict',
-    overflowWrap: 'anywhere',
-    WebkitTextSizeAdjust: '100%',
-    textSizeAdjust: '100%',
-    scrollbarGutter: 'stable',
-    WebkitTapHighlightColor: 'transparent',
-    colorScheme: 'light',
-    accentColor: 'accent.solid'
+  "::placeholder": {
+    opacity: "unset",
   },
-  body: {
-    minBlockSize: '100dvb',
-    margin: 0,
-    background: 'bg.canvas',
-    color: 'fg.default'
+  ':disabled, [aria-disabled="true"]': {
+    cursor: "default",
   },
-  h1: {
-    marginBlock: 'unset',
-    fontSize: 'title',
-    fontWeight: 'bold',
-    lineHeight: 'tight',
-    textWrap: 'pretty'
+  ":focus-visible": {
+    outline: "2px solid",
+    outlineColor: "accent.solid",
+    outlineOffset: "2px",
   },
-  'h2, h3, h4, h5, h6': {
-    marginBlock: 'unset'
+  ":root": {
+    WebkitTapHighlightColor: "transparent",
+    WebkitTextSizeAdjust: "100%",
+    accentColor: "accent.solid",
+    colorScheme: "light",
+    fontFamily: "body",
+    fontSizeAdjust: "from-font",
+    lineBreak: "strict",
+    lineHeight: "body",
+    overflowWrap: "anywhere",
+    scrollbarGutter: "stable",
+    textAutospace: "normal",
+    textSizeAdjust: "100%",
+    textSpacingTrim: "trim-start",
   },
-  'p, blockquote, figure, pre, address, ul, ol, dl, menu': {
-    marginBlock: 'unset'
+  "@media (prefers-reduced-motion: reduce)": {
+    "*, *::before, *::after": {
+      animation: "none !important",
+      transition: "none !important",
+    },
   },
-  'blockquote, figure': {
-    marginInline: 'unset'
+  '[hidden]:not([hidden="until-found"])': {
+    display: "none !important",
   },
-  'p:lang(en)': {
-    textWrap: 'pretty'
+  "[popover]": {
+    margin: "unset",
   },
-  'address:lang(ja)': {
-    fontStyle: 'unset'
-  },
-  'ul, ol, menu': {
-    paddingInlineStart: 'unset',
-    listStyleType: '""'
-  },
-  dt: {
-    fontWeight: 'bolder'
-  },
-  dd: {
-    marginInlineStart: 'unset'
-  },
-  pre: {
-    textSpacingTrim: 'space-all',
-    textAutospace: 'no-autospace'
-  },
-  'em:lang(ja)': {
-    fontWeight: 'bolder'
-  },
-  'i:lang(ja), cite:lang(ja), dfn:lang(ja)': {
-    fontStyle: 'unset'
-  },
-  'code, kbd, samp': {
-    fontFamily:
-      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-    fontFeatureSettings: 'initial',
-    fontVariationSettings: 'initial',
-    fontSize: 'unset',
-    fontVariantLigatures: 'none'
+  '[tabindex="-1"]:focus': {
+    outline: "none !important",
   },
   a: {
-    color: 'unset'
+    color: "unset",
   },
-  'a:any-link': {
-    textDecorationLine: 'unset',
-    textDecorationThickness: 'from-font',
-    textDecorationInset: 'auto'
+  "a:any-link": {
+    textDecorationInset: "auto",
+    textDecorationLine: "unset",
+    textDecorationThickness: "from-font",
   },
-  'img, svg, picture, video, audio, canvas, model, iframe, embed, object': {
-    maxInlineSize: '100%',
-    verticalAlign: 'bottom'
+  "address:lang(ja)": {
+    fontStyle: "unset",
   },
-  'img, svg, picture, video, canvas, model, iframe, embed, object': {
-    blockSize: 'auto'
+  "blockquote, figure": {
+    marginInline: "unset",
   },
-  iframe: {
-    border: 'unset'
+  body: {
+    background: "bg.canvas",
+    color: "fg.default",
+    margin: 0,
+    minBlockSize: "100dvb",
   },
-  table: {
-    borderCollapse: 'collapse'
+  "button, input, select, textarea, ::file-selector-button": {
+    borderColor: "unset",
+    borderRadius: "unset",
+    borderStyle: "solid",
+    borderWidth: "1px",
+    color: "unset",
+    font: "unset",
+    letterSpacing: "unset",
+    textAlign: "unset",
   },
-  'caption, th': {
-    textAlign: 'unset'
-  },
-  'button, input, select, textarea, ::file-selector-button': {
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'unset',
-    borderRadius: 'unset',
-    color: 'unset',
-    font: 'unset',
-    letterSpacing: 'unset',
-    textAlign: 'unset'
-  },
-  'input:is([type="radio"], [type="checkbox"])': {
-    margin: 'unset'
-  },
-  'input[type="file"]': {
-    border: 'unset'
-  },
-  'input[type="search"]': {
-    WebkitAppearance: 'textfield'
-  },
-  textarea: {
-    marginBlock: 'unset',
-    resize: 'block'
-  },
-  'input:not([type="button"], [type="submit"], [type="reset"]), textarea, [contenteditable]': {
-    textAutospace: 'no-autospace'
-  },
-  'button, input:is([type="button"], [type="submit"], [type="reset"]), ::file-selector-button': {
-    backgroundColor: 'unset'
-  },
+  'button, input:is([type="button"], [type="submit"], [type="reset"]), ::file-selector-button':
+    {
+      backgroundColor: "unset",
+    },
   'button, input:is([type="button"], [type="submit"], [type="reset"]), [role="tab"], [role="button"], [role="option"], ::file-selector-button':
     {
-      touchAction: 'manipulation'
+      touchAction: "manipulation",
     },
   'button:enabled, label[for], select:enabled, input:is([type="button"], [type="submit"], [type="reset"], [type="radio"], [type="checkbox"]):enabled, [role="tab"], [role="button"], [role="option"], :enabled::file-selector-button':
     {
-      cursor: 'pointer'
+      cursor: "pointer",
     },
-  fieldset: {
-    minInlineSize: 0,
-    marginInline: 'unset',
-    padding: 'unset',
-    border: 'unset'
+  "caption, th": {
+    textAlign: "unset",
   },
-  legend: {
-    paddingInline: 'unset'
+  "code, kbd, samp": {
+    fontFamily:
+      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+    fontFeatureSettings: "initial",
+    fontSize: "unset",
+    fontVariantLigatures: "none",
+    fontVariationSettings: "initial",
   },
-  '::placeholder': {
-    opacity: 'unset'
-  },
-  'dialog, [popover]': {
-    overscrollBehaviorBlock: 'contain',
-    padding: 'unset',
-    border: 'unset'
-  },
-  'dialog:not([open], [popover]), [popover]:not(:popover-open)': {
-    display: 'none !important'
+  dd: {
+    marginInlineStart: "unset",
   },
   dialog: {
-    maxInlineSize: 'unset',
-    maxBlockSize: 'unset'
+    maxBlockSize: "unset",
+    maxInlineSize: "unset",
   },
-  'dialog::backdrop': {
-    backgroundColor: 'oklch(0% 0 0deg / 30%)'
+  "dialog, [popover]": {
+    border: "unset",
+    overscrollBehaviorBlock: "contain",
+    padding: "unset",
   },
-  '[popover]': {
-    margin: 'unset'
+  "dialog::backdrop": {
+    backgroundColor: "oklch(0% 0 0deg / 30%)",
   },
-  ':focus-visible': {
-    outline: '2px solid',
-    outlineColor: 'accent.solid',
-    outlineOffset: '2px'
+  "dialog:not([open], [popover]), [popover]:not(:popover-open)": {
+    display: "none !important",
   },
-  '[tabindex="-1"]:focus': {
-    outline: 'none !important'
+  dt: {
+    fontWeight: "bolder",
   },
-  ':disabled, [aria-disabled="true"]': {
-    cursor: 'default'
+  "em:lang(ja)": {
+    fontWeight: "bolder",
   },
-  '[hidden]:not([hidden="until-found"])': {
-    display: 'none !important'
+  fieldset: {
+    border: "unset",
+    marginInline: "unset",
+    minInlineSize: 0,
+    padding: "unset",
   },
-  '@media (prefers-reduced-motion: reduce)': {
-    '*, *::before, *::after': {
-      animation: 'none !important',
-      transition: 'none !important'
-    }
-  }
-})
+  h1: {
+    fontSize: "title",
+    fontWeight: "bold",
+    lineHeight: "tight",
+    marginBlock: "unset",
+    textWrap: "pretty",
+  },
+  "h2, h3, h4, h5, h6": {
+    marginBlock: "unset",
+  },
+  "i:lang(ja), cite:lang(ja), dfn:lang(ja)": {
+    fontStyle: "unset",
+  },
+  iframe: {
+    border: "unset",
+  },
+  "img, svg, picture, video, audio, canvas, model, iframe, embed, object": {
+    maxInlineSize: "100%",
+    verticalAlign: "bottom",
+  },
+  "img, svg, picture, video, canvas, model, iframe, embed, object": {
+    blockSize: "auto",
+  },
+  'input:is([type="radio"], [type="checkbox"])': {
+    margin: "unset",
+  },
+  'input:not([type="button"], [type="submit"], [type="reset"]), textarea, [contenteditable]':
+    {
+      textAutospace: "no-autospace",
+    },
+  'input[type="file"]': {
+    border: "unset",
+  },
+  'input[type="search"]': {
+    WebkitAppearance: "textfield",
+  },
+  legend: {
+    paddingInline: "unset",
+  },
+  "p, blockquote, figure, pre, address, ul, ol, dl, menu": {
+    marginBlock: "unset",
+  },
+  "p:lang(en)": {
+    textWrap: "pretty",
+  },
+  pre: {
+    textAutospace: "no-autospace",
+    textSpacingTrim: "space-all",
+  },
+  table: {
+    borderCollapse: "collapse",
+  },
+  textarea: {
+    marginBlock: "unset",
+    resize: "block",
+  },
+  "ul, ol, menu": {
+    listStyleType: '""',
+    paddingInlineStart: "unset",
+  },
+});
 
 export default defineConfig({
-  preflight: false,
-
-  include: ['./src/**/*.{ts,tsx}'],
-
   exclude: [],
 
   globalCss,
 
+  include: ["./src/**/*.{ts,tsx}"],
+
+  jsxFramework: "react",
+
+  outdir: "styled-system",
+
+  preflight: false,
+
+  strictPropertyValues: false,
+
+  strictTokens: false,
+
   theme: {
     extend: {
-      tokens: {
-        colors: {
-          pantry: {
-            canvas: { value: '#f3f4f6' },
-            ink: { value: '#1f2328' },
-            muted: { value: '#5b616a' },
-            line: { value: '#d1d5db' },
-            accent: { value: '#2f6f6a' },
-            surface: { value: '#f7f8f9' },
-            danger: { value: '#8a2f2f' }
-          }
+      animationStyles: {
+        crossfade: {
+          value: {
+            animationDuration: "crossfade",
+            animationFillMode: "both",
+            animationName: "crossfade",
+            animationTimingFunction: "ease-out",
+          },
         },
-        radii: {
-          box: { value: '6px' },
-          sheet: { value: '12px' },
-          full: { value: '999px' }
+        fadeUp: {
+          value: {
+            animationDuration: "fadeUp",
+            animationFillMode: "both",
+            animationName: "fadeUp",
+            animationTimingFunction: "ease-out",
+          },
         },
-        sizes: {
-          touch: { value: '44px' },
-          '5.5': { value: '1.375rem' },
-          '11': { value: '2.75rem' },
-          '22': { value: '5.5rem' },
-          '4rem': { value: '4rem' },
-          '4.5rem': { value: '4.5rem' },
-          '5.5rem': { value: '5.5rem' },
-          '18rem': { value: '18rem' },
-          '12rem': { value: '12rem' },
-          '16rem': { value: '16rem' },
-          '22rem': { value: '22rem' },
-          '24rem': { value: '24rem' },
-          '28rem': { value: '28rem' },
-          '36rem': { value: '36rem' },
-          '42rem': { value: '42rem' },
-          '48rem': { value: '48rem' },
-          'min-10': { value: 'min(100%, 10rem)' },
-          'min-22': { value: 'min(100%, 22rem)' },
-          'min-18': { value: 'min(100%, 18rem)' },
-          'min-12': { value: 'min(100%, 12rem)' },
-          '100dvh': { value: '100dvh' },
-          '100dvb': { value: '100dvb' },
-          '85dvh': { value: '85dvh' },
-          'dialog-width': { value: 'calc(100% - 2rem)' },
-          fit: { value: 'fit-content' }
+        skeleton: {
+          value: {
+            animationDuration: "skeleton",
+            animationIterationCount: "infinite",
+            animationName: "skeletonPulse",
+            animationTimingFunction: "ease-in-out",
+          },
         },
-        borderWidths: {
-          none: { value: '0' },
-          thin: { value: '1px' },
-          medium: { value: '2px' },
-          thick: { value: '3px' }
+      },
+      keyframes: {
+        crossfade: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
         },
-        shadows: {
-          accentRing: { value: '0 0 0 2px {colors.accent.subtle}' }
+        fadeUp: {
+          from: { opacity: "0", transform: "translateY(0.375rem)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
-        fontSizes: {
-          '2xs': { value: '0.75rem' },
-          xs2: { value: '0.8125rem' },
-          xs: { value: '0.875rem' },
-          md2: { value: '1.05rem' },
-          md: { value: '1.125rem' },
-          lg: { value: '1.25rem' },
-          '3xl': { value: '1.75rem' },
-          title: { value: 'clamp(1.5rem, 2.4vw, 2rem)' }
+        skeletonPulse: {
+          "0%": { backgroundPosition: "100% 0" },
+          "100%": { backgroundPosition: "-100% 0" },
         },
-        durations: {
-          skeleton: { value: '1.2s' },
-          spin: { value: '1s' },
-          fadeUp: { value: '200ms' },
-          crossfade: { value: '160ms' },
-          press: { value: '120ms' },
-          hover: { value: '180ms' }
-        },
-        easings: {
-          press: { value: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-        },
-        fonts: {
-          body: {
-            value: ['Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'sans-serif']
-          }
-        },
-        lineHeights: {
-          body: { value: '1.5' },
-          tight: { value: '1.25' },
-          relaxed: { value: '1.7' }
-        }
       },
       semanticTokens: {
         colors: {
-          bg: {
-            canvas: { value: '{colors.pantry.canvas}' },
-            surface: { value: '{colors.pantry.surface}' }
-          },
-          fg: {
-            default: { value: '{colors.pantry.ink}' },
-            muted: { value: '{colors.pantry.muted}' }
-          },
-          border: {
-            default: { value: '{colors.pantry.line}' },
-            accent: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 35%, {colors.pantry.line})'
-            },
-            danger: {
-              value: 'color-mix(in oklab, {colors.pantry.danger} 55%, {colors.pantry.line})'
-            }
-          },
           accent: {
-            solid: { value: '{colors.pantry.accent}' },
+            fg: { value: "{colors.pantry.surface}" },
+            hover: {
+              value:
+                "color-mix(in oklab, {colors.pantry.accent} 10%, {colors.pantry.canvas})",
+            },
+            solid: { value: "{colors.pantry.accent}" },
             solidHover: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 82%, {colors.pantry.ink})'
+              value:
+                "color-mix(in oklab, {colors.pantry.accent} 82%, {colors.pantry.ink})",
             },
             subtle: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 14%, {colors.pantry.canvas})'
+              value:
+                "color-mix(in oklab, {colors.pantry.accent} 14%, {colors.pantry.canvas})",
             },
-            hover: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 10%, {colors.pantry.canvas})'
+          },
+          bg: {
+            canvas: { value: "{colors.pantry.canvas}" },
+            surface: { value: "{colors.pantry.surface}" },
+          },
+          border: {
+            accent: {
+              value:
+                "color-mix(in oklab, {colors.pantry.accent} 35%, {colors.pantry.line})",
             },
-            fg: { value: '{colors.pantry.surface}' }
+            danger: {
+              value:
+                "color-mix(in oklab, {colors.pantry.danger} 55%, {colors.pantry.line})",
+            },
+            default: { value: "{colors.pantry.line}" },
           },
           danger: {
-            solid: { value: '{colors.pantry.danger}' },
-            surface: {
-              value: 'color-mix(in oklab, {colors.pantry.danger} 8%, {colors.pantry.canvas})'
-            },
             border: {
-              value: 'color-mix(in oklab, {colors.pantry.danger} 35%, {colors.pantry.line})'
-            }
+              value:
+                "color-mix(in oklab, {colors.pantry.danger} 35%, {colors.pantry.line})",
+            },
+            solid: { value: "{colors.pantry.danger}" },
+            surface: {
+              value:
+                "color-mix(in oklab, {colors.pantry.danger} 8%, {colors.pantry.canvas})",
+            },
           },
-          surface: {
-            header: {
-              value: '{colors.pantry.canvas}'
-            },
-            rail: {
-              value: 'color-mix(in oklab, {colors.pantry.line} 22%, {colors.pantry.canvas})'
-            },
-            tag: {
-              value: 'color-mix(in oklab, {colors.pantry.accent} 8%, {colors.pantry.canvas})'
-            }
+          fg: {
+            default: { value: "{colors.pantry.ink}" },
+            muted: { value: "{colors.pantry.muted}" },
           },
           overlay: {
             backdrop: {
-              value: 'color-mix(in oklab, {colors.pantry.ink} 35%, transparent)'
-            }
+              value:
+                "color-mix(in oklab, {colors.pantry.ink} 35%, transparent)",
+            },
           },
           skeleton: {
-            start: {
-              value: 'color-mix(in oklab, {colors.pantry.line} 35%, {colors.pantry.canvas})'
-            },
             middle: {
-              value: 'color-mix(in oklab, {colors.pantry.line} 15%, {colors.pantry.canvas})'
-            }
-          }
-        }
+              value:
+                "color-mix(in oklab, {colors.pantry.line} 15%, {colors.pantry.canvas})",
+            },
+            start: {
+              value:
+                "color-mix(in oklab, {colors.pantry.line} 35%, {colors.pantry.canvas})",
+            },
+          },
+          surface: {
+            header: {
+              value: "{colors.pantry.canvas}",
+            },
+            rail: {
+              value:
+                "color-mix(in oklab, {colors.pantry.line} 22%, {colors.pantry.canvas})",
+            },
+            tag: {
+              value:
+                "color-mix(in oklab, {colors.pantry.accent} 8%, {colors.pantry.canvas})",
+            },
+          },
+        },
       },
-      keyframes: {
-        skeletonPulse: {
-          '0%': { backgroundPosition: '100% 0' },
-          '100%': { backgroundPosition: '-100% 0' }
+      tokens: {
+        borderWidths: {
+          medium: { value: "2px" },
+          none: { value: "0" },
+          thick: { value: "3px" },
+          thin: { value: "1px" },
         },
-        fadeUp: {
-          from: { opacity: '0', transform: 'translateY(0.375rem)' },
-          to: { opacity: '1', transform: 'translateY(0)' }
+        colors: {
+          pantry: {
+            accent: { value: "#2f6f6a" },
+            canvas: { value: "#f3f4f6" },
+            danger: { value: "#8a2f2f" },
+            ink: { value: "#1f2328" },
+            line: { value: "#d1d5db" },
+            muted: { value: "#5b616a" },
+            surface: { value: "#f7f8f9" },
+          },
         },
-        crossfade: {
-          from: { opacity: '0' },
-          to: { opacity: '1' }
-        }
+        durations: {
+          crossfade: { value: "160ms" },
+          fadeUp: { value: "200ms" },
+          hover: { value: "180ms" },
+          press: { value: "120ms" },
+          skeleton: { value: "1.2s" },
+          spin: { value: "1s" },
+        },
+        easings: {
+          press: { value: "cubic-bezier(0.16, 1, 0.3, 1)" },
+        },
+        fontSizes: {
+          "2xs": { value: "0.75rem" },
+          "3xl": { value: "1.75rem" },
+          lg: { value: "1.25rem" },
+          md: { value: "1.125rem" },
+          md2: { value: "1.05rem" },
+          title: { value: "clamp(1.5rem, 2.4vw, 2rem)" },
+          xs: { value: "0.875rem" },
+          xs2: { value: "0.8125rem" },
+        },
+        fonts: {
+          body: {
+            value: [
+              "Noto Sans JP",
+              "Hiragino Sans",
+              "Yu Gothic UI",
+              "sans-serif",
+            ],
+          },
+        },
+        lineHeights: {
+          body: { value: "1.5" },
+          relaxed: { value: "1.7" },
+          tight: { value: "1.25" },
+        },
+        radii: {
+          box: { value: "6px" },
+          full: { value: "999px" },
+          sheet: { value: "12px" },
+        },
+        shadows: {
+          accentRing: { value: "0 0 0 2px {colors.accent.subtle}" },
+        },
+        sizes: {
+          "100dvb": { value: "100dvb" },
+          "100dvh": { value: "100dvh" },
+          "11": { value: "2.75rem" },
+          "12rem": { value: "12rem" },
+          "16rem": { value: "16rem" },
+          "18rem": { value: "18rem" },
+          "22": { value: "5.5rem" },
+          "22rem": { value: "22rem" },
+          "24rem": { value: "24rem" },
+          "28rem": { value: "28rem" },
+          "36rem": { value: "36rem" },
+          "4.5rem": { value: "4.5rem" },
+          "42rem": { value: "42rem" },
+          "48rem": { value: "48rem" },
+          "4rem": { value: "4rem" },
+          "5.5": { value: "1.375rem" },
+          "5.5rem": { value: "5.5rem" },
+          "85dvh": { value: "85dvh" },
+          "dialog-width": { value: "calc(100% - 2rem)" },
+          fit: { value: "fit-content" },
+          "min-10": { value: "min(100%, 10rem)" },
+          "min-12": { value: "min(100%, 12rem)" },
+          "min-18": { value: "min(100%, 18rem)" },
+          "min-22": { value: "min(100%, 22rem)" },
+          touch: { value: "44px" },
+        },
       },
-      animationStyles: {
-        skeleton: {
-          value: {
-            animationName: 'skeletonPulse',
-            animationDuration: 'skeleton',
-            animationTimingFunction: 'ease-in-out',
-            animationIterationCount: 'infinite'
-          }
-        },
-        fadeUp: {
-          value: {
-            animationName: 'fadeUp',
-            animationDuration: 'fadeUp',
-            animationTimingFunction: 'ease-out',
-            animationFillMode: 'both'
-          }
-        },
-        crossfade: {
-          value: {
-            animationName: 'crossfade',
-            animationDuration: 'crossfade',
-            animationTimingFunction: 'ease-out',
-            animationFillMode: 'both'
-          }
-        }
-      }
-    }
+    },
   },
 
-  outdir: 'styled-system',
-
-  jsxFramework: 'react',
-
-  strictTokens: false,
-  strictPropertyValues: false,
-
-  validation: 'error'
-})
+  validation: "error",
+});

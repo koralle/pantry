@@ -1,7 +1,7 @@
-import { getErrorMessage } from 'react-error-boundary'
-import type { FallbackProps } from 'react-error-boundary'
+import { getErrorMessage } from "react-error-boundary";
+import type { FallbackProps } from "react-error-boundary";
 
-import { UiError } from './ui-error'
+import { UiError } from "./ui-error";
 
 /**
  * `FallbackComponent`(react-error-boundary)向けのフォールバックを生成する。
@@ -11,13 +11,12 @@ import { UiError } from './ui-error'
  * 定数化すること(`const X = createErrorFallback('...')`)。描画ごとに呼ぶと
  * コンポーネントの識別子が変わり、エラー状態のたびに再マウントされる。
  */
-export function createErrorFallback(fallbackMessage: string) {
-  return function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export const createErrorFallback = (fallbackMessage: string) =>
+  function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
       <UiError
         message={getErrorMessage(error) ?? fallbackMessage}
         onRetry={resetErrorBoundary}
       />
-    )
-  }
-}
+    );
+  };

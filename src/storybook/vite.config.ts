@@ -1,9 +1,8 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import path from "node:path";
 
-import { defineConfig } from 'vite'
+import { defineConfig } from "vite";
 
-const dirname = path.dirname(fileURLToPath(import.meta.url))
+const { dirname } = import.meta;
 
 /**
  * Minimal Vite config for Storybook.
@@ -12,7 +11,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   resolve: {
     alias: {
-      'styled-system': path.resolve(dirname, '../../styled-system')
-    }
-  }
-})
+      "styled-system": path.resolve(dirname, "../../styled-system"),
+    },
+  },
+});

@@ -7,7 +7,7 @@
       "name": "QwenCloud",
       "options": {
         "baseURL": "https://token-plan.ap-southeast-1.maas.aliyuncs.com/apps/anthropic/v1",
-        "apiKey": "{env:QWEN_API_KEY}"
+        "apiKey": "{env:QWEN_API_KEY}",
       },
       "models": {
         "qwen3.8-max": {
@@ -17,13 +17,13 @@
           "options": {
             "thinking": {
               "type": "enabled",
-              "budgetTokens": 262144
+              "budgetTokens": 262144,
             },
-            "reasoning": true
-          }
-        }
-      }
-    }
+            "reasoning": true,
+          },
+        },
+      },
+    },
   },
   "instructions": [".agents/rules/*.md"],
   "agent": {
@@ -33,83 +33,87 @@
       "tools": {
         "write": true,
         "edit": true,
-        "bash": true
-      }
-    }
+        "bash": true,
+      },
+    },
   },
   "mcp": {
     "better-auth": {
       "type": "remote",
       "url": "https://mcp.better-auth.com/mcp",
-      "enabled": true
+      "enabled": true,
     },
-    "cloudflare": { "type": "remote", "url": "https://mcp.cloudflare.com/mcp", "enabled": true },
+    "cloudflare": {
+      "type": "remote",
+      "url": "https://mcp.cloudflare.com/mcp",
+      "enabled": true,
+    },
     "cloudflare-docs": {
       "type": "remote",
       "url": "https://docs.mcp.cloudflare.com/mcp",
-      "enabled": true
+      "enabled": true,
     },
     "cloudflare-bindings": {
       "type": "remote",
       "url": "https://bindings.mcp.cloudflare.com/mcp",
-      "enabled": true
+      "enabled": true,
     },
     "cloudflare-builds": {
       "type": "remote",
       "url": "https://builds.mcp.cloudflare.com/mcp",
-      "enabled": true
+      "enabled": true,
     },
     "cloudflare-observability": {
       "type": "remote",
       "url": "https://observability.mcp.cloudflare.com/mcp",
-      "enabled": true
+      "enabled": true,
     },
     "formisch": {
       "type": "remote",
       "url": "https://formisch.dev/mcp",
-      "enabled": true
+      "enabled": true,
     },
     "playwright": {
       "type": "local",
       "command": ["npx", "-y", "@playwright/mcp@latest"],
-      "enabled": true
+      "enabled": true,
     },
     "panda-css": {
       "type": "local",
       "command": ["pnpm", "panda", "mcp"],
-      "enabled": true
-    }
+      "enabled": true,
+    },
   },
   "references": {
     "formisch": {
       "repository": "open-circle/formisch",
-      "branch": "main"
+      "branch": "main",
     },
     "tanstack-query": {
       "repository": "TanStack/query",
-      "branch": "main"
+      "branch": "main",
     },
     "tanstack-router": {
       "repository": "TanStack/router",
-      "branch": "main"
+      "branch": "main",
     },
     "base-ui": {
       "repository": "mui/base-ui",
       "branch": "main",
-      "description": "From the creators of Radix, Floating UI, and Material UI, Base UI is an unstyled UI component library for building accessible user interfaces."
+      "description": "From the creators of Radix, Floating UI, and Material UI, Base UI is an unstyled UI component library for building accessible user interfaces.",
     },
     "react": {
       "repository": "react/react",
       "branch": "main",
-      "description": "A JavaScript library for building user interfaces."
-    }
+      "description": "A JavaScript library for building user interfaces.",
+    },
   },
   "permission": {
     "read": {
       "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
-      ".envrc": "deny"
-    }
-  }
+      ".envrc": "deny",
+    },
+  },
 }

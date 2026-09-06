@@ -1,15 +1,15 @@
-import { fn } from 'storybook/test'
+import { fn } from "storybook/test";
 
 export const authClient = {
-  signIn: {
-    email: fn(),
-    passkey: fn()
-  },
-  signOut: fn(),
   passkey: {
     addPasskey: fn(),
+    deletePasskey: fn(),
     listUserPasskeys: fn(),
     updatePasskey: fn(),
-    deletePasskey: fn()
-  }
-}
+  },
+  signIn: {
+    email: fn(),
+    passkey: fn(),
+  },
+  signOut: fn(),
+};

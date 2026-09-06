@@ -1,31 +1,31 @@
-import { describe, expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from "vitest";
 
-import { orpc } from '../../../rpc/query'
+import { orpc } from "../../../rpc/query";
 import {
   bookmarkListSearchIdentity,
   consumeBookmarkListScroll,
-  rememberBookmarkListScroll
-} from './bookmark-list-scroll-session'
-import { resetBookmarkListCache } from './reset-bookmark-list-cache'
+  rememberBookmarkListScroll,
+} from "./bookmark-list-scroll-session";
+import { resetBookmarkListCache } from "./reset-bookmark-list-cache";
 
-describe('resetBookmarkListCache', () => {
-  test('infinite list query を remove し、保存したスクロール位置を捨てる', () => {
-    const removeQueries = vi.fn()
+describe(resetBookmarkListCache, () => {
+  test("infinite list query を remove し、保存したスクロール位置を捨てる", () => {
+    const removeQueries = vi.fn();
     rememberBookmarkListScroll(
-      bookmarkListSearchIdentity({ q: 'q', tagMode: 'and', sort: 'newest' }),
+      bookmarkListSearchIdentity({ q: "q", sort: "newest", tagMode: "and" }),
       480
-    )
-    const queryClient = { removeQueries } as never
+    );
+    const queryClient = { removeQueries } as never;
 
-    resetBookmarkListCache(queryClient)
+    resetBookmarkListCache(queryClient);
 
     expect(removeQueries).toHaveBeenCalledWith({
-      queryKey: orpc.bookmarks.list.key({ type: 'infinite' })
-    })
+      queryKey: orpc.bookmarks.list.key({ type: "infinite" }),
+    });
     expect(
       consumeBookmarkListScroll(
-        bookmarkListSearchIdentity({ q: 'q', tagMode: 'and', sort: 'newest' })
+        bookmarkListSearchIdentity({ q: "q", sort: "newest", tagMode: "and" })
       )
-    ).toBeNull()
-  })
-})
+    ).toBeNull();
+  });
+});

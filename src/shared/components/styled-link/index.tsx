@@ -15,10 +15,11 @@
  * Last synced props: to, search, params, visual, size, className, css, plus every Panda style prop
  */
 
-import { createLink, LinkComponent } from '@tanstack/react-router'
-import { cva } from 'styled-system/css'
-import { styled } from 'styled-system/jsx'
-import type { HTMLStyledProps } from 'styled-system/types'
+import type { LinkComponent } from "@tanstack/react-router";
+import { createLink } from "@tanstack/react-router";
+import { cva } from "styled-system/css";
+import { styled } from "styled-system/jsx";
+import type { HTMLStyledProps } from "styled-system/types";
 
 /**
  * Base, visual, and size styles for the link surface.
@@ -33,93 +34,93 @@ import type { HTMLStyledProps } from 'styled-system/types'
  */
 const linkStyles = cva({
   base: {
-    position: 'relative',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-    textDecoration: 'none',
-    fontFamily: '[inherit]',
-    fontSize: '[inherit]',
-    lineHeight: '[inherit]',
-    fontWeight: '[inherit]',
-    columnGap: '[0.25em]',
-    paddingInline: '[0.75em]',
-    borderRadius: 'box',
-    cursor: 'pointer',
-    transitionProperty: '[color, text-decoration]',
-    transitionDuration: 'hover',
-    transitionTimingFunction: 'press',
-    touchAction: 'manipulation',
-    '@media (any-hover: hover)': {
-      '&:hover': {
-        textDecoration: 'underline',
-        textUnderlineOffset: '3px'
-      }
+    "&:focus-visible": {
+      textDecoration: "underline",
+      textUnderlineOffset: "3px",
     },
-    '&:focus-visible': {
-      textDecoration: 'underline',
-      textUnderlineOffset: '3px'
-    }
-  },
-  variants: {
-    visual: {
-      plain: {
-        color: 'fg.default'
+    "@media (any-hover: hover)": {
+      "&:hover": {
+        textDecoration: "underline",
+        textUnderlineOffset: "3px",
       },
-      accent: {
-        color: 'accent.solid',
-        fontWeight: 'semibold'
-      },
-      muted: {
-        color: 'fg.muted',
-        fontSize: 'xs'
-      },
-      brand: {
-        color: 'fg.default',
-        fontWeight: 'bold',
-        letterSpacing: 'wide'
-      }
     },
-    size: {
-      xs: {
-        minBlockSize: '[1.75rem]',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          insetBlock: '[-0.5rem]',
-          insetInline: '[-0.5rem]'
-        }
-      },
-      sm: {
-        minBlockSize: '[2.25rem]',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          insetBlock: '[-0.25rem]',
-          insetInline: '[-0.25rem]'
-        }
-      },
-      md: {
-        minBlockSize: '[3.0rem]'
-      },
-      lg: {
-        minBlockSize: '[3.5rem]'
-      }
-    }
+    alignItems: "center",
+    backgroundColor: "transparent",
+    borderRadius: "box",
+    columnGap: "[0.25em]",
+    cursor: "pointer",
+    display: "inline-flex",
+    fontFamily: "[inherit]",
+    fontSize: "[inherit]",
+    fontWeight: "[inherit]",
+    justifyContent: "center",
+    lineHeight: "[inherit]",
+    paddingInline: "[0.75em]",
+    position: "relative",
+    textDecoration: "none",
+    touchAction: "manipulation",
+    transitionDuration: "hover",
+    transitionProperty: "[color, text-decoration]",
+    transitionTimingFunction: "press",
   },
   defaultVariants: {
-    visual: 'plain',
-    size: 'md'
-  }
-})
+    size: "md",
+    visual: "plain",
+  },
+  variants: {
+    size: {
+      lg: {
+        minBlockSize: "[3.5rem]",
+      },
+      md: {
+        minBlockSize: "[3.0rem]",
+      },
+      sm: {
+        "&::after": {
+          content: '""',
+          insetBlock: "[-0.25rem]",
+          insetInline: "[-0.25rem]",
+          position: "absolute",
+        },
+        minBlockSize: "[2.25rem]",
+      },
+      xs: {
+        "&::after": {
+          content: '""',
+          insetBlock: "[-0.5rem]",
+          insetInline: "[-0.5rem]",
+          position: "absolute",
+        },
+        minBlockSize: "[1.75rem]",
+      },
+    },
+    visual: {
+      accent: {
+        color: "accent.solid",
+        fontWeight: "semibold",
+      },
+      brand: {
+        color: "fg.default",
+        fontWeight: "bold",
+        letterSpacing: "wide",
+      },
+      muted: {
+        color: "fg.muted",
+        fontSize: "xs",
+      },
+      plain: {
+        color: "fg.default",
+      },
+    },
+  },
+});
 
 /**
  * Intentionally not exported. This is a bare styled anchor with no routing
  * props, so exposing it invites `<RawAnchorComponent to="/settings">`, which
  * type-errors on `to`. Consumers get `StyledLink` instead.
  */
-const RawAnchorComponent = styled('a', linkStyles)
+const RawAnchorComponent = styled("a", linkStyles);
 
 /**
  * NOT `StyledVariantProps`: that helper resolves to the recipe's variant record
@@ -133,7 +134,7 @@ const RawAnchorComponent = styled('a', linkStyles)
  * `HTMLStyledProps` keeps the anchor attributes and the style props while still
  * carrying the recipe variants, so it is the correct input here.
  */
-type BasicLinkComponentProps = HTMLStyledProps<typeof RawAnchorComponent>
+type BasicLinkComponentProps = HTMLStyledProps<typeof RawAnchorComponent>;
 
 /**
  * Deliberately a plain pass-through.
@@ -151,9 +152,9 @@ type BasicLinkComponentProps = HTMLStyledProps<typeof RawAnchorComponent>
  * passes its own `innerRef` down through props, so the ref still reaches the
  * DOM node through this spread. `preload="viewport"` depends on that.
  */
-function BasicLinkComponent(props: BasicLinkComponentProps) {
-  return <RawAnchorComponent {...props} />
-}
+const BasicLinkComponent = (props: BasicLinkComponentProps) => (
+  <RawAnchorComponent {...props} />
+);
 
 /**
  * `createLink` supplies the runtime navigation behaviour; the explicit
@@ -162,7 +163,7 @@ function BasicLinkComponent(props: BasicLinkComponentProps) {
  * required — this intermediate value is not usable on its own.
  * https://tanstack.com/router/latest/docs/guide/custom-link#link
  */
-const CreatedLinkComponent = createLink(BasicLinkComponent)
+const CreatedLinkComponent = createLink(BasicLinkComponent);
 
 /**
  * A route-aware anchor carrying the shared link styling.
@@ -183,4 +184,4 @@ const CreatedLinkComponent = createLink(BasicLinkComponent)
  */
 export const StyledLink: LinkComponent<typeof BasicLinkComponent> = (props) => (
   <CreatedLinkComponent {...props} />
-)
+);

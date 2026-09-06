@@ -1,27 +1,27 @@
-import { createClient } from '@libsql/client'
-import { sql } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import { createClient } from "@libsql/client";
+import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import type { AppDb } from '../../../db/app-db'
-import { user } from '../../../db/schema/auth-schema'
-import { bookmarkTable } from '../../../db/schema/bookmark'
-import { bookmarkTagsTable } from '../../../db/schema/bookmark-tag'
-import { tagsTable } from '../../../db/schema/tag'
-import { userIdSchema } from '../../auth/domain/auth-values'
-import { decodeBookmarkListCursor } from '../lib/bookmark-list-cursor'
-import { BOOKMARK_LIST_PAGE_SIZE } from '../lib/bookmark-list-page-size'
-import type { BookmarkListQuery } from './list-bookmarks'
-import { listBookmarks } from './list-bookmarks'
+import type { AppDb } from "../../../db/app-db";
+import { user } from "../../../db/schema/auth-schema";
+import { bookmarkTable } from "../../../db/schema/bookmark";
+import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
+import { tagsTable } from "../../../db/schema/tag";
+import { userIdSchema } from "../../auth/domain/auth-values";
+import { decodeBookmarkListCursor } from "../lib/bookmark-list-cursor";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/bookmark-list-page-size";
+import type { BookmarkListQuery } from "./list-bookmarks";
+import { listBookmarks } from "./list-bookmarks";
 
 /**
  * Libsql の `:memory:` は workerd で動かないので、このファイルは Node project で走らせる。
  * 本番と同じ UNIQUE 制約と FK を置き、一覧 projection を本物の SQLite で検証する。
  */
 async function createMemoryDb(): Promise<AppDb> {
-  const client = createClient({ url: ':memory:' })
-  const db = drizzle({ client })
+  const client = createClient({ url: ":memory:" });
+  const db = drizzle({ client });
 
   await db.run(sql`
     CREATE TABLE users (
@@ -37,7 +37,7 @@ async function createMemoryDb(): Promise<AppDb> {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE tags (
@@ -54,7 +54,7 @@ async function createMemoryDb(): Promise<AppDb> {
       version INTEGER NOT NULL DEFAULT 1,
       UNIQUE (user_id, normalized_name)
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmarks (
@@ -68,7 +68,7 @@ async function createMemoryDb(): Promise<AppDb> {
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmark_tags (
@@ -76,56 +76,56 @@ async function createMemoryDb(): Promise<AppDb> {
       tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
       UNIQUE (bookmark_id, tag_id)
     )
-  `)
+  `);
 
-  return db
+  return db;
 }
 
 async function insertUser(db: AppDb, id: string) {
-  await db.insert(user).values({ id, name: id, email: `${id}@example.com` })
+  await db.insert(user).values({ email: `${id}@example.com`, id, name: id });
 }
 
-let nextTagId = 1
+let nextTagId = 1;
 
 async function insertTag(db: AppDb, input: { userId: string; name: string }) {
-  const tagId = nextTagId
-  nextTagId += 1
+  const tagId = nextTagId;
+  nextTagId += 1;
   await db.insert(tagsTable).values({
     id: tagId,
-    userId: input.userId,
     name: input.name,
-    normalizedName: input.name.toLowerCase()
-  })
-  return tagId
+    normalizedName: input.name.toLowerCase(),
+    userId: input.userId,
+  });
+  return tagId;
 }
 
 async function insertBookmark(
   db: AppDb,
   input: {
-    id: string
-    userId: string
-    title: string
-    url?: string
-    note?: string | null
-    createdAt?: Date
-    updatedAt?: Date
-    deletedAt?: Date | null
+    id: string;
+    userId: string;
+    title: string;
+    url?: string;
+    note?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+    deletedAt?: Date | null;
   }
 ) {
   await db.insert(bookmarkTable).values({
+    createdAt: input.createdAt ?? new Date("2026-08-01T00:00:00.000Z"),
+    deletedAt: input.deletedAt ?? null,
     id: input.id,
-    userId: input.userId,
-    url: input.url ?? `https://example.com/${input.id}`,
-    title: input.title,
     note: input.note ?? null,
-    createdAt: input.createdAt ?? new Date('2026-08-01T00:00:00.000Z'),
-    updatedAt: input.updatedAt ?? new Date('2026-08-01T00:00:00.000Z'),
-    deletedAt: input.deletedAt ?? null
-  })
+    title: input.title,
+    updatedAt: input.updatedAt ?? new Date("2026-08-01T00:00:00.000Z"),
+    url: input.url ?? `https://example.com/${input.id}`,
+    userId: input.userId,
+  });
 }
 
 async function attachTag(db: AppDb, id: string, tagId: number) {
-  await db.insert(bookmarkTagsTable).values({ bookmarkId: id, tagId })
+  await db.insert(bookmarkTagsTable).values({ bookmarkId: id, tagId });
 }
 
 function query(
@@ -133,332 +133,423 @@ function query(
   overrides: Partial<BookmarkListQuery> = {}
 ): Parameters<typeof listBookmarks>[1] {
   return {
+    sort: "newest",
+    tagMode: "and",
     userId: v.parse(userIdSchema, userId),
-    tagMode: 'and',
-    sort: 'newest',
-    ...overrides
-  }
+    ...overrides,
+  };
 }
 
-const base = new Date('2026-08-01T00:00:00.000Z')
-const newer = new Date('2026-08-10T00:00:00.000Z')
+const base = new Date("2026-08-01T00:00:00.000Z");
+const newer = new Date("2026-08-10T00:00:00.000Z");
 
-describe('listBookmarks', () => {
-  test('自分の未削除ブックマークを新着順とタグ付きで返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const readingId = await insertTag(db, { userId: 'user-a', name: 'reading' })
-    await insertBookmark(db, { id: 'b-old', userId: 'user-a', title: '古い', createdAt: base })
-    await insertBookmark(db, { id: 'b-new', userId: 'user-a', title: '新しい', createdAt: newer })
-    await attachTag(db, 'b-new', readingId)
+describe(listBookmarks, () => {
+  test("自分の未削除ブックマークを新着順とタグ付きで返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const readingId = await insertTag(db, {
+      name: "reading",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      createdAt: base,
+      id: "b-old",
+      title: "古い",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      createdAt: newer,
+      id: "b-new",
+      title: "新しい",
+      userId: "user-a",
+    });
+    await attachTag(db, "b-new", readingId);
 
-    const page = await listBookmarks(db, query('user-a'))
+    const page = await listBookmarks(db, query("user-a"));
 
-    expect(page.items.map((item) => item.id)).toEqual(['b-new', 'b-old'])
-    expect(page.nextCursor).toBeNull()
-    expect(page.items[0]).toEqual({
-      id: 'b-new',
-      url: 'https://example.com/b-new',
-      title: '新しい',
+    expect(page.items.map((item) => item.id)).toStrictEqual(["b-new", "b-old"]);
+    expect(page.nextCursor).toBeNull();
+    expect(page.items[0]).toStrictEqual({
+      id: "b-new",
       note: null,
-      updatedAt: new Date('2026-08-01T00:00:00.000Z').toISOString(),
-      tags: [{ id: readingId, name: 'reading' }]
-    })
-    expect(page.items[1]?.tags).toEqual([])
-  })
+      tags: [{ id: readingId, name: "reading" }],
+      title: "新しい",
+      updatedAt: new Date("2026-08-01T00:00:00.000Z").toISOString(),
+      url: "https://example.com/b-new",
+    });
+    expect(page.items[1]?.tags).toStrictEqual([]);
+  });
 
-  test('削除済みと他人のブックマークは返さない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertUser(db, 'user-b')
+  test("削除済みと他人のブックマークは返さない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertUser(db, "user-b");
     await insertBookmark(db, {
-      id: 'b-deleted',
-      userId: 'user-a',
-      title: '消済み',
-      deletedAt: base
-    })
-    await insertBookmark(db, { id: 'b-other', userId: 'user-b', title: '他人' })
-
-    const page = await listBookmarks(db, query('user-a'))
-
-    expect(page.items.map((item) => item.id)).toEqual([])
-    expect(page.nextCursor).toBeNull()
-  })
-
-  test('q はタイトル、URL、メモの部分一致で絞る', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertBookmark(db, { id: 'b-title', userId: 'user-a', title: 'React 19 の use()' })
-    await insertBookmark(db, { id: 'b-url', userId: 'user-a', title: '無関係' })
+      deletedAt: base,
+      id: "b-deleted",
+      title: "消済み",
+      userId: "user-a",
+    });
     await insertBookmark(db, {
-      id: 'b-note',
-      userId: 'user-a',
-      title: '無関係2',
-      note: 'zenn の記事'
-    })
+      id: "b-other",
+      title: "他人",
+      userId: "user-b",
+    });
 
-    const byTitle = await listBookmarks(db, query('user-a', { q: 'React' }))
-    const byUrl = await listBookmarks(db, query('user-a', { q: 'example.com/b-url' }))
-    const byNote = await listBookmarks(db, query('user-a', { q: 'zenn' }))
-    const none = await listBookmarks(db, query('user-a', { q: '存在しない' }))
+    const page = await listBookmarks(db, query("user-a"));
 
-    expect(byTitle.items.map((item) => item.id)).toEqual(['b-title'])
-    expect(byUrl.items.map((item) => item.id)).toEqual(['b-url'])
-    expect(byNote.items.map((item) => item.id)).toEqual(['b-note'])
-    expect(none.items).toEqual([])
-  })
+    expect(page.items.map((item) => item.id)).toStrictEqual([]);
+    expect(page.nextCursor).toBeNull();
+  });
 
-  test(String.raw`q の % _ \ はワイルドカードではなくリテラルとして一致させる`, async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertBookmark(db, { id: 'b-literal', userId: 'user-a', title: '50%_off' })
-    await insertBookmark(db, { id: 'b-wildcard', userId: 'user-a', title: '50Xoff' })
+  test("q はタイトル、URL、メモの部分一致で絞る", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertBookmark(db, {
+      id: "b-title",
+      title: "React 19 の use()",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      id: "b-url",
+      title: "無関係",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      id: "b-note",
+      note: "zenn の記事",
+      title: "無関係2",
+      userId: "user-a",
+    });
 
-    const items = await listBookmarks(db, query('user-a', { q: '50%_' }))
+    const byTitle = await listBookmarks(db, query("user-a", { q: "React" }));
+    const byUrl = await listBookmarks(
+      db,
+      query("user-a", { q: "example.com/b-url" })
+    );
+    const byNote = await listBookmarks(db, query("user-a", { q: "zenn" }));
+    const none = await listBookmarks(db, query("user-a", { q: "存在しない" }));
 
-    expect(items.items.map((item) => item.id)).toEqual(['b-literal'])
-  })
+    expect(byTitle.items.map((item) => item.id)).toStrictEqual(["b-title"]);
+    expect(byUrl.items.map((item) => item.id)).toStrictEqual(["b-url"]);
+    expect(byNote.items.map((item) => item.id)).toStrictEqual(["b-note"]);
+    expect(none.items).toStrictEqual([]);
+  });
 
-  test('タグ AND は全て持つブックマークだけ、OR はどれかを含む', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const readingId = await insertTag(db, { userId: 'user-a', name: 'reading' })
-    const workId = await insertTag(db, { userId: 'user-a', name: 'work' })
-    await insertBookmark(db, { id: 'b-both', userId: 'user-a', title: '両方' })
-    await insertBookmark(db, { id: 'b-reading', userId: 'user-a', title: 'readingのみ' })
-    await attachTag(db, 'b-both', readingId)
-    await attachTag(db, 'b-both', workId)
-    await attachTag(db, 'b-reading', readingId)
+  test(
+    String.raw`q の % _ \ はワイルドカードではなくリテラルとして一致させる`,
+    async () => {
+      const db = await createMemoryDb();
+      await insertUser(db, "user-a");
+      await insertBookmark(db, {
+        id: "b-literal",
+        title: "50%_off",
+        userId: "user-a",
+      });
+      await insertBookmark(db, {
+        id: "b-wildcard",
+        title: "50Xoff",
+        userId: "user-a",
+      });
+
+      const items = await listBookmarks(db, query("user-a", { q: "50%_" }));
+
+      expect(items.items.map((item) => item.id)).toStrictEqual(["b-literal"]);
+    }
+  );
+
+  test("タグ AND は全て持つブックマークだけ、OR はどれかを含む", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const readingId = await insertTag(db, {
+      name: "reading",
+      userId: "user-a",
+    });
+    const workId = await insertTag(db, { name: "work", userId: "user-a" });
+    await insertBookmark(db, { id: "b-both", title: "両方", userId: "user-a" });
+    await insertBookmark(db, {
+      id: "b-reading",
+      title: "readingのみ",
+      userId: "user-a",
+    });
+    await attachTag(db, "b-both", readingId);
+    await attachTag(db, "b-both", workId);
+    await attachTag(db, "b-reading", readingId);
 
     const andResult = await listBookmarks(
       db,
-      query('user-a', { tagNames: ['reading', 'work'], tagMode: 'and' })
-    )
+      query("user-a", { tagMode: "and", tagNames: ["reading", "work"] })
+    );
     const orResult = await listBookmarks(
       db,
-      query('user-a', { tagNames: ['reading', 'work'], tagMode: 'or' })
-    )
+      query("user-a", { tagMode: "or", tagNames: ["reading", "work"] })
+    );
 
-    expect(andResult.items.map((item) => item.id)).toEqual(['b-both'])
-    expect(orResult.items.map((item) => item.id)).toEqual(['b-reading', 'b-both'])
-  })
+    expect(andResult.items.map((item) => item.id)).toStrictEqual(["b-both"]);
+    expect(orResult.items.map((item) => item.id)).toStrictEqual([
+      "b-reading",
+      "b-both",
+    ]);
+  });
 
-  test('tagNames は正規化して照合し、q は trim する', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const readingId = await insertTag(db, { userId: 'user-a', name: 'reading' })
-    await insertBookmark(db, { id: 'b-1', userId: 'user-a', title: '前パディング後' })
-    await attachTag(db, 'b-1', readingId)
+  test("tagNames は正規化して照合し、q は trim する", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const readingId = await insertTag(db, {
+      name: "reading",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      id: "b-1",
+      title: "前パディング後",
+      userId: "user-a",
+    });
+    await attachTag(db, "b-1", readingId);
 
     const items = await listBookmarks(
       db,
-      query('user-a', { q: '  パディング  ', tagNames: ['Reading', 'reading'] })
-    )
+      query("user-a", { q: "  パディング  ", tagNames: ["Reading", "reading"] })
+    );
 
-    expect(items.items.map((item) => item.id)).toEqual(['b-1'])
-  })
+    expect(items.items.map((item) => item.id)).toStrictEqual(["b-1"]);
+  });
 
-  test('sort updated は updatedAt の降順で返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
+  test("sort updated は updatedAt の降順で返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
     await insertBookmark(db, {
-      id: 'b-old',
-      userId: 'user-a',
-      title: '古い更新',
       createdAt: newer,
-      updatedAt: base
-    })
+      id: "b-old",
+      title: "古い更新",
+      updatedAt: base,
+      userId: "user-a",
+    });
     await insertBookmark(db, {
-      id: 'b-new',
-      userId: 'user-a',
-      title: '新しい更新',
       createdAt: base,
-      updatedAt: newer
-    })
+      id: "b-new",
+      title: "新しい更新",
+      updatedAt: newer,
+      userId: "user-a",
+    });
 
-    const items = await listBookmarks(db, query('user-a', { sort: 'updated' }))
+    const items = await listBookmarks(db, query("user-a", { sort: "updated" }));
 
-    expect(items.items.map((item) => item.id)).toEqual(['b-new', 'b-old'])
-  })
+    expect(items.items.map((item) => item.id)).toStrictEqual([
+      "b-new",
+      "b-old",
+    ]);
+  });
 
-  test('21件以上あるとき初回は先頭20件と nextCursor を返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE + 1)
+  test("21件以上あるとき初回は先頭20件と nextCursor を返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 1);
 
-    const page = await listBookmarks(db, query('user-a'))
+    const page = await listBookmarks(db, query("user-a"));
 
-    expect(page.items.map((item) => item.id)).toEqual(
+    expect(page.items.map((item) => item.id)).toStrictEqual(
       idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 1)
         .toReversed()
         .slice(0, BOOKMARK_LIST_PAGE_SIZE)
-    )
-    expect(page.nextCursor).not.toBeNull()
-  })
+    );
+    expect(page.nextCursor).not.toBeNull();
+  });
 
-  test('続きは cursor で取り、offset なしで欠落・重複しない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE + 5)
+  test("続きは cursor で取り、offset なしで欠落・重複しない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 5);
 
-    const first = await listBookmarks(db, query('user-a'))
-    const second = await listBookmarks(
-      db,
-      query('user-a', first.nextCursor === null ? {} : { cursor: first.nextCursor })
-    )
-
-    const allIds = [...first.items, ...second.items].map((item) => item.id)
-    expect(allIds).toEqual(idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 5).toReversed())
-    expect(new Set(allIds).size).toBe(allIds.length)
-    expect(second.items).toHaveLength(5)
-    expect(second.nextCursor).toBeNull()
-  })
-
-  test('ちょうど20件のときは nextCursor がなく空の追加取得を要求しない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE)
-
-    const page = await listBookmarks(db, query('user-a'))
-
-    expect(page.items).toHaveLength(BOOKMARK_LIST_PAGE_SIZE)
-    expect(page.nextCursor).toBeNull()
-  })
-
-  test('同一 createdAt でも id の補助並びでページ境界の欠落・重複がない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 3)
-    for (const id of ids) {
-      await insertBookmark(db, {
-        id,
-        userId: 'user-a',
-        title: id,
-        createdAt: base,
-        updatedAt: base
-      })
-    }
-
-    const first = await listBookmarks(db, query('user-a'))
-    const second = await listBookmarks(
-      db,
-      query('user-a', first.nextCursor === null ? {} : { cursor: first.nextCursor })
-    )
-    const allIds = [...first.items, ...second.items].map((item) => item.id)
-
-    expect(allIds).toEqual([...ids].toReversed())
-    expect(new Set(allIds).size).toBe(ids.length)
-  })
-
-  test('同一 updatedAt でも updated 順のページ境界で欠落・重複がない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 2)
-    for (const [index, id] of ids.entries()) {
-      await insertBookmark(db, {
-        id,
-        userId: 'user-a',
-        title: id,
-        createdAt: new Date(base.getTime() + index),
-        updatedAt: base
-      })
-    }
-
-    const first = await listBookmarks(db, query('user-a', { sort: 'updated' }))
+    const first = await listBookmarks(db, query("user-a"));
     const second = await listBookmarks(
       db,
       query(
-        'user-a',
-        first.nextCursor === null
-          ? { sort: 'updated' }
-          : { sort: 'updated', cursor: first.nextCursor }
+        "user-a",
+        first.nextCursor === null ? {} : { cursor: first.nextCursor }
       )
-    )
-    const allIds = [...first.items, ...second.items].map((item) => item.id)
+    );
 
-    expect(allIds).toEqual([...ids].toReversed())
-    expect(new Set(allIds).size).toBe(ids.length)
-  })
+    const allIds = [...first.items, ...second.items].map((item) => item.id);
+    expect(allIds).toStrictEqual(
+      idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 5).toReversed()
+    );
+    expect(new Set(allIds).size).toBe(allIds.length);
+    expect(second.items).toHaveLength(5);
+    expect(second.nextCursor).toBeNull();
+  });
 
-  test('cursor があっても現在の検索・タグ条件と所有者境界を迂回しない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertUser(db, 'user-b')
-    const readingId = await insertTag(db, { userId: 'user-a', name: 'reading' })
-    await insertBookmark(db, { id: 'a-old', userId: 'user-a', title: '古い', createdAt: base })
+  test("ちょうど20件のときは nextCursor がなく空の追加取得を要求しない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE);
+
+    const page = await listBookmarks(db, query("user-a"));
+
+    expect(page.items).toHaveLength(BOOKMARK_LIST_PAGE_SIZE);
+    expect(page.nextCursor).toBeNull();
+  });
+
+  test("同一 createdAt でも id の補助並びでページ境界の欠落・重複がない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 3);
+    for (const id of ids) {
+      await insertBookmark(db, {
+        createdAt: base,
+        id,
+        title: id,
+        updatedAt: base,
+        userId: "user-a",
+      });
+    }
+
+    const first = await listBookmarks(db, query("user-a"));
+    const second = await listBookmarks(
+      db,
+      query(
+        "user-a",
+        first.nextCursor === null ? {} : { cursor: first.nextCursor }
+      )
+    );
+    const allIds = [...first.items, ...second.items].map((item) => item.id);
+
+    expect(allIds).toStrictEqual([...ids].toReversed());
+    expect(new Set(allIds).size).toBe(ids.length);
+  });
+
+  test("同一 updatedAt でも updated 順のページ境界で欠落・重複がない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 2);
+    for (const [index, id] of ids.entries()) {
+      await insertBookmark(db, {
+        createdAt: new Date(base.getTime() + index),
+        id,
+        title: id,
+        updatedAt: base,
+        userId: "user-a",
+      });
+    }
+
+    const first = await listBookmarks(db, query("user-a", { sort: "updated" }));
+    const second = await listBookmarks(
+      db,
+      query(
+        "user-a",
+        first.nextCursor === null
+          ? { sort: "updated" }
+          : { cursor: first.nextCursor, sort: "updated" }
+      )
+    );
+    const allIds = [...first.items, ...second.items].map((item) => item.id);
+
+    expect(allIds).toStrictEqual([...ids].toReversed());
+    expect(new Set(allIds).size).toBe(ids.length);
+  });
+
+  test("cursor があっても現在の検索・タグ条件と所有者境界を迂回しない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertUser(db, "user-b");
+    const readingId = await insertTag(db, {
+      name: "reading",
+      userId: "user-a",
+    });
     await insertBookmark(db, {
-      id: 'a-tagged',
-      userId: 'user-a',
-      title: 'tagged',
-      createdAt: newer
-    })
-    await insertBookmark(db, { id: 'b-other', userId: 'user-b', title: '他人', createdAt: newer })
-    await attachTag(db, 'a-tagged', readingId)
+      createdAt: base,
+      id: "a-old",
+      title: "古い",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      createdAt: newer,
+      id: "a-tagged",
+      title: "tagged",
+      userId: "user-a",
+    });
+    await insertBookmark(db, {
+      createdAt: newer,
+      id: "b-other",
+      title: "他人",
+      userId: "user-b",
+    });
+    await attachTag(db, "a-tagged", readingId);
 
     const first = await listBookmarks(
       db,
-      query('user-a', { tagNames: ['reading'], tagMode: 'and' })
-    )
+      query("user-a", { tagMode: "and", tagNames: ["reading"] })
+    );
     const leaked = await listBookmarks(
       db,
-      query('user-a', {
-        tagNames: ['reading'],
-        tagMode: 'and',
-        cursor: first.nextCursor ?? encodeFromItem('a-old', base)
+      query("user-a", {
+        cursor: first.nextCursor ?? encodeFromItem("a-old", base),
+        tagMode: "and",
+        tagNames: ["reading"],
       })
-    )
+    );
 
-    expect(first.items.map((item) => item.id)).toEqual(['a-tagged'])
-    expect(leaked.items.map((item) => item.id)).not.toContain('a-old')
-    expect(leaked.items.map((item) => item.id)).not.toContain('b-other')
-  })
+    expect(first.items.map((item) => item.id)).toStrictEqual(["a-tagged"]);
+    expect(leaked.items.map((item) => item.id)).not.toContain("a-old");
+    expect(leaked.items.map((item) => item.id)).not.toContain("b-other");
+  });
 
-  test('nextCursor は選択中の並びの末尾位置を表す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertSequentialBookmarks(db, 'user-a', BOOKMARK_LIST_PAGE_SIZE + 1)
+  test("nextCursor は選択中の並びの末尾位置を表す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 1);
 
-    const page = await listBookmarks(db, query('user-a'))
-    const last = page.items.at(-1)
-    const decoded = decodeBookmarkListCursor(page.nextCursor ?? '')
+    const page = await listBookmarks(db, query("user-a"));
+    const last = page.items.at(-1);
+    const decoded = decodeBookmarkListCursor(page.nextCursor ?? "");
 
-    expect(last).toBeDefined()
-    expect(decoded?.id).toBe(last?.id)
-  })
+    expect(last).toBeDefined();
+    expect(decoded?.id).toBe(last?.id);
+  });
 
-  test('projection に不要な列（userId, createdAt, deletedAt）を載せない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertBookmark(db, { id: 'b-1', userId: 'user-a', title: '最小' })
+  test("projection に不要な列（userId, createdAt, deletedAt）を載せない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertBookmark(db, { id: "b-1", title: "最小", userId: "user-a" });
 
-    const page = await listBookmarks(db, query('user-a'))
-    const [item] = page.items
+    const page = await listBookmarks(db, query("user-a"));
+    const [item] = page.items;
 
-    expect(Object.keys(item ?? {})).toEqual(['id', 'url', 'title', 'note', 'updatedAt', 'tags'])
-  })
-})
+    expect(Object.keys(item ?? {})).toStrictEqual([
+      "id",
+      "note",
+      "title",
+      "updatedAt",
+      "url",
+      "tags",
+    ]);
+  });
+});
 
 function idsFrom(start: number, count: number): string[] {
-  return Array.from({ length: count }, (_, index) => bookmarkId(start + index))
+  return Array.from({ length: count }, (_, index) => bookmarkId(start + index));
 }
 
 function bookmarkId(index: number): string {
-  return `019fae92-3bb0-78cd-b488-${index.toString(16).padStart(12, '0')}`
+  return `019fae92-3bb0-78cd-b488-${index.toString(16).padStart(12, "0")}`;
 }
 
-async function insertSequentialBookmarks(db: AppDb, userId: string, count: number) {
+async function insertSequentialBookmarks(
+  db: AppDb,
+  userId: string,
+  count: number
+) {
   for (let index = 0; index < count; index += 1) {
-    const id = bookmarkId(index)
+    const id = bookmarkId(index);
     await insertBookmark(db, {
-      id,
-      userId,
-      title: id,
       createdAt: new Date(base.getTime() + index * 1000),
-      updatedAt: new Date(base.getTime() + index * 1000)
-    })
+      id,
+      title: id,
+      updatedAt: new Date(base.getTime() + index * 1000),
+      userId,
+    });
   }
 }
 
 function encodeFromItem(id: string, at: Date): string {
-  return `${at.getTime()}:${id}`
+  return `${at.getTime()}:${id}`;
 }

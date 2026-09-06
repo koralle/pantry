@@ -1,134 +1,135 @@
-import type { LinkProps, RegisteredRouter } from '@tanstack/react-router'
-import { useNavigate } from '@tanstack/react-router'
-import { LogOut, Plus, Search, Settings, Tags } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
-import { Label, SearchField } from 'react-aria-components'
-import { css } from 'styled-system/css'
+import type { LinkProps, RegisteredRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
+import { LogOut, Plus, Search, Settings, Tags } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { Label, SearchField } from "react-aria-components";
+import { css } from "styled-system/css";
 
-import { StyledButton } from '../../../shared/components/styled-button'
-import { StyledInput } from '../../../shared/components/styled-input'
-import { StyledLink } from '../../../shared/components/styled-link'
-import { srOnly } from '../../../styles/sr-only'
-import { useSignOut } from '../../auth/hooks/use-sign-out'
-import type { BookmarkSearchSchema } from '../../navigation/lib/bookmark-search'
-import { defaultBookmarkSearch } from '../../navigation/lib/bookmark-search'
-import { buildListSearch } from '../../navigation/lib/bookmark-search-builders'
+import { StyledButton } from "../../../shared/components/styled-button";
+import { StyledInput } from "../../../shared/components/styled-input";
+import { StyledLink } from "../../../shared/components/styled-link";
+import { srOnly } from "../../../styles/sr-only";
+import { useSignOut } from "../../auth/hooks/use-sign-out";
+import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
+import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
+import { buildListSearch } from "../../navigation/lib/bookmark-search-builders";
 
 const shellHeader = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
-  gap: '2',
-  minBlockSize: '4rem',
-  paddingBlock: '2',
-  paddingInline: '4',
-  borderBlockEndWidth: 'thin',
-  borderBlockEndStyle: 'solid',
-  borderBlockEndColor: 'border.default',
-  background: 'surface.header',
+  alignItems: "center",
+  background: "surface.header",
+  borderBlockEndColor: "border.default",
+  borderBlockEndStyle: "solid",
+  borderBlockEndWidth: "thin",
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "2",
   md: {
-    flexWrap: 'nowrap',
-    gap: '3'
-  }
-})
+    flexWrap: "nowrap",
+    gap: "3",
+  },
+  minBlockSize: "4rem",
+  paddingBlock: "2",
+  paddingInline: "4",
+});
 
 const headerLead = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  order: 1,
-  md: {
-    order: 0
-  }
-})
-
-const headerActions = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  order: 2,
-  marginInlineStart: 'auto',
+  alignItems: "center",
+  display: "flex",
+  gap: "2",
   md: {
     order: 0,
-    marginInlineStart: '0'
-  }
-})
+  },
+  order: 1,
+});
+
+const headerActions = css({
+  alignItems: "center",
+  display: "flex",
+  gap: "2",
+  marginInlineStart: "auto",
+  md: {
+    marginInlineStart: "0",
+    order: 0,
+  },
+  order: 2,
+});
 
 const brandMobile = css({
   md: {
-    display: 'none'
-  }
-})
+    display: "none",
+  },
+});
 
 const mobileChromeAction = css({
   md: {
-    display: 'none'
-  }
-})
+    display: "none",
+  },
+});
 
 const searchForm = css({
-  display: 'flex',
-  flex: '1 1 100%',
-  minInlineSize: '0',
-  gap: '2',
-  order: 3,
+  display: "flex",
+  flex: "1 1 100%",
+  gap: "2",
   md: {
-    flex: '1 1 auto',
-    order: 0
-  }
-})
+    flex: "1 1 auto",
+    order: 0,
+  },
+  minInlineSize: "0",
+  order: 3,
+});
 
 const searchField = css({
-  display: 'flex',
-  flex: '1',
-  minInlineSize: '0'
-})
+  display: "flex",
+  flex: "1",
+  minInlineSize: "0",
+});
 
 const searchSubmit = css({
-  flexShrink: '0',
-  paddingInline: '3'
-})
+  flexShrink: "0",
+  paddingInline: "3",
+});
 
-export function AppHeader({
+export const AppHeader = ({
   newBookmarkSearch,
   listSearch,
-  shelfTrigger
+  shelfTrigger,
 }: {
   readonly newBookmarkSearch: NonNullable<
-    LinkProps<'a', RegisteredRouter, string, '/bookmarks/new'>['search']
-  >
-  readonly listSearch: BookmarkSearchSchema | undefined
-  readonly shelfTrigger: ReactNode
-}) {
-  const { handleSignOut, isPending } = useSignOut()
-  const navigate = useNavigate()
-  const [draftQ, setDraftQ] = useState(listSearch?.q ?? '')
+    LinkProps<"a", RegisteredRouter, string, "/bookmarks/new">["search"]
+  >;
+  readonly listSearch: BookmarkSearchSchema | undefined;
+  readonly shelfTrigger: ReactNode;
+}) => {
+  const { handleSignOut, isPending } = useSignOut();
+  const navigate = useNavigate();
+  const [draftQ, setDraftQ] = useState(listSearch?.q ?? "");
 
   useEffect(() => {
-    setDraftQ(listSearch?.q ?? '')
-  }, [listSearch?.q])
+    setDraftQ(listSearch?.q ?? "");
+  }, [listSearch?.q]);
 
   const commitSearch = (raw: string) => {
-    const nextQ = raw.trim()
-    const current = listSearch ?? defaultBookmarkSearch
+    const nextQ = raw.trim();
+    const current = listSearch ?? defaultBookmarkSearch;
     void navigate({
-      to: '/',
       search:
-        nextQ === ''
+        nextQ === ""
           ? buildListSearch(current, { clearQ: true })
-          : buildListSearch(current, { q: nextQ })
-    })
-  }
+          : buildListSearch(current, { q: nextQ }),
+      to: "/",
+    });
+  };
 
   return (
     <header className={shellHeader}>
       <div className={headerLead}>
         <StyledLink
-          to='/'
+          to="/"
           search={defaultBookmarkSearch}
-          visual='brand'
-          className={brandMobile}>
+          visual="brand"
+          className={brandMobile}
+        >
           Pantry
         </StyledLink>
 
@@ -140,75 +141,64 @@ export function AppHeader({
           className={searchField}
           value={draftQ}
           onChange={setDraftQ}
-          onSubmit={commitSearch}>
+          onSubmit={commitSearch}
+        >
           <Label className={srOnly}>検索</Label>
           <StyledInput
-            type='search'
-            placeholder='タイトル・URL・メモ'
-            enterKeyHint='search'
+            type="search"
+            placeholder="タイトル・URL・メモ"
+            enterKeyHint="search"
           />
         </SearchField>
         <StyledButton
           className={searchSubmit}
-          aria-label='検索'
+          aria-label="検索"
           onPress={() => {
-            commitSearch(draftQ)
-          }}>
-          <Search
-            size={16}
-            aria-hidden
-          />
+            commitSearch(draftQ);
+          }}
+        >
+          <Search size={16} aria-hidden />
         </StyledButton>
       </div>
 
       <div className={headerActions}>
         <StyledLink
-          to='/bookmarks/new'
-          visual='plain'
-          search={newBookmarkSearch}>
-          <Plus
-            size={16}
-            aria-hidden
-          />{' '}
-          新規
+          to="/bookmarks/new"
+          visual="plain"
+          search={newBookmarkSearch}
+        >
+          <Plus size={16} aria-hidden /> 新規
         </StyledLink>
         <StyledLink
-          to='/tags'
+          to="/tags"
           search={{ limit: 50, offset: 0 }}
-          visual='plain'
+          visual="plain"
           className={mobileChromeAction}
-          aria-label='タグ管理'>
-          <Tags
-            size={16}
-            aria-hidden
-          />
+          aria-label="タグ管理"
+        >
+          <Tags size={16} aria-hidden />
         </StyledLink>
         <StyledLink
-          to='/settings'
-          visual='plain'
+          to="/settings"
+          visual="plain"
           className={mobileChromeAction}
-          aria-label='設定'>
-          <Settings
-            size={16}
-            aria-hidden
-          />
+          aria-label="設定"
+        >
+          <Settings size={16} aria-hidden />
         </StyledLink>
         <StyledButton
-          display={{ base: 'none', md: 'inline-flex' }}
-          color='fg.default'
-          borderColor='transparent'
-          background='transparent'
-          paddingBlock='1.5'
-          paddingInline='2'
+          display={{ base: "none", md: "inline-flex" }}
+          color="fg.default"
+          borderColor="transparent"
+          background="transparent"
+          paddingBlock="1.5"
+          paddingInline="2"
           onPress={handleSignOut}
-          isDisabled={isPending}>
-          <LogOut
-            size={16}
-            aria-hidden
-          />{' '}
-          ログアウト
+          isDisabled={isPending}
+        >
+          <LogOut size={16} aria-hidden /> ログアウト
         </StyledButton>
       </div>
     </header>
-  )
-}
+  );
+};

@@ -1,16 +1,16 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-import { err, ok } from './result'
+import { err, ok } from "./result";
 
-describe('Result', () => {
-  test('ok wraps a value', () => {
-    expect(ok(42)).toStrictEqual({ ok: true, value: 42 })
-  })
+describe("Result", () => {
+  test("ok wraps a value", () => {
+    expect(ok(42)).toStrictEqual({ ok: true, value: 42 });
+  });
 
-  test('err wraps an error', () => {
-    expect(err({ code: 'bookmark-not-found' })).toStrictEqual({
+  test("err wraps an error", () => {
+    expect(err({ code: "bookmark-not-found" })).toStrictEqual({
+      error: { code: "bookmark-not-found" },
       ok: false,
-      error: { code: 'bookmark-not-found' }
-    })
-  })
-})
+    });
+  });
+});

@@ -79,7 +79,7 @@ Base UIのDialogを、React Aria Componentsの次の構成へ置き換える。
   <ModalOverlay>
     <Modal>
       <Dialog>
-        <Heading slot='title'>...</Heading>
+        <Heading slot="title">...</Heading>
         ...
       </Dialog>
     </Modal>

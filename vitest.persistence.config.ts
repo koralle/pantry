@@ -1,16 +1,18 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    name: 'persistence-integration',
-    environment: 'node',
-    include: ['src/test/persistence/**/*.integration.test.ts'],
+    environment: "node",
     fileParallelism: false,
-    maxWorkers: 1,
-    testTimeout: 30_000,
+    globalSetup: ["./src/test/persistence/global-setup.ts"],
     hookTimeout: 120_000,
-    globalSetup: ['./src/test/persistence/global-setup.ts'],
+    include: ["src/test/persistence/**/*.integration.test.ts"],
+    maxWorkers: 1,
+    name: "persistence-integration",
     reporters:
-      process.env['GITHUB_ACTIONS'] === 'true' ? ['minimal', 'github-actions'] : ['minimal']
-  }
-})
+      process.env["GITHUB_ACTIONS"] === "true"
+        ? ["minimal", "github-actions"]
+        : ["minimal"],
+    testTimeout: 30_000,
+  },
+});

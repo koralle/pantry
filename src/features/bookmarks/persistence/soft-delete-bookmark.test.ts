@@ -1,25 +1,25 @@
-import { createClient } from '@libsql/client'
-import { eq, sql } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import { createClient } from "@libsql/client";
+import { eq, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import type { AppDb } from '../../../db/app-db'
-import { user } from '../../../db/schema/auth-schema'
-import { bookmarkTable } from '../../../db/schema/bookmark'
-import { userIdSchema } from '../../auth/domain/auth-values'
-import type { SoftDeleteBookmarkInput } from '../application/delete-bookmark'
-import { softDeleteBookmark } from './soft-delete-bookmark'
+import type { AppDb } from "../../../db/app-db";
+import { user } from "../../../db/schema/auth-schema";
+import { bookmarkTable } from "../../../db/schema/bookmark";
+import { userIdSchema } from "../../auth/domain/auth-values";
+import type { SoftDeleteBookmarkInput } from "../application/delete-bookmark";
+import { softDeleteBookmark } from "./soft-delete-bookmark";
 
-const bookmarkId = '019fae92-3bb0-78cd-b488-65ce0e26a001'
+const bookmarkId = "019fae92-3bb0-78cd-b488-65ce0e26a001";
 
 /**
  * Libsql の `:memory:` は workerd で動かないので、このファイルは Node project で走らせる。
  * 本番と同じ UNIQUE `(user_id, url)` と soft delete 列を置く。
  */
 async function createMemoryDb(): Promise<AppDb> {
-  const client = createClient({ url: ':memory:' })
-  const db = drizzle({ client })
+  const client = createClient({ url: ":memory:" });
+  const db = drizzle({ client });
 
   await db.run(sql`
     CREATE TABLE users (
@@ -35,7 +35,7 @@ async function createMemoryDb(): Promise<AppDb> {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE bookmarks (
@@ -49,93 +49,98 @@ async function createMemoryDb(): Promise<AppDb> {
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )
-  `)
+  `);
 
-  return db
+  return db;
 }
 
 async function insertUser(db: AppDb, id: string) {
-  await db.insert(user).values({ id, name: id, email: `${id}@example.com` })
+  await db.insert(user).values({ email: `${id}@example.com`, id, name: id });
 }
 
 async function insertBookmark(
   db: AppDb,
   input: {
-    id: string
-    userId: string
-    url?: string
-    deletedAt?: Date | null
+    id: string;
+    userId: string;
+    url?: string;
+    deletedAt?: Date | null;
   }
 ) {
-  const now = new Date('2026-08-01T00:00:00.000Z')
+  const now = new Date("2026-08-01T00:00:00.000Z");
   await db.insert(bookmarkTable).values({
-    id: input.id,
-    userId: input.userId,
-    url: input.url ?? `https://example.com/${input.id}`,
-    title: 'タイトル',
     createdAt: now,
+    deletedAt: input.deletedAt ?? null,
+    id: input.id,
+    title: "タイトル",
     updatedAt: now,
-    deletedAt: input.deletedAt ?? null
-  })
+    url: input.url ?? `https://example.com/${input.id}`,
+    userId: input.userId,
+  });
 }
 
 async function selectBookmarkRow(db: AppDb, id: string) {
-  const [row] = await db.select().from(bookmarkTable).where(eq(bookmarkTable.id, id))
-  return row
+  const [row] = await db
+    .select()
+    .from(bookmarkTable)
+    .where(eq(bookmarkTable.id, id));
+  return row;
 }
 
 function command(userId: string, id: string): SoftDeleteBookmarkInput {
-  return { userId: v.parse(userIdSchema, userId), id }
+  return { id, userId: v.parse(userIdSchema, userId) };
 }
 
-describe('softDeleteBookmark', () => {
-  test('所有済み未削除行に deletedAt と updatedAt を設定する', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertBookmark(db, { id: bookmarkId, userId: 'user-a' })
+describe(softDeleteBookmark, () => {
+  test("所有済み未削除行に deletedAt と updatedAt を設定する", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertBookmark(db, { id: bookmarkId, userId: "user-a" });
 
-    const result = await softDeleteBookmark(db, command('user-a', bookmarkId))
+    const result = await softDeleteBookmark(db, command("user-a", bookmarkId));
 
-    expect(result).toEqual({ kind: 'deleted', id: bookmarkId })
-    const row = await selectBookmarkRow(db, bookmarkId)
-    expect(row?.deletedAt).not.toBeNull()
-    expect(row?.updatedAt.getTime()).toBeGreaterThan(new Date('2026-08-01T00:00:00.000Z').getTime())
-  })
+    expect(result).toStrictEqual({ id: bookmarkId, kind: "deleted" });
+    const row = await selectBookmarkRow(db, bookmarkId);
+    expect(row?.deletedAt).not.toBeNull();
+    expect(row?.updatedAt.getTime()).toBeGreaterThan(
+      new Date("2026-08-01T00:00:00.000Z").getTime()
+    );
+  });
 
-  test('別ユーザーの行は削除せず bookmark-not-found を返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertUser(db, 'user-b')
-    await insertBookmark(db, { id: bookmarkId, userId: 'user-a' })
+  test("別ユーザーの行は削除せず bookmark-not-found を返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertUser(db, "user-b");
+    await insertBookmark(db, { id: bookmarkId, userId: "user-a" });
 
-    const result = await softDeleteBookmark(db, command('user-b', bookmarkId))
+    const result = await softDeleteBookmark(db, command("user-b", bookmarkId));
 
-    expect(result).toEqual({ kind: 'bookmark-not-found' })
-    const row = await selectBookmarkRow(db, bookmarkId)
-    expect(row?.deletedAt).toBeNull()
-  })
+    expect(result).toStrictEqual({ kind: "bookmark-not-found" });
+    const row = await selectBookmarkRow(db, bookmarkId);
+    expect(row?.deletedAt).toBeNull();
+  });
 
-  test('削除済みの行は更新せず bookmark-not-found を返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const deletedAt = new Date('2026-08-05T00:00:00.000Z')
-    await insertBookmark(db, { id: bookmarkId, userId: 'user-a', deletedAt })
-    const before = await selectBookmarkRow(db, bookmarkId)
+  test("削除済みの行は更新せず bookmark-not-found を返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const deletedAt = new Date("2026-08-05T00:00:00.000Z");
+    await insertBookmark(db, { deletedAt, id: bookmarkId, userId: "user-a" });
+    const before = await selectBookmarkRow(db, bookmarkId);
 
-    const result = await softDeleteBookmark(db, command('user-a', bookmarkId))
+    const result = await softDeleteBookmark(db, command("user-a", bookmarkId));
 
-    expect(result).toEqual({ kind: 'bookmark-not-found' })
-    const after = await selectBookmarkRow(db, bookmarkId)
-    expect(after?.deletedAt?.getTime()).toBe(deletedAt.getTime())
-    expect(after?.updatedAt.getTime()).toBe(before?.updatedAt.getTime())
-  })
+    expect(result).toStrictEqual({ kind: "bookmark-not-found" });
+    const after = await selectBookmarkRow(db, bookmarkId);
+    expect(after?.deletedAt?.getTime()).toBe(deletedAt.getTime());
+    expect(after?.updatedAt.getTime()).toBe(before?.updatedAt.getTime());
+  });
 
-  test('存在しない id は bookmark-not-found を返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
+  test("存在しない id は bookmark-not-found を返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
 
-    const result = await softDeleteBookmark(db, command('user-a', bookmarkId))
+    const result = await softDeleteBookmark(db, command("user-a", bookmarkId));
 
-    expect(result).toEqual({ kind: 'bookmark-not-found' })
-  })
-})
+    expect(result).toStrictEqual({ kind: "bookmark-not-found" });
+  });
+});

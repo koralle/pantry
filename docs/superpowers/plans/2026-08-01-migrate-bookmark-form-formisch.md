@@ -22,39 +22,39 @@
 Add tests that prove the schema accepts the existing initial input shape and returns the existing branded output shape, including empty-note normalization:
 
 ```ts
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-import { bookmarkFormSchema } from './bookmark-form-schema'
+import { bookmarkFormSchema } from "./bookmark-form-schema";
 
-describe('bookmarkFormSchema', () => {
-  test('parses URL and title into branded values', () => {
+describe("bookmarkFormSchema", () => {
+  test("parses URL and title into branded values", () => {
     const result = v.safeParse(bookmarkFormSchema, {
-      url: 'https://example.com/article',
-      title: 'Example Article',
-      note: 'memo'
-    })
+      url: "https://example.com/article",
+      title: "Example Article",
+      note: "memo",
+    });
 
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.output.url).toBe('https://example.com/article')
-      expect(result.output.title).toBe('Example Article')
-      expect(result.output.note).toBe('memo')
+      expect(result.output.url).toBe("https://example.com/article");
+      expect(result.output.title).toBe("Example Article");
+      expect(result.output.note).toBe("memo");
     }
-  })
+  });
 
-  test('normalizes an empty note to null', () => {
+  test("normalizes an empty note to null", () => {
     const result = v.safeParse(bookmarkFormSchema, {
-      url: 'https://example.com/article',
-      title: 'Example Article',
-      note: ''
-    })
+      url: "https://example.com/article",
+      title: "Example Article",
+      note: "",
+    });
 
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.output.note).toBeNull()
+      expect(result.output.note).toBeNull();
     }
-  })
-})
+  });
+});
 ```
 
 Import `* as v from 'valibot'` in the test. The test must fail until the schema file exists.
@@ -70,22 +70,22 @@ Expected: FAIL because `./bookmark-form-schema` does not exist.
 Create the schema using the existing domain schemas so Formisch's output remains branded:
 
 ```ts
-import * as v from 'valibot'
+import * as v from "valibot";
 
 import {
   bookmarkNoteSchema,
   bookmarkTitleSchema,
-  bookmarkUrlSchema
-} from '../domain/bookmark-values'
+  bookmarkUrlSchema,
+} from "../domain/bookmark-values";
 
 export const bookmarkFormSchema = v.object({
   url: bookmarkUrlSchema,
   title: bookmarkTitleSchema,
-  note: bookmarkNoteSchema
-})
+  note: bookmarkNoteSchema,
+});
 
-export type BookmarkFormInput = v.InferInput<typeof bookmarkFormSchema>
-export type BookmarkFormOutput = v.InferOutput<typeof bookmarkFormSchema>
+export type BookmarkFormInput = v.InferInput<typeof bookmarkFormSchema>;
+export type BookmarkFormOutput = v.InferOutput<typeof bookmarkFormSchema>;
 ```
 
 - [ ] **Step 4: Run the focused test and verify it passes**
@@ -138,10 +138,10 @@ const form = useForm({
   initialInput: {
     url: initialValues.url,
     title: initialValues.title,
-    note: initialValues.note
+    note: initialValues.note,
   },
-  schema: bookmarkFormSchema
-})
+  schema: bookmarkFormSchema,
+});
 ```
 
 Use `form.isSubmitting` together with `isFetchingTitle` to calculate the disabled state. Keep the existing external `submission` prop temporarily only if the parent contract still requires it; remove it if the compiler and parent behavior confirm Formisch covers the same pending period.
@@ -157,14 +157,12 @@ Preserve the existing summary rendering for `errors.summary`, `titleFetchError`,
 For each field, use the established project pattern:
 
 ```tsx
-<Field
-  of={form}
-  path={['title']}>
+<Field of={form} path={["title"]}>
   {(fieldProps) => (
     <Input
       id={fieldProps.props.name}
       name={fieldProps.props.name}
-      value={fieldProps.input ?? ''}
+      value={fieldProps.input ?? ""}
       onValueChange={fieldProps.onChange}
     />
   )}
@@ -198,11 +196,11 @@ Expected: the focused stories pass and TypeScript accepts the Formisch output as
 Implement the fetch handler using the current URL from Formisch and write the result back to the title field:
 
 ```ts
-const url = getInput(form, { path: ['url'] }) ?? ''
-const fetched = await onFetchTitle(url)
+const url = getInput(form, { path: ["url"] }) ?? "";
+const fetched = await onFetchTitle(url);
 if (fetched !== null) {
-  setInput(form, { path: ['title'], input: fetched })
-  setErrors(form, { path: ['title'], errors: null })
+  setInput(form, { path: ["title"], input: fetched });
+  setErrors(form, { path: ["title"], errors: null });
 }
 ```
 

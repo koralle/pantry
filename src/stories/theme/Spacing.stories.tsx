@@ -1,79 +1,72 @@
-import { css } from 'styled-system/css'
+import { css } from "styled-system/css";
 
-import preview from '../../storybook/preview'
-import { Catalog, Meta as TokenMeta, Section, tokenValue } from './catalog'
-import { spacingTokens } from './token-data'
+import preview from "../../storybook/preview";
+import { Catalog, Meta as TokenMeta, Section, tokenValue } from "./catalog";
+import { spacingTokens } from "./token-data";
 
 function SpacingCatalog() {
   return (
     <Catalog
-      title='余白'
-      description='Panda の spacing スケール（正の値）。プロジェクトは spacing を extend していないため、デフォルトトークンをそのまま可視化しています。'>
-      <Section title='Spacing scale'>
+      title="余白"
+      description="Panda の spacing スケール（正の値）。プロジェクトは spacing を extend していないため、デフォルトトークンをそのまま可視化しています。"
+    >
+      <Section title="Spacing scale">
         <div className={stack}>
           {spacingTokens.map((entry) => (
-            <article
-              key={entry.path}
-              className={row}>
+            <article key={entry.path} className={row}>
               <div className={labelCol}>
                 <p className={label}>{entry.label}</p>
-                <TokenMeta
-                  path={entry.path}
-                  value={tokenValue(entry)}
-                />
+                <TokenMeta path={entry.path} value={tokenValue(entry)} />
               </div>
-              <div
-                className={bar}
-                style={{ inlineSize: tokenValue(entry) }}
-              />
+              <div className={bar} style={{ inlineSize: tokenValue(entry) }} />
             </article>
           ))}
         </div>
       </Section>
     </Catalog>
-  )
+  );
 }
 
 const meta = preview.meta({
-  title: 'Theme/余白',
-  parameters: { layout: 'padded' }
-})
+  parameters: { layout: "padded" },
+  title: "Theme/余白",
+});
 
 export const CatalogStory = meta.story({
-  name: 'カタログ',
-  render: () => <SpacingCatalog />
-})
+  name: "カタログ",
+  render: () => <SpacingCatalog />,
+});
 
 const stack = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2'
-})
+  display: "flex",
+  flexDirection: "column",
+  gap: "2",
+});
 
 const row = css({
-  display: 'grid',
-  gridTemplateColumns: '8rem minmax(0, 1fr)',
-  gap: '4',
-  alignItems: 'center'
-})
+  alignItems: "center",
+  display: "grid",
+  gap: "4",
+  gridTemplateColumns: "8rem minmax(0, 1fr)",
+});
 
 const labelCol = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1'
-})
+  display: "flex",
+  flexDirection: "column",
+  gap: "1",
+});
 
 const label = css({
-  margin: '0',
-  fontSize: 'sm',
-  fontWeight: 'semibold',
-  fontFamily: 'mono'
-})
+  fontFamily: "mono",
+  fontSize: "sm",
+  fontWeight: "semibold",
+  margin: "0",
+});
 
 const bar = css({
-  blockSize: '3',
-  minInlineSize: '0.5',
-  maxInlineSize: 'full',
-  borderRadius: 'box',
-  background: 'accent.solid'
-})
+  background: "accent.solid",
+  blockSize: "3",
+  borderRadius: "box",
+  maxInlineSize: "full",
+  minInlineSize: "0.5",
+});

@@ -1,133 +1,144 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test } from "vitest";
 
-import { buildNewBookmarkCommand } from '../../../../features/bookmarks/components/new-bookmark-command'
+import { buildNewBookmarkCommand } from "../../../../features/bookmarks/components/new-bookmark-command";
 
-const dir = dirname(fileURLToPath(import.meta.url))
-const routeSource = readFileSync(join(dir, 'index.tsx'), 'utf8')
-const editRouteSource = readFileSync(join(dir, '../$id/edit.tsx'), 'utf8')
+const dir = import.meta.dirname;
+const routeSource = readFileSync(join(dir, "index.tsx"), "utf-8");
+const editRouteSource = readFileSync(join(dir, "../$id/edit.tsx"), "utf-8");
 
-describe('buildNewBookmarkCommand', () => {
-  test('送信時点の tag draft を tags として送る', () => {
+describe(buildNewBookmarkCommand, () => {
+  test("送信時点の tag draft を tags として送る", () => {
     expect(
       buildNewBookmarkCommand({
-        url: 'https://example.com/article',
-        title: 'Example Article',
-        note: 'メモ',
-        tagIds: [2, 5]
+        url: "https://example.com/article",
+        title: "Example Article",
+        note: "メモ",
+        tagIds: [2, 5],
       })
     ).toStrictEqual({
-      url: 'https://example.com/article',
-      title: 'Example Article',
-      note: 'メモ',
-      tags: [2, 5]
-    })
-  })
+      url: "https://example.com/article",
+      title: "Example Article",
+      note: "メモ",
+      tags: [2, 5],
+    });
+  });
 
-  test('タグ未選択なら空配列で送る', () => {
+  test("タグ未選択なら空配列で送る", () => {
     expect(
       buildNewBookmarkCommand({
-        url: 'https://example.com/article',
-        title: 'Example Article',
-        note: 'メモ',
-        tagIds: []
+        url: "https://example.com/article",
+        title: "Example Article",
+        note: "メモ",
+        tagIds: [],
       }).tags
-    ).toEqual([])
-  })
-})
+    ).toStrictEqual([]);
+  });
+});
 
-describe('new bookmark route', () => {
-  test('BookmarkForm を使う', () => {
+describe("new bookmark route", () => {
+  test("BookmarkForm を使う", () => {
     expect(routeSource).toContain(
-      "from '../../../../features/bookmarks/components/bookmark-editor/bookmark-form'"
-    )
-    expect(routeSource).toContain('<BookmarkForm')
-    expect(routeSource).not.toContain('BookmarkWorkbenchForm')
-    expect(routeSource).not.toContain('bookmark-workbench-form')
-  })
+      'from "../../../../features/bookmarks/components/bookmark-editor/bookmark-form"'
+    );
+    expect(routeSource).toContain("<BookmarkForm");
+    expect(routeSource).not.toContain("BookmarkWorkbenchForm");
+    expect(routeSource).not.toContain("bookmark-workbench-form");
+  });
 
-  test('新規作成ラベルと空の初期値を渡す', () => {
-    expect(routeSource).toContain("submitLabel='登録'")
-    expect(routeSource).toContain("pendingLabel='登録中…'")
-    expect(routeSource).toContain("legend='ブックマーク新規登録'")
-    expect(routeSource).toContain("url: ''")
-    expect(routeSource).toContain("title: ''")
-    expect(routeSource).toContain('note: null')
-  })
+  test("新規作成ラベルと空の初期値を渡す", () => {
+    expect(routeSource).toContain('submitLabel="登録"');
+    expect(routeSource).toContain('pendingLabel="登録中…"');
+    expect(routeSource).toContain('legend="ブックマーク新規登録"');
+    expect(routeSource).toContain('url: ""');
+    expect(routeSource).toContain('title: ""');
+    expect(routeSource).toContain("note: null");
+  });
 
-  test('CreateBookmark に送信時点の tagIds を渡す', () => {
-    expect(routeSource).toContain('tagIds: values.tagIds')
-    expect(routeSource).toContain('createTagFromPickerAction')
-    expect(editRouteSource).toContain('createTagFromPickerAction')
-    expect(editRouteSource).toContain('tagCandidates')
-  })
+  test("CreateBookmark に送信時点の tagIds を渡す", () => {
+    expect(routeSource).toContain("tagIds: values.tagIds");
+    expect(routeSource).toContain("createTagFromPickerAction");
+    expect(editRouteSource).toContain("createTagFromPickerAction");
+    expect(editRouteSource).toContain("tagCandidates");
+  });
 
-  test('CreateBookmark を oRPC mutationOptions 経由で送る', () => {
-    expect(routeSource).toContain('orpc.bookmarks.create.mutationOptions')
-    expect(routeSource).toContain('refreshAfterBookmarkMutation')
-    expect(routeSource).toContain("'CreateBookmark'")
-  })
+  test("CreateBookmark を oRPC mutationOptions 経由で送る", () => {
+    expect(routeSource).toContain("orpc.bookmarks.create.mutationOptions");
+    expect(routeSource).toContain("refreshAfterBookmarkMutation");
+    expect(routeSource).toContain('"CreateBookmark"');
+  });
 
-  test('旧 Server Function に依存しない', () => {
-    expect(routeSource).not.toContain("from '../functions/add-bookmark'")
-    expect(routeSource).not.toContain('addBookmark({')
-  })
+  test("旧 Server Function に依存しない", () => {
+    expect(routeSource).not.toContain("from '../functions/add-bookmark'");
+    expect(routeSource).not.toContain("addBookmark({");
+  });
 
-  test('Error の class 名と name に依存しない', () => {
-    expect(routeSource).toContain('mapCreateBookmarkFailure')
-    expect(routeSource).not.toContain('error.name')
-    expect(routeSource).not.toContain('instanceof Error')
-    expect(routeSource).not.toContain('error.message')
-  })
+  test("Error の class 名と name に依存しない", () => {
+    expect(routeSource).toContain("mapCreateBookmarkFailure");
+    expect(routeSource).not.toContain("error.name");
+    expect(routeSource).not.toContain("instanceof Error");
+    expect(routeSource).not.toContain("error.message");
+  });
 
-  test('UNAUTHORIZED はフォームエラーにしない', () => {
-    expect(routeSource).toContain('if (formError !== null)')
-  })
+  test("UNAUTHORIZED はフォームエラーにしない", () => {
+    expect(routeSource).toContain("if (formError !== null)");
+  });
 
-  test('保存成功後の遷移失敗は保存失敗と混ぜない', () => {
-    expect(routeSource).toContain('保存は完了しましたが、画面の移動に失敗しました')
-  })
-})
+  test("保存成功後の遷移失敗は保存失敗と混ぜない", () => {
+    expect(routeSource).toContain(
+      "保存は完了しましたが、画面の移動に失敗しました"
+    );
+  });
+});
 
-describe('bookmark mutation refresh', () => {
-  test('edit route は共通の一覧 refresh を使う', () => {
-    expect(editRouteSource).toContain('refreshAfterBookmarkMutation')
-    expect(editRouteSource).toContain("'UpdateBookmark'")
-    expect(editRouteSource).not.toContain('resetBookmarkListCache')
-  })
-})
+describe("bookmark mutation refresh", () => {
+  test("edit route は共通の一覧 refresh を使う", () => {
+    expect(editRouteSource).toContain("refreshAfterBookmarkMutation");
+    expect(editRouteSource).toContain('"UpdateBookmark"');
+    expect(editRouteSource).not.toContain("resetBookmarkListCache");
+  });
+});
 
-describe('title fetch consumers', () => {
-  test('new route の action は code 契約だけで文言を決める', () => {
-    expect(routeSource).toContain('bookmarks.title')
-    expect(routeSource).not.toContain('fetchBookmarkTitle')
-    expect(routeSource).not.toContain('instanceof Error')
-    expect(routeSource).not.toContain('error.message')
-    expect(routeSource).toContain('getTitleFetchErrorMessage')
-  })
+describe("title fetch consumers", () => {
+  test("new route の action は code 契約だけで文言を決める", () => {
+    expect(routeSource).toContain("bookmarks.title");
+    expect(routeSource).not.toContain("fetchBookmarkTitle");
+    expect(routeSource).not.toContain("instanceof Error");
+    expect(routeSource).not.toContain("error.message");
+    expect(routeSource).toContain("getTitleFetchErrorMessage");
+  });
 
-  test('edit route の action は code 契約だけで文言を決める', () => {
-    expect(editRouteSource).toContain('bookmarks.title')
-    expect(editRouteSource).not.toContain('fetchBookmarkTitle')
-    expect(editRouteSource).not.toContain('instanceof Error')
-    expect(editRouteSource).not.toContain('error.message')
-    expect(editRouteSource).toContain('getTitleFetchErrorMessage')
-  })
-})
+  test("edit route の action は code 契約だけで文言を決める", () => {
+    expect(editRouteSource).toContain("bookmarks.title");
+    expect(editRouteSource).not.toContain("fetchBookmarkTitle");
+    expect(editRouteSource).not.toContain("instanceof Error");
+    expect(editRouteSource).not.toContain("error.message");
+    expect(editRouteSource).toContain("getTitleFetchErrorMessage");
+  });
+});
 
-describe('removed workbench form', () => {
-  test('BookmarkWorkbenchForm は削除されている', () => {
+describe("removed workbench form", () => {
+  test("BookmarkWorkbenchForm は削除されている", () => {
     expect(
-      existsSync(join(dir, '../../../../features/bookmarks/components/bookmark-workbench-form.tsx'))
-    ).toBe(false)
-  })
+      existsSync(
+        join(
+          dir,
+          "../../../../features/bookmarks/components/bookmark-workbench-form.tsx"
+        )
+      )
+    ).toBeFalsy();
+  });
 
-  test('旧 title fetch hook は削除されている', () => {
+  test("旧 title fetch hook は削除されている", () => {
     expect(
-      existsSync(join(dir, '../../../../features/bookmarks/hooks/use-bookmark-title-fetch.ts'))
-    ).toBe(false)
-  })
-})
+      existsSync(
+        join(
+          dir,
+          "../../../../features/bookmarks/hooks/use-bookmark-title-fetch.ts"
+        )
+      )
+    ).toBeFalsy();
+  });
+});

@@ -5,12 +5,12 @@ model: openai/gpt-5.6-luna
 permission:
   edit: allow
   bash:
-    '*': allow
-    'git push*': deny
-    'git commit*': deny
-    'git reset --hard*': deny
-    'git clean*': deny
-    'rm -rf *': deny
+    "*": allow
+    "git push*": deny
+    "git commit*": deny
+    "git reset --hard*": deny
+    "git clean*": deny
+    "rm -rf *": deny
   webfetch: allow
 ---
 

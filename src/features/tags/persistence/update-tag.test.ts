@@ -1,54 +1,57 @@
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
-import { createClient } from '@libsql/client'
-import { eq, sql } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as v from 'valibot'
-import { afterEach, describe, expect, test } from 'vitest'
+import { createClient } from "@libsql/client";
+import { eq, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import * as v from "valibot";
+import { afterEach, describe, expect, test } from "vitest";
 
-import { user } from '../../../db/schema/auth-schema'
-import { tagsTable } from '../../../db/schema/tag'
-import { userIdSchema } from '../../auth/domain/auth-values'
-import type { UpdateTagInput } from '../application/update-tag'
-import { tagIdSchema, tagNameSchema } from '../domain/tag-values'
-import { updateTag } from './update-tag'
+import { user } from "../../../db/schema/auth-schema";
+import { tagsTable } from "../../../db/schema/tag";
+import { userIdSchema } from "../../auth/domain/auth-values";
+import type { UpdateTagInput } from "../application/update-tag";
+import { tagIdSchema, tagNameSchema } from "../domain/tag-values";
+import { updateTag } from "./update-tag";
 
-const persistenceDir = dirname(fileURLToPath(import.meta.url))
-const memoryUrl = 'file::memory:?cache=shared'
-const clients: ReturnType<typeof createClient>[] = []
+const persistenceDir = import.meta.dirname;
+const memoryUrl = "file::memory:?cache=shared";
+const clients: ReturnType<typeof createClient>[] = [];
 
 afterEach(async () => {
   try {
-    await clients[0]?.executeMultiple('DROP TABLE IF EXISTS tags; DROP TABLE IF EXISTS users')
+    await clients[0]?.executeMultiple(
+      "DROP TABLE IF EXISTS tags; DROP TABLE IF EXISTS users"
+    );
   } finally {
     for (const client of clients) {
-      client.close()
+      client.close();
     }
-    clients.length = 0
+    clients.length = 0;
   }
-})
+});
 
 function createMemoryClient() {
-  const client = createClient({ url: memoryUrl })
-  clients.push(client)
-  return client
+  const client = createClient({ url: memoryUrl });
+  clients.push(client);
+  return client;
 }
 
 function parseUserId(value: string) {
-  return v.parse(userIdSchema, value)
+  return v.parse(userIdSchema, value);
 }
 
 function parseTagId(value: number) {
-  return v.parse(tagIdSchema, value)
+  return v.parse(tagIdSchema, value);
 }
 
 function parseName(value: string) {
-  return v.parse(tagNameSchema, value)
+  return v.parse(tagNameSchema, value);
 }
 
-type TagFields = Partial<Pick<UpdateTagInput, 'pinned' | 'sortOrder' | 'color'>>
+type TagFields = Partial<
+  Pick<UpdateTagInput, "pinned" | "sortOrder" | "color">
+>;
 
 function createCommand({
   userId,
@@ -56,16 +59,16 @@ function createCommand({
   name,
   pinned = false,
   sortOrder = 0,
-  color = null
+  color = null,
 }: { userId: string; id: number; name: string } & TagFields): UpdateTagInput {
   return {
-    userId: parseUserId(userId),
+    color,
     id: parseTagId(id),
     name: parseName(name),
     pinned,
     sortOrder,
-    color
-  }
+    userId: parseUserId(userId),
+  };
 }
 
 /**
@@ -73,8 +76,8 @@ function createCommand({
  * UNIQUE `(user_id, normalized_name)` を本番スキーマと同じ形で置き、衝突判定を本物の制約に乗せる。
  */
 async function createMemoryDb() {
-  const client = createMemoryClient()
-  const db = drizzle({ client })
+  const client = createMemoryClient();
+  const db = drizzle({ client });
 
   await db.run(sql`
     CREATE TABLE users (
@@ -90,7 +93,7 @@ async function createMemoryDb() {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
-  `)
+  `);
 
   await db.run(sql`
     CREATE TABLE tags (
@@ -107,17 +110,20 @@ async function createMemoryDb() {
       version INTEGER NOT NULL DEFAULT 1,
       UNIQUE (user_id, normalized_name)
     )
-  `)
+  `);
 
-  return db
+  return db;
 }
 
-async function insertUser(db: Awaited<ReturnType<typeof createMemoryDb>>, id: string) {
+async function insertUser(
+  db: Awaited<ReturnType<typeof createMemoryDb>>,
+  id: string
+) {
   await db.insert(user).values({
+    email: `${id}@example.com`,
     id,
     name: id,
-    email: `${id}@example.com`
-  })
+  });
 }
 
 async function insertTagRow(
@@ -127,170 +133,170 @@ async function insertTagRow(
     name,
     pinned = false,
     sortOrder = 0,
-    color = null
+    color = null,
   }: { userId: string; name: string } & TagFields
 ) {
-  const parsedName = parseName(name)
+  const parsedName = parseName(name);
   const [created] = await db
     .insert(tagsTable)
     .values({
-      userId: parseUserId(userId),
+      color,
       name: parsedName.display,
       normalizedName: parsedName.normalized,
       pinned,
       sortOrder,
-      color
+      userId: parseUserId(userId),
     })
-    .returning({ id: tagsTable.id })
+    .returning({ id: tagsTable.id });
 
   if (created === undefined) {
-    throw new Error('Failed to create test tag')
+    throw new Error("Failed to create test tag");
   }
-  return created.id
+  return created.id;
 }
 
-describe.sequential('updateTag', () => {
-  test('所有者が全フィールドを更新し TagId を受け取る', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const id = await insertTagRow(db, { userId: 'user-a', name: 'Old' })
+describe.sequential(updateTag, () => {
+  test("所有者が全フィールドを更新し TagId を受け取る", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const id = await insertTagRow(db, { name: "Old", userId: "user-a" });
 
     const result = await updateTag(
       db,
       createCommand({
-        userId: 'user-a',
+        color: "#123456",
         id,
-        name: ' Work ',
+        name: " Work ",
         pinned: true,
         sortOrder: 4,
-        color: '#123456'
+        userId: "user-a",
       })
-    )
+    );
 
-    expect(result).toEqual({ kind: 'updated', id: parseTagId(id) })
+    expect(result).toStrictEqual({ id: parseTagId(id), kind: "updated" });
     const [row] = await db
       .select({
+        color: tagsTable.color,
         name: tagsTable.name,
         normalizedName: tagsTable.normalizedName,
         pinned: tagsTable.pinned,
         sortOrder: tagsTable.sortOrder,
-        color: tagsTable.color
       })
       .from(tagsTable)
-      .where(eq(tagsTable.id, id))
-    expect(row).toEqual({
-      name: 'Work',
-      normalizedName: 'work',
+      .where(eq(tagsTable.id, id));
+    expect(row).toStrictEqual({
+      color: "#123456",
+      name: "Work",
+      normalizedName: "work",
       pinned: true,
       sortOrder: 4,
-      color: '#123456'
-    })
-  })
+    });
+  });
 
-  test('存在しない id は not-found を返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
+  test("存在しない id は not-found を返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
 
     const result = await updateTag(
       db,
-      createCommand({ userId: 'user-a', id: 999, name: 'Missing' })
-    )
+      createCommand({ id: 999, name: "Missing", userId: "user-a" })
+    );
 
-    expect(result).toEqual({ kind: 'not-found' })
-  })
+    expect(result).toStrictEqual({ kind: "not-found" });
+  });
 
-  test('別ユーザーのタグは not-found を返し変更しない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertUser(db, 'user-b')
+  test("別ユーザーのタグは not-found を返し変更しない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertUser(db, "user-b");
     const id = await insertTagRow(db, {
-      userId: 'user-a',
-      name: 'Private',
+      color: "#000000",
+      name: "Private",
       pinned: false,
       sortOrder: 1,
-      color: '#000000'
-    })
+      userId: "user-a",
+    });
 
     const result = await updateTag(
       db,
       createCommand({
-        userId: 'user-b',
+        color: "#ffffff",
         id,
-        name: 'Stolen',
+        name: "Stolen",
         pinned: true,
         sortOrder: 9,
-        color: '#ffffff'
+        userId: "user-b",
       })
-    )
+    );
 
-    expect(result).toEqual({ kind: 'not-found' })
+    expect(result).toStrictEqual({ kind: "not-found" });
     const [row] = await db
       .select({
+        color: tagsTable.color,
         name: tagsTable.name,
         normalizedName: tagsTable.normalizedName,
         pinned: tagsTable.pinned,
         sortOrder: tagsTable.sortOrder,
-        color: tagsTable.color
       })
       .from(tagsTable)
-      .where(eq(tagsTable.id, id))
-    expect(row).toEqual({
-      name: 'Private',
-      normalizedName: 'private',
+      .where(eq(tagsTable.id, id));
+    expect(row).toStrictEqual({
+      color: "#000000",
+      name: "Private",
+      normalizedName: "private",
       pinned: false,
       sortOrder: 1,
-      color: '#000000'
-    })
-  })
+    });
+  });
 
-  test('同一ユーザーの正規化名が衝突すると name-conflict を返し変更しない', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    await insertTagRow(db, { userId: 'user-a', name: 'Work' })
+  test("同一ユーザーの正規化名が衝突すると name-conflict を返し変更しない", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    await insertTagRow(db, { name: "Work", userId: "user-a" });
     const id = await insertTagRow(db, {
-      userId: 'user-a',
-      name: 'Personal',
+      color: "#111111",
+      name: "Personal",
       pinned: false,
       sortOrder: 2,
-      color: '#111111'
-    })
+      userId: "user-a",
+    });
 
     const result = await updateTag(
       db,
       createCommand({
-        userId: 'user-a',
+        color: "#eeeeee",
         id,
-        name: 'WORK',
+        name: "WORK",
         pinned: true,
         sortOrder: 8,
-        color: '#eeeeee'
+        userId: "user-a",
       })
-    )
+    );
 
-    expect(result).toEqual({ kind: 'name-conflict' })
+    expect(result).toStrictEqual({ kind: "name-conflict" });
     const [row] = await db
       .select({
+        color: tagsTable.color,
         name: tagsTable.name,
         normalizedName: tagsTable.normalizedName,
         pinned: tagsTable.pinned,
         sortOrder: tagsTable.sortOrder,
-        color: tagsTable.color
       })
       .from(tagsTable)
-      .where(eq(tagsTable.id, id))
-    expect(row).toEqual({
-      name: 'Personal',
-      normalizedName: 'personal',
+      .where(eq(tagsTable.id, id));
+    expect(row).toStrictEqual({
+      color: "#111111",
+      name: "Personal",
+      normalizedName: "personal",
       pinned: false,
       sortOrder: 2,
-      color: '#111111'
-    })
-  })
+    });
+  });
 
-  test('所有確認の後に行が消えた競合は not-found を返す', async () => {
-    const db = await createMemoryDb()
-    await insertUser(db, 'user-a')
-    const id = await insertTagRow(db, { userId: 'user-a', name: 'Vanish' })
+  test("所有確認の後に行が消えた競合は not-found を返す", async () => {
+    const db = await createMemoryDb();
+    await insertUser(db, "user-a");
+    const id = await insertTagRow(db, { name: "Vanish", userId: "user-a" });
 
     // 所有 SELECT と UPDATE の隙間で別接続が削除した状況を、BEFORE UPDATE トリガで再現する。
     // 行を消すと UPDATE の対象が消えるため RETURNING は空になり、404 仕分けの分岐に入る。
@@ -298,19 +304,19 @@ describe.sequential('updateTag', () => {
       sql.raw(
         `CREATE TRIGGER vanish_after_check BEFORE UPDATE ON tags WHEN OLD.id = ${id} BEGIN DELETE FROM tags WHERE id = ${id}; END`
       )
-    )
+    );
 
     const result = await updateTag(
       db,
-      createCommand({ userId: 'user-a', id, name: 'Renamed', sortOrder: 3 })
-    )
+      createCommand({ id, name: "Renamed", sortOrder: 3, userId: "user-a" })
+    );
 
-    expect(result).toEqual({ kind: 'not-found' })
-  })
+    expect(result).toStrictEqual({ kind: "not-found" });
+  });
 
-  test('汎用 UNIQUE 判定と例外は import しない', () => {
-    const source = readFileSync(join(persistenceDir, 'update-tag.ts'), 'utf8')
-    expect(source).not.toContain('isSqliteUniqueConstraintError')
-    expect(source).not.toContain('TagNameAlreadyExistsError')
-  })
-})
+  test("汎用 UNIQUE 判定と例外は import しない", () => {
+    const source = readFileSync(join(persistenceDir, "update-tag.ts"), "utf-8");
+    expect(source).not.toContain("isSqliteUniqueConstraintError");
+    expect(source).not.toContain("TagNameAlreadyExistsError");
+  });
+});

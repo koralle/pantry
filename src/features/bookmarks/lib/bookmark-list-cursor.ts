@@ -1,48 +1,52 @@
-import * as v from 'valibot'
+import * as v from "valibot";
 
-import { bookmarkIdSchema } from '../domain/bookmark-values'
+import { bookmarkIdSchema } from "../domain/bookmark-values";
 
-export type BookmarkListCursor = {
-  readonly sortValueMs: number
-  readonly id: string
+export interface BookmarkListCursor {
+  readonly sortValueMs: number;
+  readonly id: string;
 }
 
-const CURSOR_PATTERN = /^(?<sortValueMs>\d+):(?<id>.+)$/
+const CURSOR_PATTERN = /^(?<sortValueMs>\d+):(?<id>.+)$/;
 
-function parseCursorSortValueMs(value: string | undefined): number | null {
+const parseCursorSortValueMs = (value: string | undefined): number | null => {
   if (value === undefined) {
-    return null
+    return null;
   }
-  const sortValueMs = Number(value)
-  if (!Number.isSafeInteger(sortValueMs) || new Date(sortValueMs).getTime() !== sortValueMs) {
-    return null
+  const sortValueMs = Number(value);
+  if (
+    !Number.isSafeInteger(sortValueMs) ||
+    new Date(sortValueMs).getTime() !== sortValueMs
+  ) {
+    return null;
   }
-  return sortValueMs
-}
+  return sortValueMs;
+};
 
-function parseCursorBookmarkId(value: string | undefined): string | null {
+const parseCursorBookmarkId = (value: string | undefined): string | null => {
   if (value === undefined) {
-    return null
+    return null;
   }
-  const parsedId = v.safeParse(bookmarkIdSchema, value)
-  return parsedId.success ? parsedId.output : null
-}
+  const parsedId = v.safeParse(bookmarkIdSchema, value);
+  return parsedId.success ? parsedId.output : null;
+};
 
-export function decodeBookmarkListCursor(value: string): BookmarkListCursor | null {
-  const matched = CURSOR_PATTERN.exec(value)
+export const decodeBookmarkListCursor = (
+  value: string
+): BookmarkListCursor | null => {
+  const matched = CURSOR_PATTERN.exec(value);
   if (matched === null) {
-    return null
+    return null;
   }
 
-  const sortValueMs = parseCursorSortValueMs(matched.groups?.['sortValueMs'])
-  const id = parseCursorBookmarkId(matched.groups?.['id'])
+  const sortValueMs = parseCursorSortValueMs(matched.groups?.["sortValueMs"]);
+  const id = parseCursorBookmarkId(matched.groups?.["id"]);
   if (sortValueMs === null || id === null) {
-    return null
+    return null;
   }
 
-  return { sortValueMs, id }
-}
+  return { id, sortValueMs };
+};
 
-export function encodeBookmarkListCursor(cursor: BookmarkListCursor): string {
-  return `${cursor.sortValueMs}:${cursor.id}`
-}
+export const encodeBookmarkListCursor = (cursor: BookmarkListCursor): string =>
+  `${cursor.sortValueMs}:${cursor.id}`;

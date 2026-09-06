@@ -1,8 +1,11 @@
-import * as v from 'valibot'
-import { describe, expect, test } from 'vitest'
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
 
-import { executeFetchPageTitle, fetchPageTitleInputSchema } from './fetch-page-title'
-import type { FetchPageTitle, FetchPageTitleOutput } from './fetch-page-title'
+import {
+  executeFetchPageTitle,
+  fetchPageTitleInputSchema,
+} from "./fetch-page-title";
+import type { FetchPageTitle, FetchPageTitleOutput } from "./fetch-page-title";
 
 /**
  * 戻り値を固定した port。HTTP の詳細は Application の外。
@@ -10,66 +13,70 @@ import type { FetchPageTitle, FetchPageTitleOutput } from './fetch-page-title'
  * Error class 名や message による分岐がどこにも生まれない。
  */
 function fakeFetchPageTitle(output: FetchPageTitleOutput): FetchPageTitle {
-  return async () => output
+  return async () => output;
 }
 
-describe('fetchPageTitleInputSchema', () => {
-  test('http / https の URL を受け付ける', () => {
-    expect(v.parse(fetchPageTitleInputSchema, { url: 'https://example.com' })).toEqual({
-      url: 'https://example.com'
-    })
-  })
+describe("fetchPageTitleInputSchema", () => {
+  test("http / https の URL を受け付ける", () => {
+    expect(
+      v.parse(fetchPageTitleInputSchema, { url: "https://example.com" })
+    ).toStrictEqual({
+      url: "https://example.com",
+    });
+  });
 
-  test('ftp などは拒否する', () => {
-    expect(() => v.parse(fetchPageTitleInputSchema, { url: 'ftp://example.com' })).toThrow()
-  })
-})
+  test("ftp などは拒否する", () => {
+    expect(() =>
+      v.parse(fetchPageTitleInputSchema, { url: "ftp://example.com" })
+    ).toThrow();
+  });
+});
 
-describe('executeFetchPageTitle', () => {
-  test('取得できた title を成功値として返す', async () => {
+describe(executeFetchPageTitle, () => {
+  test("取得できた title を成功値として返す", async () => {
     const result = await executeFetchPageTitle({
-      fetchPageTitle: fakeFetchPageTitle({ kind: 'fetched', title: 'Example' }),
-      url: 'https://example.com'
-    })
+      fetchPageTitle: fakeFetchPageTitle({ kind: "fetched", title: "Example" }),
+      url: "https://example.com",
+    });
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       ok: true,
-      value: 'Example'
-    })
-  })
+      value: "Example",
+    });
+  });
 
-  test('取得不能・title なしは null 成功を返す', async () => {
+  test("取得不能・title なしは null 成功を返す", async () => {
     const result = await executeFetchPageTitle({
-      fetchPageTitle: fakeFetchPageTitle({ kind: 'unavailable' }),
-      url: 'https://example.com'
-    })
+      fetchPageTitle: fakeFetchPageTitle({ kind: "unavailable" }),
+      url: "https://example.com",
+    });
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       ok: true,
-      value: null
-    })
-  })
+      value: null,
+    });
+  });
 
-  test('禁止 URL を url-not-allowed へ写す', async () => {
+  test("禁止 URL を url-not-allowed へ写す", async () => {
     const result = await executeFetchPageTitle({
-      fetchPageTitle: fakeFetchPageTitle({ kind: 'url-not-allowed' }),
-      url: 'http://localhost:3000'
-    })
+      fetchPageTitle: fakeFetchPageTitle({ kind: "url-not-allowed" }),
+      url: "http://localhost:3000",
+    });
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
+      error: { code: "url-not-allowed" },
       ok: false,
-      error: { code: 'url-not-allowed' }
-    })
-  })
+    });
+  });
 
-  test('port の未知の失敗は潰さず throw する', async () => {
+  test("port の未知の失敗は潰さず throw する", async () => {
     await expect(
       executeFetchPageTitle({
         fetchPageTitle: async () => {
-          throw new Error('dns exploded')
+          throw new Error("dns exploded");
         },
-        url: 'https://example.com'
+        url: "https://example.com",
       })
-    ).rejects.toThrow('dns exploded')
-  })
-})
+    ).rejects.toThrow("dns exploded");
+  });
+});

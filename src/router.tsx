@@ -1,13 +1,13 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-import { shouldRestoreRouterScroll } from './features/bookmarks/lib/bookmark-list-scroll-session'
-import { routeTree } from './routeTree.gen'
+import { shouldRestoreRouterScroll } from "./features/bookmarks/lib/bookmark-list-scroll-session";
+import { routeTree } from "./routeTree.gen";
 
 export const getRouter = function getRouter() {
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient();
 
   const router = createTanStackRouter({
     Wrap: ({ children }) => (
@@ -17,32 +17,32 @@ export const getRouter = function getRouter() {
       </QueryClientProvider>
     ),
     context: {
-      queryClient
+      queryClient,
     },
-    defaultPreload: 'intent',
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
     routeTree,
-    scrollRestoration: ({ location }) => shouldRestoreRouterScroll(location)
-  })
+    scrollRestoration: ({ location }) => shouldRestoreRouterScroll(location),
+  });
 
   setupRouterSsrQueryIntegration({
     queryClient,
-    router
-  })
+    router,
+  });
 
-  return router
-}
+  return router;
+};
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
-    router: ReturnType<typeof getRouter>
+    router: ReturnType<typeof getRouter>;
   }
 
   interface HistoryState {
-    newBookmarkCreated?: boolean
-    newTagCreated?: boolean
-    tagUpdated?: boolean
-    bookmarkUpdated?: boolean
-    bookmarkDeleted?: boolean
+    newBookmarkCreated?: boolean;
+    newTagCreated?: boolean;
+    tagUpdated?: boolean;
+    bookmarkUpdated?: boolean;
+    bookmarkDeleted?: boolean;
   }
 }

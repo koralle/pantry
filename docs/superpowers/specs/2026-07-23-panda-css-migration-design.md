@@ -11,17 +11,17 @@
 
 ## Constraints and Decisions
 
-| 項目           | 決定                                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 移行の単位     | 画面または共有コンポーネント単位。移行済み要素に旧 class と Panda class を併用しない。                                                            |
-| 表示仕様       | 現行の表示・挙動を完全に維持する。UI 改善は別タスクにする。                                                                                       |
-| Panda API      | 構造スタイルは `css()`、実際に variant を持つ共有 UI だけ `cva()`。`styled` と JSX primitive への一括置換はしない。                               |
-| 型安全性       | `strictTokens` と `strictPropertyValues` を維持する。静的な値は custom token または preset token を使う。                                         |
-| グローバル CSS | `preflight: false` を維持する。Kiso が現在担う document、list、table、form、dialog、focus の reset を Panda `globalCss` へ移す。                  |
-| CSS entry      | `src/index.css` を Panda layer 順序だけを持つ global entry とし、`src/routes/__root.tsx` から直接 import する。`src/app.css` は最終的に削除する。 |
-| 動的なタグ色   | DB の `tag.color` は実行時値なので inline `backgroundColor` を明示的な例外として残す。                                                            |
-| 生成物         | `styled-system/` は `pnpm run panda:codegen` で生成し、手編集しない。                                                                             |
-| 移行中の互換性 | 未移行の selector が参照する `--pantry-*` variable と旧 keyframe は最終 purge まで残す。Panda theme を新規コードの唯一の参照先にする。            |
+| 項目 | 決定 |
+| --- | --- |
+| 移行の単位 | 画面または共有コンポーネント単位。移行済み要素に旧 class と Panda class を併用しない。 |
+| 表示仕様 | 現行の表示・挙動を完全に維持する。UI 改善は別タスクにする。 |
+| Panda API | 構造スタイルは `css()`、実際に variant を持つ共有 UI だけ `cva()`。`styled` と JSX primitive への一括置換はしない。 |
+| 型安全性 | `strictTokens` と `strictPropertyValues` を維持する。静的な値は custom token または preset token を使う。 |
+| グローバル CSS | `preflight: false` を維持する。Kiso が現在担う document、list、table、form、dialog、focus の reset を Panda `globalCss` へ移す。 |
+| CSS entry | `src/index.css` を Panda layer 順序だけを持つ global entry とし、`src/routes/__root.tsx` から直接 import する。`src/app.css` は最終的に削除する。 |
+| 動的なタグ色 | DB の `tag.color` は実行時値なので inline `backgroundColor` を明示的な例外として残す。 |
+| 生成物 | `styled-system/` は `pnpm run panda:codegen` で生成し、手編集しない。 |
+| 移行中の互換性 | 未移行の selector が参照する `--pantry-*` variable と旧 keyframe は最終 purge まで残す。Panda theme を新規コードの唯一の参照先にする。 |
 
 ## Current State
 
@@ -38,11 +38,11 @@
 
 `panda.config.ts` に現行の値から次の階層を定義する。
 
-| 階層                  | 用途                                                                                                                          |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| literal tokens        | Pantry の background、ink、muted、line、accent、white、danger、box radius、body font、body line height                        |
-| semantic tokens       | canvas/surface 背景、default/muted foreground、default/accent/error border、accent/error surface、backdrop、skeleton gradient |
-| animation definitions | `skeletonPulse`、`fadeUp`、`crossfade` と対応する animation style                                                             |
+| 階層 | 用途 |
+| --- | --- |
+| literal tokens | Pantry の background、ink、muted、line、accent、white、danger、box radius、body font、body line height |
+| semantic tokens | canvas/surface 背景、default/muted foreground、default/accent/error border、accent/error surface、backdrop、skeleton gradient |
+| animation definitions | `skeletonPulse`、`fadeUp`、`crossfade` と対応する animation style |
 
 既存の `color-mix(in oklab, ...)` は semantic token の値としてそのまま保持する。header、rail、backdrop、skeleton、chip、form summary、flash、sign-in gradient の色を近似色へ置き換えない。
 
@@ -73,15 +73,15 @@ theme 追加時には、まだ `--pantry-*` variable と旧 keyframe を削除�
 
 ## Migration Waves
 
-| Wave | 対象                              | 主なファイル                                                                          | 完了時に app.css から削除する範囲                                                                                                 |
-| ---- | --------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| 0    | 比較基準                          | 変更なし                                                                              | 主要画面の mobile、640px 境界、768px 境界、desktop の screenshot を取得する。                                                     |
-| 1    | Theme と global styles            | `panda.config.ts`、`src/app.css`                                                      | Panda theme と、Kiso と同じ適用範囲の global reset を追加する。legacy root variable、keyframe、Kiso import は比較基準として残す。 |
-| 2    | 共有 state/motion と UI primitive | `src/components/pantry-motion.tsx`、`src/components/ui-state.tsx`、`src/styles/ui.ts` | skeleton、spinner、empty/error、button、tag chip、form control、screen-reader-only。                                              |
-| 3    | 認証・タグ機能                    | `src/routes/sign-in/**`、`src/features/tags/**`、`src/routes/_protected/tags/**`      | entrance、shelf nav、tag table、tag form、palette、tag detail/admin。                                                             |
-| 4    | ブックマーク機能                  | `src/features/bookmarks/components/**`、`src/routes/_protected/bookmarks/**`          | list toolbar、table/card、detail、workbench form、dialog。                                                                        |
-| 5    | アプリケーション frame と設定     | `src/routes/_protected.tsx`、`src/routes/_protected/settings/index.tsx`               | shell、rail、header、mobile shelf sheet、settings。                                                                               |
-| 6    | purge                             | `src/app.css`、`src/index.css`、`src/routes/__root.tsx`、依存設定、全 `src/**/*.tsx`  | 残る `.pantry-*` セレクタと class usage、Kiso 依存をすべて除去し、app.css を削除する。                                            |
+| Wave | 対象 | 主なファイル | 完了時に app.css から削除する範囲 |
+| --- | --- | --- | --- |
+| 0 | 比較基準 | 変更なし | 主要画面の mobile、640px 境界、768px 境界、desktop の screenshot を取得する。 |
+| 1 | Theme と global styles | `panda.config.ts`、`src/app.css` | Panda theme と、Kiso と同じ適用範囲の global reset を追加する。legacy root variable、keyframe、Kiso import は比較基準として残す。 |
+| 2 | 共有 state/motion と UI primitive | `src/components/pantry-motion.tsx`、`src/components/ui-state.tsx`、`src/styles/ui.ts` | skeleton、spinner、empty/error、button、tag chip、form control、screen-reader-only。 |
+| 3 | 認証・タグ機能 | `src/routes/sign-in/**`、`src/features/tags/**`、`src/routes/_protected/tags/**` | entrance、shelf nav、tag table、tag form、palette、tag detail/admin。 |
+| 4 | ブックマーク機能 | `src/features/bookmarks/components/**`、`src/routes/_protected/bookmarks/**` | list toolbar、table/card、detail、workbench form、dialog。 |
+| 5 | アプリケーション frame と設定 | `src/routes/_protected.tsx`、`src/routes/_protected/settings/index.tsx` | shell、rail、header、mobile shelf sheet、settings。 |
+| 6 | purge | `src/app.css`、`src/index.css`、`src/routes/__root.tsx`、依存設定、全 `src/**/*.tsx` | 残る `.pantry-*` セレクタと class usage、Kiso 依存をすべて除去し、app.css を削除する。 |
 
 Wave 2 以降は、対象コンポーネントを Panda class へ完全に置換してから、対応する CSS ルールを同じ変更で削除する。旧 CSS が未移行コンポーネントを支える期間は許容するが、移行済み要素を旧 class へ依存させない。
 

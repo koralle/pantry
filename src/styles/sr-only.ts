@@ -1,3 +1,3 @@
-import { visuallyHidden } from 'styled-system/patterns'
+import { visuallyHidden } from "styled-system/patterns";
 
-export const srOnly = visuallyHidden()
+export const srOnly = visuallyHidden();

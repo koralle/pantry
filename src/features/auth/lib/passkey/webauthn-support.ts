@@ -1,28 +1,29 @@
-type WebAuthnGlobals = {
-  readonly PublicKeyCredential?: unknown
+interface WebAuthnGlobals {
+  readonly PublicKeyCredential?: unknown;
 }
 
-function publicKeyCredential(globals: WebAuthnGlobals): typeof PublicKeyCredential | undefined {
-  return typeof globals.PublicKeyCredential === 'function'
+const publicKeyCredential = (
+  globals: WebAuthnGlobals
+): typeof PublicKeyCredential | undefined =>
+  typeof globals.PublicKeyCredential === "function"
     ? (globals.PublicKeyCredential as typeof PublicKeyCredential)
-    : undefined
-}
+    : undefined;
 
-export function isWebAuthnAvailable(globals: WebAuthnGlobals = globalThis): boolean {
-  return publicKeyCredential(globals) !== undefined
-}
-
-export async function isConditionalMediationAvailable(
+export const isWebAuthnAvailable = (
   globals: WebAuthnGlobals = globalThis
-): Promise<boolean> {
-  const credential = publicKeyCredential(globals)
+): boolean => publicKeyCredential(globals) !== undefined;
+
+export const isConditionalMediationAvailable = async (
+  globals: WebAuthnGlobals = globalThis
+): Promise<boolean> => {
+  const credential = publicKeyCredential(globals);
   if (credential === undefined) {
-    return false
+    return false;
   }
 
-  if (typeof credential.isConditionalMediationAvailable !== 'function') {
-    return false
+  if (typeof credential.isConditionalMediationAvailable !== "function") {
+    return false;
   }
 
-  return await credential.isConditionalMediationAvailable()
-}
+  return await credential.isConditionalMediationAvailable();
+};

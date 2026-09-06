@@ -1,41 +1,43 @@
-import * as v from 'valibot'
+import * as v from "valibot";
 
-import { err, ok } from '../../../shared/domain/result'
-import type { Result } from '../../../shared/domain/result'
-import type { UserId } from '../../auth/domain/auth-values'
-import { tagIdSchema } from '../../tags/domain/tag-values'
-import type { TagId } from '../../tags/domain/tag-values'
+import { err, ok } from "../../../shared/domain/result";
+import type { Result } from "../../../shared/domain/result";
+import type { UserId } from "../../auth/domain/auth-values";
+import { tagIdSchema } from "../../tags/domain/tag-values";
+import type { TagId } from "../../tags/domain/tag-values";
 import {
   bookmarkNoteSchema,
   bookmarkTitleSchema,
-  bookmarkUrlSchema
-} from '../domain/bookmark-values'
+  bookmarkUrlSchema,
+} from "../domain/bookmark-values";
 import type {
   BookmarkId,
   BookmarkNote,
   BookmarkTitle,
-  BookmarkUrl
-} from '../domain/bookmark-values'
+  BookmarkUrl,
+} from "../domain/bookmark-values";
 
 /**
  * HTTP 直前の形。domain schema が URL protocol・非空 title・note 正規化を担うため、
  * Application 側で二重に検証しない。
  */
 export const createBookmarkInputSchema = v.object({
-  url: bookmarkUrlSchema,
-  title: bookmarkTitleSchema,
   note: bookmarkNoteSchema,
-  tags: v.array(tagIdSchema)
-})
+  tags: v.array(tagIdSchema),
+  title: bookmarkTitleSchema,
+  url: bookmarkUrlSchema,
+});
 
 /**
  * Procedure の validation 済み入力が、そのまま Application へ渡る確定コマンドになる。
  * 省略と明示値の区別は schema 層で消えるため、変換点は置かない。
  */
-export type CreateBookmarkCommand = v.InferOutput<typeof createBookmarkInputSchema>
+export type CreateBookmarkCommand = v.InferOutput<
+  typeof createBookmarkInputSchema
+>;
 
-export type CreatedBookmark = {
-  readonly id: BookmarkId
+export interface CreatedBookmark {
+  readonly id: BookmarkId;
 }
 
 /**
@@ -43,15 +45,15 @@ export type CreatedBookmark = {
  * transaction 内の未知障害は rollback のために throw のまま通す。
  */
 export type CreateBookmarkError =
-  | { readonly code: 'duplicate-url' }
-  | { readonly code: 'invalid-tag' }
+  | { readonly code: "duplicate-url" }
+  | { readonly code: "invalid-tag" };
 
-export type InsertBookmarkInput = {
-  readonly userId: UserId
-  readonly url: BookmarkUrl
-  readonly title: BookmarkTitle
-  readonly note: BookmarkNote
-  readonly tagIds: readonly TagId[]
+export interface InsertBookmarkInput {
+  readonly userId: UserId;
+  readonly url: BookmarkUrl;
+  readonly title: BookmarkTitle;
+  readonly note: BookmarkNote;
+  readonly tagIds: readonly TagId[];
 }
 
 /**
@@ -60,31 +62,33 @@ export type InsertBookmarkInput = {
  * adapter が検証した結果として返す。
  */
 export type InsertBookmarkOutput =
-  | { readonly kind: 'created'; readonly id: BookmarkId }
-  | { readonly kind: 'duplicate-url' }
-  | { readonly kind: 'invalid-tag' }
+  | { readonly kind: "created"; readonly id: BookmarkId }
+  | { readonly kind: "duplicate-url" }
+  | { readonly kind: "invalid-tag" };
 
-export type InsertBookmark = (input: InsertBookmarkInput) => Promise<InsertBookmarkOutput>
+export type InsertBookmark = (
+  input: InsertBookmarkInput
+) => Promise<InsertBookmarkOutput>;
 
-export async function executeCreateBookmark(params: {
-  readonly insertBookmark: InsertBookmark
-  readonly userId: UserId
-  readonly command: CreateBookmarkCommand
-}): Promise<Result<CreatedBookmark, CreateBookmarkError>> {
+export const executeCreateBookmark = async (params: {
+  readonly insertBookmark: InsertBookmark;
+  readonly userId: UserId;
+  readonly command: CreateBookmarkCommand;
+}): Promise<Result<CreatedBookmark, CreateBookmarkError>> => {
   const output = await params.insertBookmark({
-    userId: params.userId,
-    url: params.command.url,
-    title: params.command.title,
     note: params.command.note,
-    tagIds: params.command.tags
-  })
+    tagIds: params.command.tags,
+    title: params.command.title,
+    url: params.command.url,
+    userId: params.userId,
+  });
 
-  if (output.kind === 'duplicate-url') {
-    return err({ code: 'duplicate-url' })
+  if (output.kind === "duplicate-url") {
+    return err({ code: "duplicate-url" });
   }
-  if (output.kind === 'invalid-tag') {
-    return err({ code: 'invalid-tag' })
+  if (output.kind === "invalid-tag") {
+    return err({ code: "invalid-tag" });
   }
 
-  return ok({ id: output.id })
-}
+  return ok({ id: output.id });
+};

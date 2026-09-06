@@ -1,16 +1,16 @@
-import * as v from 'valibot'
+import * as v from "valibot";
 
 import {
   bookmarkNoteSchema,
   bookmarkTitleSchema,
-  bookmarkUrlSchema
-} from '../../../domain/bookmark-values'
+  bookmarkUrlSchema,
+} from "../../../domain/bookmark-values";
 
 export const bookmarkFormSchema = v.object({
-  url: bookmarkUrlSchema,
+  note: bookmarkNoteSchema,
   title: bookmarkTitleSchema,
-  note: bookmarkNoteSchema
-})
+  url: bookmarkUrlSchema,
+});
 
-export type BookmarkFormInput = v.InferInput<typeof bookmarkFormSchema>
-export type BookmarkFormOutput = v.InferOutput<typeof bookmarkFormSchema>
+export type BookmarkFormInput = v.InferInput<typeof bookmarkFormSchema>;
+export type BookmarkFormOutput = v.InferOutput<typeof bookmarkFormSchema>;

@@ -50,6 +50,6 @@ DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、sof
 
 1. Tursoへのマイグレーションが適用できる。
 2. 初期ユーザー作成CLIが成功する。
-3. `pnpm run format:check`、`pnpm run lint`、`pnpm run typecheck`、`pnpm run test`、`pnpm run test:persistence`、`pnpm run build`が成功する。
+3. `pnpm run check`、`pnpm run typecheck`、`pnpm run test`、`pnpm run test:persistence`、`pnpm run build`が成功する。
 4. ローカルでPlaywright MCP検証を完了する。
 5. Cloudflare Workersへデプロイし、本番URLでもPlaywright MCPの主要フローを再確認する。

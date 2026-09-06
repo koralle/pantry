@@ -1,46 +1,46 @@
-import { createClient } from '@libsql/client'
-import type { Client } from '@libsql/client'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as v from 'valibot'
-import { afterAll, beforeAll, beforeEach, inject } from 'vitest'
+import { createClient } from "@libsql/client";
+import type { Client } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import * as v from "valibot";
+import { afterAll, beforeAll, beforeEach, inject } from "vitest";
 
-import type { AppDb } from '../../db/app-db'
-import { user } from '../../db/schema/auth-schema'
-import { bookmarkTable } from '../../db/schema/bookmark'
-import { bookmarkTagsTable } from '../../db/schema/bookmark-tag'
-import { tagsTable } from '../../db/schema/tag'
-import { userIdSchema } from '../../features/auth/domain/auth-values'
-import type { UserId } from '../../features/auth/domain/auth-values'
+import type { AppDb } from "../../db/app-db";
+import { user } from "../../db/schema/auth-schema";
+import { bookmarkTable } from "../../db/schema/bookmark";
+import { bookmarkTagsTable } from "../../db/schema/bookmark-tag";
+import { tagsTable } from "../../db/schema/tag";
+import { userIdSchema } from "../../features/auth/domain/auth-values";
+import type { UserId } from "../../features/auth/domain/auth-values";
 
-declare module 'vitest' {
+declare module "vitest" {
   export interface ProvidedContext {
-    libsqlUrl: string
+    libsqlUrl: string;
   }
 }
 
-type PersistenceDb = {
-  getDb: () => AppDb
-  getClient: () => Client
+interface PersistenceDb {
+  getDb: () => AppDb;
+  getClient: () => Client;
 }
 
 function namesFrom(rows: readonly Record<string, unknown>[]): string[] {
   return rows.flatMap((row) => {
-    const { name } = row
-    return typeof name === 'string' && name.length > 0 ? [name] : []
-  })
+    const { name } = row;
+    return typeof name === "string" && name.length > 0 ? [name] : [];
+  });
 }
 
 async function resetPersistenceTables(client: Client): Promise<void> {
   const tables = await client.execute(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%'"
-  )
-  const tableNames = namesFrom(tables.rows)
+  );
+  const tableNames = namesFrom(tables.rows);
   const statements = [
-    'PRAGMA foreign_keys = OFF',
+    "PRAGMA foreign_keys = OFF",
     ...tableNames.map((name) => `DELETE FROM "${name.replaceAll('"', '""')}"`),
-    'PRAGMA foreign_keys = ON'
-  ]
-  await client.executeMultiple(statements.join(';\n'))
+    "PRAGMA foreign_keys = ON",
+  ];
+  await client.executeMultiple(statements.join(";\n"));
 }
 
 /**
@@ -48,50 +48,50 @@ async function resetPersistenceTables(client: Client): Promise<void> {
  * schema は globalSetup の本番 migration が作ったものを使う。
  */
 export function withPersistenceDb(): PersistenceDb {
-  let client: Client | undefined = undefined
-  let db: AppDb | undefined = undefined
+  let client: Client | undefined = undefined;
+  let db: AppDb | undefined = undefined;
 
   beforeAll(() => {
-    client = createClient({ url: inject('libsqlUrl') })
-    db = drizzle({ client })
-  })
+    client = createClient({ url: inject("libsqlUrl") });
+    db = drizzle({ client });
+  });
 
   afterAll(() => {
-    client?.close()
-    client = undefined
-    db = undefined
-  })
+    client?.close();
+    client = undefined;
+    db = undefined;
+  });
 
   beforeEach(async () => {
     if (client === undefined) {
-      throw new Error('persistence client is not initialized')
+      throw new Error("persistence client is not initialized");
     }
-    await resetPersistenceTables(client)
-  })
+    await resetPersistenceTables(client);
+  });
 
   return {
-    getDb: () => {
-      if (db === undefined) {
-        throw new Error('persistence db is not initialized')
-      }
-      return db
-    },
     getClient: () => {
       if (client === undefined) {
-        throw new Error('persistence client is not initialized')
+        throw new Error("persistence client is not initialized");
       }
-      return client
-    }
-  }
+      return client;
+    },
+    getDb: () => {
+      if (db === undefined) {
+        throw new Error("persistence db is not initialized");
+      }
+      return db;
+    },
+  };
 }
 
 export async function seedUser(db: AppDb, id: string): Promise<UserId> {
   await db.insert(user).values({
+    email: `${id}@example.com`,
     id,
     name: id,
-    email: `${id}@example.com`
-  })
-  return v.parse(userIdSchema, id)
+  });
+  return v.parse(userIdSchema, id);
 }
 
 export async function seedTag(
@@ -101,82 +101,82 @@ export async function seedTag(
   const inserted = await db
     .insert(tagsTable)
     .values({
-      userId: input.userId,
       name: input.name,
-      normalizedName: input.name.toLowerCase()
+      normalizedName: input.name.toLowerCase(),
+      userId: input.userId,
     })
-    .returning({ id: tagsTable.id })
-  const [row] = inserted
+    .returning({ id: tagsTable.id });
+  const [row] = inserted;
   if (row === undefined) {
-    throw new Error('seedTag failed to return the inserted row')
+    throw new Error("seedTag failed to return the inserted row");
   }
-  return row.id
+  return row.id;
 }
 
 export async function seedBookmark(
   db: AppDb,
   input: {
-    readonly id: string
-    readonly userId: string
-    readonly title?: string
-    readonly url?: string
-    readonly note?: string | null
-    readonly createdAt?: Date
-    readonly updatedAt?: Date
-    readonly deletedAt?: Date | null
-    readonly tagIds?: readonly number[]
+    readonly id: string;
+    readonly userId: string;
+    readonly title?: string;
+    readonly url?: string;
+    readonly note?: string | null;
+    readonly createdAt?: Date;
+    readonly updatedAt?: Date;
+    readonly deletedAt?: Date | null;
+    readonly tagIds?: readonly number[];
   }
 ): Promise<void> {
   await db.insert(bookmarkTable).values({
     id: input.id,
-    userId: input.userId,
-    url: input.url ?? `https://example.com/${input.id}`,
-    title: input.title ?? input.id,
     note: input.note ?? null,
+    title: input.title ?? input.id,
+    url: input.url ?? `https://example.com/${input.id}`,
+    userId: input.userId,
     ...(input.createdAt === undefined ? {} : { createdAt: input.createdAt }),
     ...(input.updatedAt === undefined ? {} : { updatedAt: input.updatedAt }),
-    ...(input.deletedAt === undefined ? {} : { deletedAt: input.deletedAt })
-  })
+    ...(input.deletedAt === undefined ? {} : { deletedAt: input.deletedAt }),
+  });
   if (input.tagIds !== undefined && input.tagIds.length > 0) {
     await db.insert(bookmarkTagsTable).values(
       input.tagIds.map((tagId) => ({
         bookmarkId: input.id,
-        tagId
+        tagId,
       }))
-    )
+    );
   }
 }
 
 export async function seedBookmarks(
   db: AppDb,
-  rows: ReadonlyArray<Parameters<typeof seedBookmark>[1]>
+  rows: readonly Parameters<typeof seedBookmark>[1][]
 ): Promise<void> {
   if (rows.length === 0) {
-    return
+    return;
   }
   await db.insert(bookmarkTable).values(
     rows.map((input) => ({
       id: input.id,
-      userId: input.userId,
-      url: input.url ?? `https://example.com/${input.id}`,
-      title: input.title ?? input.id,
       note: input.note ?? null,
+      title: input.title ?? input.id,
+      url: input.url ?? `https://example.com/${input.id}`,
+      userId: input.userId,
       ...(input.createdAt === undefined ? {} : { createdAt: input.createdAt }),
       ...(input.updatedAt === undefined ? {} : { updatedAt: input.updatedAt }),
-      ...(input.deletedAt === undefined ? {} : { deletedAt: input.deletedAt })
+      ...(input.deletedAt === undefined ? {} : { deletedAt: input.deletedAt }),
     }))
-  )
+  );
   const tagRows = rows.flatMap((input) =>
     (input.tagIds ?? []).map((tagId) => ({
       bookmarkId: input.id,
-      tagId
+      tagId,
     }))
-  )
+  );
   if (tagRows.length > 0) {
-    await db.insert(bookmarkTagsTable).values(tagRows)
+    await db.insert(bookmarkTagsTable).values(tagRows);
   }
 }
 
 export function bookmarkId(index: number): string {
-  return `019fae92-3bb0-78cd-b488-${index.toString(16).padStart(12, '0')}`
+  return `019fae92-3bb0-78cd-b488-${index.toString(16).padStart(12, "0")}`;
 }

@@ -237,15 +237,15 @@
   ```ts
   expect(
     parseCreateUserInput({
-      PANTRY_USER_EMAIL: 'me@example.com',
-      PANTRY_USER_NAME: 'Me',
-      PANTRY_USER_PASSWORD: 'correct-horse-battery-staple'
+      PANTRY_USER_EMAIL: "me@example.com",
+      PANTRY_USER_NAME: "Me",
+      PANTRY_USER_PASSWORD: "correct-horse-battery-staple",
     })
   ).toStrictEqual({
-    email: 'me@example.com',
-    name: 'Me',
-    password: 'correct-horse-battery-staple'
-  })
+    email: "me@example.com",
+    name: "Me",
+    password: "correct-horse-battery-staple",
+  });
   ```
 
 - [ ] **Step 2: Run the new test to confirm the missing parser fails.**
@@ -262,15 +262,15 @@
   betterAuth({
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
-    disabledPaths: ['/sign-up/email'],
+    disabledPaths: ["/sign-up/email"],
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
       maxPasswordLength: 128,
-      minPasswordLength: 12
+      minPasswordLength: 12,
     },
-    plugins: [admin()]
-  })
+    plugins: [admin()],
+  });
   ```
 
   Test `disabledPaths` contains `/sign-up/email` and `emailAndPassword.disableSignUp` is `true`. Preserve `admin()` only for local `auth.api.createUser`; do not add its client plugin or any admin UI.
@@ -281,8 +281,8 @@
 
   ```ts
   await auth.api.createUser({
-    body: { email, name, password, role: 'user' }
-  })
+    body: { email, name, password, role: "user" },
+  });
   ```
 
   Replace `auth.api.signUpEmail` in `scripts/seed.ts` with the same server API. Add `create:user` to `package.json`:
@@ -325,9 +325,15 @@
 - [ ] **Step 1: Write failing tests for valid title extraction, rejected private hosts, redirect limits, and network failure.**
 
   ```ts
-  expect(await fetchPageTitle('https://example.com', fetchMock)).toBe('Example title')
-  await expect(fetchPageTitle('http://127.0.0.1')).rejects.toThrow('URL is not allowed')
-  expect(await fetchPageTitle('https://offline.example', failingFetch)).toBeNull()
+  expect(await fetchPageTitle("https://example.com", fetchMock)).toBe(
+    "Example title"
+  );
+  await expect(fetchPageTitle("http://127.0.0.1")).rejects.toThrow(
+    "URL is not allowed"
+  );
+  expect(
+    await fetchPageTitle("https://offline.example", failingFetch)
+  ).toBeNull();
   ```
 
 - [ ] **Step 2: Run the test to verify it fails.**
@@ -341,9 +347,9 @@
   The implementation must:
 
   ```ts
-  const MAX_REDIRECTS = 3
-  const MAX_RESPONSE_BYTES = 1_000_000
-  const TIMEOUT_MS = 3_000
+  const MAX_REDIRECTS = 3;
+  const MAX_RESPONSE_BYTES = 1_000_000;
+  const TIMEOUT_MS = 3_000;
   ```
 
   Parse each URL with `new URL`, only allow `http:` and `https:`, reject `localhost`, `.localhost`, IPv4 loopback/private/link-local/metadata addresses, and repeat validation for every redirect target. Call fetch with `redirect: 'manual'`, stop after three redirects, reject response `content-length` values above the limit, read no more than the limit from the stream, and return a trimmed HTML `<title>` or `null`. Network, timeout, malformed HTML, and non-HTML responses return `null`; only invalid requested addresses throw validation errors.
@@ -351,9 +357,9 @@
 - [ ] **Step 4: Expose a validated Server Function for the registration form.**
 
   ```ts
-  export const fetchBookmarkTitle = createServerFn({ method: 'POST' })
+  export const fetchBookmarkTitle = createServerFn({ method: "POST" })
     .validator(v.object({ url: v.pipe(v.string(), v.url()) }))
-    .handler(({ data }) => fetchPageTitle(data.url))
+    .handler(({ data }) => fetchPageTitle(data.url));
   ```
 
 - [ ] **Step 5: Run focused and full verification.**
@@ -394,14 +400,23 @@
   Cover tag normalization, tag reuse, tag replacement, query filtering, soft deletion, and user isolation:
 
   ```ts
-  expect(normalizeTagNames([' React ', 'react', 'TypeScript'])).toStrictEqual([
-    'react',
-    'typescript'
-  ])
+  expect(normalizeTagNames([" React ", "react", "TypeScript"])).toStrictEqual([
+    "react",
+    "typescript",
+  ]);
   expect(
-    (await listBookmarks(db, ownerId, { q: 'memo', tags: [], tagMode: 'and', offset: 0 })).items
-  ).toHaveLength(1)
-  await expect(getBookmark(db, otherUserId, bookmarkId)).rejects.toThrow('Bookmark not found')
+    (
+      await listBookmarks(db, ownerId, {
+        q: "memo",
+        tags: [],
+        tagMode: "and",
+        offset: 0,
+      })
+    ).items
+  ).toHaveLength(1);
+  await expect(getBookmark(db, otherUserId, bookmarkId)).rejects.toThrow(
+    "Bookmark not found"
+  );
   ```
 
 - [ ] **Step 2: Run the service test to verify it fails.**
@@ -417,12 +432,12 @@
     note: v.optional(v.nullable(v.string())),
     tags: v.pipe(v.array(tagNameSchema), v.maxLength(20)),
     title: v.pipe(v.string(), v.minLength(1)),
-    url: v.pipe(v.string(), v.url())
-  })
+    url: v.pipe(v.string(), v.url()),
+  });
 
   export type BookmarkWithTags = BookmarkSelectType & {
-    tags: readonly { id: number; name: string }[]
-  }
+    tags: readonly { id: number; name: string }[];
+  };
   ```
 
   Validate list input with `q`, tag names, `tagMode`, `sort`, `limit: 50`, and `offset >= 0`.
@@ -480,18 +495,18 @@
   expect(v.parse(bookmarkSearchSchema, {})).toStrictEqual({
     limit: 50,
     offset: 0,
-    sort: 'newest',
-    tagMode: 'and'
-  })
+    sort: "newest",
+    tagMode: "and",
+  });
   expect(
     v.parse(bookmarkSearchSchema, {
-      q: 'react',
-      tags: ['frontend'],
-      tagMode: 'or',
-      sort: 'updated',
-      offset: 50
+      q: "react",
+      tags: ["frontend"],
+      tagMode: "or",
+      sort: "updated",
+      offset: 50,
     }).offset
-  ).toBe(50)
+  ).toBe(50);
   ```
 
 - [ ] **Step 2: Run the schema test to verify the new pagination expectation fails.**
@@ -508,19 +523,11 @@
   <fieldset>
     <legend>タグの条件</legend>
     <label>
-      <input
-        type='radio'
-        name='tagMode'
-        value='and'
-      />
+      <input type="radio" name="tagMode" value="and" />
       すべて含む
     </label>
     <label>
-      <input
-        type='radio'
-        name='tagMode'
-        value='or'
-      />
+      <input type="radio" name="tagMode" value="or" />
       いずれか含む
     </label>
   </fieldset>

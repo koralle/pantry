@@ -8,12 +8,12 @@
 
 `tags` に以下を追加する。
 
-| Column         | Type                   | Default | Purpose                      |
-| -------------- | ---------------------- | ------- | ---------------------------- |
-| `pinned`       | boolean (integer)      | `false` | 棚ナビ／玄関で上に固定       |
-| `sort_order`   | integer                | `0`     | 同一 pinned グループ内の並び |
-| `color`        | text, nullable         | `null`  | 箱／チップの任意識別色       |
-| `last_used_at` | timestamp_ms, nullable | `null`  | よく使う箱の並び             |
+| Column | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `pinned` | boolean (integer) | `false` | 棚ナビ／玄関で上に固定 |
+| `sort_order` | integer | `0` | 同一 pinned グループ内の並び |
+| `color` | text, nullable | `null` | 箱／チップの任意識別色 |
+| `last_used_at` | timestamp_ms, nullable | `null` | よく使う箱の並び |
 
 インデックス:
 

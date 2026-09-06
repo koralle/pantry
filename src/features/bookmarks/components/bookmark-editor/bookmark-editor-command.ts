@@ -1,15 +1,13 @@
-import type { BookmarkFormSubmitValues } from './bookmark-form'
-import type { BookmarkEditorData, UpdateBookmarkCommand } from './index'
+import type { BookmarkFormSubmitValues } from "./bookmark-form";
+import type { BookmarkEditorData, UpdateBookmarkCommand } from "./index";
 
-export function buildUpdateBookmarkCommand(
+export const buildUpdateBookmarkCommand = (
   initialData: BookmarkEditorData,
   values: BookmarkFormSubmitValues
-): UpdateBookmarkCommand {
-  return {
-    bookmarkId: initialData.bookmarkId,
-    url: values.url,
-    title: values.title,
-    note: values.note,
-    tagIds: values.tagIds
-  }
-}
+): UpdateBookmarkCommand => ({
+  bookmarkId: initialData.bookmarkId,
+  note: values.note,
+  tagIds: values.tagIds,
+  title: values.title,
+  url: values.url,
+});

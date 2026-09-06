@@ -1,75 +1,75 @@
-import { css } from 'styled-system/css'
+import { css } from "styled-system/css";
 
 export const dataTableWrap = css({
-  inlineSize: '100%',
-  minInlineSize: '0'
-})
+  inlineSize: "100%",
+  minInlineSize: "0",
+});
 
 export const dataTable = css({
-  width: 'full',
-  borderCollapse: 'collapse',
-  tableLayout: 'fixed'
-})
+  borderCollapse: "collapse",
+  tableLayout: "fixed",
+  width: "full",
+});
 
 export const dataTableCell = css({
-  borderBlockEndWidth: 'thin',
-  borderBlockEndStyle: 'solid',
-  borderBlockEndColor: 'border.default',
-  paddingBlock: '2.5',
-  paddingInline: '3',
-  textAlign: 'start',
-  verticalAlign: 'middle'
-})
+  borderBlockEndColor: "border.default",
+  borderBlockEndStyle: "solid",
+  borderBlockEndWidth: "thin",
+  paddingBlock: "2.5",
+  paddingInline: "3",
+  textAlign: "start",
+  verticalAlign: "middle",
+});
 
 export const dataTableHeadCell = css({
-  color: 'fg.muted',
-  fontSize: '2xs',
-  fontWeight: 'semibold',
-  letterSpacing: 'wide',
-  paddingBlock: '2',
-  whiteSpace: 'nowrap'
-})
+  color: "fg.muted",
+  fontSize: "2xs",
+  fontWeight: "semibold",
+  letterSpacing: "wide",
+  paddingBlock: "2",
+  whiteSpace: "nowrap",
+});
 
 export const dataTableRow = css({
-  position: 'relative',
-  background: 'bg.surface',
-  transitionProperty: 'background-color',
-  transitionDuration: 'hover',
-  transitionTimingFunction: 'press',
-  '@media (any-hover: hover)': {
-    '&:hover': {
-      background: 'accent.hover'
-    }
-  }
-})
+  "@media (any-hover: hover)": {
+    "&:hover": {
+      background: "accent.hover",
+    },
+  },
+  background: "bg.surface",
+  position: "relative",
+  transitionDuration: "hover",
+  transitionProperty: "background-color",
+  transitionTimingFunction: "press",
+});
 
 export const dataTableRowLink = css({
-  color: 'fg.default',
-  fontWeight: 'semibold',
-  textDecoration: 'none',
-  '&::after': {
+  "&::after": {
     content: '""',
-    position: 'absolute',
-    inset: '0',
-    zIndex: '1'
+    inset: "0",
+    position: "absolute",
+    zIndex: "1",
+  },
+  "&:focus-visible::after": {
+    outlineColor: "accent.solid",
+    outlineOffset: "-2px",
+    outlineStyle: "solid",
+    outlineWidth: "medium",
+  },
+  "@media (any-hover: hover)": {
+    "&:hover": {
+      textDecoration: "none",
+    },
   },
   _focusVisible: {
-    outline: 'none'
+    outline: "none",
   },
-  '&:focus-visible::after': {
-    outlineWidth: 'medium',
-    outlineStyle: 'solid',
-    outlineColor: 'accent.solid',
-    outlineOffset: '-2px'
-  },
-  '@media (any-hover: hover)': {
-    '&:hover': {
-      textDecoration: 'none'
-    }
-  }
-})
+  color: "fg.default",
+  fontWeight: "semibold",
+  textDecoration: "none",
+});
 
 export const dataTableNested = css({
-  position: 'relative',
-  zIndex: '2'
-})
+  position: "relative",
+  zIndex: "2",
+});

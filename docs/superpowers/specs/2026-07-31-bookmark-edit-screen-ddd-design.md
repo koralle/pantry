@@ -131,12 +131,12 @@ sequenceDiagram
 
 ```ts
 type BookmarkEditorData = {
-  readonly bookmarkId: BookmarkId
-  readonly url: BookmarkUrl
-  readonly title: BookmarkTitle
-  readonly note: BookmarkNote
-  readonly tagIds: readonly TagId[]
-}
+  readonly bookmarkId: BookmarkId;
+  readonly url: BookmarkUrl;
+  readonly title: BookmarkTitle;
+  readonly note: BookmarkNote;
+  readonly tagIds: readonly TagId[];
+};
 ```
 
 DB行の`userId`、日時、`deletedAt`などはUI DTOへ含めない。
@@ -187,14 +187,17 @@ Applicationの契約:
 
 ```ts
 type UpdateBookmarkCommand = {
-  readonly bookmarkId: BookmarkId
-  readonly url: BookmarkUrl
-  readonly title: BookmarkTitle
-  readonly note: BookmarkNote
-  readonly tagIds: readonly TagId[]
-}
+  readonly bookmarkId: BookmarkId;
+  readonly url: BookmarkUrl;
+  readonly title: BookmarkTitle;
+  readonly note: BookmarkNote;
+  readonly tagIds: readonly TagId[];
+};
 
-type UpdateBookmarkResult = Result<{ readonly bookmarkId: BookmarkId }, UpdateBookmarkError>
+type UpdateBookmarkResult = Result<
+  { readonly bookmarkId: BookmarkId },
+  UpdateBookmarkError
+>;
 ```
 
 Applicationへは`AppDb`と`UserId`を明示的に注入する。Application層はRouterやセッションAPIを直接呼ばない。
@@ -267,7 +270,8 @@ sequenceDiagram
 
 ```ts
 type Result<T, E> =
-  { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E }
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly error: E };
 ```
 
 `src/shared/domain/result.ts`には`ok`と`err`だけを置く。`map`、`match`、`andThen`などは導入しない。
@@ -276,25 +280,25 @@ type Result<T, E> =
 
 ```ts
 type InvalidTagCause =
-  | { readonly code: 'tag-not-found'; readonly tagId: TagId }
-  | { readonly code: 'tag-not-owned'; readonly tagId: TagId }
+  | { readonly code: "tag-not-found"; readonly tagId: TagId }
+  | { readonly code: "tag-not-owned"; readonly tagId: TagId };
 
 type UpdateBookmarkError =
-  | { readonly code: 'bookmark-not-found' }
-  | { readonly code: 'duplicate-url' }
-  | { readonly code: 'invalid-title'; readonly field: 'title' }
-  | { readonly code: 'invalid-url'; readonly field: 'url' }
+  | { readonly code: "bookmark-not-found" }
+  | { readonly code: "duplicate-url" }
+  | { readonly code: "invalid-title"; readonly field: "title" }
+  | { readonly code: "invalid-url"; readonly field: "url" }
   | {
-      readonly code: 'duplicate-tag-id'
-      readonly field: 'tags'
-      readonly tagId: TagId
+      readonly code: "duplicate-tag-id";
+      readonly field: "tags";
+      readonly tagId: TagId;
     }
   | {
-      readonly code: 'invalid-tag'
-      readonly field: 'tags'
-      readonly cause: InvalidTagCause
+      readonly code: "invalid-tag";
+      readonly field: "tags";
+      readonly cause: InvalidTagCause;
     }
-  | { readonly code: 'unexpected-error' }
+  | { readonly code: "unexpected-error" };
 ```
 
 期待される業務エラーはシリアライズ可能なResultデータで表す。予期しないDBエラーは`@praha/error-factory`でcauseを保持し、サーバーログと診断にだけ使う。
@@ -309,10 +313,10 @@ Application内部では`unexpected-error`もResultとして扱う。Server Funct
 
 ```ts
 type BookmarkEditorProps = {
-  readonly initialData: BookmarkEditorData
-  readonly executeUpdate: ExecuteUpdateBookmark
-  readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>
-}
+  readonly initialData: BookmarkEditorData;
+  readonly executeUpdate: ExecuteUpdateBookmark;
+  readonly onCompleted: (bookmarkId: BookmarkId) => Promise<void>;
+};
 ```
 
 `BookmarkEditor`は更新Resultの表示用変換と成功後callbackを担当する。Server Function、Router、DBは直接importしない。

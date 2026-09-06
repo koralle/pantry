@@ -16,14 +16,14 @@
 
 ## 変更対象
 
-| 区分         | ファイル                                                                                      | 責務                                                            |
-| ------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Panda 基盤   | `panda.config.ts`                                                                             | token、semantic token、keyframe、animation style、global CSS    |
-| CSS 入口     | `src/app.css`、`src/index.css`、`src/routes/__root.tsx`                                       | 移行中の legacy CSS、最終 Panda layer entry、root の CSS import |
-| 共通 UI      | `src/styles/ui.ts`（新規）、`src/components/pantry-motion.tsx`、`src/components/ui-state.tsx` | shared recipe、form control、視覚的非表示、状態表示、animation  |
-| タグ・認証   | `src/routes/sign-in/**`、`src/features/tags/**`、`src/routes/_protected/tags/**`              | 玄関、棚、タグ管理、タグ編集、サインイン                        |
-| ブックマーク | `src/features/bookmarks/components/**`、`src/routes/_protected/bookmarks/**`                  | 一覧、テーブル、カード、詳細、フォーム、削除 dialog             |
-| アプリ frame | `src/routes/_protected.tsx`、`src/routes/_protected/settings/index.tsx`                       | desktop rail、mobile sheet、header、settings                    |
+| 区分 | ファイル | 責務 |
+| --- | --- | --- |
+| Panda 基盤 | `panda.config.ts` | token、semantic token、keyframe、animation style、global CSS |
+| CSS 入口 | `src/app.css`、`src/index.css`、`src/routes/__root.tsx` | 移行中の legacy CSS、最終 Panda layer entry、root の CSS import |
+| 共通 UI | `src/styles/ui.ts`（新規）、`src/components/pantry-motion.tsx`、`src/components/ui-state.tsx` | shared recipe、form control、視覚的非表示、状態表示、animation |
+| タグ・認証 | `src/routes/sign-in/**`、`src/features/tags/**`、`src/routes/_protected/tags/**` | 玄関、棚、タグ管理、タグ編集、サインイン |
+| ブックマーク | `src/features/bookmarks/components/**`、`src/routes/_protected/bookmarks/**` | 一覧、テーブル、カード、詳細、フォーム、削除 dialog |
+| アプリ frame | `src/routes/_protected.tsx`、`src/routes/_protected/settings/index.tsx` | desktop rail、mobile sheet、header、settings |
 
 ## 共通ルール
 
@@ -39,12 +39,12 @@
 
 最初に次の viewport で現行を確認する。`640px` は card grid、`768px` は rail と mobile shelf の切替点である。
 
-| 幅            | 確認すること                                                        |
-| ------------- | ------------------------------------------------------------------- |
-| 375px         | touch target、mobile header、bottom shelf sheet、single-column card |
-| 639px / 640px | bookmark card の 1 列から 2 列への切替                              |
-| 767px / 768px | mobile header/sheet から desktop rail への切替                      |
-| 1280px        | rail、table、detail、form の最大幅                                  |
+| 幅 | 確認すること |
+| --- | --- |
+| 375px | touch target、mobile header、bottom shelf sheet、single-column card |
+| 639px / 640px | bookmark card の 1 列から 2 列への切替 |
+| 767px / 768px | mobile header/sheet から desktop rail への切替 |
+| 1280px | rail、table、detail、form の最大幅 |
 
 実ブラウザでは、サインイン、玄関、タグ色あり/なし、一覧の AND/OR と table/card、ブックマーク登録・編集・削除、タグ作成・編集、設定のログアウトを確認する。ローディング、エラー、disabled、`aria-pressed`、`data-selected`、keyboard focus、reduced motion も対象に含める。
 
@@ -161,42 +161,42 @@ animationStyles: {
 const globalCss = defineGlobalStyles({
   body: {
     margin: 0,
-    background: 'bg.canvas',
-    color: 'fg.default'
+    background: "bg.canvas",
+    color: "fg.default",
   },
-  ':focus-visible': {
-    outline: '2px solid',
-    outlineColor: 'accent.solid',
-    outlineOffset: '2px'
+  ":focus-visible": {
+    outline: "2px solid",
+    outlineColor: "accent.solid",
+    outlineOffset: "2px",
   },
-  '@media (prefers-reduced-motion: reduce)': {
-    '*, *::before, *::after': {
-      animationDuration: '0.01ms !important',
-      animationIterationCount: '1 !important',
-      transitionDuration: '0.01ms !important'
-    }
-  }
-})
+  "@media (prefers-reduced-motion: reduce)": {
+    "*, *::before, *::after": {
+      animationDuration: "0.01ms !important",
+      animationIterationCount: "1 !important",
+      transitionDuration: "0.01ms !important",
+    },
+  },
+});
 ```
 
 `globalCss` を `defineConfig()` に渡すが、この task では Kiso import と既存 body/focus/reduced-motion rule を削除しない。Kiso が最終比較基準として残っている間は、その rule が同じ結果を維持する。`:root` の `--pantry-*` と全旧 keyframe も残す。
 
 次の表の selector と宣言を `globalCss` へ移す。これは Kiso を外した最終状態で必要になる baseline であり、`preflight: true` への置換はしない。
 
-| Kiso の対象                                                                                    | Panda `globalCss` で維持する宣言                                                                                                                                                                                                   |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*, ::before, ::after`                                                                         | `boxSizing: 'border-box'`                                                                                                                                                                                                          |
-| `:root`                                                                                        | `fontFamily: 'body'`、`lineHeight: 'body'`、`textSpacingTrim: 'trim-start'`、`textAutospace: 'normal'`、`lineBreak: 'strict'`、`overflowWrap: 'anywhere'`、text-size adjustment、`scrollbarGutter: 'stable'`、tap highlight の抑制 |
-| `body`                                                                                         | `minBlockSize: '100dvb'`、`margin: 0`、Panda canvas 背景、標準文字色                                                                                                                                                               |
-| `h1`、`h2`-`h6`、`p`、`blockquote`、`figure`、`pre`、`address`、`ul`、`ol`、`dl`、`menu`、`dd` | Kiso と同じ margin reset。`ul`/`ol`/`menu` は padding と marker も reset。`dt` は `fontWeight: 'bolder'`。                                                                                                                         |
-| `a`                                                                                            | `color: 'inherit'`、`textDecorationLine: 'none'`、`textDecorationThickness: 'from-font'`、`textDecorationInset: 'auto'`                                                                                                            |
-| `img`、`svg`、`picture`、`video`、`audio`、`canvas`、`model`、`iframe`、`embed`、`object`      | `maxInlineSize: '100%'`、`verticalAlign: 'bottom'`。audio 以外は `blockSize: 'auto'`、iframe は border reset。                                                                                                                     |
-| `table`、`caption`、`th`                                                                       | `borderCollapse: 'collapse'` と text alignment reset。                                                                                                                                                                             |
-| `button`、`input`、`select`、`textarea`、`::file-selector-button`                              | 1px solid border、border/color/font/letter spacing/text alignment の inherit/reset、button background reset、`touchAction: 'manipulation'`。                                                                                       |
-| radio/checkbox/search/textarea/fieldset/legend/placeholder                                     | Kiso と同じ margin、appearance、resize、min inline size、border/padding、placeholder opacity の reset。                                                                                                                            |
-| enabled/disabled controls                                                                      | enabled の `cursor: 'pointer'` と disabled の `cursor: 'default'`。                                                                                                                                                                |
-| `dialog`、`[popover]`、`[hidden]`                                                              | Kiso と同じ overscroll、padding/border/margin/max-size、closed state、backdrop、hidden display の reset。                                                                                                                          |
-| `:focus-visible` と reduced motion                                                             | 現行の 2px accent outline/2px offset と universal motion override。                                                                                                                                                                |
+| Kiso の対象 | Panda `globalCss` で維持する宣言 |
+| --- | --- |
+| `*, ::before, ::after` | `boxSizing: 'border-box'` |
+| `:root` | `fontFamily: 'body'`、`lineHeight: 'body'`、`textSpacingTrim: 'trim-start'`、`textAutospace: 'normal'`、`lineBreak: 'strict'`、`overflowWrap: 'anywhere'`、text-size adjustment、`scrollbarGutter: 'stable'`、tap highlight の抑制 |
+| `body` | `minBlockSize: '100dvb'`、`margin: 0`、Panda canvas 背景、標準文字色 |
+| `h1`、`h2`-`h6`、`p`、`blockquote`、`figure`、`pre`、`address`、`ul`、`ol`、`dl`、`menu`、`dd` | Kiso と同じ margin reset。`ul`/`ol`/`menu` は padding と marker も reset。`dt` は `fontWeight: 'bolder'`。 |
+| `a` | `color: 'inherit'`、`textDecorationLine: 'none'`、`textDecorationThickness: 'from-font'`、`textDecorationInset: 'auto'` |
+| `img`、`svg`、`picture`、`video`、`audio`、`canvas`、`model`、`iframe`、`embed`、`object` | `maxInlineSize: '100%'`、`verticalAlign: 'bottom'`。audio 以外は `blockSize: 'auto'`、iframe は border reset。 |
+| `table`、`caption`、`th` | `borderCollapse: 'collapse'` と text alignment reset。 |
+| `button`、`input`、`select`、`textarea`、`::file-selector-button` | 1px solid border、border/color/font/letter spacing/text alignment の inherit/reset、button background reset、`touchAction: 'manipulation'`。 |
+| radio/checkbox/search/textarea/fieldset/legend/placeholder | Kiso と同じ margin、appearance、resize、min inline size、border/padding、placeholder opacity の reset。 |
+| enabled/disabled controls | enabled の `cursor: 'pointer'` と disabled の `cursor: 'default'`。 |
+| `dialog`、`[popover]`、`[hidden]` | Kiso と同じ overscroll、padding/border/margin/max-size、closed state、backdrop、hidden display の reset。 |
+| `:focus-visible` と reduced motion | 現行の 2px accent outline/2px offset と universal motion override。 |
 
 - [ ] **Step 4: codegen と layer の出力を確認する**
 
@@ -226,13 +226,13 @@ body、form control、list/table、focus-visible、dialog の見た目が変わ�
 
 ```ts
 export const surface = css({
-  borderWidth: '1px',
-  borderColor: 'border.default',
-  borderRadius: 'box',
-  background: 'bg.surface'
-})
+  borderWidth: "1px",
+  borderColor: "border.default",
+  borderRadius: "box",
+  background: "bg.surface",
+});
 
-export const srOnly = css(visuallyHiddenPattern())
+export const srOnly = css(visuallyHiddenPattern());
 ```
 
 同じファイルに、44px の block size、inline-flex、font inherit、disabled state を base に持つ `button` recipe と、通常/label/link の差だけを variant に持つ `tagChip` recipe を定義する。accent、danger、pressed、disabled の色は Task 2 の semantic token を使う。

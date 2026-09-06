@@ -1,34 +1,33 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import path from "node:path";
 
-import { defineMain } from '@storybook/tanstack-react/node'
-import viteReact from '@vitejs/plugin-react'
+import { defineMain } from "@storybook/tanstack-react/node";
+import viteReact from "@vitejs/plugin-react";
 
-const dirname = path.dirname(fileURLToPath(import.meta.url))
+const { dirname } = import.meta;
 
 export default defineMain({
-  stories: ['../**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-  addons: ['@storybook/addon-docs'],
-  framework: '@storybook/tanstack-react',
+  addons: ["@storybook/addon-docs"],
   core: {
     builder: {
-      name: '@storybook/builder-vite',
+      name: "@storybook/builder-vite",
       options: {
         // Avoid loading the app vite.config (cloudflare / tanstackStart).
-        viteConfigPath: path.resolve(dirname, 'vite.config.ts')
-      }
-    }
+        viteConfigPath: path.resolve(dirname, "vite.config.ts"),
+      },
+    },
   },
+  framework: "@storybook/tanstack-react",
+  stories: ["../**/*.stories.@(js|jsx|mjs|ts|tsx)"],
   async viteFinal(viteConfig) {
-    const { mergeConfig } = await import('vite')
+    const { mergeConfig } = await import("vite");
 
     return mergeConfig(viteConfig, {
       plugins: [viteReact()],
       resolve: {
         alias: {
-          'styled-system': path.resolve(dirname, '../../styled-system')
-        }
-      }
-    })
-  }
-})
+          "styled-system": path.resolve(dirname, "../../styled-system"),
+        },
+      },
+    });
+  },
+});

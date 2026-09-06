@@ -1,21 +1,19 @@
-import type { ReactNode } from 'react'
-import { css, cx } from 'styled-system/css'
+import type { ReactNode } from "react";
+import { css, cx } from "styled-system/css";
 
-type PantryMotionKind = 'fade-up' | 'crossfade'
+type PantryMotionKind = "fade-up" | "crossfade";
 
 const kindClass: Record<PantryMotionKind, string> = {
-  'fade-up': css({ animationStyle: 'fadeUp' }),
-  crossfade: css({ animationStyle: 'crossfade' })
-}
+  crossfade: css({ animationStyle: "crossfade" }),
+  "fade-up": css({ animationStyle: "fadeUp" }),
+};
 
-export function PantryMotion({
+export const PantryMotion = ({
   kind,
   children,
-  className
+  className,
 }: {
-  readonly kind: PantryMotionKind
-  readonly children: ReactNode
-  readonly className?: string
-}) {
-  return <div className={cx(kindClass[kind], className)}>{children}</div>
-}
+  readonly kind: PantryMotionKind;
+  readonly children: ReactNode;
+  readonly className?: string;
+}) => <div className={cx(kindClass[kind], className)}>{children}</div>;

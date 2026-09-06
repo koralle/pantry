@@ -34,25 +34,20 @@ nav ブロックを以下のように置き換える：
 
 ```tsx
 <nav>
-  <Link
-    to='/'
-    search={{ tagMode: 'and', sort: 'newest' }}>
+  <Link to="/" search={{ tagMode: "and", sort: "newest" }}>
     Pantry
   </Link>
-  <Link
-    to='/tags'
-    search={{ limit: 50, offset: 0 }}>
+  <Link to="/tags" search={{ limit: 50, offset: 0 }}>
     タグ
   </Link>
-  <Link to='/settings'>設定</Link>
-  <Link to='/bookmarks/new'>＋新規ブックマーク</Link>
+  <Link to="/settings">設定</Link>
+  <Link to="/bookmarks/new">＋新規ブックマーク</Link>
 </nav>
 ```
 
 - [ ] **Step 2: ビルド／型チェックを確認**
 
-Run: `pnpm run build`
-Expected: エラーなくビルドが成功し、`_protected.tsx` に関する型エラーが出ないこと。
+Run: `pnpm run build` Expected: エラーなくビルドが成功し、`_protected.tsx` に関する型エラーが出ないこと。
 
 （`build` が遅い場合は `pnpm exec tsc --noEmit` でも可。新しいエラーが出ないことを確認。）
 
@@ -82,7 +77,7 @@ return (
   <>
     <h1>{user.name}のブックマーク一覧</h1>
 
-    <Link to='/bookmarks/new'>新規作成</Link>
+    <Link to="/bookmarks/new">新規作成</Link>
 
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Suspense fallback={<p>Loading...</p>}>
@@ -90,13 +85,12 @@ return (
       </Suspense>
     </ErrorBoundary>
   </>
-)
+);
 ```
 
 - [ ] **Step 2: ビルド／型チェックを確認**
 
-Run: `pnpm run build`
-Expected: エラーなくビルドが成功し、`index.tsx` に関する型エラーが出ないこと。
+Run: `pnpm run build` Expected: エラーなくビルドが成功し、`index.tsx` に関する型エラーが出ないこと。
 
 - [ ] **Step 3: コミット**
 
@@ -118,9 +112,7 @@ git commit -m "feat: add in-list link to new bookmark creation screen"
 `src/routes/_protected/bookmarks/new/index.tsx` を開き、`RouteComponent` にすでに以下が含まれていることを確認する：
 
 ```tsx
-<Link
-  to='/'
-  search={{ tagMode: 'and', sort: 'newest' }}>
+<Link to="/" search={{ tagMode: "and", sort: "newest" }}>
   一覧へ戻る
 </Link>
 ```
@@ -131,8 +123,7 @@ git commit -m "feat: add in-list link to new bookmark creation screen"
 
 変更しない場合は Step 4 へ飛ぶ。変更した場合は以下を実行：
 
-`pnpm run build`
-Expected: ビルドが成功すること。
+`pnpm run build` Expected: ビルドが成功すること。
 
 - [ ] **Step 3: コミット（Step 2 で変更した場合のみ）**
 
@@ -145,8 +136,7 @@ git commit -m "chore: tidy back-to-list link on new bookmark screen"
 
 - [ ] **Step 4: このタスクによる作業ツリーの変更が残っていないことを確認**
 
-Run: `git status --short`
-Expected: `src/routes/_protected/bookmarks/new/index.tsx` に意図しない変更が残っていないこと（整備コミットをした場合はそのコミットのみ）。
+Run: `git status --short` Expected: `src/routes/_protected/bookmarks/new/index.tsx` に意図しない変更が残っていないこと（整備コミットをした場合はそのコミットのみ）。
 
 ---
 
@@ -156,8 +146,7 @@ Expected: `src/routes/_protected/bookmarks/new/index.tsx` に意図しない変�
 
 - [ ] **Step 1: 開発サーバーを起動**
 
-（別ターミナルで）Run: `pnpm run dev`
-ローカル URL（例: `http://localhost:5173` や workerd のローカルアドレス）が表示されるまで待つ。
+（別ターミナルで）Run: `pnpm run dev` ローカル URL（例: `http://localhost:5173` や workerd のローカルアドレス）が表示されるまで待つ。
 
 - [ ] **Step 2: サインイン**
 

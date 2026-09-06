@@ -2,8 +2,7 @@
 
 ## 目的
 
-`git worktree add` で新しい worktree を作成した際に、`.env` / `.env.development` が存在しないため手動コピーが必要になっている。
-これを post-checkout フックで自動的に symlink を貼ることで、worktree 作成直後から env ファイルが使える状態にする。
+`git worktree add` で新しい worktree を作成した際に、`.env` / `.env.development` が存在しないため手動コピーが必要になっている。これを post-checkout フックで自動的に symlink を貼ることで、worktree 作成直後から env ファイルが使える状態にする。
 
 ## 要件
 
@@ -26,63 +25,67 @@ git worktree の判定には `git rev-parse --git-dir` と `git rev-parse --git-
 ### スクリプト: `scripts/symlink-env-for-worktree.ts`
 
 ```typescript
-import { exec } from 'node:child_process'
-import { access, symlink } from 'node:fs/promises'
-import { resolve } from 'node:path'
-import { promisify } from 'node:util'
+import { exec } from "node:child_process";
+import { access, symlink } from "node:fs/promises";
+import { resolve } from "node:path";
+import { promisify } from "node:util";
 
-const ENV_FILES = ['.env', '.env.development']
+const ENV_FILES = [".env", ".env.development"];
 
-const execAsync = promisify(exec)
+const execAsync = promisify(exec);
 
 async function isGitWorktree(): Promise<boolean> {
   const [gitDir, commonDir] = await Promise.all([
-    execAsync('git rev-parse --git-dir', { encoding: 'utf-8' }).then((r) => r.stdout.trim()),
-    execAsync('git rev-parse --git-common-dir', { encoding: 'utf-8' }).then((r) => r.stdout.trim())
-  ])
-  return gitDir !== commonDir
+    execAsync("git rev-parse --git-dir", { encoding: "utf-8" }).then((r) =>
+      r.stdout.trim()
+    ),
+    execAsync("git rev-parse --git-common-dir", { encoding: "utf-8" }).then(
+      (r) => r.stdout.trim()
+    ),
+  ]);
+  return gitDir !== commonDir;
 }
 
 async function exists(filePath: string): Promise<boolean> {
   try {
-    await access(filePath)
-    return true
+    await access(filePath);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
 async function main(): Promise<void> {
   if (!(await isGitWorktree())) {
-    console.log('Not a git worktree. Skipping.')
-    return
+    console.log("Not a git worktree. Skipping.");
+    return;
   }
 
   const commonDir = (
-    await execAsync('git rev-parse --git-common-dir', { encoding: 'utf-8' })
-  ).stdout.trim()
-  const mainRepoRoot = resolve(commonDir, '..')
+    await execAsync("git rev-parse --git-common-dir", { encoding: "utf-8" })
+  ).stdout.trim();
+  const mainRepoRoot = resolve(commonDir, "..");
 
   for (const file of ENV_FILES) {
-    const source = resolve(mainRepoRoot, file)
-    const target = resolve(process.cwd(), file)
+    const source = resolve(mainRepoRoot, file);
+    const target = resolve(process.cwd(), file);
 
     if (!(await exists(source))) {
-      console.warn(`Source ${source} not found. Skipping ${file}.`)
-      continue
+      console.warn(`Source ${source} not found. Skipping ${file}.`);
+      continue;
     }
 
     if (await exists(target)) {
-      console.log(`${file} already exists. Skipping.`)
-      continue
+      console.log(`${file} already exists. Skipping.`);
+      continue;
     }
 
-    await symlink(source, target)
-    console.log(`Symlinked ${target} -> ${source}`)
+    await symlink(source, target);
+    console.log(`Symlinked ${target} -> ${source}`);
   }
 }
 
-main()
+main();
 ```
 
 ### Lefthook 設定
@@ -96,8 +99,7 @@ post-checkout:
       run: pnpm tsx scripts/symlink-env-for-worktree.ts
 ```
 
-スクリプト内で worktree 検出を行うため、`lefthook.yaml` 側の分岐は不要。
-通常の checkout では `isGitWorktree()` が `false` を返して早期終了する。
+スクリプト内で worktree 検出を行うため、`lefthook.yaml` 側の分岐は不要。通常の checkout では `isGitWorktree()` が `false` を返して早期終了する。
 
 ### エラーハンドリング
 

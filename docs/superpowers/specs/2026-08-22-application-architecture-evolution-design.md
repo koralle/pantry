@@ -93,11 +93,11 @@ const createTagInputSchema = v.object({
   name: tagNameSchema,
   pinned: v.optional(v.boolean()),
   sortOrder: v.optional(v.number()),
-  color: v.optional(v.nullable(v.string()))
-})
+  color: v.optional(v.nullable(v.string())),
+});
 
-type CreateTagWireInput = v.InferInput<typeof createTagInputSchema>
-type CreateTagValidatedInput = v.InferOutput<typeof createTagInputSchema>
+type CreateTagWireInput = v.InferInput<typeof createTagInputSchema>;
+type CreateTagValidatedInput = v.InferOutput<typeof createTagInputSchema>;
 ```
 
 HTTP をまたぐ入力の時点で `name` は `string` であり、validation 後には既存の `TagName` 型になる。
@@ -106,19 +106,19 @@ HTTP をまたぐ入力の時点で `name` は `string` であり、validation �
 
 ```ts
 export type CreateTagCommand = {
-  readonly name: TagName
-  readonly pinned: boolean
-  readonly sortOrder: number
-  readonly color: string | null
-}
+  readonly name: TagName;
+  readonly pinned: boolean;
+  readonly sortOrder: number;
+  readonly color: string | null;
+};
 
 function toCreateTagCommand(input: CreateTagValidatedInput): CreateTagCommand {
   return {
     name: input.name,
     pinned: input.pinned ?? false,
     sortOrder: input.sortOrder ?? 0,
-    color: input.color ?? null
-  }
+    color: input.color ?? null,
+  };
 }
 ```
 
@@ -126,12 +126,12 @@ function toCreateTagCommand(input: CreateTagValidatedInput): CreateTagCommand {
 
 ```ts
 export type CreatedTag = {
-  readonly id: TagId
-}
+  readonly id: TagId;
+};
 
 export type CreateTagOutput = {
-  readonly id: number
-}
+  readonly id: number;
+};
 ```
 
 Application の branded `TagId` は procedure の出口で plain number へ変換する。branded 型は型システム上の情報であり、wire 上では保持されないためである。`normalizedName` は client へ返さない。
@@ -148,8 +148,8 @@ Application の branded `TagId` は procedure の出口で plain number へ変�
 
 ```ts
 export type CreateTagError = {
-  readonly code: 'tag-name-already-exists'
-}
+  readonly code: "tag-name-already-exists";
+};
 ```
 
 `unexpected-error` を `Result` に入れない。Unexpected Error は呼び出し側が処理できないため、`Result` に入れても無意味な分岐を強いるだけになる。
@@ -160,37 +160,38 @@ export type CreateTagError = {
 
 ```ts
 export type InsertTagInput = {
-  readonly actorId: UserId
-  readonly name: TagName
-  readonly pinned: boolean
-  readonly sortOrder: number
-  readonly color: string | null
-}
+  readonly actorId: UserId;
+  readonly name: TagName;
+  readonly pinned: boolean;
+  readonly sortOrder: number;
+  readonly color: string | null;
+};
 
 export type InsertTagOutput =
-  { readonly kind: 'created'; readonly id: TagId } | { readonly kind: 'name-conflict' }
+  | { readonly kind: "created"; readonly id: TagId }
+  | { readonly kind: "name-conflict" };
 
-export type InsertTag = (input: InsertTagInput) => Promise<InsertTagOutput>
+export type InsertTag = (input: InsertTagInput) => Promise<InsertTagOutput>;
 ```
 
 UseCase は port の output を Application の `Result` へ変換する。
 
 ```ts
 export async function executeCreateTag(params: {
-  readonly insertTag: InsertTag
-  readonly actorId: UserId
-  readonly command: CreateTagCommand
+  readonly insertTag: InsertTag;
+  readonly actorId: UserId;
+  readonly command: CreateTagCommand;
 }): Promise<Result<CreatedTag, CreateTagError>> {
   const output = await params.insertTag({
     actorId: params.actorId,
-    ...params.command
-  })
+    ...params.command,
+  });
 
-  if (output.kind === 'name-conflict') {
-    return err({ code: 'tag-name-already-exists' })
+  if (output.kind === "name-conflict") {
+    return err({ code: "tag-name-already-exists" });
   }
 
-  return ok({ id: output.id })
+  return ok({ id: output.id });
 }
 ```
 
@@ -218,21 +219,21 @@ const [created] = await db
     normalizedName: input.name.normalized,
     pinned: input.pinned,
     sortOrder: input.sortOrder,
-    color: input.color
+    color: input.color,
   })
   .onConflictDoNothing({
-    target: [tagsTable.userId, tagsTable.normalizedName]
+    target: [tagsTable.userId, tagsTable.normalizedName],
   })
-  .returning({ id: tagsTable.id })
+  .returning({ id: tagsTable.id });
 
 if (created === undefined) {
-  return { kind: 'name-conflict' }
+  return { kind: "name-conflict" };
 }
 
 return {
-  kind: 'created',
-  id: v.parse(tagIdSchema, created.id)
-}
+  kind: "created",
+  id: v.parse(tagIdSchema, created.id),
+};
 ```
 
 これにより、汎用の `isSqliteUniqueConstraintError` を CreateTag の業務エラー分類に使わない。それ以外の constraint 違反や DB 障害は、通常どおり throw する。
@@ -243,26 +244,26 @@ return {
 
 ```ts
 const base = os.$context<{ readonly headers: Headers }>().errors({
-  UNAUTHORIZED: { status: 401 }
-})
+  UNAUTHORIZED: { status: 401 },
+});
 
 const requireAuth = base.middleware(async ({ context, next, errors }) => {
   const session = await getAuth().api.getSession({
-    headers: context.headers
-  })
+    headers: context.headers,
+  });
 
   if (!session) {
-    throw errors.UNAUTHORIZED()
+    throw errors.UNAUTHORIZED();
   }
 
   return next({
     context: {
-      actorId: v.parse(userIdSchema, session.user.id)
-    }
-  })
-})
+      actorId: v.parse(userIdSchema, session.user.id),
+    },
+  });
+});
 
-const authed = base.use(requireAuth)
+const authed = base.use(requireAuth);
 ```
 
 Procedure は validation 後の入力を明示的な Application command へ変換し、Application Expected Error を transport error へ変換する。
@@ -271,23 +272,23 @@ Procedure は validation 後の入力を明示的な Application command へ変�
 export const createTagProcedure = authed
   .input(createTagInputSchema)
   .errors({
-    'tag-name-already-exists': { status: 409 }
+    "tag-name-already-exists": { status: 409 },
   })
   .handler(async ({ input, context, errors }) => {
     const result = await executeCreateTag({
       insertTag,
       actorId: context.actorId,
-      command: toCreateTagCommand(input)
-    })
+      command: toCreateTagCommand(input),
+    });
 
     if (!result.ok) {
-      throw errors['tag-name-already-exists']()
+      throw errors["tag-name-already-exists"]();
     }
 
     return {
-      id: result.value.id
-    } satisfies CreateTagOutput
-  })
+      id: result.value.id,
+    } satisfies CreateTagOutput;
+  });
 ```
 
 Unexpected Error を独自の 500 error に包み直さない。oRPC は捕捉しなかった例外をそのまま 500 として client へ返すため、包み直しても判別に使える情報は増えない。
@@ -299,24 +300,24 @@ Unexpected Error を独自の 500 error に包み直さない。oRPC は捕捉�
 `RPCHandler.handle()` の `response` は必ず server route から返す。
 
 ```ts
-const handler = new RPCHandler(router)
+const handler = new RPCHandler(router);
 
-export const Route = createFileRoute('/api/rpc/$')({
+export const Route = createFileRoute("/api/rpc/$")({
   server: {
     handlers: {
       ANY: async ({ request }) => {
         const { response } = await handler.handle(request, {
-          prefix: '/api/rpc',
+          prefix: "/api/rpc",
           context: {
-            headers: request.headers
-          }
-        })
+            headers: request.headers,
+          },
+        });
 
-        return response ?? new Response('Not Found', { status: 404 })
-      }
-    }
-  }
-})
+        return response ?? new Response("Not Found", { status: 404 });
+      },
+    },
+  },
+});
 ```
 
 CreateTag pilot では SSR direct client を導入しないため、SSR request context 用の別経路は作らない。
@@ -326,34 +327,37 @@ CreateTag pilot では SSR direct client を導入しないため、SSR request 
 CreateTag client は HTTP RPC 専用とし、runtime router を browser bundle へ import しない。router は type-only import で、client の型にのみ使う。
 
 ```ts
-import { createORPCClient, onError, ORPCError } from '@orpc/client'
-import { RPCLink } from '@orpc/client/fetch'
-import type { RouterClient } from '@orpc/server'
-import type { AppRouter } from './router'
+import { createORPCClient, onError, ORPCError } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import type { RouterClient } from "@orpc/server";
+import type { AppRouter } from "./router";
 
 const link = new RPCLink({
   url: () => {
-    if (typeof window === 'undefined') {
-      throw new Error('CreateTag RPC client is browser-only')
+    if (typeof window === "undefined") {
+      throw new Error("CreateTag RPC client is browser-only");
     }
 
-    return `${window.location.origin}/api/rpc`
+    return `${window.location.origin}/api/rpc`;
   },
   interceptors: [
     onError((error) => {
-      if (!(error instanceof ORPCError) || error.code !== 'UNAUTHORIZED') {
-        return
+      if (!(error instanceof ORPCError) || error.code !== "UNAUTHORIZED") {
+        return;
       }
 
-      const redirect = window.location.pathname + window.location.search + window.location.hash
-      const signIn = new URL('/sign-in/', window.location.origin)
-      signIn.searchParams.set('redirect', redirect)
-      window.location.replace(signIn)
-    })
-  ]
-})
+      const redirect =
+        window.location.pathname +
+        window.location.search +
+        window.location.hash;
+      const signIn = new URL("/sign-in/", window.location.origin);
+      signIn.searchParams.set("redirect", redirect);
+      window.location.replace(signIn);
+    }),
+  ],
+});
 
-export const client: RouterClient<AppRouter> = createORPCClient(link)
+export const client: RouterClient<AppRouter> = createORPCClient(link);
 ```
 
 この client は SSR render 中に生成された場合でも network request を発行しない。CreateTag mutation を server 側で実行しようとした場合は、lazy `url` が明示的に失敗する。
@@ -365,16 +369,16 @@ export const client: RouterClient<AppRouter> = createORPCClient(link)
 ```ts
 export function getCreateTagErrorMessage(error: unknown): string | null {
   if (isDefinedError(error)) {
-    if (error.code === 'UNAUTHORIZED') {
-      return null
+    if (error.code === "UNAUTHORIZED") {
+      return null;
     }
 
-    if (error.code === 'tag-name-already-exists') {
-      return 'そのタグ名は既に存在します'
+    if (error.code === "tag-name-already-exists") {
+      return "そのタグ名は既に存在します";
     }
   }
 
-  return 'タグの作成に失敗しました'
+  return "タグの作成に失敗しました";
 }
 ```
 
@@ -383,17 +387,17 @@ export function getCreateTagErrorMessage(error: unknown): string | null {
 ```ts
 type TagFormProps = {
   // ...
-  readonly mapError: (error: unknown) => string | null
-}
+  readonly mapError: (error: unknown) => string | null;
+};
 ```
 
 ```ts
 try {
-  await onSubmit(values)
+  await onSubmit(values);
 } catch (error) {
-  const message = mapError(error)
+  const message = mapError(error);
   if (message !== null) {
-    setFormError(message)
+    setFormError(message);
   }
 }
 ```
@@ -414,23 +418,23 @@ DB commit と route loader refresh は別々の成功条件として扱う。**�
 TanStack Query の `onSuccess` では、invalidate の Promise を return / await しない。mutation options の出所は、Client 境界で定義した client から生成する TanStack Query 用の `orpc` utils である。
 
 ```ts
-import { createORPCReactQueryUtils } from '@orpc/react-query'
+import { createORPCReactQueryUtils } from "@orpc/react-query";
 
-export const orpc = createORPCReactQueryUtils(client)
+export const orpc = createORPCReactQueryUtils(client);
 ```
 
 ```ts
-const router = useRouter()
+const router = useRouter();
 
 const mutation = useMutation(
   orpc.tags.create.mutationOptions({
     onSuccess: () => {
       void router.invalidate().catch((error) => {
-        console.error('Failed to refresh route data after CreateTag', error)
-      })
-    }
+        console.error("Failed to refresh route data after CreateTag", error);
+      });
+    },
   })
-)
+);
 ```
 
 結果として、mutation の成功と loader の再取得は独立に進む。
@@ -492,14 +496,14 @@ production build の client output に次を含めない。
 
 実装 PR では **変更前の `main` と pilot head を同じ環境・同じ計測手順で測る**。baseline のない「体感で問題なし」を採用理由にしない。
 
-| Metric                                   | Baseline                   | 採用の上限              |
-| ---------------------------------------- | -------------------------- | ----------------------- |
-| CreateTag 正常系の write DB statement 数 | 現行 `SELECT + INSERT` = 2 | 1                       |
-| client production JS gzip 合計           | 実装 PR 開始時の `main`    | `+15 KiB` 以下          |
-| Worker deployable JS gzip 合計           | 同じ `main`                | `+50 KiB` 以下          |
-| warm CreateTag latency median            | 同一環境で50回             | baseline の `+10%` 以下 |
-| warm CreateTag latency p95               | 同一環境で50回             | baseline の `+15%` 以下 |
-| server-only code in client bundle        | 0                          | 0                       |
+| Metric | Baseline | 採用の上限 |
+| --- | --- | --- |
+| CreateTag 正常系の write DB statement 数 | 現行 `SELECT + INSERT` = 2 | 1 |
+| client production JS gzip 合計 | 実装 PR 開始時の `main` | `+15 KiB` 以下 |
+| Worker deployable JS gzip 合計 | 同じ `main` | `+50 KiB` 以下 |
+| warm CreateTag latency median | 同一環境で50回 | baseline の `+10%` 以下 |
+| warm CreateTag latency p95 | 同一環境で50回 | baseline の `+15%` 以下 |
+| server-only code in client bundle | 0 | 0 |
 
 latency は同じ Worker runtime / Turso DB を使い、各比較の前に warm-up を行う。baseline 自体の再計測差が 5% を超えるときは benchmark が不安定である。閾値を緩めず、先に計測方法を修正する。
 
