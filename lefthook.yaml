@@ -20,6 +20,8 @@ pre-commit:
         - "**/*.yaml"
         - "**/*.yml"
         - "**/*.html"
+      exclude:
+        - ".agents/**"
       run: |
         pnpm run fix -- {staged_files}
       stage_fixed: true
