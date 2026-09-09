@@ -25,8 +25,10 @@ const shellHeader = css({
   flexWrap: "wrap",
   gap: "2",
   md: {
-    flexWrap: "nowrap",
-    gap: "3",
+    display: "grid",
+    gridTemplateColumns: "16rem minmax(0, 1fr) auto",
+    paddingBlock: "0",
+    paddingInline: "0",
   },
   minBlockSize: "4rem",
   paddingBlock: "2",
@@ -38,7 +40,15 @@ const headerLead = css({
   display: "flex",
   gap: "2",
   md: {
+    alignSelf: "stretch",
+    borderInlineEndColor: "border.default",
+    borderInlineEndStyle: "solid",
+    borderInlineEndWidth: "thin",
+    gridColumn: "1",
+    gridRow: "1",
+    minBlockSize: "4rem",
     order: 0,
+    paddingInline: "4",
   },
   order: 1,
 });
@@ -49,16 +59,13 @@ const headerActions = css({
   gap: "2",
   marginInlineStart: "auto",
   md: {
+    gridColumn: "3",
+    gridRow: "1",
+    marginInlineEnd: "4",
     marginInlineStart: "0",
     order: 0,
   },
   order: 2,
-});
-
-const brandMobile = css({
-  md: {
-    display: "none",
-  },
 });
 
 const searchForm = css({
@@ -66,8 +73,12 @@ const searchForm = css({
   flex: "1 1 100%",
   gap: "2",
   md: {
-    flex: "1 1 auto",
+    flex: "initial",
+    gridColumn: "2",
+    gridRow: "1",
+    minInlineSize: "0",
     order: 0,
+    paddingBlock: "2",
   },
   minInlineSize: "0",
   order: 3,
@@ -118,12 +129,7 @@ export const AppHeader = ({
   return (
     <header className={shellHeader}>
       <div className={headerLead}>
-        <StyledLink
-          to="/"
-          search={defaultBookmarkSearch}
-          visual="brand"
-          className={brandMobile}
-        >
+        <StyledLink to="/" search={defaultBookmarkSearch} visual="brand">
           Pantry
         </StyledLink>
 

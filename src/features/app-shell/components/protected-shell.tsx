@@ -30,16 +30,21 @@ const skipLink = css({
 const shell = css({
   display: "grid",
   gridTemplateColumns: "1fr",
+  gridTemplateRows: "auto minmax(0, 1fr)",
   md: {
     gridTemplateColumns: "16rem minmax(0, 1fr)",
   },
   minBlockSize: "100dvh",
 });
 
+const shellHeader = css({
+  gridColumn: "1 / -1",
+});
+
 const shellContent = css({
   display: "flex",
   flexDirection: "column",
-  minBlockSize: "100dvh",
+  minBlockSize: "0",
   minInlineSize: "0",
 });
 
@@ -68,9 +73,9 @@ export const ProtectedShell = ({
     <a href="#content" className={skipLink}>
       本文へ
     </a>
+    <div className={shellHeader}>{header}</div>
     {sidebar}
     <div className={shellContent}>
-      {header}
       <main id="content" tabIndex={-1} className={shellMain}>
         {children}
       </main>

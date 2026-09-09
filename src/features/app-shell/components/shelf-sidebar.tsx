@@ -1,7 +1,5 @@
 import { css } from "styled-system/css";
 
-import { StyledLink } from "../../../shared/components/styled-link";
-import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import type { ShelfNavSelection } from "../../tags/components/shelf-nav";
 import type { ShelfTag } from "../../tags/lib/tag-shelf";
@@ -38,11 +36,6 @@ export const ShelfSidebar = ({
   readonly listSearch: BookmarkSearchSchema | undefined;
 }) => (
   <aside className={shelfRail} aria-label="サイドバー">
-    <div>
-      <StyledLink to="/" search={defaultBookmarkSearch} visual="brand">
-        Pantry
-      </StyledLink>
-    </div>
     <div className={shelfRailNav}>
       <ShelfNavPanel
         shelfTagsPromise={shelfTagsPromise}
