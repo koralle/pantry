@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-router";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
-import { writeListLayout } from "../../features/bookmarks/lib/list-layout-preference";
 import type { BookmarkListItem } from "../../features/bookmarks/persistence/list-bookmarks";
 import type { BookmarkSearchSchema } from "../../features/navigation/lib/bookmark-search";
 import type { ShelfTag } from "../../features/tags/lib/tag-shelf";
@@ -23,10 +22,6 @@ const storyQueryClient = new QueryClient({
   },
 });
 
-/**
- * 一覧 read の実 network を止めず、queryFn だけを差し替える。
- * loader の prefetch も load-more も本物の query options / key を通る。
- */
 interface ListFixtureInput {
   readonly cursor?: string | undefined;
 }
@@ -70,7 +65,6 @@ const storyRoot = createRootRouteWithContext<{
 const storyProtectedLayout = createRoute({
   id: "/_protected",
   getParentRoute: () => storyRoot,
-  // Storybook では oRPC client を立てない。認証済み user context だけを再現する。
   beforeLoad: () => ({
     user: {
       id: session.user.id,
@@ -191,7 +185,7 @@ const longBookmark = makeBookmark({
   title:
     "2020年版: なぜ仮想 DOM / 宣言的 UI という概念が、あのときの俺達の魂を震えさせたのか",
   url: "https://zenn.dev/mizchi/books/0c55c230f5cc754c38b9",
-  note: "当時の空気感と、今のコンポーネント設計を見比べるためのメモ。カード表示では2行までに収まるはず。",
+  note: "当時の空気感と、今のコンポーネント設計を見比べるためのメモ。",
   updatedAt: later.toISOString(),
   tags: [
     { id: 1, name: "reading" },
@@ -226,7 +220,6 @@ const nextPage = [reactBookmark, noteOnlyBookmark];
 const nextCursor = "story-next-page";
 
 async function neverPromise<T>(): Promise<T> {
-  // oxlint-disable-next-line promise/avoid-new -- hang the request so loading UI stays visible
   return await new Promise(() => {});
 }
 
@@ -279,7 +272,6 @@ const meta = preview.meta({
     },
   },
   beforeEach: async () => {
-    writeListLayout("table");
     stubListApis();
   },
 });
@@ -289,14 +281,11 @@ export const Default = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("table", { name: "ブックマーク" })
+        canvas.getByRole("link", { name: shortBookmark.title })
       ).toBeInTheDocument();
     });
     await expect(
       canvas.getByRole("heading", { name: "ブックマーク" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("link", { name: shortBookmark.title })
     ).toBeInTheDocument();
     await expect(
       canvas.getByRole("link", { name: longBookmark.title })
@@ -306,36 +295,11 @@ export const Default = meta.story({
       "true"
     );
     await expect(
-      canvas.getByRole("button", { name: "テーブル" })
-    ).toHaveAttribute("aria-pressed", "true");
-    await expect(
       canvas.getByPlaceholderText("タイトル・URL・メモ")
     ).toBeInTheDocument();
     await expect(
       canvas.queryByRole("button", { name: "さらに読み込む" })
     ).not.toBeInTheDocument();
-  },
-});
-
-export const Cards = meta.story({
-  beforeEach: async () => {
-    writeListLayout("card");
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(canvas.getByText(shortBookmark.title)).toBeInTheDocument();
-    });
-    await expect(canvas.getByText(longBookmark.title)).toBeInTheDocument();
-    await expect(
-      canvas.getByText(noteOnlyBookmark.note ?? "")
-    ).toBeInTheDocument();
-    await expect(
-      canvas.queryByRole("table", { name: "ブックマーク" })
-    ).not.toBeInTheDocument();
-    await expect(
-      canvas.getByRole("button", { name: "カード" })
-    ).toHaveAttribute("aria-pressed", "true");
   },
 });
 
@@ -484,7 +448,7 @@ export const SortUpdated = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("table", { name: "ブックマーク" })
+        canvas.getByRole("link", { name: shortBookmark.title })
       ).toBeInTheDocument();
     });
     await expect(
@@ -506,43 +470,12 @@ export const InitialLoading = meta.story({
     });
     await expect(canvas.getAllByText("一覧を読み込み中")).toHaveLength(1);
     await expect(
-      canvas.queryByRole("table", { name: "ブックマーク" })
-    ).not.toBeInTheDocument();
-    const skeletonTable = canvasElement.querySelector(
-      '[aria-busy="true"] table'
-    );
-    await expect(skeletonTable).not.toBeNull();
-    await expect(skeletonTable).toHaveAttribute("aria-hidden", "true");
-    await expect(skeletonTable?.querySelectorAll("tbody tr")).toHaveLength(5);
-    await expect(
-      canvas.getByRole("button", { name: "テーブル" })
-    ).toHaveAttribute("aria-pressed", "true");
-  },
-});
-
-export const InitialLoadingCards = meta.story({
-  beforeEach: async () => {
-    writeListLayout("card");
-    listFixture = async () => await neverPromise();
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole("heading", { name: "ブックマーク" })
-      ).toBeInTheDocument();
-    });
-    await expect(canvas.getAllByText("一覧を読み込み中")).toHaveLength(1);
-    await expect(
-      canvas.queryByRole("table", { name: "ブックマーク" })
+      canvas.queryByRole("link", { name: shortBookmark.title })
     ).not.toBeInTheDocument();
     const skeletonList = canvasElement.querySelector('[aria-busy="true"] ul');
     await expect(skeletonList).not.toBeNull();
     await expect(skeletonList).toHaveAttribute("aria-hidden", "true");
-    await expect(skeletonList?.querySelectorAll("li")).toHaveLength(4);
-    await expect(
-      canvas.getByRole("button", { name: "カード" })
-    ).toHaveAttribute("aria-pressed", "true");
+    await expect(skeletonList?.querySelectorAll(":scope > li")).toHaveLength(5);
   },
 });
 
@@ -662,7 +595,7 @@ export const NoShelfTags = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("table", { name: "ブックマーク" })
+        canvas.getByRole("link", { name: shortBookmark.title })
       ).toBeInTheDocument();
     });
     await expect(canvas.queryByText("タグを追加")).not.toBeInTheDocument();

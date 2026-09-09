@@ -1,7 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { css } from "styled-system/css";
 
-import { PantryMotion } from "../../../shared/components/pantry-motion";
 import { StyledButton } from "../../../shared/components/styled-button";
 import { StyledLink } from "../../../shared/components/styled-link";
 import { UiEmpty } from "../../../shared/components/ui-empty";
@@ -12,8 +11,6 @@ import {
   detailSearchFromList,
 } from "../../navigation/lib/bookmark-search-builders";
 import { useBookmarkListPagination } from "../hooks/use-bookmark-list-pagination";
-import type { ListLayout } from "../lib/list-layout-preference";
-import { BookmarkCardList } from "./bookmark-card-list";
 import { BookmarkTable } from "./bookmark-table";
 
 const partialSection = css({
@@ -33,10 +30,8 @@ const hasActiveConditions = (search: BookmarkSearchSchema): boolean =>
   (search.tags !== undefined && search.tags.length > 0);
 
 export const BookmarkListResults = ({
-  layout,
   search,
 }: {
-  readonly layout: ListLayout;
   readonly search: BookmarkSearchSchema;
 }) => {
   const { items, hasMore, loadMoreError, isLoadingMore, loadMore } =
@@ -87,13 +82,7 @@ export const BookmarkListResults = ({
 
   return (
     <div>
-      <PantryMotion key={layout} kind="crossfade">
-        {layout === "card" ? (
-          <BookmarkCardList bookmarks={items} detailSearch={detailSearch} />
-        ) : (
-          <BookmarkTable bookmarks={items} detailSearch={detailSearch} />
-        )}
-      </PantryMotion>
+      <BookmarkTable bookmarks={items} detailSearch={detailSearch} />
 
       {hasMore ? (
         <div className={partialSection}>
