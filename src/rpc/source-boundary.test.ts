@@ -84,7 +84,6 @@ describe("shelf query ownership", () => {
 
   test("child loader は session を再取得しない", async () => {
     const sources = await Promise.all([
-      readSource("routes/_protected/index.tsx"),
       readSource("routes/_protected/bookmarks/index.tsx"),
       readSource("routes/_protected/settings/index.tsx"),
       readSource("routes/_protected/tags/index.tsx"),
@@ -97,5 +96,22 @@ describe("shelf query ownership", () => {
       expect(source).not.toContain("getSession");
       expect(source).not.toContain("auth.session");
     }
+  });
+
+  test("public / は _protected の外で 301 し session を読まない", async () => {
+    await expect(
+      access(join(srcDir, "routes/_protected/index.tsx"))
+    ).rejects.toThrow();
+    await expect(
+      access(join(srcDir, "routes/index.tsx"))
+    ).resolves.toBeUndefined();
+
+    const source = await readSource("routes/index.tsx");
+
+    expect(source).toContain('to: "/bookmarks"');
+    expect(source).toContain("statusCode: 301");
+    expect(source).not.toContain("auth.session");
+    expect(source).not.toContain("ensureSession");
+    expect(source).not.toContain("getSession");
   });
 });

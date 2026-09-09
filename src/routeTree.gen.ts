@@ -9,8 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtectedRouteImport } from './routes/_protected'
-import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as ProtectedBookmarksIndexRouteImport } from './routes/_protected/bookmarks/index'
 import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/settings/index'
@@ -24,14 +24,14 @@ import { Route as ProtectedBookmarksNewIndexRouteImport } from './routes/_protec
 import { Route as ProtectedTagsIdIndexRouteImport } from './routes/_protected/tags/$id/index'
 import { Route as ProtectedTagsIdEditRouteImport } from './routes/_protected/tags/$id.edit'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtectedRoute = ProtectedRouteImport.update({
   id: '/_protected',
   getParentRoute: () => rootRouteImport,
-} as any)
-const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ProtectedRoute,
 } as any)
 const SignInIndexRoute = SignInIndexRouteImport.update({
   id: '/sign-in/',
@@ -98,7 +98,7 @@ const ProtectedTagsIdEditRoute = ProtectedTagsIdEditRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof ProtectedIndexRoute
+  '/': typeof IndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/tags/new': typeof ProtectedTagsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -113,7 +113,7 @@ export interface FileRoutesByFullPath {
   '/tags/$id/': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof ProtectedIndexRoute
+  '/': typeof IndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/tags/new': typeof ProtectedTagsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -129,8 +129,8 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_protected': typeof ProtectedRouteWithChildren
-  '/_protected/': typeof ProtectedIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/_protected/tags/new': typeof ProtectedTagsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -177,8 +177,8 @@ export interface FileRouteTypes {
     | '/tags/$id'
   id:
     | '__root__'
+    | '/'
     | '/_protected'
-    | '/_protected/'
     | '/sign-in/'
     | '/_protected/tags/new'
     | '/api/auth/$'
@@ -194,6 +194,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   ProtectedRoute: typeof ProtectedRouteWithChildren
   SignInIndexRoute: typeof SignInIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -202,19 +203,19 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected': {
       id: '/_protected'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ProtectedRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_protected/': {
-      id: '/_protected/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof ProtectedIndexRouteImport
-      parentRoute: typeof ProtectedRoute
     }
     '/sign-in/': {
       id: '/sign-in/'
@@ -304,7 +305,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface ProtectedRouteChildren {
-  ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedTagsNewRoute: typeof ProtectedTagsNewRoute
   ProtectedBookmarksIndexRoute: typeof ProtectedBookmarksIndexRoute
   ProtectedSettingsIndexRoute: typeof ProtectedSettingsIndexRoute
@@ -317,7 +317,6 @@ interface ProtectedRouteChildren {
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
-  ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedTagsNewRoute: ProtectedTagsNewRoute,
   ProtectedBookmarksIndexRoute: ProtectedBookmarksIndexRoute,
   ProtectedSettingsIndexRoute: ProtectedSettingsIndexRoute,
@@ -334,6 +333,7 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   ProtectedRoute: ProtectedRouteWithChildren,
   SignInIndexRoute: SignInIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
