@@ -138,7 +138,7 @@ function RouteComponent() {
 
         <h1>このブックマークは見つかりません</h1>
 
-        <StyledLink to="/" search={listSearch} visual="accent">
+        <StyledLink to="/bookmarks" search={listSearch} visual="accent">
           一覧へ戻る
         </StyledLink>
       </section>
@@ -174,7 +174,7 @@ function RouteComponent() {
         >
           <ArrowLeft size={16} aria-hidden /> 詳細へ戻る
         </StyledLink>
-        <StyledLink to="/" search={listSearch} visual="accent">
+        <StyledLink to="/bookmarks" search={listSearch} visual="accent">
           <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
         </StyledLink>
       </nav>

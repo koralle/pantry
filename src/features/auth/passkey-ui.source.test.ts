@@ -24,7 +24,7 @@ describe("passkey UI contracts", () => {
     );
     expect(signIn).toContain("パスキーでログイン");
     expect(signIn).toContain("または");
-    expect(signIn).toContain('to: redirect ?? "/"');
+    expect(signIn).toContain('to: redirect ?? "/bookmarks"');
     expect(signIn).toContain("signIn.passkey({");
     expect(signIn).toContain("autoFill: true");
     expect(signIn).toContain("WebAuthnAbortService.cancelCeremony()");

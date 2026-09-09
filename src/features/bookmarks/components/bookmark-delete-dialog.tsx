@@ -55,7 +55,7 @@ export const BookmarkDeleteDialog = ({
         await navigate({
           search: listSearch,
           state: { bookmarkDeleted: true },
-          to: "/",
+          to: "/bookmarks",
         });
       } catch (error) {
         const message = getDeleteBookmarkErrorMessage(error);

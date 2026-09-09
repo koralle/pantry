@@ -9,6 +9,10 @@ export const bookmarkSearchSchema = v.object({
 
 export type BookmarkSearchSchema = v.InferOutput<typeof bookmarkSearchSchema>;
 
+/** 一覧 search の検証正本。`/bookmarks` 一覧と `/` 正規化リダイレクトの両ルートで共用する。 */
+export const validateBookmarkSearch = (search: unknown): BookmarkSearchSchema =>
+  v.parse(bookmarkSearchSchema, search);
+
 /** 詳細・編集・新規に載せる一覧条件。既定値は省略し、一覧 URL へ戻すときに復元する。 */
 export const bookmarkDetailSearchSchema = v.object({
   q: v.optional(v.string()),

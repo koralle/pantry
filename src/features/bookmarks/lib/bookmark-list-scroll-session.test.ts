@@ -117,7 +117,7 @@ describe("bookmark list scroll session", () => {
   });
 
   test("ルーターの scroll restoration は一覧 pathname では動かさない", () => {
-    expect(shouldRestoreRouterScroll({ pathname: "/" })).toBeFalsy();
+    expect(shouldRestoreRouterScroll({ pathname: "/bookmarks" })).toBeFalsy();
     expect(
       shouldRestoreRouterScroll({ pathname: "/bookmarks/new" })
     ).toBeTruthy();

@@ -63,7 +63,7 @@ export const ListToolbar = ({
   readonly search: BookmarkSearchSchema;
   readonly shelfTags: ShelfTag[];
 }) => {
-  const navigate = useNavigate({ from: "/" });
+  const navigate = useNavigate({ from: "/bookmarks/" });
 
   const selectedTags = search.tags ?? [];
   const addableTags = shelfTags.filter(
@@ -73,7 +73,7 @@ export const ListToolbar = ({
   const patchSearch = (patch: BookmarkSearchPatch) => {
     void navigate({
       search: buildListSearch(search, patch),
-      to: "/",
+      to: "/bookmarks",
     });
   };
 

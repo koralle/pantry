@@ -12,7 +12,7 @@ import type { ShelfTag } from "../../features/tags/lib/tag-shelf";
 import { orpc } from "../../rpc/query";
 import preview from "../../storybook/preview";
 import { Route as ProtectedLayoutRoute } from "../_protected";
-import { Route as ListFileRoute } from "./index";
+import { Route as ListFileRoute } from "./bookmarks/index";
 
 const storyQueryClient = new QueryClient({
   defaultOptions: {
@@ -80,7 +80,7 @@ const storyProtectedLayout = createRoute({
 
 const storyListRoute = createRoute({
   getParentRoute: () => storyProtectedLayout as never,
-  path: "/",
+  path: "/bookmarks",
   validateSearch: ListFileRoute.options.validateSearch!,
   loaderDeps: ListFileRoute.options.loaderDeps!,
   loader: ListFileRoute.options.loader!,
@@ -247,7 +247,7 @@ function listQuery(query: Partial<BookmarkSearchSchema>) {
     tanstack: {
       router: {
         route: storyListRoute,
-        path: "/" as const,
+        path: "/bookmarks" as const,
         query,
         context: {
           queryClient: storyQueryClient,
@@ -264,7 +264,7 @@ const meta = preview.meta({
     tanstack: {
       router: {
         route: storyListRoute,
-        path: "/" as const,
+        path: "/bookmarks" as const,
         context: {
           queryClient: storyQueryClient,
         },
