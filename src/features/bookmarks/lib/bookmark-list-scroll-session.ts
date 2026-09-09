@@ -13,16 +13,16 @@ export const bookmarkListSearchIdentity = (
 
 interface BookmarkListScrollSession {
   searchIdentity: string;
-  scrollY: number;
+  scrollTop: number;
 }
 
 let session: BookmarkListScrollSession | null = null;
 
 export const rememberBookmarkListScroll = (
   searchIdentity: string,
-  scrollY: number
+  scrollTop: number
 ): void => {
-  session = { scrollY, searchIdentity };
+  session = { scrollTop, searchIdentity };
 };
 
 export const consumeBookmarkListScroll = (
@@ -31,9 +31,9 @@ export const consumeBookmarkListScroll = (
   if (session === null || session.searchIdentity !== searchIdentity) {
     return null;
   }
-  const { scrollY } = session;
+  const { scrollTop } = session;
   session = null;
-  return scrollY;
+  return scrollTop;
 };
 
 export const clearBookmarkListScroll = (): void => {

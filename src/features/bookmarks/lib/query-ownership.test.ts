@@ -116,6 +116,22 @@ describe("bookmark list query ownership", () => {
     expect(hook).not.toContain("bookmarkListSearchEquals");
     expect(hook).toContain("rememberBookmarkListScroll(searchIdentity,");
     expect(hook).toContain("consumeBookmarkListScroll(searchIdentity)");
+    expect(hook).toContain('document.querySelector("#content")');
+    expect(hook).toContain("scrollContainer.scrollTop");
+    expect(hook).not.toContain("window.scroll");
+  });
+
+  test("protected main が一覧とルート遷移のスクロール領域になる", () => {
+    const shell = readSource(
+      "features/app-shell/components/protected-shell.tsx"
+    );
+    expect(shell).toContain('blockSize: "100dvh"');
+    expect(shell).toContain('minBlockSize: "0"');
+    expect(shell).toContain('overflow: "auto"');
+    expect(shell).toContain('data-scroll-restoration-id="content"');
+
+    const router = readSource("router.tsx");
+    expect(router).toContain('scrollToTopSelectors: ["#content"]');
   });
 
   test("BookmarkDetailSearch は schema から導出し listDefaults を持たない", () => {

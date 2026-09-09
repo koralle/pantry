@@ -23,6 +23,7 @@ export const getRouter = function getRouter() {
     defaultPreloadStaleTime: 0,
     routeTree,
     scrollRestoration: ({ location }) => shouldRestoreRouterScroll(location),
+    scrollToTopSelectors: ["#content"],
   });
 
   setupRouterSsrQueryIntegration({

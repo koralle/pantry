@@ -20,13 +20,15 @@ export const useBookmarkListPagination = ({
   const searchIdentity = bookmarkListSearchIdentity(search);
 
   useLayoutEffect(() => {
-    const scrollY = consumeBookmarkListScroll(searchIdentity);
-    if (scrollY !== null && scrollY !== undefined) {
-      window.scrollTo(0, scrollY);
+    const scrollContainer = document.querySelector("#content");
+    if (!scrollContainer) {
+      return;
     }
 
+    scrollContainer.scrollTop = consumeBookmarkListScroll(searchIdentity) ?? 0;
+
     return () => {
-      rememberBookmarkListScroll(searchIdentity, window.scrollY);
+      rememberBookmarkListScroll(searchIdentity, scrollContainer.scrollTop);
     };
   }, [searchIdentity]);
 

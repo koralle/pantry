@@ -28,13 +28,13 @@ const skipLink = css({
 });
 
 const shell = css({
+  blockSize: "100dvh",
   display: "grid",
   gridTemplateColumns: "1fr",
   gridTemplateRows: "auto minmax(0, 1fr)",
   md: {
     gridTemplateColumns: "16rem minmax(0, 1fr)",
   },
-  minBlockSize: "100dvh",
 });
 
 const shellHeader = css({
@@ -55,6 +55,8 @@ const shellMain = css({
     paddingBlockStart: "6",
     paddingInline: "6",
   },
+  minBlockSize: "0",
+  overflow: "auto",
   paddingBlockEnd: "8",
   paddingBlockStart: "5",
   paddingInline: "4",
@@ -76,7 +78,12 @@ export const ProtectedShell = ({
     <div className={shellHeader}>{header}</div>
     {sidebar}
     <div className={shellContent}>
-      <main id="content" tabIndex={-1} className={shellMain}>
+      <main
+        id="content"
+        data-scroll-restoration-id="content"
+        tabIndex={-1}
+        className={shellMain}
+      >
         {children}
       </main>
     </div>
