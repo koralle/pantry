@@ -9,10 +9,6 @@ function readSource(relativePath: string): string {
   return readFileSync(join(srcDir, relativePath), "utf-8");
 }
 
-/**
- * 一覧 read の query key の所有者は bookmarkListQueryOptions だけ。
- * loader / load-more hook が同じ options 工場を使うことを source で固定する。
- */
 describe("bookmark list query ownership", () => {
   const factoryConsumers = [
     "routes/_protected/index.tsx",
@@ -133,14 +129,5 @@ describe("bookmark list query ownership", () => {
     expect(builders).not.toContain("const listDefaults");
     expect(builders).not.toContain("export type BookmarkDetailSearch = {");
     expect(builders).toContain("defaultBookmarkSearch");
-  });
-
-  test("Card / Table 切替は query を捨てずスクロールだけ先頭へ戻す", () => {
-    const source = readSource(
-      "features/bookmarks/components/bookmark-list.tsx"
-    );
-    expect(source).toContain("window.scrollTo(0, 0)");
-    expect(source).not.toContain("resetBookmarkListCache");
-    expect(source).not.toContain("removeQueries");
   });
 });

@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { LayoutGrid, List, X } from "lucide-react";
+import { X } from "lucide-react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../shared/components/styled-button";
@@ -10,7 +10,6 @@ import type { BookmarkSearchPatch } from "../../navigation/lib/bookmark-search-b
 import { buildListSearch } from "../../navigation/lib/bookmark-search-builders";
 import { tagNamesMatch } from "../../tags/domain/tag-values";
 import type { ShelfTag } from "../../tags/lib/tag-shelf";
-import type { ListLayout } from "../lib/list-layout-preference";
 
 const toolbar = css({
   display: "flex",
@@ -59,13 +58,9 @@ const displayTagName = (searchKey: string, shelfTags: ShelfTag[]): string =>
 
 export const ListToolbar = ({
   search,
-  layout,
-  onLayoutChange,
   shelfTags,
 }: {
   readonly search: BookmarkSearchSchema;
-  readonly layout: ListLayout;
-  readonly onLayoutChange: (layout: ListLayout) => void;
   readonly shelfTags: ShelfTag[];
 }) => {
   const navigate = useNavigate({ from: "/" });
@@ -121,28 +116,6 @@ export const ListToolbar = ({
           <StyledSelect.Item id="newest">新しい順</StyledSelect.Item>
           <StyledSelect.Item id="updated">更新順</StyledSelect.Item>
         </StyledSelect>
-
-        <fieldset className={groupFieldset}>
-          <legend className={srOnly}>表示切替</legend>
-          <StyledButton
-            visual="toggle"
-            aria-pressed={layout === "table"}
-            onPress={() => {
-              onLayoutChange("table");
-            }}
-          >
-            <List size={16} aria-hidden /> テーブル
-          </StyledButton>
-          <StyledButton
-            visual="toggle"
-            aria-pressed={layout === "card"}
-            onPress={() => {
-              onLayoutChange("card");
-            }}
-          >
-            <LayoutGrid size={16} aria-hidden /> カード
-          </StyledButton>
-        </fieldset>
       </div>
 
       {selectedTags.length > 0 || addableTags.length > 0 ? (
