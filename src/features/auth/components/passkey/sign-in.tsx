@@ -84,7 +84,7 @@ export const PasskeySignIn = ({
       }
 
       if (data !== null && data !== undefined) {
-        await router.navigate({ to: redirect ?? "/" });
+        await router.navigate({ to: redirect ?? "/bookmarks" });
       }
     })();
 
@@ -115,7 +115,7 @@ export const PasskeySignIn = ({
           return;
         }
 
-        await router.navigate({ to: redirect ?? "/" });
+        await router.navigate({ to: redirect ?? "/bookmarks" });
       } catch {
         setErrorMessage(getPasskeySignInErrorMessage({}));
       } finally {

@@ -50,7 +50,7 @@ export const ShelfSidebar = ({
 }) => (
   <aside className={shelfRail} aria-label="サイドバー">
     <div>
-      <StyledLink to="/" search={defaultBookmarkSearch} visual="brand">
+      <StyledLink to="/bookmarks" search={defaultBookmarkSearch} visual="brand">
         Pantry
       </StyledLink>
     </div>

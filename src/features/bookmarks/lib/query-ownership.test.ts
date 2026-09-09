@@ -15,7 +15,7 @@ function readSource(relativePath: string): string {
  */
 describe("bookmark list query ownership", () => {
   const factoryConsumers = [
-    "routes/_protected/index.tsx",
+    "routes/_protected/bookmarks/index.tsx",
     "features/bookmarks/hooks/use-bookmark-list-pagination.ts",
   ];
   const uiConsumers = [
@@ -86,7 +86,7 @@ describe("bookmark list query ownership", () => {
     expect(hook).not.toContain("searchToQueryInput");
     expect(hook).not.toContain("tagNames");
 
-    const index = readSource("routes/_protected/index.tsx");
+    const index = readSource("routes/_protected/bookmarks/index.tsx");
     expect(index).toContain("loaderDeps: ({ search }) => search");
     expect(index).not.toContain("bookmarkListLoaderDeps");
   });

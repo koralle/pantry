@@ -27,7 +27,9 @@ export const Route = createFileRoute("/_protected")({
       throw redirect({
         to: "/sign-in",
         search: {
-          redirect: isInternalPath(location.href) ? location.href : "/",
+          redirect: isInternalPath(location.href)
+            ? location.href
+            : "/bookmarks",
         },
       });
     }
@@ -48,7 +50,10 @@ export const Route = createFileRoute("/_protected")({
 
 function Layout() {
   const { shelfTagsPromise } = Route.useLoaderData();
-  const indexSearch = useSearch({ from: "/_protected/", shouldThrow: false });
+  const indexSearch = useSearch({
+    from: "/_protected/bookmarks/",
+    shouldThrow: false,
+  });
   const detailSearch = useSearch({
     from: "/_protected/bookmarks/$id/",
     shouldThrow: false,

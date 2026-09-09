@@ -94,7 +94,7 @@ export const ShelfNav = ({
   return (
     <nav className={shelfNav} aria-label="タグ">
       <Link
-        to="/"
+        to="/bookmarks"
         search={allShelfSearch(listSearch)}
         className={shelfItem}
         data-selected={allSelected ? "true" : "false"}
@@ -113,7 +113,7 @@ export const ShelfNav = ({
         return (
           <Link
             key={tag.id}
-            to="/"
+            to="/bookmarks"
             search={tagShelfSearch(tag.name, listSearch)}
             className={shelfItem}
             data-selected={selected ? "true" : "false"}

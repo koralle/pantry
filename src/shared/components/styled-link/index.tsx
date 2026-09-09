@@ -177,7 +177,7 @@ const CreatedLinkComponent = createLink(BasicLinkComponent);
  * ```
  * <StyledLink to="/settings">設定</StyledLink>
  * <StyledLink to="/settings" visual="plain" size="md">設定</StyledLink>
- * <StyledLink to="/" search={defaultBookmarkSearch} visual="brand">Pantry</StyledLink>
+ * <StyledLink to="/bookmarks" search={defaultBookmarkSearch} visual="brand">Pantry</StyledLink>
  * <StyledLink to=".." visual="accent">戻る</StyledLink>
  * <StyledLink to="/bookmarks/$id" params={{ id }} visual="muted">example.com</StyledLink>
  * ```

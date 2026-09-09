@@ -47,7 +47,7 @@ function DetailFallback({ error, resetErrorBoundary }: FallbackProps) {
         title="このブックマークは見つかりません"
         action={
           <StyledLink
-            to="/"
+            to="/bookmarks"
             search={listSearchFromDetail({ tags })}
             visual="accent"
           >

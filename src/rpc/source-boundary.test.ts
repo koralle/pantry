@@ -85,6 +85,7 @@ describe("shelf query ownership", () => {
   test("child loader は session を再取得しない", async () => {
     const sources = await Promise.all([
       readSource("routes/_protected/index.tsx"),
+      readSource("routes/_protected/bookmarks/index.tsx"),
       readSource("routes/_protected/settings/index.tsx"),
       readSource("routes/_protected/tags/index.tsx"),
       readSource("routes/_protected/tags/$id/index.tsx"),

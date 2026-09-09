@@ -53,7 +53,7 @@ export const BookmarkListResults = ({
           title="条件に合うブックマークがありません"
           action={
             <StyledLink
-              to="/"
+              to="/bookmarks"
               search={buildListSearch(search, {
                 clearQ: hasQ,
                 clearTags: hasTags,

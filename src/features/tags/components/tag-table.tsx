@@ -165,7 +165,7 @@ export const TagTable = ({
                     aria-hidden="true"
                   />
                   <Link
-                    to="/"
+                    to="/bookmarks"
                     search={tagShelfSearch(tag.name)}
                     aria-label={tag.name}
                     className={dataTableRowLink}
