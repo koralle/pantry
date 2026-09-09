@@ -29,7 +29,7 @@ function RouteComponent() {
     const { error } = await authClient.signIn.email({ email, password });
 
     if (error === null) {
-      await router.navigate({ to: redirect ?? "/" });
+      await router.navigate({ to: redirect ?? "/bookmarks" });
       return null;
     }
 

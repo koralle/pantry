@@ -33,7 +33,7 @@ type Story = StoryObj<typeof meta>;
 export const Default = {
   args: {
     size: "md",
-    to: "/",
+    to: "/bookmarks",
     visual: "plain",
   },
   render: (args) => <StyledLink {...args}>設定</StyledLink>,
@@ -41,7 +41,7 @@ export const Default = {
 
 export const Accent = {
   args: {
-    to: "/",
+    to: "/bookmarks",
     visual: "accent",
   },
   render: (args) => <StyledLink {...args}>戻る</StyledLink>,
@@ -49,7 +49,7 @@ export const Accent = {
 
 export const Muted = {
   args: {
-    to: "/",
+    to: "/bookmarks",
     visual: "muted",
   },
   render: (args) => <StyledLink {...args}>example.com</StyledLink>,
@@ -57,7 +57,7 @@ export const Muted = {
 
 export const Brand = {
   args: {
-    to: "/",
+    to: "/bookmarks",
     visual: "brand",
   },
   render: (args) => <StyledLink {...args}>Pantry</StyledLink>,

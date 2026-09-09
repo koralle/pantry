@@ -125,7 +125,7 @@ function RouteComponent() {
   return (
     <section className={workbench} aria-label="ブックマーク新規作成">
       <nav className={workbenchNav}>
-        <StyledLink to="/" search={listSearch} visual="accent">
+        <StyledLink to="/bookmarks" search={listSearch} visual="accent">
           <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
         </StyledLink>
       </nav>

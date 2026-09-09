@@ -96,7 +96,7 @@ export const TagDetail = ({
 
       <div className={detailActions}>
         <Link
-          to="/"
+          to="/bookmarks"
           search={tagShelfSearch(tag.name)}
           className={button({ visual: "accent" })}
         >

@@ -57,7 +57,7 @@ export const BookmarkDetailContent = ({
 }) => (
   <>
     <nav className={workbenchNav}>
-      <StyledLink to="/" search={listSearch} visual="accent">
+      <StyledLink to="/bookmarks" search={listSearch} visual="accent">
         <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
       </StyledLink>
     </nav>
@@ -81,7 +81,7 @@ export const BookmarkDetailContent = ({
         {bookmark.tagNames.map((name) => (
           <li key={name}>
             <Link
-              to="/"
+              to="/bookmarks"
               search={buildListBackSearch([name])}
               className={tagChip({ visual: "link" })}
             >

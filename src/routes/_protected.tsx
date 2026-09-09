@@ -20,6 +20,16 @@ import { getRpcClient } from "../rpc/runtime-client";
 
 export const Route = createFileRoute("/_protected")({
   beforeLoad: async ({ location }) => {
+    // 一覧の正規化は認証状態より優先する。`/` は未認証でも `/bookmarks` へ恒久リダイレクトし、
+    // ログイン後の戻り先が `/` を再経由しないようにする。
+    // search は raw のまま引き継ぎ、未知・不正パラメータの扱いは一覧ルートの validateSearch に委譲する。
+    if (location.pathname === "/") {
+      throw redirect({
+        href: `/bookmarks${location.searchStr}`,
+        statusCode: 301,
+      });
+    }
+
     const client = await getRpcClient();
     const session = await client.auth.session();
 
@@ -27,7 +37,9 @@ export const Route = createFileRoute("/_protected")({
       throw redirect({
         to: "/sign-in",
         search: {
-          redirect: isInternalPath(location.href) ? location.href : "/",
+          redirect: isInternalPath(location.href)
+            ? location.href
+            : "/bookmarks",
         },
       });
     }
@@ -48,7 +60,10 @@ export const Route = createFileRoute("/_protected")({
 
 function Layout() {
   const { shelfTagsPromise } = Route.useLoaderData();
-  const indexSearch = useSearch({ from: "/_protected/", shouldThrow: false });
+  const indexSearch = useSearch({
+    from: "/_protected/bookmarks/",
+    shouldThrow: false,
+  });
   const detailSearch = useSearch({
     from: "/_protected/bookmarks/$id/",
     shouldThrow: false,

@@ -122,14 +122,18 @@ export const AppHeader = ({
         nextQ === ""
           ? buildListSearch(current, { clearQ: true })
           : buildListSearch(current, { q: nextQ }),
-      to: "/",
+      to: "/bookmarks",
     });
   };
 
   return (
     <header className={shellHeader}>
       <div className={headerLead}>
-        <StyledLink to="/" search={defaultBookmarkSearch} visual="brand">
+        <StyledLink
+          to="/bookmarks"
+          search={defaultBookmarkSearch}
+          visual="brand"
+        >
           Pantry
         </StyledLink>
 

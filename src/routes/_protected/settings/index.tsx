@@ -94,7 +94,11 @@ function RouteComponent() {
         </StyledButton>
       </section>
 
-      <StyledLink to="/" search={defaultBookmarkSearch} visual="accent">
+      <StyledLink
+        to="/bookmarks"
+        search={defaultBookmarkSearch}
+        visual="accent"
+      >
         <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
       </StyledLink>
     </div>

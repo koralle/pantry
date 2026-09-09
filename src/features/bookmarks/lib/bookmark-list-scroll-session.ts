@@ -46,4 +46,4 @@ export const clearBookmarkListScroll = (): void => {
  */
 export const shouldRestoreRouterScroll = (location: {
   readonly pathname: string;
-}): boolean => location.pathname !== "/";
+}): boolean => location.pathname !== "/bookmarks";
