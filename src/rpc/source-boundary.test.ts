@@ -98,3 +98,20 @@ describe("shelf query ownership", () => {
     }
   });
 });
+
+describe("production client graph", () => {
+  test("router は react-query-devtools を静的 import しない", async () => {
+    const source = await readSource("router.tsx");
+
+    expect(source).not.toMatch(/from ["']@tanstack\/react-query-devtools["']/);
+  });
+
+  test("RootDocument は tanstack DEV tools を静的 import しない", async () => {
+    const source = await readSource(
+      "features/app-shell/components/root-document.tsx"
+    );
+
+    expect(source).not.toMatch(/from ["']@tanstack\/react-devtools["']/);
+    expect(source).not.toMatch(/from ["']@tanstack\/react-router-devtools["']/);
+  });
+});

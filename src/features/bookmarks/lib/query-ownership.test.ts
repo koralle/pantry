@@ -143,4 +143,27 @@ describe("bookmark list query ownership", () => {
     expect(source).not.toContain("resetBookmarkListCache");
     expect(source).not.toContain("removeQueries");
   });
+
+  test("BookmarkList は Frame 全体を一つの Suspense で包まない", () => {
+    const source = readSource(
+      "features/bookmarks/components/bookmark-list.tsx"
+    );
+    expect(source).not.toContain("Suspense");
+    expect(source).not.toContain("ListLoading");
+  });
+
+  test("棚タグの use() は toolbar に閉じ、一覧結果を待たせない", () => {
+    const frame = readSource(
+      "features/bookmarks/components/bookmark-list-frame.tsx"
+    );
+    const toolbar = readSource(
+      "features/bookmarks/components/list-toolbar-async.tsx"
+    );
+
+    expect(frame).not.toContain("use(shelfTagsPromise)");
+    expect(frame).toContain("ListToolbarAsync");
+    expect(frame).toContain("BookmarkListResults");
+    expect(frame).toContain("ListLoading");
+    expect(toolbar).toContain("use(shelfTagsPromise)");
+  });
 });
