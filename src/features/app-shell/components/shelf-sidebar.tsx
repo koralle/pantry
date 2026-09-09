@@ -1,4 +1,3 @@
-import { Settings, Tags } from "lucide-react";
 import { css } from "styled-system/css";
 
 import { StyledLink } from "../../../shared/components/styled-link";
@@ -29,16 +28,6 @@ const shelfRailNav = css({
   overflow: "auto",
 });
 
-const shelfRailMeta = css({
-  borderBlockStartColor: "border.default",
-  borderBlockStartStyle: "solid",
-  borderBlockStartWidth: "thin",
-  display: "flex",
-  flexDirection: "column",
-  gap: "1",
-  paddingBlockStart: "3",
-});
-
 export const ShelfSidebar = ({
   shelfTagsPromise,
   selection,
@@ -60,14 +49,6 @@ export const ShelfSidebar = ({
         selection={selection}
         listSearch={listSearch}
       />
-    </div>
-    <div className={shelfRailMeta}>
-      <StyledLink to="/tags" search={{ limit: 50, offset: 0 }} visual="plain">
-        <Tags size={16} aria-hidden /> タグ管理
-      </StyledLink>
-      <StyledLink to="/settings" visual="plain">
-        <Settings size={16} aria-hidden /> 設定
-      </StyledLink>
     </div>
   </aside>
 );

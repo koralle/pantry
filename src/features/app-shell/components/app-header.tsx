@@ -61,12 +61,6 @@ const brandMobile = css({
   },
 });
 
-const mobileChromeAction = css({
-  md: {
-    display: "none",
-  },
-});
-
 const searchForm = css({
   display: "flex",
   flex: "1 1 100%",
@@ -173,17 +167,12 @@ export const AppHeader = ({
           to="/tags"
           search={{ limit: 50, offset: 0 }}
           visual="plain"
-          className={mobileChromeAction}
           aria-label="タグ管理"
         >
           <Tags size={16} aria-hidden />
         </StyledLink>
-        <StyledLink
-          to="/settings"
-          visual="plain"
-          className={mobileChromeAction}
-          aria-label="設定"
-        >
+
+        <StyledLink to="/settings" visual="plain" aria-label="設定">
           <Settings size={16} aria-hidden />
         </StyledLink>
         <StyledButton
