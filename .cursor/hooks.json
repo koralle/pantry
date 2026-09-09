@@ -1,6 +1,12 @@
 {
   "hooks": {
-    "afterFileEdit": [{ "command": "pnpm run fix" }]
+    "afterFileEdit": [{ "command": "pnpm run fix" }],
+    "subagentStart": [
+      {
+        "command": "node .cursor/hooks/allow-subagent-model.mjs",
+        "failClosed": true
+      }
+    ]
   },
   "version": 1
 }
