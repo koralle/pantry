@@ -40,10 +40,6 @@ export const clearBookmarkListScroll = (): void => {
   session = null;
 };
 
-/**
- * 一覧のスクロールはモジュールスコープで復元する。
- * ルーターの sessionStorage 復元は Hard Reload で一覧位置を残してしまうので使わない。
- */
 export const shouldRestoreRouterScroll = (location: {
   readonly pathname: string;
 }): boolean =>
