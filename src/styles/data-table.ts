@@ -68,8 +68,3 @@ export const dataTableRowLink = css({
   fontWeight: "semibold",
   textDecoration: "none",
 });
-
-export const dataTableNested = css({
-  position: "relative",
-  zIndex: "2",
-});
