@@ -3,7 +3,7 @@ import { startTransition, useActionState, useRef, useState } from "react";
 import type {
   CreateTagFromPickerAction,
   CreateTagFromPickerState,
-} from "../../../lib/execute-create-tag-from-picker";
+} from "../../../lib/tag-picker/execute-create-tag-from-picker";
 import {
   canOfferCreateTag,
   toggleSelectedTag,

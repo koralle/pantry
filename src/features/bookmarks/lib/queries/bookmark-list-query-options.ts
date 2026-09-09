@@ -1,5 +1,5 @@
-import { orpc } from "../../../rpc/query";
-import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
+import { orpc } from "../../../../rpc/query";
+import type { BookmarkSearchSchema } from "../../../navigation/lib/bookmark-search";
 
 /** 一覧→詳細→一覧で読み込み済みページを捨てない。Mutation 時は明示的に remove する。 */
 const BOOKMARK_LIST_STALE_TIME = Number.POSITIVE_INFINITY;

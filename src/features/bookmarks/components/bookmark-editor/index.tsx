@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 import type { BookmarkUrl } from "../../domain/bookmark-values";
-import type { CreateTagFromPickerAction } from "../../lib/execute-create-tag-from-picker";
-import type { UpdateBookmarkFailureCode } from "../../lib/update-bookmark-failure";
+import type { UpdateBookmarkFailureCode } from "../../lib/errors/update-bookmark-failure";
+import type { CreateTagFromPickerAction } from "../../lib/tag-picker/execute-create-tag-from-picker";
 import type { TagCandidate } from "../bookmark-tag-picker";
 import { buildUpdateBookmarkCommand } from "./bookmark-editor-command";
 import { mapUpdateBookmarkFailure } from "./bookmark-editor-error";

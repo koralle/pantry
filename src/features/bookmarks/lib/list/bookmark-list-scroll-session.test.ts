@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "vitest";
 
-import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
+import type { BookmarkSearchSchema } from "../../../navigation/lib/bookmark-search";
 import {
   bookmarkListSearchIdentity,
   clearBookmarkListScroll,

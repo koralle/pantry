@@ -1,8 +1,8 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { orpc } from "../../../rpc/query";
-import { getRpcClient } from "../../../rpc/runtime-client";
-import { refreshAfterCreateTag } from "../../tags/lib/refresh-after-create-tag";
+import { orpc } from "../../../../rpc/query";
+import { getRpcClient } from "../../../../rpc/runtime-client";
+import { refreshAfterCreateTag } from "../../../tags/lib/refresh-after-create-tag";
 import { executeCreateTagFromPicker } from "./execute-create-tag-from-picker";
 import type { CreateTagFromPickerAction } from "./execute-create-tag-from-picker";
 

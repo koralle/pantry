@@ -1,11 +1,11 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { orpc } from "../../../rpc/query";
+import { orpc } from "../../../../rpc/query";
 import {
   bookmarkListSearchIdentity,
   consumeBookmarkListScroll,
   rememberBookmarkListScroll,
-} from "./bookmark-list-scroll-session";
+} from "../list/bookmark-list-scroll-session";
 import { resetBookmarkListCache } from "./reset-bookmark-list-cache";
 
 describe(resetBookmarkListCache, () => {

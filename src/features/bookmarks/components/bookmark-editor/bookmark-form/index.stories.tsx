@@ -4,7 +4,7 @@ import type { Mock } from "storybook/test";
 import { styled } from "styled-system/jsx";
 
 import preview from "../../../../../storybook/preview";
-import type { CreateTagFromPickerAction } from "../../../lib/execute-create-tag-from-picker";
+import type { CreateTagFromPickerAction } from "../../../lib/tag-picker/execute-create-tag-from-picker";
 import type { TagCandidate } from "../../bookmark-tag-picker";
 import { BookmarkForm } from "./index";
 import type {

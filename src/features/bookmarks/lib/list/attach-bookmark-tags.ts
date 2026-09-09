@@ -1,4 +1,4 @@
-import type { BookmarkSelectType } from "../../../db/schema/bookmark";
+import type { BookmarkSelectType } from "../../../../db/schema/bookmark";
 
 export interface BookmarkListTag {
   id: number;

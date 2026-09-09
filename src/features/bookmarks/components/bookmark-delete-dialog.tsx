@@ -21,8 +21,8 @@ import {
 } from "../../../styles/dialog";
 import { fieldError } from "../../../styles/form";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
-import { getDeleteBookmarkErrorMessage } from "../lib/get-delete-bookmark-error-message";
-import { refreshAfterBookmarkMutation } from "../lib/refresh-after-bookmark-mutation";
+import { getDeleteBookmarkErrorMessage } from "../lib/errors/get-delete-bookmark-error-message";
+import { refreshAfterBookmarkMutation } from "../lib/queries/refresh-after-bookmark-mutation";
 
 export const BookmarkDeleteDialog = ({
   bookmark,

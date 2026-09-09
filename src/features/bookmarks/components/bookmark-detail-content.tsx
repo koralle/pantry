@@ -12,7 +12,7 @@ import {
   buildListBackSearch,
   detailSearchFromList,
 } from "../../navigation/lib/bookmark-search-builders";
-import { formatDateTime } from "../lib/format-date-time";
+import { formatDateTime } from "../lib/format/format-date-time";
 import type { BookmarkDetail } from "../persistence/get-bookmark-detail";
 import { BookmarkDeleteDialog } from "./bookmark-delete-dialog";
 

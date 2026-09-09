@@ -1,4 +1,4 @@
-import type { UpdateBookmarkFailureCode } from "../../lib/update-bookmark-failure";
+import type { UpdateBookmarkFailureCode } from "../../lib/errors/update-bookmark-failure";
 import type { BookmarkEditorError } from "./bookmark-form";
 
 /**

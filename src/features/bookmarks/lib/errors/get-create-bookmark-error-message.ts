@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/client";
 
-import type { BookmarkFormServerError } from "../components/bookmark-editor/bookmark-form/types";
+import type { BookmarkFormServerError } from "../../components/bookmark-editor/bookmark-form/types";
 
 const invalidTagMessage =
   "保存できないタグが含まれています。タグを選び直してください";

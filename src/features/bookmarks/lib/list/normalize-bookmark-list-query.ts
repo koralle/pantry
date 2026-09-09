@@ -1,4 +1,4 @@
-import { uniqueNormalizedTagNames } from "../../tags/domain/tag-values";
+import { uniqueNormalizedTagNames } from "../../../tags/domain/tag-values";
 
 export interface FetchBookmarksInput {
   q?: string;

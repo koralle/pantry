@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-const srcDir = join(import.meta.dirname, "../../..");
+const srcDir = join(import.meta.dirname, "../../../..");
 
 function readSource(relativePath: string): string {
   return readFileSync(join(srcDir, relativePath), "utf-8");
@@ -43,7 +43,7 @@ describe("bookmark list query ownership", () => {
 
   test("options 工場だけが orpc.bookmarks.list を知る", () => {
     const helper = readSource(
-      "features/bookmarks/lib/bookmark-list-query-options.ts"
+      "features/bookmarks/lib/queries/bookmark-list-query-options.ts"
     );
     expect(helper).toContain("orpc.bookmarks.list.infiniteOptions");
 
@@ -54,20 +54,20 @@ describe("bookmark list query ownership", () => {
 
   test("一覧復帰のために staleTime Infinity と mutation 時の removeQueries を使う", () => {
     const helper = readSource(
-      "features/bookmarks/lib/bookmark-list-query-options.ts"
+      "features/bookmarks/lib/queries/bookmark-list-query-options.ts"
     );
     expect(helper).toContain("Number.POSITIVE_INFINITY");
     expect(helper).not.toContain("refetchOnWindowFocus");
     expect(helper).not.toContain("refetchOnReconnect");
     expect(helper).not.toContain("refetchOnMount");
     expect(
-      readSource("features/bookmarks/lib/reset-bookmark-list-cache.ts")
+      readSource("features/bookmarks/lib/queries/reset-bookmark-list-cache.ts")
     ).toContain("removeQueries");
   });
 
   test("query options 工場が BookmarkSearchSchema を受け、tags を tagNames へ写す", () => {
     const helper = readSource(
-      "features/bookmarks/lib/bookmark-list-query-options.ts"
+      "features/bookmarks/lib/queries/bookmark-list-query-options.ts"
     );
     expect(helper).toContain("search: BookmarkSearchSchema");
     expect(helper).toContain("tagNames");
@@ -98,7 +98,7 @@ describe("bookmark list query ownership", () => {
 
   test("一覧条件の正本は bookmarkListSearchIdentity だけ", () => {
     const session = readSource(
-      "features/bookmarks/lib/bookmark-list-scroll-session.ts"
+      "features/bookmarks/lib/list/bookmark-list-scroll-session.ts"
     );
     expect(session).toContain("bookmarkListSearchIdentity");
     expect(session).not.toContain("bookmarkListSearchEquals");

@@ -10,8 +10,8 @@ import { bookmarkTable } from "../../../db/schema/bookmark";
 import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
 import { tagsTable } from "../../../db/schema/tag";
 import { userIdSchema } from "../../auth/domain/auth-values";
-import { decodeBookmarkListCursor } from "../lib/bookmark-list-cursor";
-import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/bookmark-list-page-size";
+import { decodeBookmarkListCursor } from "../lib/list/bookmark-list-cursor";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/list/bookmark-list-page-size";
 import type { BookmarkListQuery } from "./list-bookmarks";
 import { listBookmarks } from "./list-bookmarks";
 

@@ -21,7 +21,7 @@ import {
 } from "../features/bookmarks/application/update-bookmark";
 import type { UpdateBookmark } from "../features/bookmarks/application/update-bookmark";
 import { bookmarkIdSchema } from "../features/bookmarks/domain/bookmark-values";
-import { decodeBookmarkListCursor } from "../features/bookmarks/lib/bookmark-list-cursor";
+import { decodeBookmarkListCursor } from "../features/bookmarks/lib/list/bookmark-list-cursor";
 import type { BookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
 import type {
   BookmarkListPage,

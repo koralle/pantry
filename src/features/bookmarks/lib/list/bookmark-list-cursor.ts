@@ -1,6 +1,6 @@
 import * as v from "valibot";
 
-import { bookmarkIdSchema } from "../domain/bookmark-values";
+import { bookmarkIdSchema } from "../../domain/bookmark-values";
 
 export interface BookmarkListCursor {
   readonly sortValueMs: number;

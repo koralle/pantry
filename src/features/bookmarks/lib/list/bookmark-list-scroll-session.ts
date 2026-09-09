@@ -1,4 +1,4 @@
-import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
+import type { BookmarkSearchSchema } from "../../../navigation/lib/bookmark-search";
 
 /** 同じ一覧条件かどうかの正本。React key と scroll session がこれを共有する。 */
 export const bookmarkListSearchIdentity = (

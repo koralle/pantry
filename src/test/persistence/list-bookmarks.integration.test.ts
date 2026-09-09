@@ -5,8 +5,8 @@ import { user } from "../../db/schema/auth-schema";
 import { bookmarkTable } from "../../db/schema/bookmark";
 import { tagsTable } from "../../db/schema/tag";
 import { userIdSchema } from "../../features/auth/domain/auth-values";
-import { decodeBookmarkListCursor } from "../../features/bookmarks/lib/bookmark-list-cursor";
-import { BOOKMARK_LIST_PAGE_SIZE } from "../../features/bookmarks/lib/bookmark-list-page-size";
+import { decodeBookmarkListCursor } from "../../features/bookmarks/lib/list/bookmark-list-cursor";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../../features/bookmarks/lib/list/bookmark-list-page-size";
 import type { BookmarkListQuery } from "../../features/bookmarks/persistence/list-bookmarks";
 import { listBookmarks } from "../../features/bookmarks/persistence/list-bookmarks";
 import {

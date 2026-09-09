@@ -6,7 +6,7 @@ import { createErrorFallback } from "../../../shared/components/error-fallback";
 import { PantryMotion } from "../../../shared/components/pantry-motion";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import type { ShelfTag } from "../../tags/lib/tag-shelf";
-import { bookmarkListSearchIdentity } from "../lib/bookmark-list-scroll-session";
+import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
 import { ListLoading } from "./bookmark-list-loading";
 import { BookmarkListResults } from "./bookmark-list-results";
 import { ListToolbar } from "./bookmark-list-toolbar";

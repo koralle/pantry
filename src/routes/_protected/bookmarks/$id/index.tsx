@@ -12,7 +12,7 @@ import { css } from "styled-system/css";
 
 import { BookmarkDetailResolved } from "../../../../features/bookmarks/components/bookmark-detail-resolved";
 import { BookmarkDetailSkeleton } from "../../../../features/bookmarks/components/bookmark-detail-skeleton";
-import { bookmarkDetailQueryOptions } from "../../../../features/bookmarks/lib/bookmark-detail-query-options";
+import { bookmarkDetailQueryOptions } from "../../../../features/bookmarks/lib/queries/bookmark-detail-query-options";
 import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { StyledLink } from "../../../../shared/components/styled-link";

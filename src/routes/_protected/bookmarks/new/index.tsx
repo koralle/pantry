@@ -14,10 +14,10 @@ import type {
   BookmarkTitleFetchAction,
 } from "../../../../features/bookmarks/components/bookmark-editor/bookmark-form";
 import { buildNewBookmarkCommand } from "../../../../features/bookmarks/components/new-bookmark-command";
-import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/create-tag-from-picker-action";
-import { mapCreateBookmarkFailure } from "../../../../features/bookmarks/lib/get-create-bookmark-error-message";
-import { getTitleFetchErrorMessage } from "../../../../features/bookmarks/lib/get-title-fetch-error-message";
-import { refreshAfterBookmarkMutation } from "../../../../features/bookmarks/lib/refresh-after-bookmark-mutation";
+import { mapCreateBookmarkFailure } from "../../../../features/bookmarks/lib/errors/get-create-bookmark-error-message";
+import { getTitleFetchErrorMessage } from "../../../../features/bookmarks/lib/errors/get-title-fetch-error-message";
+import { refreshAfterBookmarkMutation } from "../../../../features/bookmarks/lib/queries/refresh-after-bookmark-mutation";
+import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/tag-picker/create-tag-from-picker-action";
 import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";

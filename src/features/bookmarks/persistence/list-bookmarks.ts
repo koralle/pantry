@@ -5,14 +5,14 @@ import { bookmarkTable } from "../../../db/schema/bookmark";
 import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
 import { tagsTable } from "../../../db/schema/tag";
 import type { UserId } from "../../auth/domain/auth-values";
-import type { BookmarkListTag } from "../lib/attach-bookmark-tags";
-import { attachTagsToBookmarks } from "../lib/attach-bookmark-tags";
+import type { BookmarkListTag } from "../lib/list/attach-bookmark-tags";
+import { attachTagsToBookmarks } from "../lib/list/attach-bookmark-tags";
 import {
   decodeBookmarkListCursor,
   encodeBookmarkListCursor,
-} from "../lib/bookmark-list-cursor";
-import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/bookmark-list-page-size";
-import { normalizeListQuery } from "../lib/normalize-bookmark-list-query";
+} from "../lib/list/bookmark-list-cursor";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/list/bookmark-list-page-size";
+import { normalizeListQuery } from "../lib/list/normalize-bookmark-list-query";
 
 /**
  * 一覧画面が要する screen projection。DB の行をそのまま出さず、

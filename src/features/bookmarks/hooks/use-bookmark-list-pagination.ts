@@ -3,12 +3,12 @@ import { useLayoutEffect } from "react";
 import { getErrorMessage } from "react-error-boundary";
 
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
-import { bookmarkListQueryOptions } from "../lib/bookmark-list-query-options";
 import {
   bookmarkListSearchIdentity,
   consumeBookmarkListScroll,
   rememberBookmarkListScroll,
-} from "../lib/bookmark-list-scroll-session";
+} from "../lib/list/bookmark-list-scroll-session";
+import { bookmarkListQueryOptions } from "../lib/queries/bookmark-list-query-options";
 
 export const useBookmarkListPagination = ({
   search,

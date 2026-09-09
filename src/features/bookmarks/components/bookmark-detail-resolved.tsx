@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
-import { bookmarkDetailQueryOptions } from "../lib/bookmark-detail-query-options";
+import { bookmarkDetailQueryOptions } from "../lib/queries/bookmark-detail-query-options";
 import { BookmarkDetailContent } from "./bookmark-detail-content";
 
 export const BookmarkDetailResolved = ({
