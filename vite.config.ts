@@ -12,9 +12,8 @@ const config = defineConfig({
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart({
       router: {
-        // File-based routing treats dots as path segments, so
-        // `index.stories.tsx` would otherwise be crawled as `/stories`.
-        routeFileIgnorePattern: "\\.stories\\.(tsx|ts|jsx|js)$",
+        // Colocated Storybook and test files are not routes.
+        routeFileIgnorePattern: "\\.(stories|test)\\.(tsx|ts|jsx|js)$",
       },
     }),
     viteReact(),
