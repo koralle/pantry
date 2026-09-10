@@ -14,6 +14,7 @@
     "knip": "pnpm dotenvx run -f .env.example -- knip",
     "lint:markup": "markuplint \"**/*.{tsx,jsx}\"",
     "migrate:dev": "pnpm dotenvx run -f .env.development -- pnpm drizzle-kit migrate",
+    "migrate:prod": "drizzle-kit migrate",
     "panda:codegen": "panda codegen",
     "prepare": "pnpm run panda:codegen",
     "preview": "pnpm run build && vite preview",
