@@ -3,7 +3,6 @@ import type { KnipConfig } from "knip";
 const config: KnipConfig = {
   tags: ["-lintignore"],
   // Maintenance scripts and the Node-only Better Auth entry they import.
-  // Nested `dotenvx` / `pnpm` wrappers are not fully resolved by the script parser.
   // The tanstack-entry stub is an alias target loaded by the Vitest bundler
   // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
   // Cursor Project Hooks invoke `.cursor/hooks/*.mjs` by command path, not imports.
