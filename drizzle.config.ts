@@ -1,11 +1,20 @@
 import { defineConfig } from "drizzle-kit";
 
-import { env } from "./env";
+const { TURSO_AUTH_TOKEN: authToken, TURSO_CONNECTION_URL: connectionUrl } =
+  process.env;
+
+if (!connectionUrl) {
+  throw new Error("TURSO_CONNECTION_URL is not defined");
+}
+
+if (!authToken) {
+  throw new Error("TURSO_AUTH_TOKEN is not defined");
+}
 
 export default defineConfig({
   dbCredentials: {
-    authToken: env.TURSO_AUTH_TOKEN,
-    url: env.TURSO_CONNECTION_URL,
+    authToken,
+    url: connectionUrl,
   },
   dialect: "turso",
   out: "./drizzle",
