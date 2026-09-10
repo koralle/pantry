@@ -155,7 +155,7 @@ async function insertTagRow(
   return created.id;
 }
 
-describe.sequential(updateTag, () => {
+describe(updateTag, { concurrent: false }, () => {
   test("所有者が全フィールドを更新し TagId を受け取る", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");

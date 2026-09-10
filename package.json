@@ -54,7 +54,7 @@
     "valibot": "catalog:validation"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "catalog:test",
+    "@cloudflare/vitest-plugin": "catalog:test",
     "@dotenvx/dotenvx": "catalog:envvars",
     "@internationalized/date": "catalog:date",
     "@markuplint/jsx-parser": "catalog:lint",
