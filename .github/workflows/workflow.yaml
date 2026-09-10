@@ -10,12 +10,13 @@ permissions:
 
 concurrency:
   group: production-${{ github.workflow }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
     name: Deploy Cloudflare Workers production
     runs-on: ubuntu-24.04
+    environment: production
 
     steps:
       - name: Checkout
@@ -34,6 +35,14 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+
+      - name: Migrate production database
+        shell: bash
+        env:
+          TURSO_CONNECTION_URL: ${{ secrets.TURSO_CONNECTION_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          pnpm run migrate:prod
 
       - name: Deploy production
         shell: bash

@@ -14,6 +14,7 @@
     "knip": "knip",
     "lint:markup": "markuplint \"**/*.{tsx,jsx}\"",
     "migrate:dev": "varlock run -- drizzle-kit migrate",
+    "migrate:prod": "drizzle-kit migrate",
     "panda:codegen": "panda codegen",
     "prepare": "pnpm run panda:codegen",
     "preview": "pnpm run build && vite preview",
