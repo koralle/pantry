@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>eli30 — TOPIC</title>
+    <!--
+      eli30 starter. Replace every placeholder, keep the tokens and structure.
+      Visual language: warm editorial paper magazine (see references/design.md).
+    -->
+    <style>
+      :root {
+        --paper: #fefcf5;
+        --surface: #fffcf6;
+        --tint: #f7f7f5;
+        --divider: #eaeae2;
+        --ink: #3c3a39;
+        --ink-60: rgba(11, 9, 7, 0.6);
+        --ink-40: rgba(11, 9, 7, 0.4);
+        --ink-10: rgba(11, 9, 7, 0.1);
+        --ink-05: rgba(11, 9, 7, 0.05);
+        --red: #ff272d;
+        --orange: #ff7300;
+        --yellow: #fdc211;
+        --pink: #f49eff;
+        --lav: #817fff;
+        --blue: #2677ff;
+        --aqua: #aaf2fc;
+        --turquoise: #79deeb;
+        --green: #32ae88;
+        --sans: "Suisse Int'l", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Noto Sans JP", sans-serif;
+        --mono: "Suisse Int'l Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        --page-x: 100px;
+        --max-w: 1440px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: 0 var(--page-x);
+      }
+      section {
+        padding: 50px 0;
+        border-top: 1px solid var(--ink-10);
+      }
+      h1 {
+        font-size: clamp(2.5rem, 5vw, 4.7rem);
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin: 0 0 24px;
+        text-wrap: balance;
+      }
+      h2 {
+        font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+        font-weight: 400;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+        margin: 0 0 20px;
+        text-wrap: balance;
+      }
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 500;
+        line-height: 1.3;
+        margin: 0 0 8px;
+      }
+      p {
+        font-size: clamp(1.05rem, 1.4vw, 1.375rem);
+        margin: 0 0 16px;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 15px;
+        color: var(--ink-60);
+        margin: 0 0 12px;
+      }
+      .lede {
+        color: var(--ink-60);
+        max-width: 62ch;
+      }
+      .hero {
+        padding: 100px 0 80px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+        margin: 28px 0;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--ink-10);
+        border-radius: 12px;
+        padding: 28px;
+        transition: border-color 160ms ease;
+      }
+      .card:hover {
+        border-color: var(--ink-40);
+      }
+      .card p {
+        font-size: 1.125rem;
+        color: var(--ink-60);
+        margin: 0;
+      }
+      .chip {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        background: var(--ink-05);
+      }
+      .accent-red {
+        color: var(--red);
+      }
+      .accent-blue {
+        color: var(--blue);
+      }
+      .accent-lav {
+        color: var(--lav);
+      }
+      .accent-green {
+        color: var(--green);
+      }
+      pre {
+        background: var(--ink-05);
+        border: 1px solid var(--ink-10);
+        border-radius: 8px;
+        padding: 16px 20px;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 24px 0;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.9em;
+      }
+      .diagram {
+        margin: 28px 0;
+        border: 1px solid var(--ink-10);
+        border-radius: 12px;
+        background: var(--surface);
+        padding: 24px;
+      }
+      .diagram svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .diagram figcaption {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--ink-60);
+        margin-top: 12px;
+      }
+      footer {
+        padding: 40px 0 60px;
+        border-top: 1px solid var(--ink-10);
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--ink-40);
+      }
+      @media (max-width: 900px) {
+        :root {
+          --page-x: 50px;
+        }
+        .hero {
+          padding: 60px 0 50px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">/TOPIC-SLUG</p>
+        <h1>TOPIC</h1>
+        <p class="lede">ONE_SENTENCE: WHAT_THIS_IS_AND_WHY_IT_MATTERS.</p>
+      </header>
+
+      <section>
+        <p class="eyebrow">/problem</p>
+        <h2>WHAT_PROBLEM_DOES_THIS_SOLVE</h2>
+        <p class="lede">SHORT_LEAD_IN_THE_READER'S_WORLD.</p>
+        <div class="grid">
+          <article class="card">
+            <h3>CARD_TITLE</h3>
+            <p>CARD_BODY</p>
+          </article>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 720 200" role="img" aria-label="DIAGRAM_DESCRIPTION">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="rgba(11, 9, 7, 0.4)" />
+              </marker>
+            </defs>
+            <rect x="20" y="60" width="180" height="80" rx="12" fill="#fffcf6" stroke="rgba(11, 9, 7, 0.4)" />
+            <text x="110" y="106" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#3c3a39">STEP_ONE</text>
+            <line x1="212" y1="100" x2="328" y2="100" stroke="rgba(11, 9, 7, 0.4)" marker-end="url(#arrow)" />
+            <rect x="340" y="60" width="180" height="80" rx="12" fill="#fffcf6" stroke="rgba(11, 9, 7, 0.4)" />
+            <text x="430" y="106" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#3c3a39">STEP_TWO</text>
+            <line x1="532" y1="100" x2="648" y2="100" stroke="rgba(11, 9, 7, 0.4)" marker-end="url(#arrow)" />
+            <circle cx="680" cy="100" r="14" fill="none" stroke="#2677ff" />
+            <text x="680" y="105" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#2677ff">3</text>
+          </svg>
+          <figcaption>FIG_1 — WHAT_THE_READER_SHOULD_SEE_HERE</figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <p class="eyebrow">/mental-model</p>
+        <h2>THE_ONE_IDEA_TO_HOLD</h2>
+        <p class="lede">ANALOGY_OR_CORE_MODEL_IN_TWO_SENTENCES.</p>
+        <pre><code>SHORT_SNIPPET_ONLY_IF_IT_HELPS</code></pre>
+      </section>
+
+      <section>
+        <p class="eyebrow">/trade-offs</p>
+        <h2>WHAT_IT_COSTS_AND_WHY_THAT_IS_OK</h2>
+        <div class="grid">
+          <article class="card">
+            <h3 class="accent-green">WHEN_IT_WINS</h3>
+            <p>CARD_BODY</p>
+          </article>
+          <article class="card">
+            <h3 class="accent-red">WHEN_IT_HURTS</h3>
+            <p>CARD_BODY</p>
+          </article>
+        </div>
+      </section>
+
+      <footer>eli30 · TOPIC · YYYY-MM-DD</footer>
+    </main>
+  </body>
+</html>
