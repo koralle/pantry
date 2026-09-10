@@ -70,9 +70,10 @@ catalogs:
   script:
     tsx: 4.23.12
   test:
-    "@cloudflare/vitest-pool-workers": 0.21.3
+    # Vitest 5 support is pending in the published plugin; remove this preview after Workers SDK #15500 ships.
+    "@cloudflare/vitest-plugin": https://pkg.pr.new/@cloudflare/vitest-plugin@15500
     testcontainers: 12.1.0
-    vitest: 4.1.10
+    vitest: 5.0.0
   typescript:
     "@tsconfig/strictest": 2.0.8
     typescript: 7.0.2
@@ -119,6 +120,9 @@ overrides:
   chokidar: 5.0.0
   kysely: 0.28.17
   esbuild: 0.28.1
+  # The preview's pkg.pr.new subdependencies are incompatible with strict pnpm installs.
+  "@cloudflare/vitest-plugin>miniflare": 5.20260908.0-alpha
+  "@cloudflare/vitest-plugin>wrangler": 4.130.0
 
 saveExact: true
 
