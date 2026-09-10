@@ -83,6 +83,11 @@
       "command": ["pnpm", "panda", "mcp"],
       "enabled": true,
     },
+    "varlock": {
+      "type": "remote",
+      "url": "https://docs.mcp.varlock.dev/mcp",
+      "enabled": true,
+    },
   },
   "references": {
     "formisch": {

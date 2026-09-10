@@ -28,6 +28,8 @@
 - 認証: Better AuthのCookieセッション。procedureは`getSession(headers)`で検証する。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。server実装はclient bundleに混ざらない。
 - Worker環境変数: `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
+- 環境変数管理: Varlockの`.env.schema`を正本として検証し、`.env.development`から読み込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。
+- ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`scripts/symlink-env-for-worktree.ts`が`.env.development.local`へ生成する。
 - DBマイグレーション: Drizzleの生成物をTursoへ適用する。D1 bindingは使わない。
 
 ## 4. データアクセス境界（oRPC）

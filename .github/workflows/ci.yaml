@@ -83,6 +83,12 @@ jobs:
         shell: bash
         run: |
           pnpm run build
+        env:
+          # Placeholder values so varlock can validate the schema during CI builds.
+          TURSO_CONNECTION_URL: http://127.0.0.1:8080
+          TURSO_AUTH_TOKEN: ci-placeholder-token
+          BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32chars
+          BETTER_AUTH_URL: http://localhost:3000
 
   test:
     runs-on: ubuntu-24.04
