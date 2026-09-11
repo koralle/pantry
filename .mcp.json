@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "better-auth": {
+      "url": "https://mcp.better-auth.com/mcp",
+      "protocolVersion": "auto"
+    },
+    "cloudflare": {
+      "url": "https://mcp.cloudflare.com/mcp",
+      "protocolVersion": "auto"
+    },
+    "cloudflare-bindings": {
+      "url": "https://bindings.mcp.cloudflare.com/mcp",
+      "protocolVersion": "auto"
+    },
+    "cloudflare-builds": {
+      "url": "https://builds.mcp.cloudflare.com/mcp",
+      "protocolVersion": "auto"
+    },
+    "cloudflare-docs": {
+      "url": "https://docs.mcp.cloudflare.com/mcp",
+      "protocolVersion": "auto"
+    },
+    "cloudflare-observability": {
+      "url": "https://observability.mcp.cloudflare.com/mcp",
+      "protocolVersion": "auto"
+    },
+    "formisch": {
+      "url": "https://formisch.dev/mcp",
+      "protocolVersion": "auto"
+    },
+    "panda-css": {
+      "command": "pnpm",
+      "args": ["panda:mcp"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "varlock": {
+      "url": "https://docs.mcp.varlock.dev/mcp",
+      "protocolVersion": "auto"
+    }
+  }
+}

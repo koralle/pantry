@@ -80,7 +80,7 @@
     },
     "panda-css": {
       "type": "local",
-      "command": ["pnpm", "panda", "mcp"],
+      "command": ["pnpm", "panda:mcp"],
       "enabled": true,
     },
     "varlock": {
