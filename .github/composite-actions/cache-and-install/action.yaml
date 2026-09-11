@@ -7,6 +7,8 @@ runs:
   steps:
     - name: Setup pnpm
       uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+      with:
+        install: false
 
     - name: Get pnpm store directory
       shell: bash
@@ -24,4 +26,4 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        pnpm install --frozen-lockfile
+        pnpm install --frozen-lockfile --no-runtime
