@@ -1,3 +1,5 @@
+# Form Fields Automatically Fit Contents
+
 By default, form controls like `<input>`, `<textarea>`, and `<select>` have fixed dimensions. Their sizes remain constant, regardless of the amount of content the user enters or selects.
 
 To allow these controls to automatically shrink or grow to fit their content (including placeholders), use the `field-sizing: content` CSS property.
@@ -61,9 +63,8 @@ IMPORTANT: Grid and Flexbox layouts often implicitly stretch their children to f
 
 ### Fallback strategies
 
-field-sizing has limited availability.
-Supported by: Chrome 123 (Mar 2024), Edge 123 (Mar 2024), and Safari 26.2 (Dec 2025).
-Unsupported in: Firefox.
+Baseline status for field-sizing: Newly available. It's been Baseline since 2026-06-16.
+Supported by: Chrome 123 (Mar 2024), Edge 123 (Mar 2024), Firefox 152 (Jun 2026), and Safari 26.2 (Dec 2025).
 
 `field-sizing` should be treated as a progressive enhancement. In browsers that do not support the property, form controls gracefully degrade back to their default, fixed sizing behavior. Users will simply experience standard scrolling for overflowing content inside fixed-size inputs and textareas.
 
@@ -71,9 +72,7 @@ If dynamically growing fields are absolutely required for older browsers, you mu
 
 ```html
 <!-- The textarea is wrapped in a container that will mirror its value -->
-<div
-  class="growable-textarea"
-  data-replicated-value="">
+<div class="growable-textarea" data-replicated-value="">
   <textarea></textarea>
 </div>
 ```
@@ -81,11 +80,11 @@ If dynamically growing fields are absolutely required for older browsers, you mu
 ```javascript
 // Only attach the fallback event listeners if field-sizing is unsupported
 if (!CSS.supports('field-sizing', 'content')) {
-  document.querySelectorAll('.growable-textarea > textarea').forEach((textarea) => {
+  document.querySelectorAll('.growable-textarea > textarea').forEach(textarea => {
     textarea.addEventListener('input', () => {
-      textarea.parentNode.dataset.replicatedValue = textarea.value
-    })
-  })
+      textarea.parentNode.dataset.replicatedValue = textarea.value;
+    });
+  });
 }
 ```
 
@@ -108,7 +107,7 @@ if (!CSS.supports('field-sizing', 'content')) {
   /* The pseudo-element renders the copied text invisibly to stretch the grid */
   .growable-textarea::after {
     /* The space is necessary for trailing empty lines to be rendered */
-    content: attr(data-replicated-value) ' ';
+    content: attr(data-replicated-value) " ";
     white-space: pre-wrap;
     visibility: hidden;
   }

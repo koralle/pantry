@@ -13,21 +13,13 @@ Browsers assign default priorities to scripts based on where they appear in the 
 
 ```html
 <!-- Elevate the priority of the critical app logic -->
-<script
-  src="/js/app.js"
-  async
-  fetchpriority="high"></script>
+<script src="/js/app.js" async fetchpriority="high"></script>
 
 <!-- Deprioritize non-essential tracking scripts -->
-<script
-  src="/js/tracker.js"
-  async
-  fetchpriority="low"></script>
+<script src="/js/tracker.js" async fetchpriority="low"></script>
 
 <!-- Deprioritize late-body scripts to favor critical images or CSS -->
-<script
-  src="/js/legacy-widgets.js"
-  fetchpriority="low"></script>
+<script src="/js/legacy-widgets.js" fetchpriority="low"></script>
 ```
 
 ## Best Practices

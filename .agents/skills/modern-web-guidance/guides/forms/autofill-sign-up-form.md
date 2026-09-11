@@ -12,8 +12,8 @@ Outlined below are the most important guidelines for building successful sign-up
 
 Make the most of the elements and attributes built for creating forms:
 
-- `<form>`, `<input>`, `<label>`, and `<button>`
-- `type`, `autocomplete`, and `inputmode`
+-   `<form>`, `<input>`, `<label>`, and `<button>`
+-   `type`, `autocomplete`, and `inputmode`
 
 These enable built-in browser functionality, improve accessibility, and add meaning to markup.
 
@@ -100,12 +100,7 @@ MANDATORY: For a sign-up form, use `autocomplete="new-password"`.
 
 ```html
 <!-- new-password prevents password managers from auto-filling an existing password into this field -->
-<input
-  type="password"
-  id="new-password"
-  name="new-password"
-  autocomplete="new-password"
-  required />
+<input type="password" id="new-password" name="new-password" autocomplete="new-password" required>
 ```
 
 ### Enable the browser to suggest a strong password
@@ -144,6 +139,7 @@ Also make sure to use `autocomplete="username"` for usernames.
 
 Baseline status for Email, telephone, and URL <input> types: Widely available. It's been Baseline since 2015-07-29.
 Supported by: Chrome 5 (May 2010), Edge 12 (Jul 2015), Firefox 4 (Mar 2011), Safari 5 (Jun 2010), and Safari iOS 3 (Jun 2009).
+
 Baseline status for inputmode: Widely available. It's been Baseline since 2021-12-07.
 Supported by: Chrome 66 (Apr 2018), Edge 79 (Jan 2020), Firefox 95 (Dec 2021), Safari 12.1 (Mar 2019), and Safari iOS 12.2 (Mar 2019).
 

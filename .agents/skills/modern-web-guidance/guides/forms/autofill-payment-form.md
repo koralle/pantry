@@ -12,8 +12,8 @@ Outlined below are the most important guidelines for building successful payment
 
 Make the most of the elements and attributes built for creating forms:
 
-- `<form>`, `<input>`, `<label>`, and `<button>`
-- `type`, `autocomplete`, and `inputmode`
+-   `<form>`, `<input>`, `<label>`, and `<button>`
+-   `type`, `autocomplete`, and `inputmode`
 
 These enable built-in browser functionality, improve accessibility, and add meaning to markup.
 
@@ -29,17 +29,8 @@ Always use `type="email"` for email addresses and `type="tel"` for phone numbers
 
 ```html
 <!-- type="email"/"tel" gives mobile users the right keyboard and enables built-in validation -->
-<input
-  type="email"
-  id="email"
-  name="email"
-  autocomplete="email"
-  required />
-<input
-  type="tel"
-  id="phone"
-  name="phone"
-  autocomplete="tel" />
+<input type="email" id="email" name="email" autocomplete="email" required>
+<input type="tel" id="phone" name="phone" autocomplete="tel">
 ```
 
 Every `<input>`, `<select>`, and `<textarea>` element SHOULD have an appropriate `autocomplete` attribute, to improve accessibility and help users avoid re-entering data.
@@ -88,52 +79,22 @@ Make sure to add appropriate `autocomplete` values in payment card forms. Withou
 <!-- cc-number tells autofill this is a card number, not a generic number field -->
 <!-- inputmode="numeric" gives a numeric keyboard without the increment/decrement spinner -->
 <!-- DO NOT use type="number" — it adds increment/decrement controls and strips leading zeros -->
-<input
-  id="cc-number"
-  name="cc-number"
-  type="text"
-  autocomplete="cc-number"
-  inputmode="numeric"
-  maxlength="19"
-  pattern="[\d ]{13,19}"
-  required />
+<input id="cc-number" name="cc-number" type="text" autocomplete="cc-number"
+       inputmode="numeric" maxlength="19" pattern="[\d ]{13,19}" required>
 
 <!-- cc-name autofills with the name exactly as it appears on the card; Unicode pattern allows international names -->
-<input
-  id="cc-name"
-  name="cc-name"
-  type="text"
-  autocomplete="cc-name"
-  maxlength="50"
-  pattern="[\p{L} \-\.]+"
-  required />
+<input id="cc-name" name="cc-name" type="text" autocomplete="cc-name"
+       maxlength="50" pattern="[\p{L} \-\.]+" required>
 
 <!-- cc-exp autofills the full expiry date as MM/YY -->
 <!-- MANDATORY: Place format hints above the input so autocomplete popovers or virtual keyboards do not obscure them during editing -->
-<span
-  id="exp-hint"
-  class="hint"
-  >Format: MM/YY</span
->
-<input
-  id="cc-exp"
-  name="cc-exp"
-  type="text"
-  autocomplete="cc-exp"
-  aria-describedby="exp-hint"
-  maxlength="5"
-  required />
+<span id="exp-hint" class="hint">Format: MM/YY</span>
+<input id="cc-exp" name="cc-exp" type="text" autocomplete="cc-exp"
+       aria-describedby="exp-hint" maxlength="5" required>
 
 <!-- cc-csc autofills the security code; DO NOT use type="password" here -->
-<input
-  id="cc-csc"
-  name="cc-csc"
-  type="text"
-  autocomplete="cc-csc"
-  inputmode="numeric"
-  maxlength="4"
-  pattern="[0-9]{3,4}"
-  required />
+<input id="cc-csc" name="cc-csc" type="text" autocomplete="cc-csc"
+       inputmode="numeric" maxlength="4" pattern="[0-9]{3,4}" required>
 ```
 
 ### Use a single input for payment card and phone numbers
@@ -156,8 +117,10 @@ Add the `required` attribute to mandatory fields. Modern browsers automatically 
 
 Baseline status for enterkeyhint: Widely available. It's been Baseline since 2021-11-02.
 Supported by: Chrome 77 (Sep 2019), Edge 79 (Jan 2020), Firefox 94 (Nov 2021), Safari 13.1 (Mar 2020), and Safari iOS 13.4 (Mar 2020).
+
 Baseline status for Email, telephone, and URL <input> types: Widely available. It's been Baseline since 2015-07-29.
 Supported by: Chrome 5 (May 2010), Edge 12 (Jul 2015), Firefox 4 (Mar 2011), Safari 5 (Jun 2010), and Safari iOS 3 (Jun 2009).
+
 Baseline status for inputmode: Widely available. It's been Baseline since 2021-12-07.
 Supported by: Chrome 66 (Apr 2018), Edge 79 (Jan 2020), Firefox 95 (Dec 2021), Safari 12.1 (Mar 2019), and Safari iOS 12.2 (Mar 2019).
 
