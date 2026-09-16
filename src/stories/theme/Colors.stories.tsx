@@ -8,7 +8,7 @@ function ColorsCatalog() {
   return (
     <Catalog
       title="色"
-      description="panda.config.ts の colors / semanticTokens.colors。スウォッチは実際の CSS 変数を参照しています。"
+      description="panda/ の colors / semantic-colors。スウォッチは実際の CSS 変数を参照しています。"
     >
       <Section title="Primitive（pantry）">
         <div className={swatchGrid}>

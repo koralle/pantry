@@ -1,80 +1,86 @@
 /**
- * Token catalogs sourced from `panda.config.ts` theme.extend
- * (plus Panda defaults used by the project for spacing / shared scales).
+ * Token catalogs for the theme stories.
+ *
+ * Project-defined tokens are derived from the theme sources under `panda/`
+ * so this file cannot drift from the config. Tokens provided by Panda's
+ * built-in presets (spacing, default font sizes, ...) are listed statically.
+ *
+ * Catalog display order follows the key order of the `panda/` source files —
+ * keep those keys ordered by design logic (e.g. size ascending).
  */
 import type { Token } from "styled-system/tokens";
+
+import { colors as themeColors } from "../../../panda/colors";
+import { animationStyles, motion as themeMotion } from "../../../panda/motion";
+import { semanticColors as themeSemanticColors } from "../../../panda/semantic-colors";
+import { shadows as themeShadows } from "../../../panda/shadows";
+import { shape as themeShape } from "../../../panda/shape";
+import { sizes as themeSizes } from "../../../panda/sizes";
+import { typography as themeTypography } from "../../../panda/typography";
 
 export interface TokenEntry {
   readonly path: Token;
   readonly label: string;
 }
 
-export const pantryColors = [
-  { label: "pantry.canvas", path: "colors.pantry.canvas" },
-  { label: "pantry.ink", path: "colors.pantry.ink" },
-  { label: "pantry.muted", path: "colors.pantry.muted" },
-  { label: "pantry.line", path: "colors.pantry.line" },
-  { label: "pantry.accent", path: "colors.pantry.accent" },
-  { label: "pantry.surface", path: "colors.pantry.surface" },
-  { label: "pantry.danger", path: "colors.pantry.danger" },
-] as const satisfies readonly TokenEntry[];
+interface TokenTree {
+  readonly [key: string]: TokenTree | { readonly value: unknown };
+}
 
-export const semanticColors = [
-  { label: "bg.canvas", path: "colors.bg.canvas" },
-  { label: "bg.surface", path: "colors.bg.surface" },
-  { label: "fg.default", path: "colors.fg.default" },
-  { label: "fg.muted", path: "colors.fg.muted" },
-  { label: "border.default", path: "colors.border.default" },
-  { label: "border.accent", path: "colors.border.accent" },
-  { label: "border.danger", path: "colors.border.danger" },
-  { label: "accent.solid", path: "colors.accent.solid" },
-  { label: "accent.solidHover", path: "colors.accent.solidHover" },
-  { label: "accent.subtle", path: "colors.accent.subtle" },
-  { label: "accent.hover", path: "colors.accent.hover" },
-  { label: "accent.fg", path: "colors.accent.fg" },
-  { label: "danger.solid", path: "colors.danger.solid" },
-  { label: "danger.surface", path: "colors.danger.surface" },
-  { label: "danger.border", path: "colors.danger.border" },
-  { label: "surface.header", path: "colors.surface.header" },
-  { label: "surface.rail", path: "colors.surface.rail" },
-  { label: "surface.tag", path: "colors.surface.tag" },
-  { label: "overlay.backdrop", path: "colors.overlay.backdrop" },
-  { label: "skeleton.start", path: "colors.skeleton.start" },
-  { label: "skeleton.middle", path: "colors.skeleton.middle" },
-] as const satisfies readonly TokenEntry[];
+const collectEntries = (
+  category: string,
+  tree: TokenTree,
+  trail: readonly string[] = []
+): TokenEntry[] =>
+  Object.entries(tree).flatMap(([key, node]) => {
+    if ("value" in node) {
+      const label = [...trail, key].join(".");
+      return [{ label, path: `${category}.${label}` as Token }];
+    }
+    return collectEntries(category, node, [...trail, key]);
+  });
 
-export const fontTokens = [
-  { label: "body", path: "fonts.body" },
+export const pantryColors = collectEntries("colors", themeColors.colors);
+
+export const semanticColors = collectEntries(
+  "colors",
+  themeSemanticColors.colors
+);
+
+const defaultFonts = [
   { label: "sans", path: "fonts.sans" },
   { label: "serif", path: "fonts.serif" },
   { label: "mono", path: "fonts.mono" },
 ] as const satisfies readonly TokenEntry[];
 
-/** Project-extended font sizes from panda.config.ts, then useful defaults. */
-export const fontSizeTokens = [
-  { label: "2xs", path: "fontSizes.2xs" },
-  { label: "xs2", path: "fontSizes.xs2" },
-  { label: "xs", path: "fontSizes.xs" },
+export const fontTokens = [
+  ...collectEntries("fonts", themeTypography.fonts),
+  ...defaultFonts,
+];
+
+const defaultFontSizes = [
   { label: "sm", path: "fontSizes.sm" },
-  { label: "md2", path: "fontSizes.md2" },
-  { label: "md", path: "fontSizes.md" },
-  { label: "lg", path: "fontSizes.lg" },
   { label: "xl", path: "fontSizes.xl" },
   { label: "2xl", path: "fontSizes.2xl" },
-  { label: "3xl", path: "fontSizes.3xl" },
   { label: "4xl", path: "fontSizes.4xl" },
-  { label: "title", path: "fontSizes.title" },
 ] as const satisfies readonly TokenEntry[];
 
-export const lineHeightTokens = [
-  { label: "body", path: "lineHeights.body" },
-  { label: "tight", path: "lineHeights.tight" },
-  { label: "relaxed", path: "lineHeights.relaxed" },
+export const fontSizeTokens = [
+  ...collectEntries("fontSizes", themeTypography.fontSizes),
+  ...defaultFontSizes,
+];
+
+const defaultLineHeights = [
   { label: "none", path: "lineHeights.none" },
   { label: "snug", path: "lineHeights.snug" },
   { label: "normal", path: "lineHeights.normal" },
   { label: "loose", path: "lineHeights.loose" },
 ] as const satisfies readonly TokenEntry[];
+
+export const lineHeightTokens = [
+  ...collectEntries("lineHeights", themeTypography.lineHeights),
+  ...defaultLineHeights,
+];
 
 export const fontWeightTokens = [
   { label: "thin", path: "fontWeights.thin" },
@@ -128,36 +134,10 @@ export const spacingTokens = [
   { label: "96", path: "spacing.96" },
 ] as const satisfies readonly TokenEntry[];
 
-/** Project-extended sizes from panda.config.ts. */
-export const customSizeTokens = [
-  { label: "touch", path: "sizes.touch" },
-  { label: "5.5", path: "sizes.5.5" },
-  { label: "11", path: "sizes.11" },
-  { label: "22", path: "sizes.22" },
-  { label: "4rem", path: "sizes.4rem" },
-  { label: "4.5rem", path: "sizes.4.5rem" },
-  { label: "5.5rem", path: "sizes.5.5rem" },
-  { label: "12rem", path: "sizes.12rem" },
-  { label: "16rem", path: "sizes.16rem" },
-  { label: "18rem", path: "sizes.18rem" },
-  { label: "22rem", path: "sizes.22rem" },
-  { label: "24rem", path: "sizes.24rem" },
-  { label: "28rem", path: "sizes.28rem" },
-  { label: "36rem", path: "sizes.36rem" },
-  { label: "42rem", path: "sizes.42rem" },
-  { label: "48rem", path: "sizes.48rem" },
-  { label: "min-10", path: "sizes.min-10" },
-  { label: "min-12", path: "sizes.min-12" },
-  { label: "min-18", path: "sizes.min-18" },
-  { label: "min-22", path: "sizes.min-22" },
-  { label: "100dvh", path: "sizes.100dvh" },
-  { label: "100dvb", path: "sizes.100dvb" },
-  { label: "85dvh", path: "sizes.85dvh" },
-  { label: "dialog-width", path: "sizes.dialog-width" },
-  { label: "fit", path: "sizes.fit" },
-] as const satisfies readonly TokenEntry[];
+/** Project-extended sizes, derived from panda/sizes.ts. */
+export const customSizeTokens = collectEntries("sizes", themeSizes.sizes);
 
-export const radiusTokens = [
+const defaultRadii = [
   { label: "xs", path: "radii.xs" },
   { label: "sm", path: "radii.sm" },
   { label: "md", path: "radii.md" },
@@ -166,19 +146,19 @@ export const radiusTokens = [
   { label: "2xl", path: "radii.2xl" },
   { label: "3xl", path: "radii.3xl" },
   { label: "4xl", path: "radii.4xl" },
-  { label: "box", path: "radii.box" },
-  { label: "sheet", path: "radii.sheet" },
-  { label: "full", path: "radii.full" },
 ] as const satisfies readonly TokenEntry[];
 
-export const borderWidthTokens = [
-  { label: "none", path: "borderWidths.none" },
-  { label: "thin", path: "borderWidths.thin" },
-  { label: "medium", path: "borderWidths.medium" },
-  { label: "thick", path: "borderWidths.thick" },
-] as const satisfies readonly TokenEntry[];
+export const radiusTokens = [
+  ...collectEntries("radii", themeShape.radii),
+  ...defaultRadii,
+];
 
-export const shadowTokens = [
+export const borderWidthTokens = collectEntries(
+  "borderWidths",
+  themeShape.borderWidths
+);
+
+const defaultShadows = [
   { label: "2xs", path: "shadows.2xs" },
   { label: "xs", path: "shadows.xs" },
   { label: "sm", path: "shadows.sm" },
@@ -186,10 +166,14 @@ export const shadowTokens = [
   { label: "lg", path: "shadows.lg" },
   { label: "xl", path: "shadows.xl" },
   { label: "2xl", path: "shadows.2xl" },
-  { label: "accentRing", path: "shadows.accentRing" },
 ] as const satisfies readonly TokenEntry[];
 
-export const durationTokens = [
+export const shadowTokens = [
+  ...collectEntries("shadows", themeShadows.shadows),
+  ...defaultShadows,
+];
+
+const defaultDurations = [
   { label: "fastest", path: "durations.fastest" },
   { label: "faster", path: "durations.faster" },
   { label: "fast", path: "durations.fast" },
@@ -197,22 +181,25 @@ export const durationTokens = [
   { label: "slow", path: "durations.slow" },
   { label: "slower", path: "durations.slower" },
   { label: "slowest", path: "durations.slowest" },
-  { label: "skeleton", path: "durations.skeleton" },
-  { label: "spin", path: "durations.spin" },
-  { label: "fadeUp", path: "durations.fadeUp" },
-  { label: "crossfade", path: "durations.crossfade" },
-  { label: "press", path: "durations.press" },
-  { label: "hover", path: "durations.hover" },
 ] as const satisfies readonly TokenEntry[];
 
-export const easingTokens = [
+export const durationTokens = [
+  ...collectEntries("durations", themeMotion.durations),
+  ...defaultDurations,
+];
+
+const defaultEasings = [
   { label: "default", path: "easings.default" },
   { label: "linear", path: "easings.linear" },
   { label: "in", path: "easings.in" },
   { label: "out", path: "easings.out" },
   { label: "in-out", path: "easings.in-out" },
-  { label: "press", path: "easings.press" },
 ] as const satisfies readonly TokenEntry[];
+
+export const easingTokens = [
+  ...collectEntries("easings", themeMotion.easings),
+  ...defaultEasings,
+];
 
 export const aspectRatioTokens = [
   { label: "square", path: "aspectRatios.square" },
@@ -231,4 +218,5 @@ export const breakpointTokens = [
   { label: "2xl", path: "breakpoints.2xl" },
 ] as const satisfies readonly TokenEntry[];
 
-export const animationStyleNames = ["skeleton", "fadeUp", "crossfade"] as const;
+export const animationStyleNames: readonly string[] =
+  Object.keys(animationStyles);

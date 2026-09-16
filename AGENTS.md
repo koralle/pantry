@@ -18,6 +18,7 @@
 
 ## ディレクトリ構造
 
+- `panda/` - Panda CSS の codegen 入力（globalCss・トークン定義。`panda.config.ts` から組み立てる。ADR-0002）
 - `src/` - アプリケーションコード（TanStack Start + Cloudflare Workers）
 - `src/features/` - Server Function と機能単位のUI・ロジック
 - `src/db/` - Drizzle ORM のスキーマとTurso接続
