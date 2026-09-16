@@ -16,7 +16,7 @@ function OtherTokensCatalog() {
   return (
     <Catalog
       title="その他"
-      description="borderWidths / shadows / durations / easings / aspectRatios / breakpoints / animationStyles（panda.config.ts 拡張分を含む）。"
+      description="borderWidths / shadows / durations / easings / aspectRatios / breakpoints / animationStyles（panda/ 拡張分を含む）。"
     >
       <Section title="Border widths">
         <div className={stack}>
@@ -104,7 +104,7 @@ function OtherTokensCatalog() {
             <div key={name} className={listItem}>
               <p className={label}>{name}</p>
               <p className={hint}>
-                panda.config.ts の animationStyles.{name}（keyframe + duration
+                panda/motion.ts の animationStyles.{name}（keyframe + duration
                 トークン）
               </p>
             </div>

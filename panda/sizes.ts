@@ -1,0 +1,31 @@
+import { defineTokens } from "@pandacss/dev";
+
+export const sizes = defineTokens({
+  sizes: {
+    touch: { value: "44px" },
+    "5.5": { value: "1.375rem" },
+    "11": { value: "2.75rem" },
+    "22": { value: "5.5rem" },
+    "4rem": { value: "4rem" },
+    "4.5rem": { value: "4.5rem" },
+    "5.5rem": { value: "5.5rem" },
+    "12rem": { value: "12rem" },
+    "16rem": { value: "16rem" },
+    "18rem": { value: "18rem" },
+    "22rem": { value: "22rem" },
+    "24rem": { value: "24rem" },
+    "28rem": { value: "28rem" },
+    "36rem": { value: "36rem" },
+    "42rem": { value: "42rem" },
+    "48rem": { value: "48rem" },
+    "min-10": { value: "min(100%, 10rem)" },
+    "min-12": { value: "min(100%, 12rem)" },
+    "min-18": { value: "min(100%, 18rem)" },
+    "min-22": { value: "min(100%, 22rem)" },
+    "100dvh": { value: "100dvh" },
+    "100dvb": { value: "100dvb" },
+    "85dvh": { value: "85dvh" },
+    "dialog-width": { value: "calc(100% - 2rem)" },
+    fit: { value: "fit-content" },
+  },
+});

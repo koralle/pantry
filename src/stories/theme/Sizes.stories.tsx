@@ -8,7 +8,7 @@ function SizesCatalog() {
   return (
     <Catalog
       title="サイズ"
-      description="panda.config.ts で extend した sizes。viewport / clamp / fit-content 系は値ラベル中心、長さ系は実寸ボックスで示します。"
+      description="panda/sizes.ts で定義した sizes。viewport / clamp / fit-content 系は値ラベル中心、長さ系は実寸ボックスで示します。"
     >
       <Section title="Project sizes">
         <div className={stack}>
