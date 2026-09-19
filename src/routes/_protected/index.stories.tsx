@@ -9,7 +9,6 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
 import type { BookmarkListItem } from "../../features/bookmarks/persistence/list-bookmarks";
 import type { BookmarkSearchSchema } from "../../features/navigation/lib/bookmark-search";
 import type { ShelfTag } from "../../features/tags/lib/tag-shelf";
-import { orpc } from "../../rpc/query";
 import preview from "../../storybook/preview";
 import { Route as ProtectedLayoutRoute } from "../_protected";
 import { Route as ListFileRoute } from "./bookmarks/index";
@@ -34,16 +33,81 @@ type ListFixture = (
   | Promise<never>;
 
 let listFixture: ListFixture;
+let shelfFixture: () => ShelfTag[] | Promise<ShelfTag[]>;
+let countsFixture: () => {
+  favorites: number;
+  inbox: number;
+  recent: number;
+};
 
-storyQueryClient.setQueryDefaults(orpc.bookmarks.list.key(), {
-  queryFn: async (context) => {
-    const pageParam =
-      "pageParam" in context
-        ? (context.pageParam as string | undefined)
-        : undefined;
-    return await listFixture({ cursor: pageParam });
-  },
-});
+type StoryRpcHandler = (input: unknown) => unknown;
+
+// rpc/client.ts は fetch を呼び出し毎に解決するので、ここで差し替えた
+// global fetch がそのまま拾われる。oRPC の wire format（{json} envelope）に
+// 合わせて fixture を返し、実際の link codec 経路ごと検証する。
+const storyRpcHandlers = new Map<string, StoryRpcHandler>([
+  [
+    "bookmarks.list",
+    (input) =>
+      listFixture({
+        cursor: (input as ListFixtureInput | undefined)?.cursor,
+      }),
+  ],
+  ["bookmarks.counts", () => countsFixture()],
+  ["tags.shelf", () => shelfFixture()],
+  ["tags.touch", () => null],
+]);
+
+const storyOriginalFetch = globalThis.fetch;
+
+globalThis.fetch = async (input, init) => {
+  const requestUrl =
+    typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url;
+  const url = new URL(requestUrl, window.location.origin);
+  if (!url.pathname.startsWith("/api/rpc/")) {
+    return await storyOriginalFetch(input, init);
+  }
+  const handler = storyRpcHandlers.get(
+    url.pathname.slice("/api/rpc/".length).replaceAll("/", ".")
+  );
+  if (handler === undefined) {
+    return new Response(null, { status: 404 });
+  }
+  let procedureInput: unknown;
+  const dataParam = url.searchParams.get("data");
+  if (input instanceof Request) {
+    const body = await input.clone().text();
+    if (body !== "") {
+      procedureInput = (JSON.parse(body) as { json?: unknown }).json;
+    }
+  } else if (typeof init?.body === "string") {
+    procedureInput = (JSON.parse(init.body) as { json?: unknown }).json;
+  } else if (dataParam !== null) {
+    procedureInput = (JSON.parse(dataParam) as { json?: unknown }).json;
+  }
+  try {
+    return Response.json({ json: await handler(procedureInput) });
+  } catch (error) {
+    // oRPC のエラー形式で返すと、fixture が投げた message が
+    // ORPCError.message として画面まで届く。
+    return Response.json(
+      {
+        json: {
+          code: "INTERNAL_SERVER_ERROR",
+          defined: false,
+          message:
+            error instanceof Error ? error.message : "Internal Server Error",
+          status: 500,
+        },
+      },
+      { status: 500 }
+    );
+  }
+};
 
 function StoryRoot() {
   return (
@@ -78,16 +142,42 @@ const storyProtectedLayout = createRoute({
   component: ProtectedLayoutRoute.options.component!,
 });
 
-const storyListRoute = createRoute({
+// 実ルート木（bookmarks/index.tsx が `/_protected/bookmarks/` の index
+// ルート）と同じ id 体系になるよう、中間ルート + index 子で組み立てる。
+// レイアウトの useSearch({from: "/_protected/bookmarks/"}) がここを引くため。
+const storyBookmarksRoute = createRoute({
   getParentRoute: () => storyProtectedLayout as never,
   path: "/bookmarks",
+});
+
+const storyListRoute = createRoute({
+  getParentRoute: () => storyBookmarksRoute as never,
+  path: "/",
   validateSearch: ListFileRoute.options.validateSearch!,
   loaderDeps: ListFileRoute.options.loaderDeps!,
   loader: ListFileRoute.options.loader!,
   component: ListFileRoute.options.component!,
 });
 
-storyProtectedLayout.addChildren([storyListRoute]);
+// 行リンクの `to="/bookmarks/$id"` が params を展開できるよう、
+// 実ルート相当の stub を木に登録しておく。
+const storyDetailParentRoute = createRoute({
+  getParentRoute: () => storyBookmarksRoute as never,
+  path: "$id",
+});
+
+const storyDetailRoute = createRoute({
+  getParentRoute: () => storyDetailParentRoute as never,
+  path: "/",
+  component: () => null,
+});
+
+storyBookmarksRoute.addChildren([
+  storyListRoute,
+  storyDetailParentRoute,
+] as never);
+storyDetailParentRoute.addChildren([storyDetailRoute] as never);
+storyProtectedLayout.addChildren([storyBookmarksRoute] as never);
 storyRoot.addChildren([storyProtectedLayout]);
 
 const now = new Date("2026-08-01T03:00:00.000Z");
@@ -228,6 +318,8 @@ async function neverPromise<T>(): Promise<T> {
 function stubListApis() {
   storyQueryClient.clear();
   listFixture = () => ({ items: bookmarks, nextCursor: null });
+  shelfFixture = () => shelfTags;
+  countsFixture = () => ({ favorites: 1, inbox: 2, recent: 4 });
 }
 
 function stubPagedBookmarks(
@@ -243,6 +335,11 @@ function stubPagedBookmarks(
     return Promise.resolve(next).then((items) => ({ items, nextCursor: null }));
   };
 }
+
+// 行リンクの accessible name はタイトル＋ドメイン＋メタの複合なので、
+// name 照合はエスケープ済みの部分一致 regex で行う。
+const rowLinkName = (title: string) =>
+  new RegExp(title.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&"));
 
 function listQuery(query: Partial<BookmarkSearchSchema>) {
   return {
@@ -263,6 +360,16 @@ const meta = preview.meta({
   title: "Pages / ブックマーク一覧画面",
   parameters: {
     layout: "fullscreen",
+    viewport: {
+      defaultViewport: "desktop",
+      options: {
+        desktop: {
+          name: "Desktop",
+          styles: { height: "800px", width: "1280px" },
+          type: "desktop",
+        },
+      },
+    },
     tanstack: {
       router: {
         route: storyListRoute,
@@ -283,24 +390,20 @@ export const Default = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("link", { name: shortBookmark.title })
+        canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getByRole("heading", { name: "ブックマーク" })
+      canvas.getByRole("heading", { name: "最近保存したもの" })
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole("link", { name: longBookmark.title })
-    ).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: "AND" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
-    await expect(
-      canvas.getByPlaceholderText("タイトル・URL・メモ")
+      canvas.getByRole("link", { name: rowLinkName(longBookmark.title) })
     ).toBeInTheDocument();
     await expect(
-      canvas.queryByRole("button", { name: "さらに読み込む" })
+      canvas.getByPlaceholderText("検索、タグ名、URLをそのまま入力…")
+    ).toBeInTheDocument();
+    await expect(
+      canvas.queryByRole("button", { name: "もっと見る" })
     ).not.toBeInTheDocument();
   },
 });
@@ -317,8 +420,8 @@ export const Empty = meta.story({
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getAllByRole("link", { name: "新規" }).length
-    ).toBeGreaterThan(0);
+      canvas.getByRole("link", { name: "最初の1件を登録" })
+    ).toBeInTheDocument();
   },
 });
 
@@ -329,21 +432,22 @@ export const EmptyBySearch = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    // 見出しはローディング中にも出るので、ロード後にしか出ない要素を待つ
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("heading", {
-          name: "「存在しないキーワード」の検索結果",
-        })
+        canvas.getByText("条件に合うブックマークがありません")
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getByText("条件に合うブックマークがありません")
+      canvas.getByRole("heading", {
+        name: "「存在しないキーワード」の検索結果",
+      })
     ).toBeInTheDocument();
     await expect(
       canvas.getByRole("link", { name: "条件をクリア" })
     ).toBeInTheDocument();
     await expect(
-      canvas.getByPlaceholderText("タイトル・URL・メモ")
+      canvas.getByPlaceholderText("検索、タグ名、URLをそのまま入力…")
     ).toHaveValue("存在しないキーワード");
   },
 });
@@ -355,16 +459,17 @@ export const EmptyByTags = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    // 一覧とレールは別々の Suspense 境界で解決するので両方を待つ
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("heading", { name: "reading" })
+        canvas.getByText("条件に合うブックマークがありません")
       ).toBeInTheDocument();
+      await expect(
+        canvas.getByRole("link", { name: "reading 12" })
+      ).toHaveAttribute("aria-current", "true");
     });
     await expect(
-      canvas.getByRole("button", { name: "readingを外す" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByText("条件に合うブックマークがありません")
+      canvas.getByRole("heading", { name: "reading" })
     ).toBeInTheDocument();
     await expect(
       canvas.getByRole("link", { name: "条件をクリア" })
@@ -381,14 +486,14 @@ export const SearchResults = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("heading", { name: "「React」の検索結果" })
+        canvas.getByRole("link", { name: rowLinkName(reactBookmark.title) })
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getByRole("link", { name: reactBookmark.title })
+      canvas.getByRole("heading", { name: "「React」の検索結果" })
     ).toBeInTheDocument();
     await expect(
-      canvas.queryByRole("link", { name: shortBookmark.title })
+      canvas.queryByRole("link", { name: rowLinkName(shortBookmark.title) })
     ).not.toBeInTheDocument();
   },
 });
@@ -402,21 +507,11 @@ export const TagFilterAnd = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("heading", { name: "reading / work" })
+        canvas.getByRole("link", { name: rowLinkName(longBookmark.title) })
       ).toBeInTheDocument();
     });
-    await expect(canvas.getByRole("button", { name: "AND" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
     await expect(
-      canvas.getByRole("button", { name: "readingを外す" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("button", { name: "workを外す" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("link", { name: longBookmark.title })
+      canvas.getByRole("heading", { name: "reading / work" })
     ).toBeInTheDocument();
   },
 });
@@ -429,17 +524,12 @@ export const TagFilterOr = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
-      await expect(canvas.getByRole("button", { name: "OR" })).toHaveAttribute(
-        "aria-pressed",
-        "true"
-      );
+      await expect(
+        canvas.getByRole("link", { name: rowLinkName(longBookmark.title) })
+      ).toBeInTheDocument();
     });
-    await expect(canvas.getByRole("button", { name: "AND" })).toHaveAttribute(
-      "aria-pressed",
-      "false"
-    );
     await expect(
-      canvas.getByRole("button", { name: "readingを外す" })
+      canvas.getByRole("heading", { name: "reading" })
     ).toBeInTheDocument();
   },
 });
@@ -450,11 +540,11 @@ export const SortUpdated = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("link", { name: shortBookmark.title })
+        canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getByRole("button", { name: /更新順/ })
+      canvas.getByRole("heading", { name: "最近保存したもの" })
     ).toBeInTheDocument();
   },
 });
@@ -467,17 +557,19 @@ export const InitialLoading = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("heading", { name: "ブックマーク" })
+        canvas.getByRole("heading", { name: "最近保存したもの" })
       ).toBeInTheDocument();
     });
-    await expect(canvas.getAllByText("一覧を読み込み中")).toHaveLength(1);
+    await expect(canvas.getAllByText("読み込み中…")).toHaveLength(1);
     await expect(
-      canvas.queryByRole("link", { name: shortBookmark.title })
+      canvas.queryByRole("link", { name: rowLinkName(shortBookmark.title) })
     ).not.toBeInTheDocument();
-    const skeletonList = canvasElement.querySelector('[aria-busy="true"] ul');
+    const skeletonList = canvasElement.querySelector(
+      '[data-testid="rows-skeleton"]'
+    );
     await expect(skeletonList).not.toBeNull();
     await expect(skeletonList).toHaveAttribute("aria-hidden", "true");
-    await expect(skeletonList?.querySelectorAll(":scope > li")).toHaveLength(5);
+    await expect(skeletonList?.children).toHaveLength(5);
   },
 });
 
@@ -491,14 +583,14 @@ export const LoadError = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(canvas.getByRole("alert")).toHaveTextContent(
-        "一覧の読み込みに失敗しました"
+        "読み込みに失敗しました"
       );
     });
     await expect(
       canvas.getByRole("button", { name: "再試行" })
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole("heading", { name: "ブックマーク" })
+      canvas.getByRole("link", { name: "一覧へ戻る" })
     ).toBeInTheDocument();
   },
 });
@@ -511,28 +603,26 @@ export const HasMore = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("link", { name: shortBookmark.title })
+        canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getByRole("button", { name: "さらに読み込む" })
+      canvas.getByRole("button", { name: "もっと見る" })
     ).toBeEnabled();
     await expect(
-      canvas.queryByRole("link", { name: reactBookmark.title })
+      canvas.queryByRole("link", { name: rowLinkName(reactBookmark.title) })
     ).not.toBeInTheDocument();
-    await userEvent.click(
-      canvas.getByRole("button", { name: "さらに読み込む" })
-    );
+    await userEvent.click(canvas.getByRole("button", { name: "もっと見る" }));
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("link", { name: reactBookmark.title })
+        canvas.getByRole("link", { name: rowLinkName(reactBookmark.title) })
       ).toBeInTheDocument();
     });
     await expect(
-      canvas.getByRole("link", { name: shortBookmark.title })
+      canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
     ).toBeInTheDocument();
     await expect(
-      canvas.queryByRole("button", { name: "さらに読み込む" })
+      canvas.queryByRole("button", { name: "もっと見る" })
     ).not.toBeInTheDocument();
   },
 });
@@ -545,12 +635,10 @@ export const LoadingMore = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("button", { name: "さらに読み込む" })
+        canvas.getByRole("button", { name: "もっと見る" })
       ).toBeEnabled();
     });
-    await userEvent.click(
-      canvas.getByRole("button", { name: "さらに読み込む" })
-    );
+    await userEvent.click(canvas.getByRole("button", { name: "もっと見る" }));
     await waitFor(async () => {
       await expect(
         canvas.getByRole("button", { name: "読み込み中…" })
@@ -567,12 +655,10 @@ export const LoadMoreError = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("button", { name: "さらに読み込む" })
+        canvas.getByRole("button", { name: "もっと見る" })
       ).toBeEnabled();
     });
-    await userEvent.click(
-      canvas.getByRole("button", { name: "さらに読み込む" })
-    );
+    await userEvent.click(canvas.getByRole("button", { name: "もっと見る" }));
     await waitFor(async () => {
       await expect(canvas.getByRole("alert")).toHaveTextContent(
         "続きの読み込みに失敗しました"
@@ -582,27 +668,28 @@ export const LoadMoreError = meta.story({
       canvas.getByRole("button", { name: "再試行" })
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole("link", { name: shortBookmark.title })
+      canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
     ).toBeInTheDocument();
   },
 });
 
 export const NoShelfTags = meta.story({
   beforeEach: async () => {
-    storyProtectedLayout.options.loader = async () => ({
-      shelfTagsPromise: Promise.resolve([]),
-    });
+    shelfFixture = () => [];
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("link", { name: shortBookmark.title })
+        canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
       ).toBeInTheDocument();
     });
-    await expect(canvas.queryByText("タグを追加")).not.toBeInTheDocument();
+    const rail = canvas.getByRole("navigation", { name: "ビュー" });
     await expect(
-      canvas.getByRole("link", { name: shortBookmark.title })
+      within(rail).queryByRole("link", { name: /reading/ })
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
     ).toBeInTheDocument();
   },
 });

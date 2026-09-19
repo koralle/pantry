@@ -17,6 +17,7 @@ import { css, cx } from "styled-system/css";
 import { button } from "../../../styles/button";
 import { iconButton } from "../../../styles/icon-button";
 import { kbd, topbar, wordmark } from "../../../styles/shell";
+import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import type { CommandBarProps } from "./command-bar";
 import { CommandBar } from "./command-bar";
@@ -37,10 +38,15 @@ const wordmarkDesktop = css({
 
 export interface TopBarProps {
   accountActive?: boolean;
+  newSearch?: BookmarkDetailSearch | undefined;
   search: CommandBarProps;
 }
 
-export const TopBar = ({ accountActive = false, search }: TopBarProps) => (
+export const TopBar = ({
+  accountActive = false,
+  newSearch,
+  search,
+}: TopBarProps) => (
   <header className={topbar}>
     <Link
       className={cx(wordmark, wordmarkDesktop)}
@@ -49,9 +55,10 @@ export const TopBar = ({ accountActive = false, search }: TopBarProps) => (
     >
       PANTRY
     </Link>
-    <CommandBar {...search} />
+    <CommandBar key={search.defaultValue ?? ""} {...search} />
     <Link
       className={cx(button({ size: "sm", visual: "accent" }), desktopOnly)}
+      search={newSearch ?? {}}
       to="/bookmarks/new"
     >
       <Plus aria-hidden size={13} />

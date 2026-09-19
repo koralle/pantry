@@ -25,11 +25,16 @@ import type { ReactNode } from "react";
 import { css } from "styled-system/css";
 
 import { AppShell } from "../../../../features/app-shell/components/app-shell";
+import { NavRail } from "../../../../features/app-shell/components/nav-rail";
 import type {
   ShellCounts,
   ShellTag,
   ShellView,
 } from "../../../../features/app-shell/lib/shell-nav";
+import type {
+  BookmarkDetailSearch,
+  BookmarkSearchSchema,
+} from "../../../../features/navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
 import { StateView } from "../../../../shared/components/state-view";
 import { button } from "../../../../styles/button";
@@ -70,12 +75,12 @@ export const ListHead = ({ title, count, tools }: ListHeadProps) => (
   </div>
 );
 
-export const QuickAddStrip = () => (
-  <Link
-    className={quickAddStrip}
-    search={defaultBookmarkSearch}
-    to="/bookmarks/new"
-  >
+export const QuickAddStrip = ({
+  search = defaultBookmarkSearch,
+}: {
+  search?: BookmarkDetailSearch | undefined;
+}) => (
+  <Link className={quickAddStrip} search={search} to="/bookmarks/new">
     <span className={quickAddBadge}>
       <Plus aria-hidden size={12} />
     </span>
@@ -202,48 +207,32 @@ export type BookmarkListState =
   | "error"
   | "partial";
 
-export interface BookmarkListViewProps {
-  view: ShellView;
+export interface BookmarkListContentProps {
   title: string;
   state: BookmarkListState;
   items?: BookmarkRowProps[] | undefined;
   count?: number | undefined;
   inboxCount?: number | undefined;
-  counts?: ShellCounts | undefined;
-  tags?: ShellTag[] | undefined;
-  activeTagId?: string | undefined;
   selectedId?: string | undefined;
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  onSearchSubmit: () => void;
+  emptyVariant?: "blank" | "filtered" | undefined;
+  clearSearch?: BookmarkSearchSchema | undefined;
+  newSearch?: BookmarkDetailSearch | undefined;
   onRetry?: (() => void) | undefined;
 }
 
-export const BookmarkListView = ({
-  view,
+export const BookmarkListContent = ({
   title,
   state,
   items,
   count,
   inboxCount,
-  counts,
-  tags,
-  activeTagId,
   selectedId,
-  searchValue,
-  onSearchChange,
-  onSearchSubmit,
+  emptyVariant = "blank",
+  clearSearch,
+  newSearch,
   onRetry,
-}: BookmarkListViewProps) => (
-  <AppShell
-    activeTagId={activeTagId}
-    counts={counts}
-    onSearchChange={onSearchChange}
-    onSearchSubmit={onSearchSubmit}
-    searchValue={searchValue}
-    tags={tags}
-    view={view}
-  >
+}: BookmarkListContentProps) => (
+  <>
     <ListHead
       count={state === "loading" ? undefined : count}
       title={title}
@@ -259,7 +248,9 @@ export const BookmarkListView = ({
     {state === "ideal" && inboxCount ? (
       <InboxCallout count={inboxCount} />
     ) : null}
-    {state === "ideal" || state === "empty" ? <QuickAddStrip /> : null}
+    {state === "ideal" || state === "empty" ? (
+      <QuickAddStrip search={newSearch} />
+    ) : null}
     {state === "partial" ? (
       <ListBanner onRetry={onRetry}>
         ファビコンを一部取得できませんでした
@@ -269,12 +260,12 @@ export const BookmarkListView = ({
     {state === "ideal" || state === "partial" ? (
       <BookmarkRows items={items ?? []} selectedId={selectedId} />
     ) : null}
-    {state === "empty" ? (
+    {state === "empty" && emptyVariant === "blank" ? (
       <StateView
         action={
           <Link
             className={button({ size: "sm", visual: "accent" })}
-            search={defaultBookmarkSearch}
+            search={newSearch ?? defaultBookmarkSearch}
             to="/bookmarks/new"
           >
             <Plus aria-hidden size={13} />
@@ -286,23 +277,76 @@ export const BookmarkListView = ({
         title="まだブックマークがありません"
       />
     ) : null}
-    {state === "error" ? (
+    {state === "empty" && emptyVariant === "filtered" ? (
       <StateView
         action={
-          <button
+          <Link
             className={button({ size: "sm", visual: "accent" })}
-            onClick={onRetry}
-            type="button"
+            search={clearSearch ?? defaultBookmarkSearch}
+            to="/bookmarks"
           >
-            <RotateCw aria-hidden size={13} />
-            再試行
-          </button>
+            条件をクリア
+          </Link>
         }
-        description="ネットワーク接続を確認して、もう一度お試しください。"
-        icon={WifiOff}
-        title="読み込みに失敗しました"
-        tone="danger"
+        description="検索語やタグを変えると見つかるかもしれません。"
+        icon={Bookmark}
+        title="条件に合うブックマークがありません"
       />
     ) : null}
+    {state === "error" ? (
+      <div role="alert">
+        <StateView
+          action={
+            <button
+              className={button({ size: "sm", visual: "accent" })}
+              onClick={onRetry}
+              type="button"
+            >
+              <RotateCw aria-hidden size={13} />
+              再試行
+            </button>
+          }
+          description="ネットワーク接続を確認して、もう一度お試しください。"
+          icon={WifiOff}
+          title="読み込みに失敗しました"
+          tone="danger"
+        />
+      </div>
+    ) : null}
+  </>
+);
+
+export interface BookmarkListViewProps extends BookmarkListContentProps {
+  view: ShellView;
+  counts?: ShellCounts | undefined;
+  tags?: ShellTag[] | undefined;
+  activeTagId?: string | undefined;
+  searchDefaultValue?: string | undefined;
+  onSearchSubmit: (value: string) => void;
+}
+
+export const BookmarkListView = ({
+  view,
+  counts,
+  tags,
+  activeTagId,
+  searchDefaultValue,
+  onSearchSubmit,
+  ...content
+}: BookmarkListViewProps) => (
+  <AppShell
+    onSearchSubmit={onSearchSubmit}
+    rail={
+      <NavRail
+        activeTagId={activeTagId}
+        counts={counts}
+        tags={tags}
+        view={view}
+      />
+    }
+    searchDefaultValue={searchDefaultValue}
+    view={view}
+  >
+    <BookmarkListContent {...content} />
   </AppShell>
 );

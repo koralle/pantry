@@ -3,16 +3,21 @@ import {
   createFileRoute,
   Outlet,
   redirect,
+  useNavigate,
+  useRouterState,
   useSearch,
 } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useRef } from "react";
 
-import { AppHeader } from "../features/app-shell/components/app-header";
-import { MobileShelfDialog } from "../features/app-shell/components/mobile-shelf-dialog";
-import { ProtectedShell } from "../features/app-shell/components/protected-shell";
-import { ShelfSidebar } from "../features/app-shell/components/shelf-sidebar";
+import { AppShell } from "../features/app-shell/components/app-shell";
+import { NavRailRoute } from "../features/app-shell/components/nav-rail-route";
+import type { ShellView } from "../features/app-shell/lib/shell-nav";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
+import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
+import { defaultBookmarkSearch } from "../features/navigation/lib/bookmark-search";
 import {
+  buildListSearch,
   detailSearchFromList,
   resolveChromeListSearch,
 } from "../features/navigation/lib/bookmark-search-builders";
@@ -49,17 +54,36 @@ export const Route = createFileRoute("/_protected")({
   loader: async ({ context }) => {
     const client = await getRpcClient();
     const orpc = createTanstackQueryUtils(client);
+    // レールのデータは先に温めるだけ。待ち合わせは useSuspenseQuery 側の
+    // Suspense 境界に任せ、ページ本体をブロックしない。
     const shelfTagsPromise = context.queryClient.ensureQueryData(
       orpc.tags.shelf.queryOptions({ staleTime: 5000 })
     );
+    const countsPromise = context.queryClient.ensureQueryData(
+      orpc.bookmarks.counts.queryOptions({ staleTime: 5000 })
+    );
 
-    return { shelfTagsPromise };
+    return { countsPromise, shelfTagsPromise };
   },
   component: () => <Layout />,
 });
 
+const SHELL_LESS_PATH = /^\/bookmarks\/(?:new|[^/]+\/edit)\/?$/;
+
+const viewForPath = (
+  pathname: string,
+  listSearch: BookmarkSearchSchema | undefined
+): ShellView => {
+  if (pathname.startsWith("/tags")) {
+    return "tags";
+  }
+  if (pathname.startsWith("/settings")) {
+    return "account";
+  }
+  return listSearch?.view ?? "recent";
+};
+
 function Layout() {
-  const { shelfTagsPromise } = Route.useLoaderData();
   const indexSearch = useSearch({
     from: "/_protected/bookmarks/",
     shouldThrow: false,
@@ -77,6 +101,9 @@ function Layout() {
     shouldThrow: false,
   });
   const rememberedListSearch = useRef(indexSearch);
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
 
   if (indexSearch !== undefined) {
     rememberedListSearch.current = indexSearch;
@@ -88,38 +115,54 @@ function Layout() {
     [detailSearch, newSearch, editSearch]
   );
 
-  const selection = {
-    listActive: indexSearch !== undefined,
-    tags: indexSearch?.tags,
-  };
-
-  const newBookmarkSearch =
-    listSearch === undefined ? {} : detailSearchFromList(listSearch);
+  // クイック追加・フォームは集中フロー（専用画面）としてシェルを出さない
+  if (SHELL_LESS_PATH.test(pathname)) {
+    return <Outlet />;
+  }
 
   return (
-    <ProtectedShell
-      sidebar={
-        <ShelfSidebar
-          shelfTagsPromise={shelfTagsPromise}
-          selection={selection}
-          listSearch={listSearch}
-        />
-      }
-      header={
-        <AppHeader
-          newBookmarkSearch={newBookmarkSearch}
-          listSearch={listSearch}
-          shelfTrigger={
-            <MobileShelfDialog
-              shelfTagsPromise={shelfTagsPromise}
-              selection={selection}
-              listSearch={listSearch}
-            />
-          }
-        />
-      }
-    >
+    <ShellLayout listSearch={listSearch} pathname={pathname}>
       <Outlet />
-    </ProtectedShell>
+    </ShellLayout>
+  );
+}
+
+function ShellLayout({
+  listSearch,
+  pathname,
+  children,
+}: {
+  readonly listSearch: BookmarkSearchSchema | undefined;
+  readonly pathname: string;
+  readonly children: ReactNode;
+}) {
+  const navigate = useNavigate();
+
+  const view = viewForPath(pathname, listSearch);
+
+  const commitSearch = (raw: string) => {
+    const nextQ = raw.trim();
+    const current = listSearch ?? defaultBookmarkSearch;
+    void navigate({
+      search:
+        nextQ === ""
+          ? buildListSearch(current, { clearQ: true })
+          : buildListSearch(current, { q: nextQ }),
+      to: "/bookmarks",
+    });
+  };
+
+  return (
+    <AppShell
+      newSearch={
+        listSearch === undefined ? {} : detailSearchFromList(listSearch)
+      }
+      onSearchSubmit={commitSearch}
+      rail={<NavRailRoute filterTags={listSearch?.tags} view={view} />}
+      searchDefaultValue={listSearch?.q ?? ""}
+      view={view}
+    >
+      {children}
+    </AppShell>
   );
 }

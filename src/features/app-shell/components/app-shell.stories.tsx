@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react";
-import { useState } from "react";
 import { styled } from "styled-system/jsx";
 
-import type { ShellTag } from "../lib/shell-nav";
+import type { ShellTag, ShellView } from "../lib/shell-nav";
 import { AppShell } from "./app-shell";
+import { NavRail } from "./nav-rail";
 
 const demoTags: ShellTag[] = [
   { count: 34, id: "1", name: "frontend" },
@@ -34,27 +34,30 @@ const Placeholder = styled("div", {
   },
 });
 
-const ShellDemo = (props: Partial<Parameters<typeof AppShell>[0]>) => {
-  const [value, setValue] = useState("");
-  return (
-    <AppShell
-      onSearchChange={setValue}
-      onSearchSubmit={() => {}}
-      searchValue={value}
-      view="recent"
-      {...props}
-    >
-      <Placeholder>ここに画面コンテンツ</Placeholder>
-    </AppShell>
-  );
-};
+const ShellDemo = ({
+  view = "recent",
+  ...rail
+}: {
+  view?: ShellView;
+  counts?: Parameters<typeof NavRail>[0]["counts"];
+  tags?: Parameters<typeof NavRail>[0]["tags"];
+  activeTagId?: Parameters<typeof NavRail>[0]["activeTagId"];
+}) => (
+  <AppShell
+    onSearchSubmit={() => {}}
+    rail={<NavRail view={view} {...rail} />}
+    searchDefaultValue=""
+    view={view}
+  >
+    <Placeholder>ここに画面コンテンツ</Placeholder>
+  </AppShell>
+);
 
 export const Desktop = {
   args: {
     children: null,
-    onSearchChange: () => {},
     onSearchSubmit: () => {},
-    searchValue: "",
+    rail: null,
     view: "recent",
   },
   render: () => (

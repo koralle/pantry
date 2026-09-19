@@ -1,10 +1,14 @@
 /**
  * @file command-bar.tsx
  *
- * Input:    controlled search value, submit handler, input ref
+ * Input:    initial search value, submit handler, input ref
  * Output:   CommandBar component
  * Position: Center search/command surface in the top bar; doubles as the
  *           mobile top-bar search
+ *
+ * Uncontrolled by design — the URL search param is the source of truth and
+ * the draft lives in the DOM. Callers reset the draft by changing `key`
+ * (remount) rather than syncing state through an effect.
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.tsx (⌘K focuses the input via inputRef)
@@ -25,15 +29,13 @@ const kbdDesktopOnly = css({
 });
 
 export interface CommandBarProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  onSubmit: () => void;
+  defaultValue?: string | undefined;
+  onSubmit: (value: string) => void;
   inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 export const CommandBar = ({
-  value,
-  onValueChange,
+  defaultValue,
   onSubmit,
   inputRef,
 }: CommandBarProps) => (
@@ -42,20 +44,19 @@ export const CommandBar = ({
       className={formContents}
       onSubmit={(event) => {
         event.preventDefault();
-        onSubmit();
+        const value = new FormData(event.currentTarget).get("q");
+        onSubmit(typeof value === "string" ? value : "");
       }}
     >
       <Search aria-hidden size={14} />
       <input
         aria-label="検索"
         className={commandInput}
-        onChange={(event) => {
-          onValueChange(event.target.value);
-        }}
+        defaultValue={defaultValue}
+        name="q"
         placeholder="検索、タグ名、URLをそのまま入力…"
         ref={inputRef}
         type="search"
-        value={value}
       />
       <kbd className={cx(kbd(), kbdDesktopOnly)}>⌘K</kbd>
     </form>

@@ -105,9 +105,14 @@ export const NavRail = ({
     </Link>
     {tags.map((tag) => (
       <Link
+        aria-current={activeTagId === tag.id ? "true" : undefined}
         className={railItem({ active: activeTagId === tag.id })}
         key={tag.id}
-        search={{ ...defaultBookmarkSearch, tags: [tag.name] }}
+        search={
+          activeTagId === tag.id
+            ? defaultBookmarkSearch
+            : { ...defaultBookmarkSearch, tags: [tag.name] }
+        }
         to="/bookmarks"
       >
         <TagDot color={tag.color} tone={toneFor(tag.name)} />

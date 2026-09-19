@@ -21,9 +21,9 @@ import {
   shellRoot,
   skipLink,
 } from "../../../styles/shell";
-import type { ShellCounts, ShellTag, ShellView } from "../lib/shell-nav";
+import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
+import type { ShellView } from "../lib/shell-nav";
 import { BottomTabs } from "./bottom-tabs";
-import { NavRail } from "./nav-rail";
 import { TopBar } from "./top-bar";
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
@@ -40,22 +40,19 @@ const isEditableTarget = (target: EventTarget | null): boolean => {
 
 export interface AppShellProps {
   view: ShellView;
-  counts?: ShellCounts | undefined;
-  tags?: ShellTag[] | undefined;
-  activeTagId?: string | undefined;
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  onSearchSubmit: () => void;
+  /** Rail content — pass `<NavRailRoute>` (connected) or `<NavRail>` (fixtures). */
+  rail: ReactNode;
+  newSearch?: BookmarkDetailSearch | undefined;
+  searchDefaultValue?: string | undefined;
+  onSearchSubmit: (value: string) => void;
   children: ReactNode;
 }
 
 export const AppShell = ({
   view,
-  counts,
-  tags,
-  activeTagId,
-  searchValue,
-  onSearchChange,
+  rail,
+  newSearch,
+  searchDefaultValue,
   onSearchSubmit,
   children,
 }: AppShellProps) => {
@@ -78,14 +75,14 @@ export const AppShell = ({
         !isEditableTarget(event.target)
       ) {
         event.preventDefault();
-        void navigate({ to: "/bookmarks/new" });
+        void navigate({ search: newSearch ?? {}, to: "/bookmarks/new" });
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [navigate]);
+  }, [navigate, newSearch]);
 
   return (
     <div className={shellRoot}>
@@ -94,25 +91,25 @@ export const AppShell = ({
       </a>
       <TopBar
         accountActive={view === "account"}
+        newSearch={newSearch}
         search={{
+          defaultValue: searchDefaultValue,
           inputRef: searchInputRef,
           onSubmit: onSearchSubmit,
-          onValueChange: onSearchChange,
-          value: searchValue,
         }}
       />
       <div className={shellBody}>
-        <NavRail
-          activeTagId={activeTagId}
-          counts={counts}
-          tags={tags}
-          view={view}
-        />
-        <main className={shellMain} id="content" tabIndex={-1}>
+        {rail}
+        <main
+          className={shellMain}
+          data-scroll-restoration-id="content"
+          id="content"
+          tabIndex={-1}
+        >
           {children}
         </main>
       </div>
-      <BottomTabs view={view} />
+      <BottomTabs newSearch={newSearch} view={view} />
     </div>
   );
 };

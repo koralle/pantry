@@ -1,7 +1,7 @@
 /**
  * @file bottom-tabs.tsx
  *
- * Input:    active view
+ * Input:    active view, new-bookmark return search
  * Output:   BottomTabs component
  * Position: Mobile-only bottom tab bar with the centered quick-add FAB
  *           (hidden at md and up)
@@ -15,18 +15,20 @@ import { Link } from "@tanstack/react-router";
 import { History, Inbox, Plus, Star, Tag } from "lucide-react";
 
 import { bottomTabs, fab, tabItem } from "../../../styles/shell";
+import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import type { ShellView } from "../lib/shell-nav";
 
 export interface BottomTabsProps {
+  newSearch?: BookmarkDetailSearch | undefined;
   view: ShellView;
 }
 
-export const BottomTabs = ({ view }: BottomTabsProps) => (
+export const BottomTabs = ({ newSearch, view }: BottomTabsProps) => (
   <nav aria-label="ビュー" className={bottomTabs}>
     <Link
       className={tabItem({ active: view === "recent" })}
-      search={{ ...defaultBookmarkSearch, view: "recent" }}
+      search={defaultBookmarkSearch}
       to="/bookmarks"
     >
       <History aria-hidden size={19} />
@@ -40,7 +42,12 @@ export const BottomTabs = ({ view }: BottomTabsProps) => (
       <Inbox aria-hidden size={19} />
       未整理
     </Link>
-    <Link aria-label="ブックマークを登録" className={fab} to="/bookmarks/new">
+    <Link
+      aria-label="ブックマークを登録"
+      className={fab}
+      search={newSearch ?? {}}
+      to="/bookmarks/new"
+    >
       <Plus aria-hidden size={22} />
     </Link>
     <Link

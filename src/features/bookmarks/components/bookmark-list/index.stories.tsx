@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react";
-import { useState } from "react";
 
 import type { ShellTag } from "../../../../features/app-shell/lib/shell-nav";
 import type { BookmarkRowProps } from "../bookmark-row";
@@ -55,9 +54,8 @@ const demoItems: BookmarkRowProps[] = [
 
 const meta = {
   args: {
-    onSearchChange: () => {},
     onSearchSubmit: () => {},
-    searchValue: "",
+    searchDefaultValue: "",
     state: "ideal",
     title: "最近保存したもの",
     view: "recent",
@@ -71,20 +69,16 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const Screen = (props: Partial<Parameters<typeof BookmarkListView>[0]>) => {
-  const [value, setValue] = useState("");
-  return (
-    <BookmarkListView
-      onSearchChange={setValue}
-      onSearchSubmit={() => {}}
-      searchValue={value}
-      state="ideal"
-      title="最近保存したもの"
-      view="recent"
-      {...props}
-    />
-  );
-};
+const Screen = (props: Partial<Parameters<typeof BookmarkListView>[0]>) => (
+  <BookmarkListView
+    onSearchSubmit={() => {}}
+    searchDefaultValue=""
+    state="ideal"
+    title="最近保存したもの"
+    view="recent"
+    {...props}
+  />
+);
 
 export const Ideal = {
   args: meta.args,

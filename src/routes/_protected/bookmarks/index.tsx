@@ -5,7 +5,7 @@ import {
   getRouteApi,
 } from "@tanstack/react-router";
 
-import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list";
+import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list-screen";
 import { bookmarkListQueryOptions } from "../../../features/bookmarks/lib/queries/bookmark-list-query-options";
 import { validateBookmarkSearch } from "../../../features/navigation/lib/bookmark-search";
 import { PantryMotion } from "../../../shared/components/pantry-motion";
