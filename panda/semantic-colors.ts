@@ -9,6 +9,7 @@ export const semanticColors = defineSemanticTokens({
     fg: {
       default: { value: "{colors.pantry.ink}" },
       muted: { value: "{colors.pantry.muted}" },
+      faint: { value: "{colors.pantry.faint}" },
     },
     border: {
       default: { value: "{colors.pantry.line}" },
@@ -28,8 +29,7 @@ export const semanticColors = defineSemanticTokens({
           "color-mix(in oklab, {colors.pantry.accent} 82%, {colors.pantry.ink})",
       },
       subtle: {
-        value:
-          "color-mix(in oklab, {colors.pantry.accent} 14%, {colors.pantry.canvas})",
+        value: "{colors.pantry.accentSoft}",
       },
       hover: {
         value:
@@ -40,8 +40,7 @@ export const semanticColors = defineSemanticTokens({
     danger: {
       solid: { value: "{colors.pantry.danger}" },
       surface: {
-        value:
-          "color-mix(in oklab, {colors.pantry.danger} 8%, {colors.pantry.canvas})",
+        value: "{colors.pantry.dangerSoft}",
       },
       border: {
         value:
@@ -49,6 +48,9 @@ export const semanticColors = defineSemanticTokens({
       },
     },
     surface: {
+      muted: {
+        value: "{colors.pantry.surfaceMuted}",
+      },
       header: {
         value: "{colors.pantry.canvas}",
       },
@@ -60,6 +62,9 @@ export const semanticColors = defineSemanticTokens({
         value:
           "color-mix(in oklab, {colors.pantry.accent} 8%, {colors.pantry.canvas})",
       },
+    },
+    star: {
+      solid: { value: "{colors.pantry.star}" },
     },
     overlay: {
       backdrop: {
