@@ -1,4 +1,4 @@
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -14,9 +14,10 @@ import {
   dialog,
   dialogActions,
   dialogBackdrop,
+  dialogDescription,
+  dialogError,
   dialogTitle,
 } from "../../../../styles/dialog";
-import { fieldError } from "../../../../styles/form";
 
 export const PasskeyDeleteDialog = ({
   displayName,
@@ -47,25 +48,26 @@ export const PasskeyDeleteDialog = ({
           <Heading slot="title" className={dialogTitle}>
             パスキーを削除しますか？
           </Heading>
-          <Text slot="description">
+          <Text className={dialogDescription} slot="description">
             「{displayName}
             」のパスキーを削除します。この端末ではサインインできなくなります。
           </Text>
           {errorMessage === null || errorMessage === undefined ? null : (
-            <p className={fieldError} role="alert">
+            <p className={dialogError} role="alert">
               {errorMessage}
             </p>
           )}
           <div className={dialogActions}>
-            <StyledButton slot="close" isDisabled={isDeleting}>
-              <X size={16} aria-hidden /> キャンセル
+            <StyledButton slot="close" isDisabled={isDeleting} size="sm">
+              キャンセル
             </StyledButton>
             <StyledButton
               visual="danger"
+              size="sm"
               onPress={onConfirm}
               isPending={isDeleting}
             >
-              <Trash2 size={16} aria-hidden />{" "}
+              <Trash2 size={14} aria-hidden />{" "}
               {isDeleting ? "削除中…" : "削除する"}
             </StyledButton>
           </div>

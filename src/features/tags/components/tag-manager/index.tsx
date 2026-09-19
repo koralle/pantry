@@ -45,13 +45,14 @@ import {
   dialog,
   dialogActions,
   dialogBackdrop,
+  dialogDescription,
+  dialogError,
+  dialogField,
   dialogTitle,
 } from "../../../../styles/dialog";
 import { toneFor } from "../../../../styles/domain-tone";
 import { spinner, skeletonBar } from "../../../../styles/feedback";
-import { fieldErr } from "../../../../styles/form-screen";
 import {
-  tagDialogField,
   tagDialogLabel,
   tagRow,
   tagRowChevron,
@@ -370,7 +371,7 @@ const TagNameForm = ({
 
   return (
     <form noValidate onSubmit={submit}>
-      <div className={tagDialogField}>
+      <div className={dialogField}>
         <label className={tagDialogLabel} htmlFor="tag-name-input">
           タグ名
         </label>
@@ -383,15 +384,25 @@ const TagNameForm = ({
         />
       </div>
       {error ? (
-        <p className={fieldErr} role="alert">
+        <p className={dialogError} role="alert">
           {error}
         </p>
       ) : null}
       <div className={dialogActions}>
-        <StyledButton isDisabled={isSaving} onPress={onClose} type="button">
+        <StyledButton
+          isDisabled={isSaving}
+          onPress={onClose}
+          size="sm"
+          type="button"
+        >
           キャンセル
         </StyledButton>
-        <StyledButton isPending={isSaving} type="submit" visual="accent">
+        <StyledButton
+          isPending={isSaving}
+          size="sm"
+          type="submit"
+          visual="accent"
+        >
           {isSaving ? (
             <LoaderCircle aria-hidden className={spinner} size={14} />
           ) : (
@@ -476,21 +487,31 @@ const TagDeleteConfirm = ({
       <Heading className={dialogTitle} slot="title">
         「{tag.name}」を削除しますか？
       </Heading>
-      <Text slot="description">
+      <Text className={dialogDescription} slot="description">
         {tag.bookmarkCount > 0
           ? `このタグが付いている ${tag.bookmarkCount} 件のブックマークからも外れます。`
           : "このタグが付いているブックマークからも外れます。"}
       </Text>
       {error ? (
-        <p className={fieldErr} role="alert">
+        <p className={dialogError} role="alert">
           {error}
         </p>
       ) : null}
       <div className={dialogActions}>
-        <StyledButton isDisabled={isDeleting} onPress={onClose} type="button">
+        <StyledButton
+          isDisabled={isDeleting}
+          onPress={onClose}
+          size="sm"
+          type="button"
+        >
           キャンセル
         </StyledButton>
-        <StyledButton isPending={isDeleting} onPress={confirm} visual="danger">
+        <StyledButton
+          isPending={isDeleting}
+          onPress={confirm}
+          size="sm"
+          visual="danger"
+        >
           <Trash2 aria-hidden size={14} /> 削除
         </StyledButton>
       </div>

@@ -194,14 +194,7 @@ export const tagRowSkeleton = css({
   },
 });
 
-/** ダイアログ内の `タグ名` ラベル + 入力のまとまり。 */
-export const tagDialogField = css({
-  display: "flex",
-  flexDirection: "column",
-  marginBlockStart: "1",
-  rowGap: "1.5",
-});
-
+/** ダイアログ内の `タグ名` ラベル。フィールドの余白は dialogField が持つ。 */
 export const tagDialogLabel = css({
   color: "fg.muted",
   fontSize: "2xs",

@@ -1,4 +1,4 @@
-import { Pencil, X } from "lucide-react";
+import { Check, Pencil } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -16,9 +16,10 @@ import {
   dialog,
   dialogActions,
   dialogBackdrop,
+  dialogError,
+  dialogField,
   dialogTitle,
 } from "../../../../styles/dialog";
-import { field, fieldError } from "../../../../styles/form";
 
 export const PasskeyRenameDialog = ({
   currentName,
@@ -60,7 +61,7 @@ export const PasskeyRenameDialog = ({
             <Heading slot="title" className={dialogTitle}>
               表示名を変更
             </Heading>
-            <div className={field}>
+            <div className={dialogField}>
               <StyledLabel htmlFor={inputId}>表示名</StyledLabel>
               <StyledInput
                 id={inputId}
@@ -73,16 +74,17 @@ export const PasskeyRenameDialog = ({
               />
             </div>
             {errorMessage === null || errorMessage === undefined ? null : (
-              <p className={fieldError} role="alert">
+              <p className={dialogError} role="alert">
                 {errorMessage}
               </p>
             )}
             <div className={dialogActions}>
-              <StyledButton slot="close" isDisabled={isSaving}>
-                <X size={16} aria-hidden /> キャンセル
+              <StyledButton slot="close" isDisabled={isSaving} size="sm">
+                キャンセル
               </StyledButton>
               <StyledButton
                 visual="accent"
+                size="sm"
                 isDisabled={isSaving || name.trim() === ""}
                 onPress={() => {
                   void (async () => {
@@ -93,8 +95,7 @@ export const PasskeyRenameDialog = ({
                   })();
                 }}
               >
-                <Pencil size={16} aria-hidden />{" "}
-                {isSaving ? "保存中..." : "保存"}
+                <Check size={14} aria-hidden /> {isSaving ? "保存中…" : "保存"}
               </StyledButton>
             </div>
           </Dialog>
