@@ -134,7 +134,7 @@ export const SignInWithEmailAndPasswordForm = ({
         </div>
       </fieldset>
 
-      <StyledButton type="submit" visual="accent" isDisabled={isPending}>
+      <StyledButton type="submit" visual="ghost" isDisabled={isPending}>
         <LogIn size={16} aria-hidden />
         {isPending ? "サインイン中..." : "サインイン"}
       </StyledButton>

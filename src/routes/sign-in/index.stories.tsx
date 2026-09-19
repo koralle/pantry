@@ -107,6 +107,25 @@ export const Default = meta.story({
   },
 });
 
+export const Mobile = meta.story({
+  globals: {
+    viewport: {
+      value: "iphone12",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole("heading", { name: "ログイン", level: 1 })
+    ).toBeInTheDocument();
+    await expect(canvas.getByText("Pantry")).toBeInTheDocument();
+    await expect(
+      await canvas.findByRole("button", { name: "パスキーでログイン" })
+    ).toBeEnabled();
+    await expect(canvas.getByLabelText("メール")).toBeEnabled();
+  },
+});
+
 export const InvalidCredentials = meta.story({
   beforeEach: async () => {
     mocked(authClient.signIn.email).mockResolvedValue(invalidCredentialsResult);

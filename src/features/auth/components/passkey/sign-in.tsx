@@ -127,14 +127,6 @@ export const PasskeySignIn = ({
 
   return (
     <div className={passkeySignIn}>
-      {errorMessage === null || errorMessage === undefined ? null : (
-        <div className={formSummary} role="alert" aria-live="polite">
-          <p>
-            <CircleAlert size={16} aria-hidden /> {errorMessage}
-          </p>
-        </div>
-      )}
-
       <div className={passkeySignInActions}>
         <StyledButton
           type="button"
@@ -143,9 +135,17 @@ export const PasskeySignIn = ({
           isDisabled={isPending}
         >
           <KeyRound size={16} aria-hidden />
-          {isPending ? "パスキーで認証中..." : "パスキーでログイン"}
+          {isPending ? "端末で認証中…" : "パスキーでログイン"}
         </StyledButton>
       </div>
+
+      {errorMessage === null || errorMessage === undefined ? null : (
+        <div className={formSummary} role="alert" aria-live="polite">
+          <p>
+            <CircleAlert size={16} aria-hidden /> {errorMessage}
+          </p>
+        </div>
+      )}
 
       <div className={passkeyDivider}>または</div>
     </div>
