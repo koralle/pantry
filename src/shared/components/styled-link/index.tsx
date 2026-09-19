@@ -45,7 +45,6 @@ const linkStyles = cva({
       },
     },
     alignItems: "center",
-    backgroundColor: "transparent",
     borderRadius: "box",
     columnGap: "[0.25em]",
     cursor: "pointer",
