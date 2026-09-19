@@ -8,6 +8,7 @@ import {
   Text,
 } from "react-aria-components";
 
+import { IconButton } from "../../../../shared/components/icon-button";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import {
   dialog,
@@ -33,18 +34,22 @@ export const PasskeyDeleteDialog = ({
   readonly onConfirm: () => void;
 }) => (
   <DialogTrigger isOpen={isOpen} onOpenChange={onOpenChange}>
-    <StyledButton visual="danger" size="sm" isDisabled={isDeleting}>
-      <Trash2 size={16} aria-hidden /> 削除
-    </StyledButton>
+    <IconButton
+      aria-label={`「${displayName}」を削除`}
+      isDisabled={isDeleting}
+      tone="danger"
+    >
+      <Trash2 size={14} aria-hidden />
+    </IconButton>
     <ModalOverlay className={dialogBackdrop} isDismissable={!isDeleting}>
       <Modal className={dialog}>
         <Dialog>
           <Heading slot="title" className={dialogTitle}>
-            このパスキーを削除しますか？
+            パスキーを削除しますか？
           </Heading>
           <Text slot="description">
             「{displayName}
-            」を削除します。削除すると、このパスキーではログインできなくなります。
+            」のパスキーを削除します。この端末ではサインインできなくなります。
           </Text>
           {errorMessage === null || errorMessage === undefined ? null : (
             <p className={fieldError} role="alert">
@@ -58,10 +63,10 @@ export const PasskeyDeleteDialog = ({
             <StyledButton
               visual="danger"
               onPress={onConfirm}
-              isDisabled={isDeleting}
+              isPending={isDeleting}
             >
               <Trash2 size={16} aria-hidden />{" "}
-              {isDeleting ? "削除中…" : "削除を確認"}
+              {isDeleting ? "削除中…" : "削除する"}
             </StyledButton>
           </div>
         </Dialog>

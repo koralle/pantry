@@ -1,6 +1,14 @@
+import { KeyRound } from "lucide-react";
 import { useState } from "react";
-import { css } from "styled-system/css";
 
+import {
+  passkeyRow,
+  passkeyRowBody,
+  passkeyRowIcon,
+  passkeyRowMeta,
+  passkeyRowName,
+  passkeyRowOps,
+} from "../../../../styles/account";
 import { authClient } from "../../lib/auth-client";
 import { passkeyDisplayName } from "../../lib/passkey/display-name";
 import { formatPasskeyCreatedAt } from "../../lib/passkey/format-created-at";
@@ -14,35 +22,6 @@ export interface ManagedPasskey {
   readonly aaguid?: string | null;
   readonly createdAt: string | Date;
 }
-
-const passkeyItem = css({
-  borderBlockEndColor: "border.default",
-  borderBlockEndStyle: "solid",
-  borderBlockEndWidth: "thin",
-  display: "flex",
-  flexDirection: "column",
-  gap: "2",
-  paddingBlock: "3",
-});
-
-const passkeyItemName = css({
-  fontSize: "md",
-  fontWeight: "semibold",
-  margin: "0",
-  overflowWrap: "anywhere",
-});
-
-const passkeyItemMeta = css({
-  color: "fg.muted",
-  fontSize: "xs",
-  margin: "0",
-});
-
-const passkeyItemActions = css({
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "2",
-});
 
 export const PasskeyListItem = ({
   passkey,
@@ -103,14 +82,20 @@ export const PasskeyListItem = ({
   };
 
   return (
-    <article className={passkeyItem} aria-label={displayName}>
-      <p className={passkeyItemName}>{displayName}</p>
-      <p className={passkeyItemMeta}>
-        登録日時 {formatPasskeyCreatedAt(passkey.createdAt)}
-      </p>
-      <div className={passkeyItemActions}>
+    <div className={passkeyRow}>
+      <span className={passkeyRowIcon}>
+        <KeyRound size={15} aria-hidden />
+      </span>
+      <div className={passkeyRowBody}>
+        <p className={passkeyRowName}>{displayName}</p>
+        <p className={passkeyRowMeta}>
+          登録 {formatPasskeyCreatedAt(passkey.createdAt)}
+        </p>
+      </div>
+      <div className={passkeyRowOps}>
         <PasskeyRenameDialog
           currentName={passkey.name?.trim() ?? ""}
+          displayName={displayName}
           errorMessage={renameError}
           inputId={`passkey-display-name-${passkey.id}`}
           isSaving={isRenaming}
@@ -130,6 +115,6 @@ export const PasskeyListItem = ({
           onConfirm={handleDelete}
         />
       </div>
-    </article>
+    </div>
   );
 };

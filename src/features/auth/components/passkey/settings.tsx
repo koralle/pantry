@@ -1,11 +1,20 @@
-import { CircleAlert, KeyRound } from "lucide-react";
+import { CircleAlert, KeyRound, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { css, cx } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
+import {
+  accountSectionHeadAction,
+  accountSectionHeadRow,
+  accountSectionHeading,
+  passkeyEmpty,
+  passkeyEmptyAction,
+  passkeyEmptyIcon,
+  passkeyEmptyNote,
+  passkeyEmptyTitle,
+} from "../../../../styles/account";
 import { flash } from "../../../../styles/flash";
 import { formSummary } from "../../../../styles/form";
-import { sectionLabel } from "../../../../styles/type";
 import { authClient } from "../../lib/auth-client";
 import {
   getPasskeyManageErrorMessage,
@@ -15,30 +24,14 @@ import { isWebAuthnAvailable } from "../../lib/passkey/webauthn-support";
 import { PasskeyListItem } from "./list-item";
 import type { ManagedPasskey } from "./list-item";
 
-const passkeySettingsHeading = css({
-  marginBlockEnd: "3",
-});
-
-const passkeySettingsIntro = css({
-  color: "fg.muted",
-  fontSize: "sm",
-  margin: "0",
-  marginBlockEnd: "3",
-});
-
-const passkeySettingsToolbar = css({
-  display: "flex",
-  marginBlockEnd: "3",
-});
-
-const passkeyEmpty = css({
-  color: "fg.muted",
-  fontSize: "sm",
-  margin: "0",
-});
-
 const passkeyFeedback = css({
   marginBlockEnd: "3",
+});
+
+const passkeyLoading = css({
+  color: "fg.faint",
+  fontSize: "xs",
+  margin: "0",
 });
 
 const toManagedPasskeys = (value: unknown): ManagedPasskey[] => {
@@ -138,10 +131,21 @@ export const PasskeySettings = () => {
 
   return (
     <>
-      <h2 className={cx(sectionLabel, passkeySettingsHeading)}>パスキー</h2>
-      <p className={passkeySettingsIntro}>
-        登録したパスキーで、パスワードを入力せずにログインできます。
-      </p>
+      <div className={accountSectionHeadRow}>
+        <h2 className={accountSectionHeading}>パスキー</h2>
+        {webAuthnAvailable ? (
+          <div className={accountSectionHeadAction}>
+            <StyledButton
+              isPending={isAdding}
+              onPress={handleAdd}
+              size="xs"
+              visual="ghost"
+            >
+              <Plus size={13} aria-hidden /> {isAdding ? "登録中…" : "追加"}
+            </StyledButton>
+          </div>
+        ) : null}
+      </div>
 
       {errorMessage === null || errorMessage === undefined ? null : (
         <div
@@ -161,28 +165,35 @@ export const PasskeySettings = () => {
         </output>
       )}
 
-      {webAuthnAvailable ? (
-        <div className={passkeySettingsToolbar}>
-          <StyledButton
-            visual="accent"
-            onPress={handleAdd}
-            isDisabled={isAdding}
-          >
-            <KeyRound size={16} aria-hidden />{" "}
-            {isAdding ? "パスキーを登録中..." : "パスキーを追加"}
-          </StyledButton>
-        </div>
-      ) : null}
-
       {passkeys === null || passkeys === undefined ? (
-        <p className={passkeyEmpty}>読み込み中...</p>
+        <p className={passkeyLoading}>読み込み中…</p>
       ) : null}
 
       {passkeys !== null &&
       passkeys !== undefined &&
       passkeys.length === 0 &&
       (errorMessage === null || errorMessage === undefined) ? (
-        <p className={passkeyEmpty}>パスキーはまだ登録されていません</p>
+        <div className={passkeyEmpty}>
+          <span className={passkeyEmptyIcon}>
+            <KeyRound size={18} aria-hidden />
+          </span>
+          <p className={passkeyEmptyTitle}>パスキーはまだ登録されていません</p>
+          <p className={passkeyEmptyNote}>
+            登録するとパスワードなしでサインインできます。
+          </p>
+          {webAuthnAvailable ? (
+            <div className={passkeyEmptyAction}>
+              <StyledButton
+                isPending={isAdding}
+                onPress={handleAdd}
+                size="sm"
+                visual="accent"
+              >
+                <Plus size={13} aria-hidden /> パスキーを登録
+              </StyledButton>
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       {passkeys !== null && passkeys !== undefined && passkeys.length > 0 ? (

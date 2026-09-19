@@ -8,6 +8,7 @@ import {
   ModalOverlay,
 } from "react-aria-components";
 
+import { IconButton } from "../../../../shared/components/icon-button";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { StyledInput } from "../../../../shared/components/styled-input";
 import { StyledLabel } from "../../../../shared/components/styled-label";
@@ -21,12 +22,14 @@ import { field, fieldError } from "../../../../styles/form";
 
 export const PasskeyRenameDialog = ({
   currentName,
+  displayName,
   errorMessage,
   inputId,
   isSaving,
   onSave,
 }: {
   readonly currentName: string;
+  readonly displayName: string;
   readonly errorMessage: string | null;
   readonly inputId: string;
   readonly isSaving: boolean;
@@ -45,9 +48,12 @@ export const PasskeyRenameDialog = ({
         }
       }}
     >
-      <StyledButton size="sm" isDisabled={isSaving}>
-        <Pencil size={16} aria-hidden /> 名前を変更
-      </StyledButton>
+      <IconButton
+        aria-label={`「${displayName}」の表示名を変更`}
+        isDisabled={isSaving}
+      >
+        <Pencil size={14} aria-hidden />
+      </IconButton>
       <ModalOverlay className={dialogBackdrop} isDismissable={!isSaving}>
         <Modal className={dialog}>
           <Dialog>

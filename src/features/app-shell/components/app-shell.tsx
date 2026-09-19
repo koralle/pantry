@@ -109,7 +109,9 @@ export const AppShell = ({
           {children}
         </main>
       </div>
-      <BottomTabs newSearch={newSearch} view={view} />
+      {view === "account" ? null : (
+        <BottomTabs newSearch={newSearch} view={view} />
+      )}
     </div>
   );
 };
