@@ -34,10 +34,24 @@ export const iconButton = cva({
     transitionTimingFunction: "press",
   },
   defaultVariants: {
+    active: false,
     size: "md",
     tone: "default",
   },
   variants: {
+    active: {
+      false: {},
+      true: {
+        "@media (any-hover: hover)": {
+          "&:hover:not(:disabled)": {
+            background: "accent.subtle",
+            color: "accent.solid",
+          },
+        },
+        background: "accent.subtle",
+        color: "accent.solid",
+      },
+    },
     size: {
       sm: {
         blockSize: "[1.5rem]",

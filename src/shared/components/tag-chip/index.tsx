@@ -17,24 +17,30 @@ import { toneFor } from "../../../styles/domain-tone";
 import { tagChip, tagDot } from "../../../styles/tag-chip";
 
 export interface TagDotProps {
-  tone?: DomainTone;
-  className?: string;
+  tone?: DomainTone | undefined;
+  color?: string | null | undefined;
+  className?: string | undefined;
 }
 
 /** Decorative color dot — always `aria-hidden`, meaning comes from the tag name. */
-export const TagDot = ({ tone = "slate", className }: TagDotProps) => (
-  <i aria-hidden className={cx(tagDot({ tone }), className)} />
+export const TagDot = ({ tone = "slate", color, className }: TagDotProps) => (
+  <i
+    aria-hidden
+    className={cx(tagDot({ tone }), className)}
+    style={color ? { background: color } : undefined}
+  />
 );
 
 export interface TagChipProps {
   name: string;
-  tone?: DomainTone;
-  className?: string;
+  tone?: DomainTone | undefined;
+  color?: string | null | undefined;
+  className?: string | undefined;
 }
 
-export const TagChip = ({ name, tone, className }: TagChipProps) => (
+export const TagChip = ({ name, tone, color, className }: TagChipProps) => (
   <span className={cx(tagChip({ visual: "label" }), className)}>
-    <TagDot tone={tone ?? toneFor(name)} />
+    <TagDot color={color} tone={tone ?? toneFor(name)} />
     <span className={truncate}>{name}</span>
   </span>
 );
