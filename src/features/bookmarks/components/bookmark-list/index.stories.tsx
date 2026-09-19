@@ -1,30 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react";
-import { Bookmark, Plus, RotateCw, WifiOff } from "lucide-react";
-import { css } from "styled-system/css";
+import { useState } from "react";
 
-import { StateView } from "../../../../shared/components/state-view";
-import { spinner } from "../../../../styles/feedback";
+import type { ShellTag } from "../../../../features/app-shell/lib/shell-nav";
 import type { BookmarkRowProps } from "../bookmark-row";
-import {
-  BookmarkRows,
-  BookmarkRowsSkeleton,
-  InboxCallout,
-  ListBanner,
-  ListHead,
-  QuickAddStrip,
-} from "./index";
+import { BookmarkListView } from "./index";
 
-const surface = css({
-  background: "bg.canvas",
-  blockSize: "[32rem]",
-  display: "flex",
-  flexDirection: "column",
-  inlineSize: "[42rem]",
-});
-
-const Demo = ({ children }: { children: React.ReactNode }) => (
-  <div className={surface}>{children}</div>
-);
+const demoTags: ShellTag[] = [
+  { count: 34, id: "1", name: "frontend" },
+  { count: 18, id: "2", name: "tanstack" },
+  { count: 12, id: "3", name: "db" },
+  { count: 9, id: "4", name: "auth" },
+  { count: 7, id: "5", name: "design" },
+  { count: 11, id: "6", name: "infra" },
+];
 
 const demoItems: BookmarkRowProps[] = [
   {
@@ -66,133 +54,127 @@ const demoItems: BookmarkRowProps[] = [
 ];
 
 const meta = {
-  component: ListHead,
+  args: {
+    onSearchChange: () => {},
+    onSearchSubmit: () => {},
+    searchValue: "",
+    state: "ideal",
+    title: "最近保存したもの",
+    view: "recent",
+  },
+  component: BookmarkListView,
   parameters: { layout: "fullscreen" },
-  title: "Features / BookmarkList",
-} satisfies Meta<typeof ListHead>;
+  title: "Screens / BookmarkList",
+} satisfies Meta<typeof BookmarkListView>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const args = { title: "最近保存したもの" };
+const Screen = (props: Partial<Parameters<typeof BookmarkListView>[0]>) => {
+  const [value, setValue] = useState("");
+  return (
+    <BookmarkListView
+      onSearchChange={setValue}
+      onSearchSubmit={() => {}}
+      searchValue={value}
+      state="ideal"
+      title="最近保存したもの"
+      view="recent"
+      {...props}
+    />
+  );
+};
 
 export const Ideal = {
-  args,
+  args: meta.args,
   render: () => (
-    <Demo>
-      <ListHead count={128} title="最近保存したもの" />
-      <InboxCallout count={3} />
-      <QuickAddStrip />
-      <BookmarkRows items={demoItems} selectedId="1" />
-    </Demo>
+    <Screen
+      count={128}
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      inboxCount={3}
+      items={demoItems}
+      selectedId="1"
+      tags={demoTags}
+    />
   ),
 } satisfies Story;
 
 export const Loading = {
-  args,
+  args: meta.args,
   render: () => (
-    <Demo>
-      <ListHead
-        title="最近保存したもの"
-        tools={
-          <span
-            className={css({
-              alignItems: "center",
-              color: "fg.faint",
-              columnGap: "1.5",
-              display: "flex",
-              fontSize: "2xs",
-            })}
-          >
-            <span aria-hidden className={spinner} />
-            読み込み中…
-          </span>
-        }
-      />
-      <BookmarkRowsSkeleton />
-    </Demo>
+    <Screen
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      state="loading"
+      tags={demoTags}
+    />
   ),
 } satisfies Story;
 
 export const Empty = {
-  args,
-  render: () => (
-    <Demo>
-      <ListHead count={0} title="最近保存したもの" />
-      <QuickAddStrip />
-      <StateView
-        action={
-          <span
-            className={css({
-              alignItems: "center",
-              background: "accent.solid",
-              borderRadius: "[0.5625rem]",
-              color: "accent.fg",
-              columnGap: "1.5",
-              display: "inline-flex",
-              fontSize: "xs",
-              fontWeight: "bold",
-              paddingBlock: "2",
-              paddingInline: "3.5",
-            })}
-          >
-            <Plus aria-hidden size={13} />
-            最初の1件を登録
-          </span>
-        }
-        description="URLをペーストすればタイトルは自動で取り込みます。タグ付けはあとでまとめてできます。"
-        icon={Bookmark}
-        title="まだブックマークがありません"
-      />
-    </Demo>
-  ),
+  args: meta.args,
+  render: () => <Screen count={0} counts={{ recent: 0 }} state="empty" />,
 } satisfies Story;
 
 export const Error = {
-  args,
+  args: meta.args,
   render: () => (
-    <Demo>
-      <ListHead title="最近保存したもの" />
-      <StateView
-        action={
-          <span
-            className={css({
-              alignItems: "center",
-              background: "accent.solid",
-              borderRadius: "[0.5625rem]",
-              color: "accent.fg",
-              columnGap: "1.5",
-              cursor: "pointer",
-              display: "inline-flex",
-              fontSize: "xs",
-              fontWeight: "bold",
-              paddingBlock: "2",
-              paddingInline: "3.5",
-            })}
-          >
-            <RotateCw aria-hidden size={13} />
-            再試行
-          </span>
-        }
-        description="ネットワーク接続を確認して、もう一度お試しください。"
-        icon={WifiOff}
-        title="読み込みに失敗しました"
-        tone="danger"
-      />
-    </Demo>
+    <Screen counts={{ favorites: 6, inbox: 3, recent: 128 }} state="error" />
   ),
 } satisfies Story;
 
 export const Partial = {
-  args,
+  args: meta.args,
   render: () => (
-    <Demo>
-      <ListHead count={128} title="最近保存したもの" />
-      <ListBanner onRetry={() => {}}>
-        ファビコンを一部取得できませんでした
-      </ListBanner>
-      <BookmarkRows items={demoItems} selectedId="1" />
-    </Demo>
+    <Screen
+      count={128}
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      items={demoItems}
+      onRetry={() => {}}
+      selectedId="1"
+      state="partial"
+      tags={demoTags}
+    />
+  ),
+} satisfies Story;
+
+export const Inbox = {
+  args: meta.args,
+  render: () => (
+    <Screen
+      count={3}
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      items={demoItems.slice(0, 3)}
+      title="未整理"
+      view="inbox"
+    />
+  ),
+} satisfies Story;
+
+export const TagFiltered = {
+  args: meta.args,
+  render: () => (
+    <Screen
+      activeTagId="1"
+      count={34}
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      items={demoItems}
+      tags={demoTags}
+      title="frontend"
+    />
+  ),
+} satisfies Story;
+
+export const Mobile = {
+  args: meta.args,
+  parameters: { viewport: { defaultViewport: "iphone12" } },
+  render: () => (
+    <Screen
+      count={128}
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      inboxCount={3}
+      items={demoItems}
+      tags={demoTags}
+    />
   ),
 } satisfies Story;

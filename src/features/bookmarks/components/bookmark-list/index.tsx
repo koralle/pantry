@@ -12,12 +12,28 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, CloudOff, Inbox, Plus, RotateCw } from "lucide-react";
+import {
+  ArrowRight,
+  Bookmark,
+  CloudOff,
+  Inbox,
+  Plus,
+  RotateCw,
+  WifiOff,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { css } from "styled-system/css";
 
+import { AppShell } from "../../../../features/app-shell/components/app-shell";
+import type {
+  ShellCounts,
+  ShellTag,
+  ShellView,
+} from "../../../../features/app-shell/lib/shell-nav";
 import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
-import { skeletonBar } from "../../../../styles/feedback";
+import { StateView } from "../../../../shared/components/state-view";
+import { button } from "../../../../styles/button";
+import { skeletonBar, spinner } from "../../../../styles/feedback";
 import {
   inboxAction,
   inboxBadge,
@@ -64,7 +80,12 @@ export const QuickAddStrip = () => (
       <Plus aria-hidden size={12} />
     </span>
     URLをペーストすると、登録画面が開きます
-    <span className={css({ marginInlineStart: "auto" })}>
+    <span
+      className={css({
+        display: { base: "none", md: "block" },
+        marginInlineStart: "auto",
+      })}
+    >
       <kbd className={kbd()}>⌘V</kbd>
     </span>
   </Link>
@@ -164,4 +185,124 @@ export const BookmarkRowsSkeleton = ({
       </div>
     ))}
   </div>
+);
+
+const loadingNote = css({
+  alignItems: "center",
+  color: "fg.faint",
+  columnGap: "1.5",
+  display: "flex",
+  fontSize: "2xs",
+});
+
+export type BookmarkListState =
+  | "loading"
+  | "ideal"
+  | "empty"
+  | "error"
+  | "partial";
+
+export interface BookmarkListViewProps {
+  view: ShellView;
+  title: string;
+  state: BookmarkListState;
+  items?: BookmarkRowProps[] | undefined;
+  count?: number | undefined;
+  inboxCount?: number | undefined;
+  counts?: ShellCounts | undefined;
+  tags?: ShellTag[] | undefined;
+  activeTagId?: string | undefined;
+  selectedId?: string | undefined;
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  onSearchSubmit: () => void;
+  onRetry?: (() => void) | undefined;
+}
+
+export const BookmarkListView = ({
+  view,
+  title,
+  state,
+  items,
+  count,
+  inboxCount,
+  counts,
+  tags,
+  activeTagId,
+  selectedId,
+  searchValue,
+  onSearchChange,
+  onSearchSubmit,
+  onRetry,
+}: BookmarkListViewProps) => (
+  <AppShell
+    activeTagId={activeTagId}
+    counts={counts}
+    onSearchChange={onSearchChange}
+    onSearchSubmit={onSearchSubmit}
+    searchValue={searchValue}
+    tags={tags}
+    view={view}
+  >
+    <ListHead
+      count={state === "loading" ? undefined : count}
+      title={title}
+      tools={
+        state === "loading" ? (
+          <output className={loadingNote}>
+            <span aria-hidden className={spinner} />
+            読み込み中…
+          </output>
+        ) : undefined
+      }
+    />
+    {state === "ideal" && inboxCount ? (
+      <InboxCallout count={inboxCount} />
+    ) : null}
+    {state === "ideal" || state === "empty" ? <QuickAddStrip /> : null}
+    {state === "partial" ? (
+      <ListBanner onRetry={onRetry}>
+        ファビコンを一部取得できませんでした
+      </ListBanner>
+    ) : null}
+    {state === "loading" ? <BookmarkRowsSkeleton /> : null}
+    {state === "ideal" || state === "partial" ? (
+      <BookmarkRows items={items ?? []} selectedId={selectedId} />
+    ) : null}
+    {state === "empty" ? (
+      <StateView
+        action={
+          <Link
+            className={button({ size: "sm", visual: "accent" })}
+            search={defaultBookmarkSearch}
+            to="/bookmarks/new"
+          >
+            <Plus aria-hidden size={13} />
+            最初の1件を登録
+          </Link>
+        }
+        description="URLをペーストすればタイトルは自動で取り込みます。タグ付けはあとでまとめてできます。"
+        icon={Bookmark}
+        title="まだブックマークがありません"
+      />
+    ) : null}
+    {state === "error" ? (
+      <StateView
+        action={
+          <button
+            className={button({ size: "sm", visual: "accent" })}
+            onClick={onRetry}
+            type="button"
+          >
+            <RotateCw aria-hidden size={13} />
+            再試行
+          </button>
+        }
+        description="ネットワーク接続を確認して、もう一度お試しください。"
+        icon={WifiOff}
+        title="読み込みに失敗しました"
+        tone="danger"
+      />
+    ) : null}
+  </AppShell>
 );
