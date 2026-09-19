@@ -22,3 +22,14 @@ export const toneFor = (seed: string): DomainTone => {
   }
   return DOMAIN_TONES[Math.abs(hash) % DOMAIN_TONES.length] ?? "slate";
 };
+
+export const domainToneVar: Record<DomainTone, string> = {
+  teal: "var(--colors-domain-teal)",
+  blue: "var(--colors-domain-blue)",
+  violet: "var(--colors-domain-violet)",
+  pink: "var(--colors-domain-pink)",
+  green: "var(--colors-domain-green)",
+  orange: "var(--colors-domain-orange)",
+  yellow: "var(--colors-domain-yellow)",
+  slate: "var(--colors-domain-slate)",
+};

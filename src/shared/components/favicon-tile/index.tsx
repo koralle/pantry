@@ -45,6 +45,11 @@ const faviconTile = cva({
         fontSize: "2xs",
         inlineSize: "[1.375rem]",
       },
+      md: {
+        blockSize: "[1.625rem]",
+        fontSize: "[0.6875rem]",
+        inlineSize: "[1.625rem]",
+      },
       lg: {
         blockSize: "[2rem]",
         fontSize: "sm",
@@ -66,10 +71,10 @@ const faviconTile = cva({
 
 export interface FaviconTileProps {
   domain: string;
-  failed?: boolean;
-  size?: "sm" | "lg";
-  tone?: DomainTone;
-  className?: string;
+  failed?: boolean | undefined;
+  size?: "sm" | "md" | "lg" | undefined;
+  tone?: DomainTone | undefined;
+  className?: string | undefined;
 }
 
 /**

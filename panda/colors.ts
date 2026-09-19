@@ -15,6 +15,10 @@ export const colors = defineTokens({
       star: { value: "#e8a013" },
       danger: { value: "#b91c1c" },
       dangerSoft: { value: "#fdeeee" },
+      inboxStart: { value: "#fff8ea" },
+      inboxEnd: { value: "#fdf0d4" },
+      inboxFg: { value: "#b07d2b" },
+      inboxSub: { value: "#8a6d3b" },
     },
     domain: {
       teal: { value: "#14b8a6" },
