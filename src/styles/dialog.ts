@@ -18,6 +18,7 @@ export const dialog = css({
   borderStyle: "solid",
   borderWidth: "thin",
   boxShadow: "dialog",
+  blockSize: "fit-content",
   boxSizing: "border-box",
   inset: "0",
   margin: "auto",
