@@ -7,7 +7,13 @@ import { css, cx } from "styled-system/css";
 import { StyledButton } from "../../../shared/components/styled-button";
 import { StyledInput } from "../../../shared/components/styled-input";
 import { StyledLabel } from "../../../shared/components/styled-label";
-import { field, fieldError, formSummary } from "../../../styles/form";
+import {
+  field,
+  fieldError,
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../styles/form";
 import { srOnly } from "../../../styles/sr-only";
 import { workbenchFields, workbenchForm } from "../../../styles/workbench";
 import type { SignInError } from "../lib/sign-in-error";
@@ -89,10 +95,8 @@ export const SignInWithEmailAndPasswordForm = ({
     >
       {signInError === null || signInError === undefined ? null : (
         <div className={formSummary} role="alert" aria-live="polite">
-          <p>
-            <CircleAlert size={16} aria-hidden />{" "}
-            {signInErrorMessage(signInError)}
-          </p>
+          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+          <p className={formSummaryText}>{signInErrorMessage(signInError)}</p>
         </div>
       )}
 

@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
-import { formSummary } from "../../../../styles/form";
+import {
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../../styles/form";
 import { authClient } from "../../lib/auth-client";
 import { getPasskeySignInErrorMessage } from "../../lib/passkey/messages";
 import {
@@ -141,9 +145,8 @@ export const PasskeySignIn = ({
 
       {errorMessage === null || errorMessage === undefined ? null : (
         <div className={formSummary} role="alert" aria-live="polite">
-          <p>
-            <CircleAlert size={16} aria-hidden /> {errorMessage}
-          </p>
+          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+          <p className={formSummaryText}>{errorMessage}</p>
         </div>
       )}
 

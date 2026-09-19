@@ -14,7 +14,11 @@ import {
   passkeyEmptyTitle,
 } from "../../../../styles/account";
 import { flash } from "../../../../styles/flash";
-import { formSummary } from "../../../../styles/form";
+import {
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../../styles/form";
 import { authClient } from "../../lib/auth-client";
 import {
   getPasskeyManageErrorMessage,
@@ -155,9 +159,8 @@ export const PasskeySettings = () => {
           role="alert"
           aria-live="polite"
         >
-          <p>
-            <CircleAlert size={16} aria-hidden /> {errorMessage}
-          </p>
+          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+          <p className={formSummaryText}>{errorMessage}</p>
         </div>
       )}
 
