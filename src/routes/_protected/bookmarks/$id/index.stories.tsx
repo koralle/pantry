@@ -160,6 +160,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -180,6 +181,7 @@ export const Default = meta.story({
 });
 
 export const Favorite = meta.story({
+  name: "お気に入り",
   beforeEach: async () => {
     detailFixture = () => ({ ...detailRecord, favorite: true });
   },
@@ -197,6 +199,7 @@ export const Favorite = meta.story({
 });
 
 export const FavoriteToggle = meta.story({
+  name: "お気に入りトグル",
   beforeEach: async () => {
     let favorited = false;
     detailFixture = () => ({ ...detailRecord, favorite: favorited });
@@ -224,6 +227,7 @@ export const FavoriteToggle = meta.story({
 });
 
 export const InitialLoading = meta.story({
+  name: "初回読み込み中",
   beforeEach: async () => {
     detailFixture = async () => await new Promise<never>(() => {});
   },
@@ -237,6 +241,7 @@ export const InitialLoading = meta.story({
 });
 
 export const BookmarkIsNotFound = meta.story({
+  name: "ブックマークが見つからない",
   beforeEach: async () => {
     detailFixture = async () => {
       throw new StoryRpcError("bookmark-not-found", 404, "bookmark not found");
@@ -256,6 +261,7 @@ export const BookmarkIsNotFound = meta.story({
 });
 
 export const LoadError = meta.story({
+  name: "読み込みエラー",
   beforeEach: async () => {
     detailFixture = async () => {
       throw new Error("server boom");

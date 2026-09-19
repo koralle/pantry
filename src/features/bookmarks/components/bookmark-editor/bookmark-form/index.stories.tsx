@@ -54,6 +54,7 @@ const defaultFetchTitleAction = fn<BookmarkTitleFetchAction>(async () => ({
 }));
 
 export const Default = meta.story({
+  name: "既定",
   args: {
     createTagAction: idleCreateTagAction,
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
@@ -82,6 +83,7 @@ export const Default = meta.story({
 });
 
 export const RejectsEmptyUrl = Default.extend({
+  name: "空URLを拒否",
   args: {
     initialValues: {
       note: null,
@@ -108,6 +110,7 @@ export const RejectsEmptyUrl = Default.extend({
 });
 
 export const RetryClearsTitleFetchError = Default.extend({
+  name: "再試行でタイトル取得エラーを解除",
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const fetchButton = canvas.getByRole("button", { name: "タイトルを取得" });
@@ -141,6 +144,7 @@ export const RetryClearsTitleFetchError = Default.extend({
 });
 
 export const TitleFetchPending = Default.extend({
+  name: "タイトル取得中",
   args: {
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => {
       await new Promise(() => {});
@@ -160,6 +164,7 @@ export const TitleFetchPending = Default.extend({
 });
 
 export const FieldError = Default.extend({
+  name: "フィールドエラー",
   args: {
     initialValues: {
       note: null,
@@ -186,6 +191,7 @@ export const FieldError = Default.extend({
 });
 
 export const SummaryError = Default.extend({
+  name: "サマリーエラー",
   args: {
     serverError: {
       fields: {
@@ -256,6 +262,7 @@ function ControlledBookmarkForm({
 }
 
 export const ServerFieldErrorShownInFieldAndSummary = Default.extend({
+  name: "サーバーエラーを欄とサマリーに表示",
   args: {
     fetchTitleAction: defaultFetchTitleAction,
     initialValues: defaultInitialValues,
@@ -286,6 +293,7 @@ export const ServerFieldErrorShownInFieldAndSummary = Default.extend({
 });
 
 export const EditingClearsMatchingServerFieldError = Default.extend({
+  name: "編集で一致するサーバーエラーを解除",
   args: {
     fetchTitleAction: defaultFetchTitleAction,
     initialValues: defaultInitialValues,
@@ -329,6 +337,7 @@ export const EditingClearsMatchingServerFieldError = Default.extend({
 });
 
 export const EditingOtherFieldKeepsUnrelatedServerError = Default.extend({
+  name: "別欄の編集は無関係なエラーを保持",
   args: {
     fetchTitleAction: defaultFetchTitleAction,
     initialValues: defaultInitialValues,
@@ -357,6 +366,7 @@ export const EditingOtherFieldKeepsUnrelatedServerError = Default.extend({
 });
 
 export const ValidationClearsOnEdit = Default.extend({
+  name: "編集でバリデーション解除",
   args: {
     initialValues: {
       note: null,
@@ -388,6 +398,7 @@ export const ValidationClearsOnEdit = Default.extend({
 });
 
 export const Pending = Default.extend({
+  name: "送信中",
   args: {
     onSubmit: fn(async () => {
       await new Promise<void>(() => {});
@@ -404,6 +415,7 @@ export const Pending = Default.extend({
 });
 
 export const SubmitsBrandedValues = Default.extend({
+  name: "正規化した値を送信",
   args: {
     onSubmit: fn<(values: BookmarkFormSubmitValues) => void>(),
   },
@@ -434,6 +446,7 @@ async function openTagPicker(canvas: ReturnType<typeof within>) {
 }
 
 export const SelectsAndRemovesTags = Default.extend({
+  name: "タグ選択と解除",
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
@@ -461,6 +474,7 @@ export const SelectsAndRemovesTags = Default.extend({
 });
 
 export const SearchKeepsCandidateOrder = Default.extend({
+  name: "検索でも候補順を保持",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
@@ -478,6 +492,7 @@ export const SearchKeepsCandidateOrder = Default.extend({
 });
 
 export const CreateCtaWaitsUntilNamesAreReady = Default.extend({
+  name: "名前解決まで作成CTAを待機",
   args: {
     tagCandidates: [],
     tagsReady: false,
@@ -499,6 +514,7 @@ export const CreateCtaWaitsUntilNamesAreReady = Default.extend({
 });
 
 export const CreatesAndSelectsNewTag = Default.extend({
+  name: "新規タグを作成して選択",
   args: {
     createTagAction: fn<CreateTagFromPickerAction>(
       async (_previous, { name }) => ({
@@ -532,6 +548,7 @@ export const CreatesAndSelectsNewTag = Default.extend({
 });
 
 export const CreatePendingBlocksBookmarkSubmit = Default.extend({
+  name: "タグ作成中は登録をブロック",
   args: {
     createTagAction: fn<CreateTagFromPickerAction>(async () => {
       await new Promise(() => {});
@@ -563,6 +580,7 @@ export const CreatePendingBlocksBookmarkSubmit = Default.extend({
 });
 
 export const CreateFailureKeepsDraftAndShowsFieldError = Default.extend({
+  name: "作成失敗で下書き保持と欄エラー",
   args: {
     createTagAction: fn<CreateTagFromPickerAction>(async () => ({
       message: "タグの作成に失敗しました",
@@ -597,6 +615,7 @@ export const CreateFailureKeepsDraftAndShowsFieldError = Default.extend({
 });
 
 export const InvalidTagErrorStaysOnTagField = Default.extend({
+  name: "不正タグエラーはタグ欄に留まる",
   args: {
     serverError: {
       fields: {
@@ -620,6 +639,7 @@ export const InvalidTagErrorStaysOnTagField = Default.extend({
 });
 
 export const LongTagNameWrapsInsideForm = Default.extend({
+  name: "長いタグ名はフォーム内で折り返す",
   args: {
     initialValues: {
       ...defaultInitialValues,

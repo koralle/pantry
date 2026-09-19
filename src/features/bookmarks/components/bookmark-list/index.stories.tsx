@@ -81,6 +81,7 @@ const Screen = (props: Partial<Parameters<typeof BookmarkListView>[0]>) => (
 );
 
 export const Ideal = {
+  name: "標準",
   args: meta.args,
   render: () => (
     <Screen
@@ -95,6 +96,7 @@ export const Ideal = {
 } satisfies Story;
 
 export const Loading = {
+  name: "読み込み中",
   args: meta.args,
   render: () => (
     <Screen
@@ -106,11 +108,13 @@ export const Loading = {
 } satisfies Story;
 
 export const Empty = {
+  name: "空",
   args: meta.args,
   render: () => <Screen count={0} counts={{ recent: 0 }} state="empty" />,
 } satisfies Story;
 
 export const Error = {
+  name: "エラー",
   args: meta.args,
   render: () => (
     <Screen counts={{ favorites: 6, inbox: 3, recent: 128 }} state="error" />
@@ -118,6 +122,7 @@ export const Error = {
 } satisfies Story;
 
 export const Partial = {
+  name: "一部のみ",
   args: meta.args,
   render: () => (
     <Screen
@@ -133,6 +138,7 @@ export const Partial = {
 } satisfies Story;
 
 export const Inbox = {
+  name: "未整理",
   args: meta.args,
   render: () => (
     <Screen
@@ -146,6 +152,7 @@ export const Inbox = {
 } satisfies Story;
 
 export const TagFiltered = {
+  name: "タグで絞り込み",
   args: meta.args,
   render: () => (
     <Screen
@@ -160,6 +167,7 @@ export const TagFiltered = {
 } satisfies Story;
 
 export const Mobile = {
+  name: "モバイル",
   args: meta.args,
   parameters: { viewport: { defaultViewport: "iphone12" } },
   render: () => (

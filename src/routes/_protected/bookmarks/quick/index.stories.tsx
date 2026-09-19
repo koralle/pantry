@@ -130,6 +130,7 @@ const prefilledParameters = {
 };
 
 export const Input = meta.story({
+  name: "URL入力",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -148,6 +149,7 @@ export const Input = meta.story({
 });
 
 export const ManualFlow = meta.story({
+  name: "手入力フロー",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.type(
@@ -166,6 +168,7 @@ export const ManualFlow = meta.story({
 });
 
 export const PrefilledUrl = meta.story({
+  name: "URL入力済み",
   parameters: prefilledParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -187,6 +190,7 @@ export const PrefilledUrl = meta.story({
 });
 
 export const PrefillFetching = meta.story({
+  name: "プリフィル取得中",
   beforeEach: async () => {
     titleFixture = async () => await new Promise<never>(() => {});
   },
@@ -203,6 +207,7 @@ export const PrefillFetching = meta.story({
 });
 
 export const TitleFetchFailed = meta.story({
+  name: "タイトル取得失敗",
   beforeEach: async () => {
     titleFixture = () => null;
   },
@@ -219,6 +224,7 @@ export const TitleFetchFailed = meta.story({
 });
 
 export const SavesAndCompletes = meta.story({
+  name: "登録して完了",
   parameters: prefilledParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -248,6 +254,7 @@ export const SavesAndCompletes = meta.story({
 });
 
 export const ConsecutiveRegistration = meta.story({
+  name: "連続登録",
   parameters: prefilledParameters,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -288,6 +295,7 @@ export const ConsecutiveRegistration = meta.story({
 });
 
 export const SaveFailure = meta.story({
+  name: "保存失敗",
   beforeEach: async () => {
     createFixture = () => {
       throw new Error("server boom");
@@ -314,6 +322,7 @@ export const SaveFailure = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   globals: {
     viewport: {
       value: "iphone12",

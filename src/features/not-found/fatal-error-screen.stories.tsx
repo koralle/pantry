@@ -12,6 +12,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   args: {
     onReload: fn(),
   },

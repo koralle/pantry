@@ -70,6 +70,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
@@ -96,6 +97,7 @@ export const Default = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   globals: {
     viewport: {
       value: "iphone12",
@@ -117,6 +119,7 @@ export const Mobile = meta.story({
 });
 
 export const WebAuthnUnavailable = meta.story({
+  name: "WebAuthn非対応",
   beforeEach: async () => {
     mocked(isWebAuthnAvailable).mockReturnValue(false);
   },

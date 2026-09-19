@@ -144,6 +144,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -168,6 +169,7 @@ export const Default = meta.story({
 });
 
 export const InvalidUrl = meta.story({
+  name: "不正URL",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.type(canvas.getByLabelText("URL"), "tanstack");
@@ -185,6 +187,7 @@ export const InvalidUrl = meta.story({
 });
 
 export const SavePending = meta.story({
+  name: "保存中",
   beforeEach: async () => {
     createFixture = async () => await new Promise<never>(() => {});
   },
@@ -208,6 +211,7 @@ export const SavePending = meta.story({
 });
 
 export const SaveFailure = meta.story({
+  name: "保存失敗",
   beforeEach: async () => {
     createFixture = () => {
       throw new Error("server boom");
@@ -234,6 +238,7 @@ export const SaveFailure = meta.story({
 });
 
 export const DuplicateUrl = meta.story({
+  name: "URL重複",
   beforeEach: async () => {
     createFixture = () => {
       throw new StoryRpcError("duplicate-url", 409, "duplicate url");
@@ -256,6 +261,7 @@ export const DuplicateUrl = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   globals: {
     viewport: {
       value: "iphone12",

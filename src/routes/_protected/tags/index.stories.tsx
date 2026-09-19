@@ -317,6 +317,7 @@ const railNav = (canvasElement: HTMLElement) =>
   within(canvasElement).getByRole("navigation", { name: "ビュー" });
 
 export const Ideal = meta.story({
+  name: "標準",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -342,6 +343,7 @@ export const Ideal = meta.story({
 });
 
 export const SearchFilter = meta.story({
+  name: "検索で絞り込み",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -362,6 +364,7 @@ export const SearchFilter = meta.story({
 });
 
 export const Empty = meta.story({
+  name: "空",
   beforeEach: async () => {
     shelfFixture = () => [];
   },
@@ -379,6 +382,7 @@ export const Empty = meta.story({
 });
 
 export const InitialLoading = meta.story({
+  name: "初回読み込み中",
   beforeEach: async () => {
     shelfFixture = async () => await neverPromise();
   },
@@ -397,6 +401,7 @@ export const InitialLoading = meta.story({
 });
 
 export const LoadError = meta.story({
+  name: "読み込みエラー",
   beforeEach: async () => {
     shelfFixture = async () => {
       throw new Error("shelf boom");
@@ -416,6 +421,7 @@ export const LoadError = meta.story({
 });
 
 export const CreatesTag = meta.story({
+  name: "タグを作成",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
@@ -442,6 +448,7 @@ export const CreatesTag = meta.story({
 });
 
 export const CreateFailure = meta.story({
+  name: "作成失敗",
   beforeEach: async () => {
     createFixture = () => {
       throw new Error("server boom");
@@ -468,6 +475,7 @@ export const CreateFailure = meta.story({
 });
 
 export const RenamesTag = meta.story({
+  name: "タグ名を変更",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
@@ -497,6 +505,7 @@ export const RenamesTag = meta.story({
 });
 
 export const DeletesTag = meta.story({
+  name: "タグを削除",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
@@ -528,6 +537,7 @@ export const DeletesTag = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   globals: {
     viewport: {
       value: "iphone12",

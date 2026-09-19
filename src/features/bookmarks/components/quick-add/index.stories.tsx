@@ -59,6 +59,7 @@ const confirmArgs = {
 } satisfies Partial<QuickAddScreenProps>;
 
 export const Input = meta.story({
+  name: "URL入力",
   args: baseArgs,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -86,6 +87,7 @@ export const Input = meta.story({
 });
 
 export const RejectsBadUrl = meta.story({
+  name: "不正URLを拒否",
   args: baseArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -99,6 +101,7 @@ export const RejectsBadUrl = meta.story({
 });
 
 export const Fetching = meta.story({
+  name: "タイトル取得中",
   args: {
     ...baseArgs,
     fetchTitleAction: fn<NonNullable<QuickAddScreenProps["fetchTitleAction"]>>(
@@ -116,6 +119,7 @@ export const Fetching = meta.story({
 });
 
 export const Confirm = meta.story({
+  name: "登録確認",
   args: confirmArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -136,6 +140,7 @@ export const Confirm = meta.story({
 });
 
 export const TitleFetchFailed = meta.story({
+  name: "タイトル取得失敗",
   args: {
     ...baseArgs,
     initialTitle: "",
@@ -164,6 +169,7 @@ export const TitleFetchFailed = meta.story({
 });
 
 export const SelectsTags = meta.story({
+  name: "タグを選択",
   args: confirmArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -184,6 +190,7 @@ export const SelectsTags = meta.story({
 });
 
 export const CreatesNewTag = meta.story({
+  name: "新規タグを作成",
   args: {
     ...confirmArgs,
     createTagAction: fn<CreateTagFromPickerAction>(
@@ -214,6 +221,7 @@ export const CreatesNewTag = meta.story({
 });
 
 export const Saves = meta.story({
+  name: "登録する",
   args: confirmArgs,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -245,6 +253,7 @@ export const Saves = meta.story({
 });
 
 export const SaveFailure = meta.story({
+  name: "保存失敗",
   args: {
     ...confirmArgs,
     onCreateBookmark: fn<QuickAddScreenProps["onCreateBookmark"]>(async () => ({
@@ -269,6 +278,7 @@ export const SaveFailure = meta.story({
 });
 
 export const SavePending = meta.story({
+  name: "保存中",
   args: {
     ...confirmArgs,
     onCreateBookmark: fn<QuickAddScreenProps["onCreateBookmark"]>(
@@ -288,6 +298,7 @@ export const SavePending = meta.story({
 });
 
 export const RestartClearsDraft = meta.story({
+  name: "続けて登録で下書きクリア",
   args: baseArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -316,6 +327,7 @@ export const RestartClearsDraft = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   args: confirmArgs,
   globals: {
     viewport: {

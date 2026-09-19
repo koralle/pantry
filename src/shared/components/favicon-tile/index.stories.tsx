@@ -37,6 +37,7 @@ const Center = styled("div", {
 });
 
 export const Default = {
+  name: "既定",
   render: (args) => (
     <Center>
       <FaviconTile {...args} />
@@ -45,6 +46,7 @@ export const Default = {
 } as const satisfies Story;
 
 export const AllTones = {
+  name: "全トーン",
   args: { domain: "zenn.dev" },
   render: () => (
     <Center columnGap="3">
@@ -56,6 +58,7 @@ export const AllTones = {
 } as const satisfies Story;
 
 export const Sizes = {
+  name: "サイズ",
   args: { domain: "zenn.dev" },
   render: () => (
     <Center columnGap="3">
@@ -66,6 +69,7 @@ export const Sizes = {
 } as const satisfies Story;
 
 export const FetchFailed = {
+  name: "取得失敗",
   args: { domain: "broken.example" },
   render: () => (
     <Center columnGap="3">

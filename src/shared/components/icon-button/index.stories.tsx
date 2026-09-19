@@ -35,6 +35,7 @@ const Center = styled("div", {
 });
 
 export const Default = {
+  name: "既定",
   args: { "aria-label": "開く", size: "md", tone: "default" },
   render: (args) => (
     <Center>
@@ -46,6 +47,7 @@ export const Default = {
 } as const satisfies Story;
 
 export const Sizes = {
+  name: "サイズ",
   args: { "aria-label": "開く" },
   render: () => (
     <Center columnGap="2">
@@ -63,6 +65,7 @@ export const Sizes = {
 } as const satisfies Story;
 
 export const Danger = {
+  name: "危険",
   args: { "aria-label": "削除" },
   render: () => (
     <Center columnGap="2">
@@ -77,6 +80,7 @@ export const Danger = {
 } as const satisfies Story;
 
 export const Disabled = {
+  name: "無効",
   args: { "aria-label": "開く" },
   render: () => (
     <Center>

@@ -26,6 +26,7 @@ const Center = styled("div", {
 });
 
 export const Empty = {
+  name: "空",
   args: { title: "まだブックマークがありません" },
   render: () => (
     <Center>
@@ -44,6 +45,7 @@ export const Empty = {
 } as const satisfies Story;
 
 export const SearchEmpty = {
+  name: "検索結果なし",
   args: { title: "見つかりませんでした" },
   render: () => (
     <Center>
@@ -57,6 +59,7 @@ export const SearchEmpty = {
 } as const satisfies Story;
 
 export const ErrorState = {
+  name: "エラー",
   args: { title: "読み込みに失敗しました" },
   render: () => (
     <Center>
@@ -72,6 +75,7 @@ export const ErrorState = {
 } as const satisfies Story;
 
 export const NotFound = {
+  name: "見つからない",
   args: { title: "このブックマークは存在しません" },
   render: () => (
     <Center>

@@ -104,6 +104,7 @@ const baseArgs = {
 } satisfies Partial<TagManagerScreenProps>;
 
 export const Ideal = meta.story({
+  name: "標準",
   args: baseArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -131,6 +132,7 @@ export const Ideal = meta.story({
 });
 
 export const SearchFilter = meta.story({
+  name: "検索で絞り込み",
   args: baseArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -154,6 +156,7 @@ export const SearchFilter = meta.story({
 });
 
 export const SearchNoMatch = meta.story({
+  name: "検索ヒットなし",
   args: baseArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -170,6 +173,7 @@ export const SearchNoMatch = meta.story({
 });
 
 export const Empty = meta.story({
+  name: "空",
   args: { ...baseArgs, tags: [] },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -186,6 +190,7 @@ export const Empty = meta.story({
 });
 
 export const CreatesTag = meta.story({
+  name: "タグを作成",
   args: baseArgs,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -214,6 +219,7 @@ export const CreatesTag = meta.story({
 });
 
 export const CreateNameConflict = meta.story({
+  name: "名前重複で作成失敗",
   args: {
     ...baseArgs,
     onCreateTag: fn<TagManagerScreenProps["onCreateTag"]>(async () => ({
@@ -241,6 +247,7 @@ export const CreateNameConflict = meta.story({
 });
 
 export const RejectsEmptyName = meta.story({
+  name: "空名を拒否",
   args: baseArgs,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -260,6 +267,7 @@ export const RejectsEmptyName = meta.story({
 });
 
 export const RenamesTag = meta.story({
+  name: "タグ名を変更",
   args: baseArgs,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -295,6 +303,7 @@ export const RenamesTag = meta.story({
 });
 
 export const DeletesTag = meta.story({
+  name: "タグを削除",
   args: baseArgs,
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
@@ -331,6 +340,7 @@ export const DeletesTag = meta.story({
 });
 
 export const DeleteKeepsDialogOnFailure = meta.story({
+  name: "失敗時はダイアログを維持",
   args: {
     ...baseArgs,
     onDeleteTag: fn<TagManagerScreenProps["onDeleteTag"]>(async () => ({
@@ -355,6 +365,7 @@ export const DeleteKeepsDialogOnFailure = meta.story({
 });
 
 export const SavingCreate = meta.story({
+  name: "作成中",
   args: {
     ...baseArgs,
     onCreateTag: fn<TagManagerScreenProps["onCreateTag"]>(
@@ -382,6 +393,7 @@ export const SavingCreate = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   args: baseArgs,
   globals: {
     viewport: {

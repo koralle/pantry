@@ -163,6 +163,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -193,6 +194,7 @@ export const Default = meta.story({
 });
 
 export const InitialLoading = meta.story({
+  name: "初回読み込み中",
   beforeEach: async () => {
     editorFixture = async () => await new Promise<never>(() => {});
   },
@@ -210,6 +212,7 @@ export const InitialLoading = meta.story({
 });
 
 export const BookmarkIsNotFound = meta.story({
+  name: "ブックマークが見つからない",
   beforeEach: async () => {
     editorFixture = async () => {
       throw new StoryRpcError("bookmark-not-found", 404, "bookmark not found");
@@ -229,6 +232,7 @@ export const BookmarkIsNotFound = meta.story({
 });
 
 export const UpdateHasDuplicateUrl = meta.story({
+  name: "URL重複で更新失敗",
   beforeEach: async () => {
     updateFixture = () => {
       throw new StoryRpcError("duplicate-url", 409, "duplicate url");
@@ -249,6 +253,7 @@ export const UpdateHasDuplicateUrl = meta.story({
 });
 
 export const UpdateHasUnexpectedError = meta.story({
+  name: "更新で予期しないエラー",
   beforeEach: async () => {
     updateFixture = () => {
       throw new Error("server boom");
@@ -269,6 +274,7 @@ export const UpdateHasUnexpectedError = meta.story({
 });
 
 export const UpdatePending = meta.story({
+  name: "更新中",
   beforeEach: async () => {
     updateFixture = async () => await new Promise<never>(() => {});
   },

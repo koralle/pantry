@@ -41,6 +41,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   args: {
     createTagAction: fn(async () => ({ status: "idle" as const })),
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => ({
@@ -69,6 +70,7 @@ export const Default = meta.story({
 });
 
 export const UpdateHasDuplicateUrl = Default.extend({
+  name: "URL重複で更新失敗",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "duplicate-url" as const,
@@ -88,6 +90,7 @@ export const UpdateHasDuplicateUrl = Default.extend({
 });
 
 export const UpdateHasUnexpectedError = Default.extend({
+  name: "更新で予期しないエラー",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "unexpected" as const,
@@ -104,6 +107,7 @@ export const UpdateHasUnexpectedError = Default.extend({
 });
 
 export const SessionExpiredShowsNoFormError = Default.extend({
+  name: "セッション切れはフォームエラーを出さない",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: null,
@@ -119,6 +123,7 @@ export const SessionExpiredShowsNoFormError = Default.extend({
 });
 
 export const CompletionNavigationFails = Default.extend({
+  name: "完了後の遷移失敗",
   args: {
     onCompleted: fn(async () => {
       throw new Error("navigation failed");
@@ -137,6 +142,7 @@ export const CompletionNavigationFails = Default.extend({
 });
 
 export const EditingUrlClearsUrlServerError = Default.extend({
+  name: "URL編集でURLサーバーエラーを解除",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "duplicate-url" as const,
@@ -158,6 +164,7 @@ export const EditingUrlClearsUrlServerError = Default.extend({
 });
 
 export const InvalidTagKeepsDraftAndAsksToRepick = Default.extend({
+  name: "不正タグは下書き保持して再選択を促す",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "invalid-tag" as const,

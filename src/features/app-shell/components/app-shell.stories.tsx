@@ -54,6 +54,7 @@ const ShellDemo = ({
 );
 
 export const Desktop = {
+  name: "デスクトップ",
   args: {
     children: null,
     onSearchSubmit: () => {},
@@ -69,6 +70,7 @@ export const Desktop = {
 } as const satisfies Story;
 
 export const TagSelected = {
+  name: "タグ選択中",
   args: Desktop.args,
   render: () => (
     <ShellDemo
@@ -80,6 +82,7 @@ export const TagSelected = {
 } as const satisfies Story;
 
 export const TagsView = {
+  name: "タグ表示",
   args: Desktop.args,
   render: () => (
     <ShellDemo
@@ -91,16 +94,19 @@ export const TagsView = {
 } as const satisfies Story;
 
 export const AccountView = {
+  name: "アカウント表示",
   args: Desktop.args,
   render: () => <ShellDemo view="account" />,
 } as const satisfies Story;
 
 export const NoTags = {
+  name: "タグなし",
   args: Desktop.args,
   render: () => <ShellDemo counts={{ recent: 0 }} />,
 } as const satisfies Story;
 
 export const Mobile = {
+  name: "モバイル",
   args: Desktop.args,
   parameters: {
     viewport: { defaultViewport: "iphone12" },

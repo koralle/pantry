@@ -25,27 +25,32 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default = {} satisfies Story;
+export const Default = { name: "既定" } satisfies Story;
 
 export const Selected = {
+  name: "選択中",
   args: { selected: true },
 } satisfies Story;
 
 export const Starred = {
+  name: "お気に入り",
   args: { starred: true },
 } satisfies Story;
 
 export const WithTags = {
+  name: "タグ付き",
   args: {
     tags: [{ name: "frontend" }, { name: "tanstack" }, { name: "design" }],
   },
 } satisfies Story;
 
 export const FaviconFailed = {
+  name: "Favicon取得失敗",
   args: { faviconFailed: true },
 } satisfies Story;
 
 export const LongTitle = {
+  name: "長いタイトル",
   args: {
     tags: [{ name: "frontend" }, { name: "db" }],
     title:
@@ -54,6 +59,7 @@ export const LongTitle = {
 } satisfies Story;
 
 export const Full = {
+  name: "全要素あり",
   args: {
     faviconFailed: true,
     selected: true,

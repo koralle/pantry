@@ -31,6 +31,7 @@ const Center = styled("div", {
 });
 
 export const Off = {
+  name: "オフ",
   args: { pressed: false, size: "md" },
   render: (args) => (
     <Center>
@@ -40,6 +41,7 @@ export const Off = {
 } as const satisfies Story;
 
 export const On = {
+  name: "オン",
   args: { pressed: true, size: "md" },
   render: (args) => (
     <Center>
@@ -49,6 +51,7 @@ export const On = {
 } as const satisfies Story;
 
 export const Sizes = {
+  name: "サイズ",
   args: { pressed: true },
   render: () => (
     <Center columnGap="2">

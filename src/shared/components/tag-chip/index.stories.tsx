@@ -32,6 +32,7 @@ const Center = styled("div", {
 });
 
 export const Default = {
+  name: "既定",
   args: { name: "typescript" },
   render: (args) => (
     <Center>
@@ -41,6 +42,7 @@ export const Default = {
 } as const satisfies Story;
 
 export const Row = {
+  name: "行",
   args: { name: "typescript" },
   render: () => (
     <Center columnGap="1.5">
@@ -53,6 +55,7 @@ export const Row = {
 } as const satisfies Story;
 
 export const AllTones = {
+  name: "全トーン",
   args: { name: "typescript" },
   render: () => (
     <Center columnGap="1.5">
@@ -64,6 +67,7 @@ export const AllTones = {
 } as const satisfies Story;
 
 export const Dots = {
+  name: "ドット",
   args: { name: "typescript" },
   render: () => (
     <Center columnGap="2">

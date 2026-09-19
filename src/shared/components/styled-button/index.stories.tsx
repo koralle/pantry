@@ -31,6 +31,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default = {
+  name: "既定",
   args: {
     size: "md",
     visual: "default",
@@ -39,6 +40,7 @@ export const Default = {
 } as const satisfies Story;
 
 export const Accent = {
+  name: "アクセント",
   args: {
     size: "md",
     visual: "accent",
@@ -47,6 +49,7 @@ export const Accent = {
 } as const satisfies Story;
 
 export const Danger = {
+  name: "危険",
   args: {
     size: "md",
     visual: "danger",
@@ -55,6 +58,7 @@ export const Danger = {
 } as const satisfies Story;
 
 export const Toggle = {
+  name: "トグル",
   args: {
     "aria-pressed": true,
     size: "md",
@@ -64,6 +68,7 @@ export const Toggle = {
 } as const satisfies Story;
 
 export const Chip = {
+  name: "チップ",
   args: {
     size: "md",
     visual: "chip",
@@ -77,6 +82,7 @@ export const Chip = {
 } as const satisfies Story;
 
 export const Sizes = {
+  name: "サイズ",
   args: {
     visual: "accent",
   },
@@ -107,6 +113,7 @@ export const Sizes = {
 } as const satisfies Story;
 
 export const VisualMatrix = {
+  name: "見た目マトリクス",
   render: () => (
     <styled.div
       minInlineSize="[100svi]"
@@ -171,6 +178,7 @@ export const VisualMatrix = {
 } as const satisfies Story;
 
 export const WithIcon = {
+  name: "アイコン付き",
   args: {
     size: "md",
     visual: "default",

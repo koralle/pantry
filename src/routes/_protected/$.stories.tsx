@@ -126,6 +126,7 @@ const meta = preview.meta({
 });
 
 export const InShell = meta.story({
+  name: "シェル内",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -145,6 +146,7 @@ export const InShell = meta.story({
 });
 
 export const Mobile = meta.story({
+  name: "モバイル",
   globals: {
     viewport: {
       value: "iphone12",

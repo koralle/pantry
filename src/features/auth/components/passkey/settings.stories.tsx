@@ -74,6 +74,7 @@ function page(canvasElement: HTMLElement) {
 }
 
 export const EmptyList = meta.story({
+  name: "空の一覧",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
@@ -93,6 +94,7 @@ export const EmptyList = meta.story({
 });
 
 export const NamedAndFallbackNames = meta.story({
+  name: "表示名とフォールバック名",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [
@@ -115,6 +117,7 @@ export const NamedAndFallbackNames = meta.story({
 });
 
 export const AddWithoutPrefillingName = meta.story({
+  name: "名前入力なしで登録",
   beforeEach: async () => {
     mocked(authClient.passkey.addPasskey).mockImplementation(
       async () => await neverResolve()
@@ -136,6 +139,7 @@ export const AddWithoutPrefillingName = meta.story({
 });
 
 export const CancelAddLeavesListUnchanged = meta.story({
+  name: "登録キャンセルで一覧は不変",
   beforeEach: async () => {
     mocked(authClient.passkey.addPasskey).mockResolvedValue({
       data: null,
@@ -161,6 +165,7 @@ export const CancelAddLeavesListUnchanged = meta.story({
 });
 
 export const TwoPasskeys = meta.story({
+  name: "パスキー2件",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [
@@ -182,6 +187,7 @@ export const TwoPasskeys = meta.story({
 });
 
 export const RenameUpdatesList = meta.story({
+  name: "表示名変更で一覧更新",
   beforeEach: async () => {
     let items = [passkey({ id: "pk-1", name: "仕事用キー" })];
     mocked(authClient.passkey.listUserPasskeys).mockImplementation(
@@ -219,6 +225,7 @@ export const RenameUpdatesList = meta.story({
 });
 
 export const DeleteShowsConfirmation = meta.story({
+  name: "削除確認を表示",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "自宅" })],
@@ -246,6 +253,7 @@ export const DeleteShowsConfirmation = meta.story({
 });
 
 export const CancelDeleteKeepsPasskey = meta.story({
+  name: "削除キャンセルで保持",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "自宅" })],
@@ -271,6 +279,7 @@ export const CancelDeleteKeepsPasskey = meta.story({
 });
 
 export const DeleteRemovesPasskey = meta.story({
+  name: "パスキーを削除",
   beforeEach: async () => {
     let items = [
       passkey({ id: "pk-1", name: "自宅" }),
@@ -307,6 +316,7 @@ export const DeleteRemovesPasskey = meta.story({
 });
 
 export const LastPasskeyCanBeDeleted = meta.story({
+  name: "最後の1件も削除できる",
   beforeEach: async () => {
     let items = [passkey({ id: "pk-last", name: "最後のキー" })];
     mocked(authClient.passkey.listUserPasskeys).mockImplementation(
@@ -341,6 +351,7 @@ export const LastPasskeyCanBeDeleted = meta.story({
 });
 
 export const HideAddWhenWebAuthnUnavailable = meta.story({
+  name: "WebAuthn非対応で追加を隠す",
   beforeEach: async () => {
     mocked(isWebAuthnAvailable).mockReturnValue(false);
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
@@ -360,6 +371,7 @@ export const HideAddWhenWebAuthnUnavailable = meta.story({
 });
 
 export const ListLoadError = meta.story({
+  name: "一覧の読み込み失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: null,
@@ -383,6 +395,7 @@ export const ListLoadError = meta.story({
 });
 
 export const AddFailed = meta.story({
+  name: "登録失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.addPasskey).mockResolvedValue({
       data: null,
@@ -409,6 +422,7 @@ export const AddFailed = meta.story({
 });
 
 export const RenameFailed = meta.story({
+  name: "表示名変更失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "仕事用キー" })],
@@ -446,6 +460,7 @@ export const RenameFailed = meta.story({
 });
 
 export const DeleteFailed = meta.story({
+  name: "削除失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "自宅" })],

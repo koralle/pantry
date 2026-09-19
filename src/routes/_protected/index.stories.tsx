@@ -386,6 +386,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(async () => {
@@ -409,6 +410,7 @@ export const Default = meta.story({
 });
 
 export const Empty = meta.story({
+  name: "空",
   beforeEach: async () => {
     listFixture = () => ({ items: [], nextCursor: null });
   },
@@ -426,6 +428,7 @@ export const Empty = meta.story({
 });
 
 export const EmptyBySearch = meta.story({
+  name: "検索条件で空",
   parameters: listQuery({ q: "存在しないキーワード" }),
   beforeEach: async () => {
     listFixture = () => ({ items: [], nextCursor: null });
@@ -453,6 +456,7 @@ export const EmptyBySearch = meta.story({
 });
 
 export const EmptyByTags = meta.story({
+  name: "タグ条件で空",
   parameters: listQuery({ tags: ["reading"] }),
   beforeEach: async () => {
     listFixture = () => ({ items: [], nextCursor: null });
@@ -478,6 +482,7 @@ export const EmptyByTags = meta.story({
 });
 
 export const SearchResults = meta.story({
+  name: "検索結果",
   parameters: listQuery({ q: "React" }),
   beforeEach: async () => {
     listFixture = () => ({ items: [reactBookmark], nextCursor: null });
@@ -499,6 +504,7 @@ export const SearchResults = meta.story({
 });
 
 export const TagFilterAnd = meta.story({
+  name: "タグAND絞り込み",
   parameters: listQuery({ tags: ["reading", "work"], tagMode: "and" }),
   beforeEach: async () => {
     listFixture = () => ({ items: [longBookmark], nextCursor: null });
@@ -517,6 +523,7 @@ export const TagFilterAnd = meta.story({
 });
 
 export const TagFilterOr = meta.story({
+  name: "タグOR絞り込み",
   parameters: listQuery({ tags: ["reading"], tagMode: "or" }),
   beforeEach: async () => {
     listFixture = () => ({ items: [longBookmark], nextCursor: null });
@@ -535,6 +542,7 @@ export const TagFilterOr = meta.story({
 });
 
 export const SortUpdated = meta.story({
+  name: "並び替え",
   parameters: listQuery({ sort: "updated" }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -550,6 +558,7 @@ export const SortUpdated = meta.story({
 });
 
 export const InitialLoading = meta.story({
+  name: "初回読み込み中",
   beforeEach: async () => {
     listFixture = async () => await neverPromise();
   },
@@ -574,6 +583,7 @@ export const InitialLoading = meta.story({
 });
 
 export const LoadError = meta.story({
+  name: "読み込みエラー",
   beforeEach: async () => {
     listFixture = async () => {
       throw new Error("一覧の読み込みに失敗しました");
@@ -596,6 +606,7 @@ export const LoadError = meta.story({
 });
 
 export const HasMore = meta.story({
+  name: "続きあり",
   beforeEach: async () => {
     stubPagedBookmarks(nextPage);
   },
@@ -628,6 +639,7 @@ export const HasMore = meta.story({
 });
 
 export const LoadingMore = meta.story({
+  name: "追加読み込み中",
   beforeEach: async () => {
     stubPagedBookmarks(neverPromise());
   },
@@ -648,6 +660,7 @@ export const LoadingMore = meta.story({
 });
 
 export const LoadMoreError = meta.story({
+  name: "追加読み込みエラー",
   beforeEach: async () => {
     stubPagedBookmarks(new Error("続きの読み込みに失敗しました"));
   },
@@ -674,6 +687,7 @@ export const LoadMoreError = meta.story({
 });
 
 export const NoShelfTags = meta.story({
+  name: "シェルフタグなし",
   beforeEach: async () => {
     shelfFixture = () => [];
   },
