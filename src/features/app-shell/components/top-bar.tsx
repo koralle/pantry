@@ -59,7 +59,7 @@ export const TopBar = ({
     <Link
       className={cx(button({ size: "sm", visual: "accent" }), desktopOnly)}
       search={newSearch ?? {}}
-      to="/bookmarks/new"
+      to="/bookmarks/quick"
     >
       <Plus aria-hidden size={13} />
       登録

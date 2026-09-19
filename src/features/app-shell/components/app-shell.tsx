@@ -75,7 +75,7 @@ export const AppShell = ({
         !isEditableTarget(event.target)
       ) {
         event.preventDefault();
-        void navigate({ search: newSearch ?? {}, to: "/bookmarks/new" });
+        void navigate({ search: newSearch ?? {}, to: "/bookmarks/quick" });
       }
     };
     window.addEventListener("keydown", onKeyDown);

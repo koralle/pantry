@@ -80,7 +80,7 @@ export const QuickAddStrip = ({
 }: {
   search?: BookmarkDetailSearch | undefined;
 }) => (
-  <Link className={quickAddStrip} search={search} to="/bookmarks/new">
+  <Link className={quickAddStrip} search={search} to="/bookmarks/quick">
     <span className={quickAddBadge}>
       <Plus aria-hidden size={12} />
     </span>

@@ -21,6 +21,7 @@ import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
 import { Route as ProtectedBookmarksIdIndexRouteImport } from './routes/_protected/bookmarks/$id/index'
 import { Route as ProtectedBookmarksIdEditRouteImport } from './routes/_protected/bookmarks/$id/edit'
 import { Route as ProtectedBookmarksNewIndexRouteImport } from './routes/_protected/bookmarks/new/index'
+import { Route as ProtectedBookmarksQuickIndexRouteImport } from './routes/_protected/bookmarks/quick/index'
 import { Route as ProtectedTagsIdIndexRouteImport } from './routes/_protected/tags/$id/index'
 import { Route as ProtectedTagsIdEditRouteImport } from './routes/_protected/tags/$id.edit'
 
@@ -86,6 +87,12 @@ const ProtectedBookmarksNewIndexRoute =
     path: '/bookmarks/new/',
     getParentRoute: () => ProtectedRoute,
   } as any)
+const ProtectedBookmarksQuickIndexRoute =
+  ProtectedBookmarksQuickIndexRouteImport.update({
+    id: '/bookmarks/quick/',
+    path: '/bookmarks/quick/',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedTagsIdIndexRoute = ProtectedTagsIdIndexRouteImport.update({
   id: '/tags/$id/',
   path: '/tags/$id/',
@@ -110,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/tags/$id/edit': typeof ProtectedTagsIdEditRoute
   '/bookmarks/$id/': typeof ProtectedBookmarksIdIndexRoute
   '/bookmarks/new/': typeof ProtectedBookmarksNewIndexRoute
+  '/bookmarks/quick/': typeof ProtectedBookmarksQuickIndexRoute
   '/tags/$id/': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/tags/$id/edit': typeof ProtectedTagsIdEditRoute
   '/bookmarks/$id': typeof ProtectedBookmarksIdIndexRoute
   '/bookmarks/new': typeof ProtectedBookmarksNewIndexRoute
+  '/bookmarks/quick': typeof ProtectedBookmarksQuickIndexRoute
   '/tags/$id': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRoutesById {
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/_protected/tags/$id/edit': typeof ProtectedTagsIdEditRoute
   '/_protected/bookmarks/$id/': typeof ProtectedBookmarksIdIndexRoute
   '/_protected/bookmarks/new/': typeof ProtectedBookmarksNewIndexRoute
+  '/_protected/bookmarks/quick/': typeof ProtectedBookmarksQuickIndexRoute
   '/_protected/tags/$id/': typeof ProtectedTagsIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/tags/$id/edit'
     | '/bookmarks/$id/'
     | '/bookmarks/new/'
+    | '/bookmarks/quick/'
     | '/tags/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/tags/$id/edit'
     | '/bookmarks/$id'
     | '/bookmarks/new'
+    | '/bookmarks/quick'
     | '/tags/$id'
   id:
     | '__root__'
@@ -190,6 +202,7 @@ export interface FileRouteTypes {
     | '/_protected/tags/$id/edit'
     | '/_protected/bookmarks/$id/'
     | '/_protected/bookmarks/new/'
+    | '/_protected/bookmarks/quick/'
     | '/_protected/tags/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedBookmarksNewIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/bookmarks/quick/': {
+      id: '/_protected/bookmarks/quick/'
+      path: '/bookmarks/quick'
+      fullPath: '/bookmarks/quick/'
+      preLoaderRoute: typeof ProtectedBookmarksQuickIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/tags/$id/': {
       id: '/_protected/tags/$id/'
       path: '/tags/$id'
@@ -313,6 +333,7 @@ interface ProtectedRouteChildren {
   ProtectedTagsIdEditRoute: typeof ProtectedTagsIdEditRoute
   ProtectedBookmarksIdIndexRoute: typeof ProtectedBookmarksIdIndexRoute
   ProtectedBookmarksNewIndexRoute: typeof ProtectedBookmarksNewIndexRoute
+  ProtectedBookmarksQuickIndexRoute: typeof ProtectedBookmarksQuickIndexRoute
   ProtectedTagsIdIndexRoute: typeof ProtectedTagsIdIndexRoute
 }
 
@@ -326,6 +347,7 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedTagsIdEditRoute: ProtectedTagsIdEditRoute,
   ProtectedBookmarksIdIndexRoute: ProtectedBookmarksIdIndexRoute,
   ProtectedBookmarksNewIndexRoute: ProtectedBookmarksNewIndexRoute,
+  ProtectedBookmarksQuickIndexRoute: ProtectedBookmarksQuickIndexRoute,
   ProtectedTagsIdIndexRoute: ProtectedTagsIdIndexRoute,
 }
 

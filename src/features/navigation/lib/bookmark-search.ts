@@ -29,6 +29,16 @@ export type BookmarkDetailSearch = v.InferOutput<
   typeof bookmarkDetailSearchSchema
 >;
 
+/** クイック追加画面の search。一覧条件の引き継ぎに加えて URL prefill を持つ。 */
+export const bookmarkQuickAddSearchSchema = v.object({
+  ...bookmarkDetailSearchSchema.entries,
+  url: v.optional(v.string()),
+});
+
+export type BookmarkQuickAddSearch = v.InferOutput<
+  typeof bookmarkQuickAddSearchSchema
+>;
+
 export const defaultBookmarkSearch: BookmarkSearchSchema = {
   sort: "newest",
   tagMode: "and",

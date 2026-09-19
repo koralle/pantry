@@ -8,6 +8,13 @@ import { buildNewBookmarkCommand } from "../../../../features/bookmarks/componen
 const dir = import.meta.dirname;
 const routeSource = readFileSync(join(dir, "index.tsx"), "utf-8");
 const editRouteSource = readFileSync(join(dir, "../$id/edit.tsx"), "utf-8");
+const titleFetchActionSource = readFileSync(
+  join(
+    dir,
+    "../../../../features/bookmarks/lib/queries/bookmark-title-fetch-action.ts"
+  ),
+  "utf-8"
+);
 
 describe(buildNewBookmarkCommand, () => {
   test("送信時点の tag draft を tags として送る", () => {
@@ -102,12 +109,16 @@ describe("bookmark mutation refresh", () => {
 });
 
 describe("title fetch consumers", () => {
-  test("new route の action は code 契約だけで文言を決める", () => {
-    expect(routeSource).toContain("bookmarks.title");
+  test("new route は共有の title fetch action を使う", () => {
+    expect(routeSource).toContain("bookmarkTitleFetchAction");
     expect(routeSource).not.toContain("fetchBookmarkTitle");
-    expect(routeSource).not.toContain("instanceof Error");
-    expect(routeSource).not.toContain("error.message");
-    expect(routeSource).toContain("getTitleFetchErrorMessage");
+  });
+
+  test("共有 action は code 契約だけで文言を決める", () => {
+    expect(titleFetchActionSource).toContain("bookmarks.title");
+    expect(titleFetchActionSource).not.toContain("instanceof Error");
+    expect(titleFetchActionSource).not.toContain("error.message");
+    expect(titleFetchActionSource).toContain("getTitleFetchErrorMessage");
   });
 
   test("edit route の action は code 契約だけで文言を決める", () => {

@@ -46,7 +46,7 @@ export const BottomTabs = ({ newSearch, view }: BottomTabsProps) => (
       aria-label="ブックマークを登録"
       className={fab}
       search={newSearch ?? {}}
-      to="/bookmarks/new"
+      to="/bookmarks/quick"
     >
       <Plus aria-hidden size={22} />
     </Link>

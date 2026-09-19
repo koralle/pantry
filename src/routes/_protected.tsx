@@ -9,11 +9,13 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useRef } from "react";
+import * as v from "valibot";
 
 import { AppShell } from "../features/app-shell/components/app-shell";
 import { NavRailRoute } from "../features/app-shell/components/nav-rail-route";
 import type { ShellView } from "../features/app-shell/lib/shell-nav";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
+import { bookmarkUrlSchema } from "../features/bookmarks/domain/bookmark-values";
 import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../features/navigation/lib/bookmark-search";
 import {
@@ -68,7 +70,7 @@ export const Route = createFileRoute("/_protected")({
   component: () => <Layout />,
 });
 
-const SHELL_LESS_PATH = /^\/bookmarks\/(?:new|[^/]+\/edit)\/?$/;
+const SHELL_LESS_PATH = /^\/bookmarks\/(?:new|quick|[^/]+\/edit)\/?$/;
 
 const viewForPath = (
   pathname: string,
@@ -96,6 +98,10 @@ function Layout() {
     from: "/_protected/bookmarks/new/",
     shouldThrow: false,
   });
+  const quickSearch = useSearch({
+    from: "/_protected/bookmarks/quick/",
+    shouldThrow: false,
+  });
   const editSearch = useSearch({
     from: "/_protected/bookmarks/$id/edit",
     shouldThrow: false,
@@ -112,7 +118,7 @@ function Layout() {
   const listSearch = resolveChromeListSearch(
     indexSearch,
     rememberedListSearch.current,
-    [detailSearch, newSearch, editSearch]
+    [detailSearch, newSearch, quickSearch, editSearch]
   );
 
   // クイック追加・フォームは集中フロー（専用画面）としてシェルを出さない
@@ -143,6 +149,14 @@ function ShellLayout({
   const commitSearch = (raw: string) => {
     const nextQ = raw.trim();
     const current = listSearch ?? defaultBookmarkSearch;
+    // コマンドバーへの URL 貼付はクイック追加画面を開く
+    if (v.safeParse(bookmarkUrlSchema, nextQ).success) {
+      void navigate({
+        search: { ...detailSearchFromList(current), url: nextQ },
+        to: "/bookmarks/quick",
+      });
+      return;
+    }
     void navigate({
       search:
         nextQ === ""
