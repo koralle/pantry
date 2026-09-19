@@ -11,23 +11,23 @@ describe(attachTagsToBookmarks, () => {
     ];
 
     const result = attachTagsToBookmarks(bookmarks, [
-      { bookmarkId: "b1", id: 1, name: "alpha" },
-      { bookmarkId: "b2", id: 2, name: "beta" },
-      { bookmarkId: "b1", id: 3, name: "gamma" },
+      { bookmarkId: "b1", color: null, id: 1, name: "alpha" },
+      { bookmarkId: "b2", color: null, id: 2, name: "beta" },
+      { bookmarkId: "b1", color: null, id: 3, name: "gamma" },
     ]);
 
     expect(result).toStrictEqual([
       {
         id: "b1",
         tags: [
-          { id: 1, name: "alpha" },
-          { id: 3, name: "gamma" },
+          { color: null, id: 1, name: "alpha" },
+          { color: null, id: 3, name: "gamma" },
         ],
         title: "One",
       },
       {
         id: "b2",
-        tags: [{ id: 2, name: "beta" }],
+        tags: [{ color: null, id: 2, name: "beta" }],
         title: "Two",
       },
       {

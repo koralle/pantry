@@ -10,6 +10,7 @@ export interface BookmarkSearchPatch {
   readonly tags?: string[] | undefined;
   readonly tagMode?: BookmarkSearchSchema["tagMode"] | undefined;
   readonly sort?: BookmarkSearchSchema["sort"] | undefined;
+  readonly view?: BookmarkSearchSchema["view"] | undefined;
   readonly clearQ?: boolean;
   readonly clearTags?: boolean;
 }
@@ -36,6 +37,11 @@ export const buildListSearch = (
     sort: patch.sort ?? current.sort,
     tagMode: patch.tagMode ?? current.tagMode,
   };
+
+  const view = patch.view ?? current.view;
+  if (view !== undefined && view !== "recent") {
+    next.view = view;
+  }
 
   const q = resolveSearchPatch(patch.clearQ, patch.q, current.q);
   const tags = resolveSearchPatch(patch.clearTags, patch.tags, current.tags);
@@ -70,6 +76,7 @@ export const listSearchFromDetail = (
     sort: search.sort,
     tagMode: search.tagMode,
     tags: search.tags,
+    view: search.view,
   });
 
 export const detailSearchFromList = (
@@ -81,6 +88,9 @@ export const detailSearchFromList = (
     : {}),
   ...(search.tagMode === "and" ? {} : { tagMode: search.tagMode }),
   ...(search.sort === "newest" ? {} : { sort: search.sort }),
+  ...(search.view === undefined || search.view === "recent"
+    ? {}
+    : { view: search.view }),
 });
 
 export const allShelfSearch = (

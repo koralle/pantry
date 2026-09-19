@@ -75,7 +75,11 @@ export const NavRail = ({
         <Link
           className={railItem({ active: view === itemView })}
           key={itemView}
-          search={{ ...defaultBookmarkSearch, view: itemView }}
+          search={
+            itemView === "recent"
+              ? defaultBookmarkSearch
+              : { ...defaultBookmarkSearch, view: itemView }
+          }
           to="/bookmarks"
         >
           <Icon

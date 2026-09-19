@@ -72,6 +72,7 @@ function authenticatedRouter(overrides?: {
     findBookmarkEditor,
     findTagById: async () => null,
     getBookmarkDetail: async (): Promise<null> => null,
+    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
     getSession,
     insertBookmark: async () => ({ kind: "duplicate-url" }),
     insertTag: async () => ({ id: 1 as never, kind: "created" }),

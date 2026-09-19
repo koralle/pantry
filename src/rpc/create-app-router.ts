@@ -22,6 +22,7 @@ import {
 import type { UpdateBookmark } from "../features/bookmarks/application/update-bookmark";
 import { bookmarkIdSchema } from "../features/bookmarks/domain/bookmark-values";
 import { decodeBookmarkListCursor } from "../features/bookmarks/lib/list/bookmark-list-cursor";
+import type { BookmarkViewCounts } from "../features/bookmarks/persistence/get-bookmark-counts";
 import type { BookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
 import type {
   BookmarkListPage,
@@ -93,6 +94,7 @@ export interface AppRouterDeps {
   readonly listBookmarks: (
     input: { readonly userId: UserId } & BookmarkListQuery
   ) => Promise<BookmarkListPage>;
+  readonly getBookmarkCounts: (userId: UserId) => Promise<BookmarkViewCounts>;
   readonly getBookmarkDetail: (
     userId: UserId,
     input: { readonly id: string }
@@ -377,6 +379,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
     sort: v.picklist(["newest", "updated"]),
     tagMode: v.picklist(["and", "or"]),
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
+    view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
   });
   /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
   const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) });
@@ -393,6 +396,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
           ...(input.q === undefined ? {} : { q: input.q }),
           ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),
           ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+          ...(input.view === undefined ? {} : { view: input.view }),
         })
     );
 
@@ -446,6 +450,11 @@ export const createAppRouter = (deps: AppRouterDeps) => {
   return {
     auth,
     bookmarks: {
+      counts: base
+        .use(requireAuth)
+        .handler(
+          async ({ context }) => await deps.getBookmarkCounts(context.userId)
+        ),
       create: createBookmark,
       delete: deleteBookmark,
       detail: bookmarkDetail,

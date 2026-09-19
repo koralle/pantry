@@ -16,13 +16,14 @@ describe("bookmarkSearchSchema", () => {
     });
   });
 
-  test("ignores legacy view query and lands on list defaults", async () => {
+  test("unknown view falls back to recent", async () => {
     const result = await v.parseAsync(bookmarkSearchSchema, {
       view: "entrance",
     });
     expect(result).toStrictEqual({
       sort: "newest",
       tagMode: "and",
+      view: "recent",
     });
   });
 

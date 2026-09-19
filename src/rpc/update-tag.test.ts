@@ -19,6 +19,7 @@ const readDeps = {
   findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
   getBookmarkDetail: async (): Promise<null> => null,
+  getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
   insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
   listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [],

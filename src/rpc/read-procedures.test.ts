@@ -35,6 +35,7 @@ function baseDeps(): ReadDeps {
     findBookmarkEditor: vi.fn(async () => null),
     findTagById: vi.fn(async () => null),
     getBookmarkDetail: vi.fn(async () => null),
+    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
     getSession: vi.fn(async () => sessionUser),
     insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({
       kind: "duplicate-url",

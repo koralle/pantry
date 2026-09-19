@@ -3,6 +3,7 @@ import type { BookmarkSelectType } from "../../../../db/schema/bookmark";
 export interface BookmarkListTag {
   id: number;
   name: string;
+  color: string | null;
 }
 
 export type BookmarkListItem = BookmarkSelectType & {
@@ -13,6 +14,7 @@ export interface BookmarkTagRow {
   bookmarkId: string;
   id: number;
   name: string;
+  color: string | null;
 }
 
 export const attachTagsToBookmarks = <T extends { id: string }>(
@@ -23,7 +25,7 @@ export const attachTagsToBookmarks = <T extends { id: string }>(
 
   for (const row of tagRows) {
     const tags = tagsByBookmarkId.get(row.bookmarkId);
-    const tag = { id: row.id, name: row.name };
+    const tag = { color: row.color, id: row.id, name: row.name };
     if (tags === null || tags === undefined) {
       tagsByBookmarkId.set(row.bookmarkId, [tag]);
     } else {

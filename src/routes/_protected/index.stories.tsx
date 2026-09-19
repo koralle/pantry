@@ -167,6 +167,8 @@ function makeBookmark(
     Partial<BookmarkListItem>
 ): BookmarkListItem {
   return {
+    createdAt: now.toISOString(),
+    favorite: false,
     note: null,
     updatedAt: now.toISOString(),
     tags: [],
@@ -188,10 +190,10 @@ const longBookmark = makeBookmark({
   note: "当時の空気感と、今のコンポーネント設計を見比べるためのメモ。",
   updatedAt: later.toISOString(),
   tags: [
-    { id: 1, name: "reading" },
-    { id: 2, name: "work" },
-    { id: 3, name: "typescript" },
-    { id: 4, name: "cloudflare" },
+    { color: null, id: 1, name: "reading" },
+    { color: null, id: 2, name: "work" },
+    { color: null, id: 3, name: "typescript" },
+    { color: null, id: 4, name: "cloudflare" },
   ],
 });
 
@@ -199,7 +201,7 @@ const reactBookmark = makeBookmark({
   id: "019fae92-3bb0-78cd-b488-65ce0e26a003",
   title: "React 19 の use()",
   url: "https://react.dev/reference/react/use",
-  tags: [{ id: 3, name: "typescript" }],
+  tags: [{ color: null, id: 3, name: "typescript" }],
 });
 
 const noteOnlyBookmark = makeBookmark({

@@ -13,6 +13,7 @@ describe("server direct RPC client", () => {
       findBookmarkEditor: async () => null,
       findTagById: async () => null,
       getBookmarkDetail: async () => null,
+      getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
       getSession: async (headers) => {
         receivedCookie = headers.get("cookie");
         return { email: "koralle@example.com", id: "user-1", name: "koralle" };

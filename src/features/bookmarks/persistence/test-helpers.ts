@@ -78,6 +78,7 @@ export const createMemoryDb = async (): Promise<AppDb> => {
       note TEXT,
       created_at INTEGER NOT NULL DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)),
       updated_at INTEGER NOT NULL DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)),
+      favorite INTEGER NOT NULL DEFAULT 0,
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )

@@ -32,6 +32,7 @@ function authenticatedRouter(
     findBookmarkEditor: async () => null,
     findTagById: async () => null,
     getBookmarkDetail: async () => null,
+    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
     getSession,
     insertBookmark,
     insertTag: async () => ({ id: 1 as never, kind: "created" }),
@@ -107,6 +108,7 @@ describe("CreateBookmark RPC", () => {
       findBookmarkEditor: async () => null,
       findTagById: async () => null,
       getBookmarkDetail: async () => null,
+      getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
       getSession: async () => null,
       insertBookmark: async () => ({ kind: "duplicate-url" }),
       insertTag: async () => ({ id: 1 as never, kind: "created" }),
@@ -143,6 +145,7 @@ describe("CreateBookmark RPC", () => {
       findBookmarkEditor: async () => null,
       findTagById: async () => null,
       getBookmarkDetail: async () => null,
+      getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
       getSession,
       insertBookmark: async () => ({
         id: "01900000-0000-7000-8000-000000000000" as never,

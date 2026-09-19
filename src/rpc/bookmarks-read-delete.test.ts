@@ -31,6 +31,7 @@ function baseDeps(): MutableDeps {
     findBookmarkEditor: vi.fn(async () => null),
     findTagById: vi.fn(async () => null),
     getBookmarkDetail: vi.fn(async (): Promise<BookmarkDetail | null> => null),
+    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
     getSession: vi.fn(async (): Promise<SessionUser | null> => ({
       email: `${userId}@example.com`,
       id: userId,
@@ -172,8 +173,10 @@ describe("bookmarks.list", () => {
       items: [
         {
           id: "b-1",
+          createdAt: "2026-08-01T00:00:00.000Z",
+          favorite: false,
           note: null,
-          tags: [{ id: 3, name: "typescript" }],
+          tags: [{ color: null, id: 3, name: "typescript" }],
           title: "最初",
           updatedAt: "2026-08-01T00:00:00.000Z",
           url: "https://example.com/b-1",

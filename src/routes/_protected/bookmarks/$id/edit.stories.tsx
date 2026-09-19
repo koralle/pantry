@@ -48,6 +48,7 @@ function buildRpcRouter(): AppRouter {
     findBookmarkEditor: findBookmarkEditorDep,
     listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
+    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
     softDeleteBookmark: async () => ({ kind: "bookmark-not-found", id: "" }),
   });
 }

@@ -5,7 +5,9 @@ export const bookmarkSearchSchema = v.object({
   sort: v.optional(v.picklist(["newest", "updated"]), "newest"),
   tagMode: v.optional(v.picklist(["and", "or"]), "and"),
   tags: v.optional(v.array(v.string())),
-  view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
+  view: v.optional(
+    v.fallback(v.picklist(["recent", "inbox", "favorites"]), "recent")
+  ),
 });
 
 export type BookmarkSearchSchema = v.InferOutput<typeof bookmarkSearchSchema>;
@@ -20,6 +22,7 @@ export const bookmarkDetailSearchSchema = v.object({
   sort: v.optional(v.picklist(["newest", "updated"])),
   tagMode: v.optional(v.picklist(["and", "or"])),
   tags: v.optional(v.array(v.string())),
+  view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
 });
 
 export type BookmarkDetailSearch = v.InferOutput<
@@ -29,5 +32,4 @@ export type BookmarkDetailSearch = v.InferOutput<
 export const defaultBookmarkSearch: BookmarkSearchSchema = {
   sort: "newest",
   tagMode: "and",
-  view: "recent",
 };

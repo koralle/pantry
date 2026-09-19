@@ -6,6 +6,7 @@ export interface FetchBookmarksInput {
   tagMode: "and" | "or";
   sort: "newest" | "updated";
   cursor?: string | undefined;
+  view?: "recent" | "inbox" | "favorites" | undefined;
 }
 
 export const normalizeListQuery = (
@@ -29,6 +30,10 @@ export const normalizeListQuery = (
 
   if (input.cursor !== undefined && input.cursor !== "") {
     normalized.cursor = input.cursor;
+  }
+
+  if (input.view !== undefined && input.view !== "recent") {
+    normalized.view = input.view;
   }
 
   return normalized;
