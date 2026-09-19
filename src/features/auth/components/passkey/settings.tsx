@@ -1,4 +1,4 @@
-import { CircleAlert, KeyRound, Plus } from "lucide-react";
+import { CircleAlert, CircleCheck, KeyRound, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { css, cx } from "styled-system/css";
 
@@ -25,6 +25,8 @@ import { PasskeyListItem } from "./list-item";
 import type { ManagedPasskey } from "./list-item";
 
 const passkeyFeedback = css({
+  display: "block",
+  fontSize: "xs",
   marginBlockEnd: "3",
 });
 
@@ -161,6 +163,11 @@ export const PasskeySettings = () => {
 
       {statusMessage === null || statusMessage === undefined ? null : (
         <output className={cx(flash, passkeyFeedback)} aria-live="polite">
+          <CircleCheck
+            size={14}
+            aria-hidden
+            className={css({ verticalAlign: "-2px" })}
+          />{" "}
           {statusMessage}
         </output>
       )}
