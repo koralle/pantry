@@ -243,6 +243,7 @@ export const rowLink = cva({
         paddingInline: "3",
       },
       mobile: {
+        alignItems: "flex-start",
         borderRadius: "0.75rem",
         columnGap: "[0.6875rem]",
         display: { base: "flex", md: "none" },
