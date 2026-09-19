@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as ProtectedSplatRouteImport } from './routes/_protected/$'
 import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as ProtectedBookmarksIndexRouteImport } from './routes/_protected/bookmarks/index'
 import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/settings/index'
@@ -29,6 +30,11 @@ const ProtectedRoute = ProtectedRouteImport.update({
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedSplatRoute = ProtectedSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const SignInIndexRoute = SignInIndexRouteImport.update({
@@ -88,6 +94,7 @@ const ProtectedBookmarksQuickIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
+  '/$': typeof ProtectedSplatRoute
   '/sign-in/': typeof SignInIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/bookmarks/quick/': typeof ProtectedBookmarksQuickIndexRoute
 }
 export interface FileRoutesByTo {
+  '/$': typeof ProtectedSplatRoute
   '/': typeof ProtectedIndexRoute
   '/sign-in': typeof SignInIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
+  '/_protected/$': typeof ProtectedSplatRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/sign-in/': typeof SignInIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/sign-in/'
     | '/api/auth/$'
     | '/api/rpc/$'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/bookmarks/quick/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/$'
     | '/'
     | '/sign-in'
     | '/api/auth/$'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_protected'
+    | '/_protected/$'
     | '/_protected/'
     | '/sign-in/'
     | '/api/auth/$'
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof ProtectedIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/$': {
+      id: '/_protected/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof ProtectedSplatRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/sign-in/': {
@@ -267,6 +286,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface ProtectedRouteChildren {
+  ProtectedSplatRoute: typeof ProtectedSplatRoute
   ProtectedIndexRoute: typeof ProtectedIndexRoute
   ProtectedBookmarksIndexRoute: typeof ProtectedBookmarksIndexRoute
   ProtectedSettingsIndexRoute: typeof ProtectedSettingsIndexRoute
@@ -278,6 +298,7 @@ interface ProtectedRouteChildren {
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedSplatRoute: ProtectedSplatRoute,
   ProtectedIndexRoute: ProtectedIndexRoute,
   ProtectedBookmarksIndexRoute: ProtectedBookmarksIndexRoute,
   ProtectedSettingsIndexRoute: ProtectedSettingsIndexRoute,
