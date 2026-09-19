@@ -14,6 +14,14 @@ export const skeleton = css({
   paddingInline: "4",
 });
 
+export const skeletonBar = css({
+  animationStyle: "skeleton",
+  backgroundImage:
+    "linear-gradient(90deg, {colors.skeleton.start} 0%, {colors.skeleton.middle} 50%, {colors.skeleton.start} 100%)",
+  backgroundSize: "200% 100%",
+  borderRadius: "box",
+});
+
 export const spinner = css({
   animationDuration: "spin",
   animationIterationCount: "infinite",

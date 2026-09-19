@@ -21,7 +21,10 @@ export const tagChip = cva({
         paddingInline: "3",
       },
       label: {
+        alignItems: "center",
+        columnGap: "1.5",
         cursor: "default",
+        display: "inline-flex",
         fontSize: "2xs",
         lineHeight: "tight",
         minBlockSize: "0",
@@ -30,9 +33,35 @@ export const tagChip = cva({
       },
       link: {
         alignItems: "center",
+        columnGap: "1.5",
         display: "inline-flex",
         textDecoration: "none",
       },
+    },
+  },
+});
+
+export const tagDot = cva({
+  base: {
+    blockSize: "[0.5rem]",
+    borderRadius: "[0.1875rem]",
+    display: "inline-block",
+    flexShrink: "0",
+    inlineSize: "[0.5rem]",
+  },
+  defaultVariants: {
+    tone: "slate",
+  },
+  variants: {
+    tone: {
+      teal: { background: "domain.teal" },
+      blue: { background: "domain.blue" },
+      violet: { background: "domain.violet" },
+      pink: { background: "domain.pink" },
+      green: { background: "domain.green" },
+      orange: { background: "domain.orange" },
+      yellow: { background: "domain.yellow" },
+      slate: { background: "domain.slate" },
     },
   },
 });
