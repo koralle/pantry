@@ -144,7 +144,7 @@ function RouteComponent() {
               paddingInline: 6,
               paddingBlock: 10,
               borderRadius: "sheet",
-              inlineSize: "min(100%, 20rem)",
+              inlineSize: "min(100%, 26rem)",
               '& button[type="submit"]': {
                 inlineSize: "stretch",
               },
