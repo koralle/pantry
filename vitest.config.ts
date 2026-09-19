@@ -21,10 +21,7 @@ const anyIntegrationTests = "src/**/*.integration.test.ts";
 const nodeTests = [
   "src/features/tags/persistence/**/*.test.ts",
   "src/features/bookmarks/persistence/**/*.test.ts",
-  "src/routes/_protected/tags/new.test.ts",
-  "src/features/tags/components/inline-add-tag.test.ts",
-  "src/routes/_protected/tags/$id.edit.test.ts",
-  "src/features/tags/components/edit-tag-form.test.ts",
+  "src/routes/_protected/tags/index.test.ts",
   "src/features/tags/hooks/use-touch-tag-last-used.test.ts",
   "src/rpc/source-boundary.test.ts",
   "src/routes/_protected/bookmarks/new/index.test.ts",

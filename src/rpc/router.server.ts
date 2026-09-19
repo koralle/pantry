@@ -14,6 +14,7 @@ import { setBookmarkFavorite } from "../features/bookmarks/persistence/set-bookm
 import { softDeleteBookmark } from "../features/bookmarks/persistence/soft-delete-bookmark";
 import { updateBookmark } from "../features/bookmarks/persistence/update-bookmark";
 import { fetchPageTitle } from "../features/bookmarks/server/fetch-page-title.server";
+import { deleteTag } from "../features/tags/persistence/delete-tag";
 import { insertTag } from "../features/tags/persistence/insert-tag";
 import { selectShelfTags } from "../features/tags/persistence/select-shelf-tags";
 import { selectTagById } from "../features/tags/persistence/select-tag-by-id";
@@ -26,6 +27,7 @@ export const appRouter = createAppRouter({
   fetchPageTitle: async (url) => await fetchPageTitle(url),
   findBookmarkEditor: async (userId, id) =>
     await selectBookmarkEditor(getDB(), userId, id),
+  deleteTag: async (input) => await deleteTag(getDB(), input),
   findTagById: async (userId, id) => await selectTagById(getDB(), userId, id),
   getBookmarkCounts: async (userId) => await getBookmarkCounts(getDB(), userId),
   getBookmarkDetail: async (userId, input) =>

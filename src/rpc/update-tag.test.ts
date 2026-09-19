@@ -27,6 +27,7 @@ const readDeps = {
   setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
   softDeleteBookmark: async () =>
     ({ id: "", kind: "bookmark-not-found" }) as const,
+  deleteTag: async () => ({ kind: "deleted" }) as const,
   touchTag: async () => ({ kind: "touched" }) as const,
   updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,
 };

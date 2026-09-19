@@ -37,6 +37,11 @@ import {
 } from "../features/tags/application/create-tag";
 import type { InsertTag } from "../features/tags/application/create-tag";
 import {
+  deleteTagInputSchema,
+  executeDeleteTag,
+} from "../features/tags/application/delete-tag";
+import type { DeleteTag } from "../features/tags/application/delete-tag";
+import {
   executeTouchTag,
   touchTagInputSchema,
 } from "../features/tags/application/touch-tag";
@@ -80,6 +85,7 @@ export interface AppRouterDeps {
   readonly insertTag: InsertTag;
   readonly updateTag: UpdateTag;
   readonly touchTag: TouchTag;
+  readonly deleteTag: DeleteTag;
   readonly listShelfTags: (userId: UserId) => Promise<ShelfTag[]>;
   readonly listTags: (
     userId: UserId,
@@ -262,6 +268,29 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       };
 
       return output;
+    });
+
+  /** 成功なら plain number ID を wire へ返す。削除は紐付け解除込み。 */
+  const deleteTag = base
+    .use(requireAuth)
+    .input(deleteTagInputSchema)
+    .errors({
+      "tag-not-found": {
+        status: 404,
+      },
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeDeleteTag({
+        deleteTag: deps.deleteTag,
+        id: input.id,
+        userId: context.userId,
+      });
+
+      if (!result.ok) {
+        throw errors["tag-not-found"]();
+      }
+
+      return { id: Number(result.value.id) };
     });
   const createBookmark = base
     .use(requireAuth)
@@ -512,6 +541,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
           return record;
         }),
       create: createTag,
+      delete: deleteTag,
       list: base
         .use(requireAuth)
         .input(offsetPaginationQuerySchema)

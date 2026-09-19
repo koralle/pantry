@@ -41,6 +41,7 @@ function capturingSessionRouter() {
     listTags: async () => [],
     setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: async () => ({ kind: "bookmark-not-found" }),
+    deleteTag: async () => ({ kind: "deleted" }) as const,
     touchTag: async () => ({ kind: "touched" }),
     updateBookmark: async () => ({ kind: "bookmark-not-found" }),
     updateTag: async () => ({ kind: "not-found" }),

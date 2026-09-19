@@ -1,87 +1,141 @@
-import type { ErrorComponentProps } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
 import {
   createFileRoute,
-  ErrorComponent,
   getRouteApi,
-  Link,
+  useRouter,
 } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
-import { Suspense } from "react";
+import { RotateCcw, WifiOff } from "lucide-react";
+import { Suspense, use } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { css } from "styled-system/css";
-import * as v from "valibot";
+import type { FallbackProps } from "react-error-boundary";
 
-import { InlineAddTag } from "../../../features/tags/components/inline-add-tag";
-import { TagTable } from "../../../features/tags/components/tag-table";
-import { TagTableSkeleton } from "../../../features/tags/components/tag-table-skeleton";
-import { offsetPaginationQuerySchema } from "../../../schemas/pagination";
-import { createErrorFallback } from "../../../shared/components/error-fallback";
-import { button } from "../../../styles/button";
-import { pageLead, pageTitle } from "../../../styles/type";
-
-const tagsSearchSchema = v.object({
-  ...offsetPaginationQuerySchema.entries,
-});
+import {
+  TagManagerScreen,
+  TagManagerSkeleton,
+} from "../../../features/tags/components/tag-manager";
+import { getCreateTagErrorMessage } from "../../../features/tags/lib/get-create-tag-error-message";
+import { getDeleteTagErrorMessage } from "../../../features/tags/lib/get-delete-tag-error-message";
+import { getUpdateTagErrorMessage } from "../../../features/tags/lib/get-update-tag-error-message";
+import { refreshAfterCreateTag } from "../../../features/tags/lib/refresh-after-create-tag";
+import { refreshAfterDeleteTag } from "../../../features/tags/lib/refresh-after-delete-tag";
+import { refreshAfterUpdateTag } from "../../../features/tags/lib/refresh-after-update-tag";
+import type { ShelfTag } from "../../../features/tags/lib/tag-shelf";
+import { orpc } from "../../../rpc/query";
+import { StateView } from "../../../shared/components/state-view";
+import { StyledButton } from "../../../shared/components/styled-button";
+import { detailCenter } from "../../../styles/detail";
+import { tagsPage } from "../../../styles/tags";
 
 const protectedRouteApi = getRouteApi("/_protected");
 
-const tagAdmin = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "5",
-  maxInlineSize: "48rem",
-});
-
-const tagAdminHeader = css({
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  gap: "4",
-});
-
-const tagAdminIntro = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "2",
-  minInlineSize: "12rem",
-  flex: "1",
-});
-
-const TagsError = createErrorFallback("タグの読み込みに失敗しました");
-
 export const Route = createFileRoute("/_protected/tags/")({
-  validateSearch: (search) => v.parse(tagsSearchSchema, search),
   component: RouteComponent,
-  errorComponent: TagPageFallbackComponent,
 });
 
-function TagPageFallbackComponent({ error }: ErrorComponentProps) {
-  return <ErrorComponent error={error} />;
+function TagsError({ resetErrorBoundary }: FallbackProps) {
+  const router = useRouter();
+  return (
+    <div className={tagsPage}>
+      <div className={detailCenter}>
+        <StateView
+          action={
+            <StyledButton
+              onPress={() => {
+                void router.invalidate().finally(() => {
+                  resetErrorBoundary();
+                });
+              }}
+              size="sm"
+              visual="accent"
+            >
+              <RotateCcw aria-hidden size={14} /> 再試行
+            </StyledButton>
+          }
+          description="ネットワーク接続を確認して、もう一度お試しください。"
+          icon={WifiOff}
+          title="読み込みに失敗しました"
+          tone="danger"
+        />
+      </div>
+    </div>
+  );
 }
 
 function RouteComponent() {
   const { shelfTagsPromise } = protectedRouteApi.useLoaderData();
 
   return (
-    <div className={tagAdmin}>
-      <header className={tagAdminHeader}>
-        <div className={tagAdminIntro}>
-          <h1 className={pageTitle}>タグ管理</h1>
-          <p className={pageLead}>名前・ピン・色を整えます</p>
-        </div>
-        <Link to="/tags/new" className={button({ visual: "accent" })}>
-          <Plus size={16} aria-hidden /> 新規タグ
-        </Link>
-      </header>
+    <ErrorBoundary FallbackComponent={TagsError}>
+      <Suspense fallback={<TagManagerSkeleton />}>
+        <TagManagerResolved tagPromise={shelfTagsPromise} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
 
-      <InlineAddTag />
+function TagManagerResolved({
+  tagPromise,
+}: {
+  readonly tagPromise: Promise<ShelfTag[]>;
+}) {
+  const tags = use(tagPromise);
+  const router = useRouter();
 
-      <ErrorBoundary FallbackComponent={TagsError}>
-        <Suspense fallback={<TagTableSkeleton />}>
-          <TagTable tagPromise={shelfTagsPromise} />
-        </Suspense>
-      </ErrorBoundary>
-    </div>
+  const createMutation = useMutation(
+    orpc.tags.create.mutationOptions({
+      onSuccess: () => {
+        refreshAfterCreateTag(router);
+      },
+    })
+  );
+  const updateMutation = useMutation(
+    orpc.tags.update.mutationOptions({
+      onSuccess: () => {
+        refreshAfterUpdateTag(router);
+      },
+    })
+  );
+  const deleteMutation = useMutation(
+    orpc.tags.delete.mutationOptions({
+      onSuccess: () => {
+        refreshAfterDeleteTag(router);
+      },
+    })
+  );
+
+  return (
+    <TagManagerScreen
+      onCreateTag={async (name) => {
+        try {
+          await createMutation.mutateAsync({ name });
+          return { ok: true };
+        } catch (error) {
+          return { message: getCreateTagErrorMessage(error), ok: false };
+        }
+      }}
+      onDeleteTag={async (tag) => {
+        try {
+          await deleteMutation.mutateAsync({ id: tag.id });
+          return { ok: true };
+        } catch (error) {
+          return { message: getDeleteTagErrorMessage(error), ok: false };
+        }
+      }}
+      onRenameTag={async (tag, name) => {
+        try {
+          await updateMutation.mutateAsync({
+            color: tag.color,
+            id: tag.id,
+            name,
+            pinned: tag.pinned,
+            sortOrder: tag.sortOrder,
+          });
+          return { ok: true };
+        } catch (error) {
+          return { message: getUpdateTagErrorMessage(error), ok: false };
+        }
+      }}
+      tags={tags}
+    />
   );
 }

@@ -3,7 +3,7 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { TouchTag } from "../features/tags/application/touch-tag";
+import type { DeleteTag } from "../features/tags/application/delete-tag";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
 import { handleRpcRequest } from "./handle-request.server";
@@ -11,33 +11,33 @@ import { handleRpcRequest } from "./handle-request.server";
 const userId = "user-1";
 
 const readDeps = {
-  deleteTag: async () => ({ kind: "deleted" }) as const,
   fetchPageTitle: async () => ({ kind: "unavailable" }) as const,
   findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
-  getBookmarkDetail: async (): Promise<null> => null,
   getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
+  getBookmarkDetail: async (): Promise<null> => null,
   insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
+  insertTag: async () => ({ kind: "name-conflict" }) as const,
   listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [] as never[],
   listTags: async () => [] as never[],
   setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
   softDeleteBookmark: async () =>
     ({ id: "", kind: "bookmark-not-found" }) as const,
+  touchTag: async () => ({ kind: "touched" }) as const,
   updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,
   updateTag: async () => ({ kind: "not-found" }) as const,
 };
 
-function authenticatedRouter(touchTag: TouchTag, getSession = vi.fn()) {
+function authenticatedRouter(deleteTag: DeleteTag, getSession = vi.fn()) {
   getSession.mockResolvedValue({
     email: `${userId}@example.com`,
     id: userId,
     name: "koralle",
   });
   return createAppRouter({
+    deleteTag,
     getSession,
-    insertTag: async () => ({ kind: "name-conflict" }),
-    touchTag,
     ...readDeps,
   });
 }
@@ -48,11 +48,9 @@ function authenticatedRouter(touchTag: TouchTag, getSession = vi.fn()) {
  */
 function createTestClient(router: AppRouter, headers?: HeadersInit) {
   let lastResponse: Response | undefined;
-  let lastBodyText = "";
   const link = new RPCLink({
     fetch: async (request) => {
       lastResponse = await handleRpcRequest(request, router);
-      lastBodyText = await lastResponse.clone().text();
       return lastResponse;
     },
     headers: () => new Headers(headers),
@@ -61,7 +59,6 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
   const client: RouterClient<AppRouter> = createORPCClient(link);
   return {
     client,
-    getBodyText: () => lastBodyText,
     getResponse: () => {
       if (lastResponse === undefined) {
         throw new Error("RPC client did not perform a request");
@@ -71,21 +68,35 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
   };
 }
 
-describe("TouchTag RPC", () => {
-  test("touch の wire 出力は brand を載せない plain な { ok: true } である", () => {
-    type TouchOutput = Awaited<
-      ReturnType<RouterClient<AppRouter>["tags"]["touch"]>
+describe("DeleteTag RPC", () => {
+  test("delete の wire 出力は brand を載せない plain な { id: number } である", () => {
+    type DeleteOutput = Awaited<
+      ReturnType<RouterClient<AppRouter>["tags"]["delete"]>
     >;
 
-    expectTypeOf<TouchOutput>().toEqualTypeOf<{ readonly ok: true }>();
+    expectTypeOf<DeleteOutput>().toEqualTypeOf<{ id: number }>();
+  });
+
+  test("成功時に userId と id が port へ届き、plain number id が返る", async () => {
+    const received: { id: number; userId: string }[] = [];
+    const router = authenticatedRouter(async (input) => {
+      received.push({ id: Number(input.id), userId: input.userId });
+      return { kind: "deleted" };
+    });
+    const { client } = createTestClient(router);
+
+    const output = await client.tags.delete({ id: 7 });
+
+    expect(output).toStrictEqual({ id: 7 });
+    expect(received).toStrictEqual([{ id: 7, userId }]);
   });
 
   test("不正な入力は 400 BAD_REQUEST を返し、port を呼ばない", async () => {
-    const touchTag = vi.fn(async () => ({ kind: "touched" as const }));
-    const router = authenticatedRouter(touchTag);
+    const deleteTag = vi.fn(async () => ({ kind: "deleted" as const }));
+    const router = authenticatedRouter(deleteTag);
     const { client, getResponse } = createTestClient(router);
 
-    const rejected = await client.tags.touch({ id: 0 }).then(
+    const rejected = await client.tags.delete({ id: 0 }).then(
       () => null,
       (error: unknown) => error
     );
@@ -93,18 +104,18 @@ describe("TouchTag RPC", () => {
     expect(getResponse().status).toBe(400);
     expect(rejected).toBeInstanceOf(ORPCError);
     expect((rejected as ORPCError<string, unknown>).code).toBe("BAD_REQUEST");
-    expect(touchTag).not.toHaveBeenCalled();
+    expect(deleteTag).not.toHaveBeenCalled();
   });
 
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     const router = createAppRouter({
+      deleteTag: async () => ({ kind: "deleted" }) as const,
       getSession: async () => null,
-      insertTag: async () => ({ kind: "name-conflict" }),
-      touchTag: async () => ({ kind: "touched" }),
       ...readDeps,
     });
     const { client, getResponse } = createTestClient(router);
-    const rejected = await client.tags.touch({ id: 1 }).then(
+
+    const rejected = await client.tags.delete({ id: 1 }).then(
       () => null,
       (error: unknown) => error
     );
@@ -114,32 +125,11 @@ describe("TouchTag RPC", () => {
     expect((rejected as ORPCError<string, unknown>).code).toBe("UNAUTHORIZED");
   });
 
-  test("Cookie ヘッダーが認証 middleware に届く", async () => {
-    const getSession = vi.fn(async (headers: Headers) => {
-      expect(headers.get("cookie")).toBe("better-auth.session_token=abc");
-      return {
-        email: `${userId}@example.com`,
-        id: userId,
-        name: "koralle",
-      };
-    });
-    const router = authenticatedRouter(
-      async () => ({ kind: "touched" }),
-      getSession
-    );
-    const { client } = createTestClient(router, {
-      cookie: "better-auth.session_token=abc",
-    });
-
-    await client.tags.touch({ id: 1 });
-
-    expect(getSession).toHaveBeenCalledOnce();
-  });
-
   test("対象なしは defined な 404 tag-not-found を返す", async () => {
     const router = authenticatedRouter(async () => ({ kind: "not-found" }));
     const { client, getResponse } = createTestClient(router);
-    const rejected = await client.tags.touch({ id: 1 }).then(
+
+    const rejected = await client.tags.delete({ id: 9 }).then(
       () => null,
       (error: unknown) => error
     );
@@ -147,27 +137,5 @@ describe("TouchTag RPC", () => {
     expect(getResponse().status).toBe(404);
     expect(rejected).toBeInstanceOf(ORPCError);
     expect((rejected as ORPCError<string, unknown>).code).toBe("tag-not-found");
-    expect((rejected as ORPCError<string, unknown>).defined).toBeTruthy();
-  });
-
-  test("想定外の例外は 500 を返し、内部 message を漏らさない", async () => {
-    const router = authenticatedRouter(async () => {
-      throw new Error("disk exploded");
-    });
-    const { client, getResponse, getBodyText } = createTestClient(router);
-
-    await expect(client.tags.touch({ id: 1 })).rejects.toBeInstanceOf(Error);
-    expect(getResponse().status).toBe(500);
-    expect(getBodyText()).not.toContain("disk exploded");
-  });
-
-  test("成功は 200 で { ok: true } を返す", async () => {
-    const router = authenticatedRouter(async () => ({ kind: "touched" }));
-    const { client, getResponse } = createTestClient(router);
-
-    await expect(client.tags.touch({ id: 1 })).resolves.toStrictEqual({
-      ok: true,
-    });
-    expect(getResponse().status).toBe(200);
   });
 });

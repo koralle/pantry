@@ -73,6 +73,7 @@ export const NavRail = ({
       const count = countFor(counts, itemView);
       return (
         <Link
+          aria-current={view === itemView ? "page" : undefined}
           className={railItem({ active: view === itemView })}
           key={itemView}
           search={
@@ -96,6 +97,7 @@ export const NavRail = ({
     })}
     <p className={railSection}>タグ</p>
     <Link
+      aria-current={view === "tags" ? "page" : undefined}
       className={railItem({ active: view === "tags" })}
       search={{ limit: 50, offset: 0 }}
       to="/tags"

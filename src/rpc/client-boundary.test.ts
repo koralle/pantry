@@ -27,6 +27,7 @@ describe("server direct RPC client", () => {
         kind: "bookmark-not-found" as const,
       }),
       softDeleteBookmark: async () => ({ id: "", kind: "bookmark-not-found" }),
+      deleteTag: async () => ({ kind: "deleted" }) as const,
       touchTag: async () => ({ kind: "touched" }),
       updateBookmark: async () => ({ kind: "bookmark-not-found" }),
       updateTag: async () => ({ kind: "not-found" }),

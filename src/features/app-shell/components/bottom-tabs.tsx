@@ -27,6 +27,7 @@ export interface BottomTabsProps {
 export const BottomTabs = ({ newSearch, view }: BottomTabsProps) => (
   <nav aria-label="ビュー" className={bottomTabs}>
     <Link
+      aria-current={view === "recent" ? "page" : undefined}
       className={tabItem({ active: view === "recent" })}
       search={defaultBookmarkSearch}
       to="/bookmarks"
@@ -35,6 +36,7 @@ export const BottomTabs = ({ newSearch, view }: BottomTabsProps) => (
       最近
     </Link>
     <Link
+      aria-current={view === "inbox" ? "page" : undefined}
       className={tabItem({ active: view === "inbox" })}
       search={{ ...defaultBookmarkSearch, view: "inbox" }}
       to="/bookmarks"
@@ -51,6 +53,7 @@ export const BottomTabs = ({ newSearch, view }: BottomTabsProps) => (
       <Plus aria-hidden size={22} />
     </Link>
     <Link
+      aria-current={view === "favorites" ? "page" : undefined}
       className={tabItem({ active: view === "favorites" })}
       search={{ ...defaultBookmarkSearch, view: "favorites" }}
       to="/bookmarks"
@@ -59,6 +62,7 @@ export const BottomTabs = ({ newSearch, view }: BottomTabsProps) => (
       お気に入り
     </Link>
     <Link
+      aria-current={view === "tags" ? "page" : undefined}
       className={tabItem({ active: view === "tags" })}
       search={{ limit: 50, offset: 0 }}
       to="/tags"

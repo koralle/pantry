@@ -54,6 +54,7 @@ function baseDeps(): ReadDeps {
         kind: "bookmark-not-found",
       })
     ),
+    deleteTag: async () => ({ kind: "deleted" }) as const,
     touchTag: vi.fn(async (): Promise<TouchTagOutput> => ({ kind: "touched" })),
     updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
       kind: "bookmark-not-found",

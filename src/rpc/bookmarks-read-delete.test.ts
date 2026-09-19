@@ -57,6 +57,7 @@ function baseDeps(): MutableDeps {
         kind: "bookmark-not-found",
       })
     ),
+    deleteTag: async () => ({ kind: "deleted" }) as const,
     touchTag: vi.fn(async () => ({ kind: "touched" }) as const),
     updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
       kind: "bookmark-not-found",
