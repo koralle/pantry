@@ -81,11 +81,11 @@ export const EmptyList = meta.story({
       canvas.getByRole("heading", { name: "パスキー" })
     ).toBeInTheDocument();
     await expect(
-      await canvas.findByText("パスキーはまだ登録されていません")
+      await canvas.findByText("パスキーが未登録です")
     ).toBeInTheDocument();
     await expect(
-      await canvas.findByRole("button", { name: "追加" })
-    ).toBeEnabled();
+      canvas.queryByRole("button", { name: "追加" })
+    ).not.toBeInTheDocument();
     await expect(
       canvas.getByRole("button", { name: "パスキーを登録" })
     ).toBeEnabled();
@@ -112,7 +112,7 @@ export const NamedAndFallbackNames = meta.story({
       canvas.getByText("Google Password Manager")
     ).toBeInTheDocument();
     await expect(canvas.getAllByText("パスキー")[0]).toBeInTheDocument();
-    expect(canvas.getAllByText("登録 2026/08/28 12:00")).toHaveLength(3);
+    expect(canvas.getAllByText("登録 2026/08/28")).toHaveLength(3);
   },
 });
 
@@ -125,7 +125,9 @@ export const AddWithoutPrefillingName = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "追加" }));
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "パスキーを登録" })
+    );
     await waitFor(async () => {
       await expect(
         canvas.getByRole("button", { name: "登録中…" })
@@ -153,13 +155,15 @@ export const CancelAddLeavesListUnchanged = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "追加" }));
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "パスキーを登録" })
+    );
     await waitFor(async () => {
-      await expect(canvas.getByRole("button", { name: "追加" })).toBeEnabled();
+      await expect(
+        canvas.getByRole("button", { name: "パスキーを登録" })
+      ).toBeEnabled();
     });
-    await expect(
-      canvas.getByText("パスキーはまだ登録されていません")
-    ).toBeInTheDocument();
+    await expect(canvas.getByText("パスキーが未登録です")).toBeInTheDocument();
     await expect(canvas.queryByRole("alert")).not.toBeInTheDocument();
   },
 });
@@ -340,13 +344,15 @@ export const LastPasskeyCanBeDeleted = meta.story({
     );
     await waitFor(async () => {
       await expect(
-        canvas.getByText("パスキーはまだ登録されていません")
+        canvas.getByText("パスキーが未登録です")
       ).toBeInTheDocument();
     });
     await expect(canvas.getByRole("status")).toHaveTextContent(
       "パスキーを削除しました"
     );
-    await expect(canvas.getByRole("button", { name: "追加" })).toBeEnabled();
+    await expect(
+      canvas.getByRole("button", { name: "パスキーを登録" })
+    ).toBeEnabled();
   },
 });
 
@@ -389,7 +395,7 @@ export const ListLoadError = meta.story({
       "パスキーの操作に失敗しました"
     );
     await expect(
-      canvas.queryByText("パスキーはまだ登録されていません")
+      canvas.queryByText("パスキーが未登録です")
     ).not.toBeInTheDocument();
   },
 });
@@ -409,15 +415,17 @@ export const AddFailed = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "追加" }));
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "パスキーを登録" })
+    );
     await waitFor(async () => {
       await expect(canvas.getByRole("alert")).toHaveTextContent(
         "パスキーの登録に失敗しました"
       );
     });
     await expect(
-      canvas.getByText("パスキーはまだ登録されていません")
-    ).toBeInTheDocument();
+      canvas.queryByText("パスキーが未登録です")
+    ).not.toBeInTheDocument();
   },
 });
 

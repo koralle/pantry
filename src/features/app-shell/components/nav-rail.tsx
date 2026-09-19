@@ -58,6 +58,8 @@ export interface NavRailProps {
   counts?: ShellCounts | undefined;
   tags?: ShellTag[] | undefined;
   activeTagId?: string | undefined;
+  /** 一覧の表示レイアウトをビュー/タグ遷移で引き継ぐ */
+  layout?: "rows" | "cards" | undefined;
 }
 
 const NO_TAGS: ShellTag[] = [];
@@ -67,10 +69,13 @@ export const NavRail = ({
   counts,
   tags = NO_TAGS,
   activeTagId,
+  layout,
 }: NavRailProps) => (
   <nav aria-label="ビュー" className={rail}>
     {viewItems.map(({ view: itemView, icon: Icon, label }) => {
       const count = countFor(counts, itemView);
+      const layoutParam =
+        layout === "cards" ? { layout: "cards" as const } : {};
       return (
         <Link
           aria-current={view === itemView ? "page" : undefined}
@@ -78,8 +83,8 @@ export const NavRail = ({
           key={itemView}
           search={
             itemView === "recent"
-              ? defaultBookmarkSearch
-              : { ...defaultBookmarkSearch, view: itemView }
+              ? { ...defaultBookmarkSearch, ...layoutParam }
+              : { ...defaultBookmarkSearch, ...layoutParam, view: itemView }
           }
           to="/bookmarks"
         >
@@ -109,11 +114,19 @@ export const NavRail = ({
       <Link
         aria-current={activeTagId === tag.id ? "true" : undefined}
         className={railItem({ active: activeTagId === tag.id })}
+        data-rail-tag
         key={tag.id}
         search={
           activeTagId === tag.id
-            ? defaultBookmarkSearch
-            : { ...defaultBookmarkSearch, tags: [tag.name] }
+            ? {
+                ...defaultBookmarkSearch,
+                ...(layout === "cards" ? { layout: "cards" as const } : {}),
+              }
+            : {
+                ...defaultBookmarkSearch,
+                ...(layout === "cards" ? { layout: "cards" as const } : {}),
+                tags: [tag.name],
+              }
         }
         to="/bookmarks"
       >

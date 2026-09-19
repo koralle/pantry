@@ -6,6 +6,7 @@ import type {
 import { defaultBookmarkSearch } from "./bookmark-search";
 
 export interface BookmarkSearchPatch {
+  readonly layout?: BookmarkSearchSchema["layout"] | undefined;
   readonly q?: string | undefined;
   readonly tags?: string[] | undefined;
   readonly tagMode?: BookmarkSearchSchema["tagMode"] | undefined;
@@ -43,6 +44,11 @@ export const buildListSearch = (
     next.view = view;
   }
 
+  const layout = patch.layout ?? current.layout;
+  if (layout === "cards") {
+    next.layout = "cards";
+  }
+
   const q = resolveSearchPatch(patch.clearQ, patch.q, current.q);
   const tags = resolveSearchPatch(patch.clearTags, patch.tags, current.tags);
 
@@ -72,6 +78,7 @@ export const listSearchFromDetail = (
   buildListSearch(defaultBookmarkSearch, {
     clearQ: search.q === undefined,
     clearTags: search.tags === undefined || search.tags.length === 0,
+    layout: search.layout,
     q: search.q,
     sort: search.sort,
     tagMode: search.tagMode,
@@ -82,6 +89,7 @@ export const listSearchFromDetail = (
 export const detailSearchFromList = (
   search: BookmarkSearchSchema
 ): BookmarkDetailSearch => ({
+  ...(search.layout === "cards" ? { layout: "cards" as const } : {}),
   ...(search.q !== undefined && search.q !== "" ? { q: search.q } : {}),
   ...(search.tags !== undefined && search.tags.length > 0
     ? { tags: search.tags }

@@ -16,6 +16,7 @@ import {
   rowMetaDot,
   rowMetaDots,
   rowStar,
+  rowStarInline,
   rowTags,
   rowTitle,
   rowTitleMobile,
@@ -60,6 +61,7 @@ export const BookmarkRow = ({
       <Link
         aria-current={selected ? "true" : undefined}
         className={cx(rowLink({ layout: "desktop", selected }), rowHover)}
+        data-bookmark-id={id}
         params={params}
         to="/bookmarks/$id"
       >
@@ -77,12 +79,25 @@ export const BookmarkRow = ({
       <Link
         aria-current={selected ? "true" : undefined}
         className={cx(rowLink({ layout: "mobile", selected }), rowHover)}
+        data-bookmark-id={id}
         params={params}
         to="/bookmarks/$id"
       >
         <FaviconTile domain={domain} failed={faviconFailed} size="md" />
         <span className={rowMain}>
-          <span className={rowTitleMobile}>{title}</span>
+          <span className={rowTitleMobile}>
+            {title}
+            {starred ? (
+              <span className={rowStarInline}>
+                <Star
+                  aria-hidden
+                  fill="currentColor"
+                  size={11}
+                  strokeWidth={0}
+                />
+              </span>
+            ) : null}
+          </span>
           <span className={rowMeta}>
             <span>
               {domain} · {dateLabel}
@@ -101,7 +116,6 @@ export const BookmarkRow = ({
             </span>
           </span>
         </span>
-        {starred ? <StarMark /> : null}
       </Link>
     </>
   );

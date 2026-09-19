@@ -25,9 +25,11 @@ export interface NavRailRouteProps {
   view: ShellView;
   /** Normalized tag names from the active list filter — marks the rail tag. */
   filterTags?: readonly string[] | undefined;
+  /** 一覧の表示レイアウトをリンクへ引き継ぐ */
+  layout?: "rows" | "cards" | undefined;
 }
 
-const NavRailData = ({ view, filterTags }: NavRailRouteProps) => {
+const NavRailData = ({ view, filterTags, layout }: NavRailRouteProps) => {
   const { data: shelf } = useSuspenseQuery(
     orpc.tags.shelf.queryOptions({ staleTime: 5000 })
   );
@@ -52,6 +54,7 @@ const NavRailData = ({ view, filterTags }: NavRailRouteProps) => {
     <NavRail
       activeTagId={activeTagId}
       counts={counts}
+      layout={layout}
       tags={tags}
       view={view}
     />
@@ -59,8 +62,8 @@ const NavRailData = ({ view, filterTags }: NavRailRouteProps) => {
 };
 
 export const NavRailRoute = (props: NavRailRouteProps) => (
-  <ErrorBoundary fallback={<NavRail view={props.view} />}>
-    <Suspense fallback={<NavRail view={props.view} />}>
+  <ErrorBoundary fallback={<NavRail layout={props.layout} view={props.view} />}>
+    <Suspense fallback={<NavRail layout={props.layout} view={props.view} />}>
       <NavRailData {...props} />
     </Suspense>
   </ErrorBoundary>

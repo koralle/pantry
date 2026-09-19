@@ -21,7 +21,6 @@ interface BookmarkFormFieldsProps {
   readonly fields: {
     readonly url: FieldMetadata;
     readonly title: FieldMetadata;
-    readonly note: FieldMetadata;
   };
   readonly serverFieldErrors?: BookmarkFormServerError["fields"];
   readonly busy: boolean;
@@ -46,6 +45,48 @@ const resolveFieldMessage = (
   return serverMessage;
 };
 
+interface BookmarkFormNoteFieldProps {
+  readonly note: FieldMetadata;
+  readonly serverMessage?: string | undefined;
+  readonly onClearServerFieldError: (key: BookmarkFormFieldKey) => void;
+}
+
+export const BookmarkFormNoteField = ({
+  note,
+  serverMessage,
+  onClearServerFieldError,
+}: BookmarkFormNoteFieldProps) => {
+  const noteError = resolveFieldMessage(note.errors, serverMessage);
+
+  return (
+    <div className={fieldGroup}>
+      <label className={flabel} htmlFor={note.id}>
+        メモ
+      </label>
+      <div
+        className={`${inputBox({ invalid: noteError !== undefined })} ${noteBox}`}
+      >
+        <textarea
+          {...getTextareaProps(note)}
+          className={noteArea}
+          autoComplete="off"
+          placeholder="ひとことメモ…"
+          aria-invalid={noteError !== undefined}
+          aria-describedby={noteError === undefined ? undefined : note.errorId}
+          onChange={() => {
+            onClearServerFieldError("note");
+          }}
+        />
+      </div>
+      {noteError === undefined ? null : (
+        <p id={note.errorId} className={fieldErr}>
+          <CircleAlert size={12} aria-hidden /> {noteError}
+        </p>
+      )}
+    </div>
+  );
+};
+
 export const BookmarkFormFields = ({
   fields,
   serverFieldErrors,
@@ -66,11 +107,6 @@ export const BookmarkFormFields = ({
     fields.title.errors,
     serverFieldErrors?.title
   );
-  const noteError = resolveFieldMessage(
-    fields.note.errors,
-    serverFieldErrors?.note
-  );
-
   return (
     <>
       <div className={fieldGroup}>
@@ -138,34 +174,6 @@ export const BookmarkFormFields = ({
         {titleError === undefined ? null : (
           <p id={fields.title.errorId} className={fieldErr}>
             <CircleAlert size={12} aria-hidden /> {titleError}
-          </p>
-        )}
-      </div>
-
-      <div className={fieldGroup}>
-        <label className={flabel} htmlFor={fields.note.id}>
-          メモ
-        </label>
-        <div
-          className={`${inputBox({ invalid: noteError !== undefined })} ${noteBox}`}
-        >
-          <textarea
-            {...getTextareaProps(fields.note)}
-            className={noteArea}
-            autoComplete="off"
-            placeholder="あとで読む理由など"
-            aria-invalid={noteError !== undefined}
-            aria-describedby={
-              noteError === undefined ? undefined : fields.note.errorId
-            }
-            onChange={() => {
-              handleFieldChange("note");
-            }}
-          />
-        </div>
-        {noteError === undefined ? null : (
-          <p id={fields.note.errorId} className={fieldErr}>
-            <CircleAlert size={12} aria-hidden /> {noteError}
           </p>
         )}
       </div>

@@ -68,6 +68,17 @@ export const AppShell = ({
         return;
       }
       if (
+        event.key === "/" &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !isEditableTarget(event.target)
+      ) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+      if (
         event.key === "n" &&
         !event.metaKey &&
         !event.ctrlKey &&

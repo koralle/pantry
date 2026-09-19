@@ -85,10 +85,10 @@ export const Default = meta.story({
     await expect(canvas.getByText("koralle")).toBeInTheDocument();
     await expect(canvas.getByText("koralle@example.com")).toBeInTheDocument();
     await expect(
-      await canvas.findByText("パスキーはまだ登録されていません")
+      await canvas.findByText("パスキーが未登録です")
     ).toBeInTheDocument();
     await expect(
-      await canvas.findByRole("button", { name: "追加" })
+      await canvas.findByRole("button", { name: "パスキーを登録" })
     ).toBeEnabled();
     await expect(
       canvas.getByRole("button", { name: "ログアウト" })
@@ -136,8 +136,6 @@ export const WebAuthnUnavailable = meta.story({
     await expect(
       canvas.getByRole("button", { name: "ログアウト" })
     ).toBeEnabled();
-    await expect(
-      canvas.getByText("パスキーはまだ登録されていません")
-    ).toBeInTheDocument();
+    await expect(canvas.getByText("パスキーが未登録です")).toBeInTheDocument();
   },
 });

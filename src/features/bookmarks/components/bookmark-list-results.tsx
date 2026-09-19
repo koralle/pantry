@@ -10,8 +10,10 @@ import {
   detailSearchFromList,
 } from "../../navigation/lib/bookmark-search-builders";
 import { useBookmarkListPagination } from "../hooks/use-bookmark-list-pagination";
+import { useListKeyboard } from "../hooks/use-list-keyboard";
 import { domainOf } from "../lib/domain-of";
 import { formatRelativeTime } from "../lib/format/format-relative-time";
+import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
 import type { BookmarkListItem } from "../persistence/list-bookmarks";
 import { BookmarkListContent } from "./bookmark-list";
 import type { BookmarkRowProps } from "./bookmark-row";
@@ -95,6 +97,11 @@ export const BookmarkListResults = ({
   const title = bookmarkListTitle(search);
   const filtered = hasActiveConditions(search);
   const detailSearch = detailSearchFromList(search);
+  const { selectedId } = useListKeyboard({
+    cards: search.layout === "cards",
+    identity: bookmarkListSearchIdentity(search),
+    ids: items.map((item) => item.id),
+  });
 
   if (items.length === 0) {
     return (
@@ -108,6 +115,7 @@ export const BookmarkListResults = ({
             : undefined
         }
         emptyVariant={filtered ? "filtered" : "blank"}
+        listSearch={search}
         newSearch={detailSearch}
         state="empty"
         title={title}
@@ -121,46 +129,49 @@ export const BookmarkListResults = ({
     filtered || !isRecentView(search) ? undefined : counts?.inbox;
 
   return (
-    <>
-      <BookmarkListContent
-        count={viewCount}
-        inboxCount={inboxCount}
-        items={items.map(toRowProps)}
-        newSearch={detailSearch}
-        state="ideal"
-        title={title}
-      />
-
-      {hasMore ? (
-        <div className={loadMoreSection}>
-          <button
-            className={button({ size: "sm" })}
-            disabled={isLoadingMore}
-            onClick={loadMore}
-            type="button"
-          >
-            <ChevronDown aria-hidden size={13} />
-            {isLoadingMore ? "読み込み中…" : "もっと見る"}
-          </button>
-        </div>
-      ) : null}
-      {loadMoreError === null ? null : (
-        <p className={loadMoreErrorNote} role="alert">
-          <CircleAlert aria-hidden size={12} />
-          {loadMoreError}
-          <button
-            className={css({
-              color: "accent.solid",
-              fontWeight: "semibold",
-            })}
-            onClick={loadMore}
-            type="button"
-          >
-            <RotateCw aria-hidden size={12} />
-            再試行
-          </button>
-        </p>
-      )}
-    </>
+    <BookmarkListContent
+      count={viewCount}
+      inboxCount={inboxCount}
+      items={items.map(toRowProps)}
+      listSearch={search}
+      newSearch={detailSearch}
+      selectedId={selectedId}
+      state="ideal"
+      title={title}
+      trailing={
+        <>
+          {hasMore ? (
+            <div className={loadMoreSection}>
+              <button
+                className={button({ size: "sm" })}
+                disabled={isLoadingMore}
+                onClick={loadMore}
+                type="button"
+              >
+                <ChevronDown aria-hidden size={13} />
+                {isLoadingMore ? "読み込み中…" : "もっと見る"}
+              </button>
+            </div>
+          ) : null}
+          {loadMoreError === null ? null : (
+            <p className={loadMoreErrorNote} role="alert">
+              <CircleAlert aria-hidden size={12} />
+              {loadMoreError}
+              <button
+                className={css({
+                  color: "accent.solid",
+                  fontWeight: "semibold",
+                })}
+                onClick={loadMore}
+                type="button"
+              >
+                <RotateCw aria-hidden size={12} />
+                再試行
+              </button>
+            </p>
+          )}
+        </>
+      }
+    />
   );
 };

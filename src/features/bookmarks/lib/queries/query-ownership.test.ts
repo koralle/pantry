@@ -116,7 +116,7 @@ describe("bookmark list query ownership", () => {
     expect(hook).not.toContain("bookmarkListSearchEquals");
     expect(hook).toContain("rememberBookmarkListScroll(searchIdentity,");
     expect(hook).toContain("consumeBookmarkListScroll(searchIdentity)");
-    expect(hook).toContain('document.querySelector("#content")');
+    expect(hook).toContain('document.querySelector("[data-list-scroll]")');
     expect(hook).toContain("scrollContainer.scrollTop");
     expect(hook).not.toContain("window.scroll");
   });

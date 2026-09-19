@@ -139,13 +139,16 @@ export const PasskeySettings = () => {
     <>
       <div className={accountSectionHeadRow}>
         <h2 className={accountSectionHeading}>パスキー</h2>
-        {webAuthnAvailable ? (
+        {webAuthnAvailable &&
+        passkeys !== null &&
+        passkeys !== undefined &&
+        passkeys.length > 0 ? (
           <div className={accountSectionHeadAction}>
             <StyledButton
               isPending={isAdding}
               onPress={handleAdd}
               size="xs"
-              visual="ghost"
+              visual="quiet"
             >
               <Plus size={13} aria-hidden /> {isAdding ? "登録中…" : "追加"}
             </StyledButton>
@@ -187,7 +190,7 @@ export const PasskeySettings = () => {
           <span className={passkeyEmptyIcon}>
             <KeyRound size={18} aria-hidden />
           </span>
-          <p className={passkeyEmptyTitle}>パスキーはまだ登録されていません</p>
+          <p className={passkeyEmptyTitle}>パスキーが未登録です</p>
           <p className={passkeyEmptyNote}>
             登録するとパスワードなしでサインインできます。
           </p>
@@ -199,7 +202,8 @@ export const PasskeySettings = () => {
                 size="sm"
                 visual="accent"
               >
-                <Plus size={13} aria-hidden /> パスキーを登録
+                <Plus size={13} aria-hidden />{" "}
+                {isAdding ? "登録中…" : "パスキーを登録"}
               </StyledButton>
             </div>
           ) : null}

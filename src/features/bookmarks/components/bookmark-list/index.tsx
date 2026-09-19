@@ -17,12 +17,14 @@ import {
   Bookmark,
   CloudOff,
   Inbox,
+  LayoutGrid,
+  List,
   Plus,
   RotateCw,
   WifiOff,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { css } from "styled-system/css";
+import { css, cx } from "styled-system/css";
 
 import { AppShell } from "../../../../features/app-shell/components/app-shell";
 import { NavRail } from "../../../../features/app-shell/components/nav-rail";
@@ -36,10 +38,13 @@ import type {
   BookmarkSearchSchema,
 } from "../../../../features/navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
+import { buildListSearch } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { StateView } from "../../../../shared/components/state-view";
 import { button } from "../../../../styles/button";
 import { skeletonBar, spinner } from "../../../../styles/feedback";
 import {
+  desktopOnlyText,
+  hintBar,
   inboxAction,
   inboxBadge,
   inboxCallout,
@@ -48,16 +53,23 @@ import {
   listBanner,
   listBannerAction,
   listHead,
+  listScroll,
   listSub,
   listTitle,
   listTools,
+  mobileOnlyText,
   quickAddBadge,
   quickAddStrip,
   rows,
+  rowsMobileOnly,
+  segControl,
+  segItem,
   skeletonBody,
   skeletonRow,
+  stateFill,
 } from "../../../../styles/list";
 import { kbd } from "../../../../styles/shell";
+import { BookmarkCardGrid } from "../bookmark-card";
 import type { BookmarkRowProps } from "../bookmark-row";
 import { BookmarkRow } from "../bookmark-row";
 
@@ -101,23 +113,29 @@ export interface InboxCalloutProps {
 }
 
 export const InboxCallout = ({ count }: InboxCalloutProps) => (
-  <div className={inboxCallout}>
+  <Link
+    className={inboxCallout}
+    search={{ ...defaultBookmarkSearch, view: "inbox" }}
+    to="/bookmarks"
+  >
     <span className={inboxBadge}>
-      <Inbox aria-hidden size={17} />
+      <Inbox aria-hidden size={15} />
     </span>
     <div>
-      <div className={inboxTitle}>未整理が {count} 件あります</div>
-      <div className={inboxSub}>タグを付けると棚に移ります</div>
+      <div className={inboxTitle}>
+        <span className={desktopOnlyText}>未整理が {count} 件あります</span>
+        <span className={mobileOnlyText}>未整理 {count} 件</span>
+      </div>
+      <div className={inboxSub}>
+        <span className={desktopOnlyText}>タグを付けると棚に移ります</span>
+        <span className={mobileOnlyText}>まとめて整理 →</span>
+      </div>
     </div>
-    <Link
-      className={inboxAction}
-      search={{ ...defaultBookmarkSearch, view: "inbox" }}
-      to="/bookmarks"
-    >
+    <span className={inboxAction}>
       まとめて整理
       <ArrowRight aria-hidden size={12} />
-    </Link>
-  </div>
+    </span>
+  </Link>
 );
 
 export interface ListBannerProps {
@@ -141,10 +159,16 @@ export const ListBanner = ({ children, onRetry }: ListBannerProps) => (
 export interface BookmarkRowsProps {
   items: BookmarkRowProps[];
   selectedId?: string | undefined;
+  /** カード表示時のモバイル fallback 用。デスクトップではグリッド側が出る。 */
+  mobileOnly?: boolean | undefined;
 }
 
-export const BookmarkRows = ({ items, selectedId }: BookmarkRowsProps) => (
-  <div className={rows}>
+export const BookmarkRows = ({
+  items,
+  selectedId,
+  mobileOnly,
+}: BookmarkRowsProps) => (
+  <div className={cx(rows, mobileOnly === true ? rowsMobileOnly : undefined)}>
     {items.map((item) => (
       <BookmarkRow key={item.id} {...item} selected={item.id === selectedId} />
     ))}
@@ -207,9 +231,62 @@ export type BookmarkListState =
   | "error"
   | "partial";
 
+export type BookmarkListLayout = "rows" | "cards";
+
+export const ViewToggle = ({
+  listSearch,
+}: {
+  listSearch: BookmarkSearchSchema;
+}) => {
+  const layout = listSearch.layout ?? "rows";
+  return (
+    <div className={segControl}>
+      <Link
+        aria-current={layout === "rows" ? "true" : undefined}
+        className={segItem({ on: layout === "rows" })}
+        search={buildListSearch(listSearch, { layout: "rows" })}
+        to="/bookmarks"
+      >
+        <List aria-hidden size={12} />
+        リスト
+      </Link>
+      <Link
+        aria-current={layout === "cards" ? "true" : undefined}
+        className={segItem({ on: layout === "cards" })}
+        search={buildListSearch(listSearch, { layout: "cards" })}
+        to="/bookmarks"
+      >
+        <LayoutGrid aria-hidden size={12} />
+        カード
+      </Link>
+    </div>
+  );
+};
+
+export const HintBar = () => (
+  <div className={hintBar}>
+    <span>
+      <b>j</b> <b>k</b> 移動
+    </span>
+    <span>
+      <b>⏎</b> 開く
+    </span>
+    <span>
+      <b>T</b> タグで絞る
+    </span>
+    <span>
+      <b>N</b> 新規登録
+    </span>
+    <span>
+      <b>/</b> 検索
+    </span>
+  </div>
+);
+
 export interface BookmarkListContentProps {
   title: string;
   state: BookmarkListState;
+  listSearch: BookmarkSearchSchema;
   items?: BookmarkRowProps[] | undefined;
   count?: number | undefined;
   inboxCount?: number | undefined;
@@ -218,11 +295,14 @@ export interface BookmarkListContentProps {
   clearSearch?: BookmarkSearchSchema | undefined;
   newSearch?: BookmarkDetailSearch | undefined;
   onRetry?: (() => void) | undefined;
+  /** 一覧末尾に出す要素（「もっと見る」など）。スクロール領域の内側に置く。 */
+  trailing?: ReactNode | undefined;
 }
 
 export const BookmarkListContent = ({
   title,
   state,
+  listSearch,
   items,
   count,
   inboxCount,
@@ -231,90 +311,112 @@ export const BookmarkListContent = ({
   clearSearch,
   newSearch,
   onRetry,
-}: BookmarkListContentProps) => (
-  <>
-    <ListHead
-      count={state === "loading" ? undefined : count}
-      title={title}
-      tools={
-        state === "loading" ? (
-          <output className={loadingNote}>
-            <span aria-hidden className={spinner} />
-            読み込み中…
-          </output>
-        ) : undefined
-      }
-    />
-    {state === "ideal" && inboxCount ? (
-      <InboxCallout count={inboxCount} />
-    ) : null}
-    {state === "ideal" || state === "empty" ? (
-      <QuickAddStrip search={newSearch} />
-    ) : null}
-    {state === "partial" ? (
-      <ListBanner onRetry={onRetry}>
-        ファビコンを一部取得できませんでした
-      </ListBanner>
-    ) : null}
-    {state === "loading" ? <BookmarkRowsSkeleton /> : null}
-    {state === "ideal" || state === "partial" ? (
+  trailing,
+}: BookmarkListContentProps) => {
+  const cards = listSearch.layout === "cards";
+  let listBody: ReactNode = null;
+  if (state === "ideal" || state === "partial") {
+    listBody = cards ? (
+      <>
+        <BookmarkCardGrid items={items ?? []} selectedId={selectedId} />
+        <BookmarkRows items={items ?? []} mobileOnly selectedId={selectedId} />
+      </>
+    ) : (
       <BookmarkRows items={items ?? []} selectedId={selectedId} />
-    ) : null}
-    {state === "empty" && emptyVariant === "blank" ? (
-      <StateView
-        action={
-          <Link
-            className={button({ size: "sm", visual: "accent" })}
-            search={newSearch ?? defaultBookmarkSearch}
-            to="/bookmarks/new"
-          >
-            <Plus aria-hidden size={13} />
-            最初の1件を登録
-          </Link>
+    );
+  }
+  return (
+    <>
+      <ListHead
+        count={state === "loading" ? undefined : count}
+        title={title}
+        tools={
+          <>
+            {state === "loading" ? (
+              <output className={loadingNote}>
+                <span aria-hidden className={spinner} />
+                読み込み中…
+              </output>
+            ) : null}
+            <ViewToggle listSearch={listSearch} />
+          </>
         }
-        description="URLをペーストすればタイトルは自動で取り込みます。タグ付けはあとでまとめてできます。"
-        icon={Bookmark}
-        title="まだブックマークがありません"
       />
-    ) : null}
-    {state === "empty" && emptyVariant === "filtered" ? (
-      <StateView
-        action={
-          <Link
-            className={button({ size: "sm", visual: "accent" })}
-            search={clearSearch ?? defaultBookmarkSearch}
-            to="/bookmarks"
-          >
-            条件をクリア
-          </Link>
-        }
-        description="検索語やタグを変えると見つかるかもしれません。"
-        icon={Bookmark}
-        title="条件に合うブックマークがありません"
-      />
-    ) : null}
-    {state === "error" ? (
-      <div role="alert">
-        <StateView
-          action={
-            <button
-              className={button({ size: "sm", visual: "accent" })}
-              onClick={onRetry}
-              type="button"
-            >
-              <RotateCw aria-hidden size={13} />
-              再試行
-            </button>
-          }
-          description="ネットワーク接続を確認して、もう一度お試しください。"
-          icon={WifiOff}
-          title="読み込みに失敗しました"
-          tone="danger"
-        />
+      {state === "ideal" && inboxCount ? (
+        <InboxCallout count={inboxCount} />
+      ) : null}
+      {state === "ideal" || state === "empty" ? (
+        <QuickAddStrip search={newSearch} />
+      ) : null}
+      {state === "partial" ? (
+        <ListBanner onRetry={onRetry}>
+          ファビコンを一部取得できませんでした
+        </ListBanner>
+      ) : null}
+      <div className={listScroll} data-list-scroll>
+        {state === "loading" ? <BookmarkRowsSkeleton /> : null}
+        {listBody}
+        {state === "empty" && emptyVariant === "blank" ? (
+          <StateView
+            action={
+              <Link
+                className={button({ size: "sm", visual: "accent" })}
+                search={newSearch ?? defaultBookmarkSearch}
+                to="/bookmarks/new"
+              >
+                <Plus aria-hidden size={13} />
+                最初の1件を登録
+              </Link>
+            }
+            className={stateFill}
+            description="URLをペーストすればタイトルは自動で取り込みます。タグ付けはあとでまとめてできます。"
+            icon={Bookmark}
+            title="まだブックマークがありません"
+          />
+        ) : null}
+        {state === "empty" && emptyVariant === "filtered" ? (
+          <StateView
+            action={
+              <Link
+                className={button({ size: "sm", visual: "accent" })}
+                search={clearSearch ?? defaultBookmarkSearch}
+                to="/bookmarks"
+              >
+                条件をクリア
+              </Link>
+            }
+            className={stateFill}
+            description="検索語やタグを変えると見つかるかもしれません。"
+            icon={Bookmark}
+            title="条件に合うブックマークがありません"
+          />
+        ) : null}
+        {state === "error" ? (
+          <div className={stateFill} role="alert">
+            <StateView
+              action={
+                <button
+                  className={button({ size: "sm", visual: "accent" })}
+                  onClick={onRetry}
+                  type="button"
+                >
+                  <RotateCw aria-hidden size={13} />
+                  再試行
+                </button>
+              }
+              description="ネットワーク接続を確認して、もう一度お試しください。"
+              icon={WifiOff}
+              title="読み込みに失敗しました"
+              tone="danger"
+            />
+          </div>
+        ) : null}
+        {trailing}
       </div>
-    ) : null}
-  </>
-);
+      <HintBar />
+    </>
+  );
+};
 
 export interface BookmarkListViewProps extends BookmarkListContentProps {
   view: ShellView;

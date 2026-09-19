@@ -7,6 +7,7 @@ import type { FallbackProps } from "react-error-boundary";
 import { PantryMotion } from "../../../shared/components/pantry-motion";
 import { StateView } from "../../../shared/components/state-view";
 import { button } from "../../../styles/button";
+import { listColumn } from "../../../styles/list";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import { detailSearchFromList } from "../../navigation/lib/bookmark-search-builders";
@@ -65,7 +66,7 @@ export const BookmarkList = ({
   const listKey = bookmarkListSearchIdentity(search);
 
   return (
-    <section>
+    <section className={listColumn}>
       <ErrorBoundary
         FallbackComponent={ListError}
         onReset={() => {
@@ -75,13 +76,14 @@ export const BookmarkList = ({
         <Suspense
           fallback={
             <BookmarkListContent
+              listSearch={search}
               newSearch={newSearch}
               state="loading"
               title={title}
             />
           }
         >
-          <PantryMotion key={listKey} kind="crossfade">
+          <PantryMotion className={listColumn} key={listKey} kind="crossfade">
             <BookmarkListResults search={search} />
           </PantryMotion>
         </Suspense>

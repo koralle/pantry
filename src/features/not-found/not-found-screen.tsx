@@ -38,7 +38,7 @@ export const NotFoundScreen = () => (
         <ArrowLeft size={14} aria-hidden /> 一覧へ戻る
       </StyledLink>
       <StyledLink
-        className={cx(button({ size: "sm", visual: "ghost" }), desktopOnly)}
+        className={cx(button({ size: "sm" }), desktopOnly)}
         search={defaultBookmarkSearch}
         to="/bookmarks"
       >

@@ -1,5 +1,6 @@
 import { getFormProps, useForm } from "@conform-to/react";
 import { parseWithValibot } from "@conform-to/valibot";
+import { Check } from "lucide-react";
 import { useRef, useTransition } from "react";
 
 import { StyledButton } from "../../../../../shared/components/styled-button";
@@ -11,7 +12,7 @@ import {
 } from "../../../../../styles/form-screen";
 import { srOnly } from "../../../../../styles/sr-only";
 import { BookmarkTagPicker } from "../../bookmark-tag-picker";
-import { BookmarkFormFields } from "./fields";
+import { BookmarkFormFields, BookmarkFormNoteField } from "./fields";
 import { bookmarkFormSchema } from "./schema";
 
 export { bookmarkFormSchema } from "./schema";
@@ -185,10 +186,16 @@ export const BookmarkForm = ({
           createError={createError}
           serverError={serverError?.fields?.tags}
         />
+        <BookmarkFormNoteField
+          note={fields.note}
+          onClearServerFieldError={handleClearFieldError}
+          serverMessage={serverError?.fields?.note}
+        />
       </fieldset>
 
       <div className={formFoot}>
         <StyledButton type="submit" visual="accent" isDisabled={submitDisabled}>
+          {pending ? null : <Check aria-hidden size={14} />}
           {pending ? pendingLabel : submitLabel}
         </StyledButton>
         {footer}

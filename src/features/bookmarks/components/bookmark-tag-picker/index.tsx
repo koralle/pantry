@@ -157,7 +157,7 @@ export const BookmarkTagPicker = ({
             setPickerOpen(true);
           }}
           readOnly={!isDesktop}
-          placeholder={selectedTags.length === 0 ? "タグを追加" : ""}
+          placeholder={selectedTags.length === 0 ? "タグを入力…" : ""}
           aria-label="タグを検索・追加"
           aria-expanded={pickerOpen}
           aria-controls={candidatesListId}

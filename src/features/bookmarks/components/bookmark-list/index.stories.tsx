@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react";
 
 import type { ShellTag } from "../../../../features/app-shell/lib/shell-nav";
+import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
 import type { BookmarkRowProps } from "../bookmark-row";
 import { BookmarkListView } from "./index";
 
@@ -54,6 +55,7 @@ const demoItems: BookmarkRowProps[] = [
 
 const meta = {
   args: {
+    listSearch: defaultBookmarkSearch,
     onSearchSubmit: () => {},
     searchDefaultValue: "",
     state: "ideal",
@@ -71,6 +73,7 @@ type Story = StoryObj<typeof meta>;
 
 const Screen = (props: Partial<Parameters<typeof BookmarkListView>[0]>) => (
   <BookmarkListView
+    listSearch={defaultBookmarkSearch}
     onSearchSubmit={() => {}}
     searchDefaultValue=""
     state="ideal"
@@ -162,6 +165,22 @@ export const TagFiltered = {
       items={demoItems}
       tags={demoTags}
       title="frontend"
+    />
+  ),
+} satisfies Story;
+
+export const Cards = {
+  name: "カード",
+  args: meta.args,
+  render: () => (
+    <Screen
+      count={128}
+      counts={{ favorites: 6, inbox: 3, recent: 128 }}
+      inboxCount={3}
+      items={demoItems}
+      listSearch={{ ...defaultBookmarkSearch, layout: "cards" }}
+      selectedId="1"
+      tags={demoTags}
     />
   ),
 } satisfies Story;

@@ -172,7 +172,13 @@ function ShellLayout({
         listSearch === undefined ? {} : detailSearchFromList(listSearch)
       }
       onSearchSubmit={commitSearch}
-      rail={<NavRailRoute filterTags={listSearch?.tags} view={view} />}
+      rail={
+        <NavRailRoute
+          filterTags={listSearch?.tags}
+          layout={listSearch?.layout}
+          view={view}
+        />
+      }
       searchDefaultValue={listSearch?.q ?? ""}
       view={view}
     >

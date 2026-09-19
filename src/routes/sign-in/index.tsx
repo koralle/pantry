@@ -94,7 +94,7 @@ function RouteComponent() {
           gridTemplateRows: "auto 1fr",
           minBlockSize: "stretch",
           [wideContainer]: {
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "46% 1fr",
             gridTemplateRows: "1fr",
           },
         })}
@@ -102,7 +102,8 @@ function RouteComponent() {
         <div
           className={css({
             alignItems: "center",
-            backgroundColor: "accent.solid",
+            background:
+              "linear-gradient(160deg, {colors.pantry.brandStart}, {colors.pantry.brandEnd})",
             color: "accent.fg",
             display: "flex",
             flexDirection: "column",

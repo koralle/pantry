@@ -19,6 +19,8 @@ export const colors = defineTokens({
       inboxEnd: { value: "#fdf0d4" },
       inboxFg: { value: "#b07d2b" },
       inboxSub: { value: "#8a6d3b" },
+      brandStart: { value: "#12796f" },
+      brandEnd: { value: "#0b5e57" },
     },
     domain: {
       teal: { value: "#14b8a6" },

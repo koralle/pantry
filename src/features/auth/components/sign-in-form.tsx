@@ -112,6 +112,7 @@ export const SignInWithEmailAndPasswordForm = ({
           <StyledInput
             {...getInputProps(fields.email, { type: "email" })}
             autoComplete="email webauthn"
+            placeholder="you@example.com"
             required
             aria-invalid={emailError !== null && emailError !== undefined}
           />
@@ -131,6 +132,7 @@ export const SignInWithEmailAndPasswordForm = ({
           <StyledInput
             {...getInputProps(fields.password, { type: "password" })}
             autoComplete="current-password webauthn"
+            placeholder="••••••••"
             required
             aria-invalid={passwordError !== null && passwordError !== undefined}
           />
@@ -142,7 +144,7 @@ export const SignInWithEmailAndPasswordForm = ({
         </div>
       </fieldset>
 
-      <StyledButton type="submit" visual="ghost" isDisabled={isPending}>
+      <StyledButton type="submit" isDisabled={isPending}>
         <LogIn size={16} aria-hidden />
         {isPending ? "サインイン中..." : "サインイン"}
       </StyledButton>
