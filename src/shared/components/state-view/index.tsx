@@ -46,7 +46,12 @@ const descriptionStyle = css({
 });
 
 const actionStyle = css({
+  columnGap: "2",
+  display: "flex",
+  flexWrap: "wrap",
+  justifyContent: "center",
   marginBlockStart: "1",
+  rowGap: "2",
 });
 
 export interface StateViewProps {
