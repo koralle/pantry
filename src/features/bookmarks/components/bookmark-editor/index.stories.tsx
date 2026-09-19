@@ -47,6 +47,7 @@ export const Default = meta.story({
       status: "success",
       title: "取得したタイトル",
     })),
+    heading: "ブックマークを編集",
     initialData,
     onCompleted: fn(async () => {}),
     onUpdateBookmark: fn(async () => ({ bookmarkId, ok: true as const })),
@@ -61,7 +62,9 @@ export const Default = meta.story({
     await expect(
       canvas.getByRole("button", { name: "Reactを外す" })
     ).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: "更新" })).toBeEnabled();
+    await expect(
+      canvas.getByRole("button", { name: "変更を保存" })
+    ).toBeEnabled();
   },
 });
 
@@ -74,7 +77,7 @@ export const UpdateHasDuplicateUrl = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "同じ URL のブックマークが既にあります"
     );
@@ -93,7 +96,7 @@ export const UpdateHasUnexpectedError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "保存に失敗しました"
     );
@@ -109,7 +112,7 @@ export const SessionExpiredShowsNoFormError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     // UNAUTHORIZED は interceptor の redirect に任せるため、フォームエラーは出さない。
     await expect(canvas.queryByRole("alert")).not.toBeInTheDocument();
   },
@@ -123,7 +126,7 @@ export const CompletionNavigationFails = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "保存は完了しましたが、画面の移動に失敗しました"
     );
@@ -142,7 +145,7 @@ export const EditingUrlClearsUrlServerError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(
       canvas.getByText("この URL は既に登録されています")
     ).toBeInTheDocument();
@@ -163,7 +166,7 @@ export const InvalidTagKeepsDraftAndAsksToRepick = Default.extend({
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     const alerts = canvas.getAllByRole("alert");
     await expect(alerts.length).toBeGreaterThanOrEqual(2);
     await expect(alerts[0]).toHaveTextContent("タグを選び直してください");

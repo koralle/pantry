@@ -3,11 +3,13 @@ import { parseWithValibot } from "@conform-to/valibot";
 import { useRef, useTransition } from "react";
 
 import { StyledButton } from "../../../../../shared/components/styled-button";
-import { srOnly } from "../../../../../styles/sr-only";
 import {
-  workbenchFields,
-  workbenchForm,
-} from "../../../../../styles/workbench";
+  formCard,
+  formFieldset,
+  formFoot,
+  formHeading,
+} from "../../../../../styles/form-screen";
+import { srOnly } from "../../../../../styles/sr-only";
 import { BookmarkTagPicker } from "../../bookmark-tag-picker";
 import { BookmarkFormFields } from "./fields";
 import { bookmarkFormSchema } from "./schema";
@@ -41,11 +43,13 @@ const readFormValue = (formId: string, name: string): string => {
 
 export const BookmarkForm = ({
   initialValues,
+  heading,
+  footer,
   serverError = null,
   onClearFieldError,
   submitLabel = "更新",
   pendingLabel = "更新中…",
-  legend = "ブックマーク編集",
+  legend,
   onSubmit,
   fetchTitleAction,
   tagCandidates,
@@ -150,14 +154,17 @@ export const BookmarkForm = ({
 
   return (
     <form
-      className={workbenchForm}
+      className={formCard({ busy })}
       {...getFormProps(form)}
+      aria-busy={busy}
       aria-describedby={summaryCandidates.length > 0 ? form.errorId : undefined}
     >
+      <h1 className={formHeading}>{heading}</h1>
+
       <BookmarkFormSummary id={form.errorId} messages={summaryCandidates} />
 
-      <fieldset className={workbenchFields} disabled={busy}>
-        <legend className={srOnly}>{legend}</legend>
+      <fieldset className={formFieldset} disabled={busy}>
+        <legend className={srOnly}>{legend ?? heading}</legend>
         <BookmarkFormFields
           fields={fields}
           serverFieldErrors={serverError?.fields}
@@ -180,9 +187,12 @@ export const BookmarkForm = ({
         />
       </fieldset>
 
-      <StyledButton type="submit" visual="accent" isDisabled={submitDisabled}>
-        {pending ? pendingLabel : submitLabel}
-      </StyledButton>
+      <div className={formFoot}>
+        <StyledButton type="submit" visual="accent" isDisabled={submitDisabled}>
+          {pending ? pendingLabel : submitLabel}
+        </StyledButton>
+        {footer}
+      </div>
     </form>
   );
 };

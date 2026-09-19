@@ -1,8 +1,9 @@
 import { X } from "lucide-react";
 
-import { StyledButton } from "../../../../shared/components/styled-button";
+import { TagDot } from "../../../../shared/components/tag-chip";
+import { toneFor } from "../../../../styles/domain-tone";
+import { tchip, tchipName, tchipRemove } from "../../../../styles/form-screen";
 import type { NamedTag } from "./lib";
-import { chipButton, selectedRow } from "./styles";
 
 interface SelectedTagChipsProps {
   readonly selectedTags: readonly NamedTag[];
@@ -12,28 +13,23 @@ interface SelectedTagChipsProps {
 export const SelectedTagChips = ({
   selectedTags,
   onRemoveTag,
-}: SelectedTagChipsProps) => {
-  if (selectedTags.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className={selectedRow}>
-      {selectedTags.map((tag) => (
-        <StyledButton
-          key={tag.id}
+}: SelectedTagChipsProps) => (
+  <>
+    {selectedTags.map((tag) => (
+      <span key={tag.id} className={tchip}>
+        <TagDot tone={toneFor(tag.name)} />
+        <span className={tchipName}>{tag.name}</span>
+        <button
           type="button"
-          visual="chip"
-          className={chipButton}
+          className={tchipRemove}
           aria-label={`${tag.name}を外す`}
-          onPress={() => {
+          onClick={() => {
             onRemoveTag(tag);
           }}
         >
-          {tag.name}
-          <X size={14} aria-hidden />
-        </StyledButton>
-      ))}
-    </div>
-  );
-};
+          <X size={10} aria-hidden />
+        </button>
+      </span>
+    ))}
+  </>
+);

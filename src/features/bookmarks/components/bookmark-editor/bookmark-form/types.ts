@@ -1,3 +1,5 @@
+import type React from "react";
+
 import type { CreateTagFromPickerAction } from "../../../lib/tag-picker/execute-create-tag-from-picker";
 import type { TagCandidate } from "../../bookmark-tag-picker";
 import type { BookmarkFormOutput } from "./schema";
@@ -55,6 +57,10 @@ export type BookmarkTitleFetchAction = (
 
 export interface BookmarkFormProps {
   readonly initialValues: BookmarkFormInitialValues;
+  /** カード先頭のページ見出し（新規: ブックマークを登録 / 編集: ブックマークを編集）。 */
+  readonly heading: string;
+  /** 送信ボタンの右に並ぶ追加アクション（キャンセルリンクや削除ダイアログ）。 */
+  readonly footer?: React.ReactNode;
   /**
    * BookmarkEditor が保持するサーバーエラーを表示だけのために受け取る。
    * Conform へコピーしない。入力変更時は onClearFieldError 経由で

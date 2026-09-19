@@ -1,15 +1,22 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import {
   Dialog,
-  DialogTrigger,
   Heading,
+  Input,
   Modal,
   ModalOverlay,
   Popover,
 } from "react-aria-components";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
-import { field, fieldError, fieldLabel } from "../../../../styles/form";
+import {
+  fieldErr,
+  fieldGroup,
+  flabel,
+  tagInputBox,
+  tagInputField,
+} from "../../../../styles/form-screen";
+import { canOfferCreateTag } from "./lib";
 import type { NamedTag, TagCandidate } from "./lib";
 import { TagPickerPanel } from "./panel";
 import { SelectedTagChips } from "./selected-chips";
@@ -33,6 +40,8 @@ const subscribeDesktop = (onStoreChange: () => void): (() => void) => {
     media.removeEventListener("change", onStoreChange);
   };
 };
+
+const candidatesListId = "bookmark-tag-candidates";
 
 interface BookmarkTagPickerProps {
   readonly selectedTags: readonly NamedTag[];
@@ -60,11 +69,24 @@ export const BookmarkTagPicker = ({
   serverError,
 }: BookmarkTagPickerProps) => {
   const [query, setQuery] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const popoverRef = useRef<HTMLElement | null>(null);
   const isDesktop = useSyncExternalStore(
     subscribeDesktop,
     () => globalThis.matchMedia(desktopQuery).matches,
     () => true
   );
+
+  // タグ作成が確定したら入力を空へ戻す。render 中の state 調整で
+  // prop 変化へ同期する（effect による「描画後の追従」を避ける）。
+  const [seenCreatedId, setSeenCreatedId] = useState(lastCreatedTagId);
+  if (seenCreatedId !== lastCreatedTagId) {
+    setSeenCreatedId(lastCreatedTagId);
+    setQuery("");
+  }
+
   const fieldErrorMessage = serverError ?? createError;
   const describedBy = [
     isCreatingTag ? "bookmark-tag-creating" : null,
@@ -75,12 +97,16 @@ export const BookmarkTagPicker = ({
     .filter((id): id is string => id !== null)
     .join(" ");
 
-  useEffect(() => {
-    if (lastCreatedTagId === null) {
-      return;
-    }
+  const canCreate = canOfferCreateTag({
+    query,
+    tags: tagCandidates,
+    tagsReady,
+  });
+
+  const closePicker = () => {
+    setPickerOpen(false);
     setQuery("");
-  }, [lastCreatedTagId]);
+  };
 
   const panel = (
     <TagPickerPanel
@@ -93,17 +119,71 @@ export const BookmarkTagPicker = ({
       tagsReady={tagsReady}
       isCreatingTag={isCreatingTag}
       listMaxHeight={isDesktop ? "popover" : "sheet"}
+      hideSearch={isDesktop}
+      listId={candidatesListId}
     />
   );
 
   return (
     <fieldset
-      className={field}
+      className={fieldGroup}
       aria-describedby={describedBy === "" ? undefined : describedBy}
       aria-busy={isCreatingTag || undefined}
     >
-      <legend className={fieldLabel}>タグ</legend>
-      <SelectedTagChips selectedTags={selectedTags} onRemoveTag={onRemoveTag} />
+      <legend className={flabel}>タグ</legend>
+      <div
+        ref={boxRef}
+        className={tagInputBox({
+          invalid:
+            fieldErrorMessage !== null && fieldErrorMessage !== undefined,
+        })}
+      >
+        <SelectedTagChips
+          selectedTags={selectedTags}
+          onRemoveTag={onRemoveTag}
+        />
+        <Input
+          ref={inputRef}
+          type="search"
+          className={tagInputField}
+          value={query}
+          onChange={(event) => {
+            setQuery(event.currentTarget.value);
+            if (!pickerOpen) {
+              setPickerOpen(true);
+            }
+          }}
+          onFocus={() => {
+            setPickerOpen(true);
+          }}
+          readOnly={!isDesktop}
+          placeholder={selectedTags.length === 0 ? "タグを追加" : ""}
+          aria-label="タグを検索・追加"
+          aria-expanded={pickerOpen}
+          aria-controls={candidatesListId}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              if (canCreate) {
+                onCreateTag(query);
+              }
+              return;
+            }
+            if (event.key === "Escape" && pickerOpen) {
+              event.preventDefault();
+              event.stopPropagation();
+              closePicker();
+              return;
+            }
+            if (event.key === "ArrowDown" && pickerOpen) {
+              event.preventDefault();
+              popoverRef.current
+                ?.querySelector<HTMLElement>('[role="option"]')
+                ?.focus();
+            }
+          }}
+        />
+      </div>
       {isCreatingTag ? (
         <output id="bookmark-tag-creating" className={statusMessage}>
           タグを作成中です。完了するまで保存を開始できません。
@@ -112,45 +192,56 @@ export const BookmarkTagPicker = ({
       {fieldErrorMessage !== undefined &&
       fieldErrorMessage !== null &&
       fieldErrorMessage !== "" ? (
-        <p id="bookmark-tag-error" className={fieldError} role="alert">
+        <p id="bookmark-tag-error" className={fieldErr} role="alert">
           {fieldErrorMessage}
         </p>
       ) : null}
-      <DialogTrigger
-        onOpenChange={(open) => {
-          if (!open) {
-            setQuery("");
+      {isDesktop ? (
+        <Popover
+          ref={popoverRef}
+          isOpen={pickerOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              closePicker();
+            }
+          }}
+          shouldCloseOnInteractOutside={(element) =>
+            !(boxRef.current?.contains(element) ?? false)
           }
-        }}
-      >
-        <StyledButton type="button">タグを選ぶ</StyledButton>
-        {isDesktop ? (
-          <Popover
-            placement="bottom start"
-            offset={4}
-            className={popover}
-            isNonModal
-          >
-            <Dialog aria-label="タグを選ぶ">{panel}</Dialog>
-          </Popover>
-        ) : (
-          <ModalOverlay isDismissable className={sheetBackdrop}>
-            <Modal className={sheet}>
-              <Dialog>
-                <div className={sheetHeader}>
-                  <Heading slot="title" className={sheetTitle}>
-                    タグを選ぶ
-                  </Heading>
-                  <StyledButton slot="close" type="button">
-                    完了
-                  </StyledButton>
-                </div>
-                {panel}
-              </Dialog>
-            </Modal>
-          </ModalOverlay>
-        )}
-      </DialogTrigger>
+          triggerRef={boxRef}
+          placement="bottom start"
+          offset={4}
+          className={popover}
+          isNonModal
+        >
+          <div>{panel}</div>
+        </Popover>
+      ) : (
+        <ModalOverlay
+          isDismissable
+          isOpen={pickerOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              closePicker();
+            }
+          }}
+          className={sheetBackdrop}
+        >
+          <Modal className={sheet}>
+            <Dialog>
+              <div className={sheetHeader}>
+                <Heading slot="title" className={sheetTitle}>
+                  タグを選ぶ
+                </Heading>
+                <StyledButton slot="close" type="button">
+                  完了
+                </StyledButton>
+              </div>
+              {panel}
+            </Dialog>
+          </Modal>
+        </ModalOverlay>
+      )}
     </fieldset>
   );
 };

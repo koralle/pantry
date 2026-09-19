@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createFileRoute,
+  Link,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
 import { BookmarkForm } from "../../../../features/bookmarks/components/bookmark-editor/bookmark-form";
 import type {
   BookmarkFormServerError,
@@ -22,13 +23,8 @@ import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
 import { getRpcClient } from "../../../../rpc/runtime-client";
-import { StyledLink } from "../../../../shared/components/styled-link";
-import {
-  workbench,
-  workbenchLead,
-  workbenchNav,
-  workbenchTitle,
-} from "../../../../styles/workbench";
+import { button } from "../../../../styles/button";
+import { formWrap, workbenchScreen } from "../../../../styles/form-screen";
 
 const bookmarkTitleFetchFailedMessage =
   "タイトルを取得できませんでした。手入力で続けられます";
@@ -123,30 +119,37 @@ function RouteComponent() {
   }
 
   return (
-    <section className={workbench} aria-label="ブックマーク新規作成">
-      <nav className={workbenchNav}>
-        <StyledLink to="/bookmarks" search={listSearch} visual="accent">
-          <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
-        </StyledLink>
-      </nav>
-
-      <h1 className={workbenchTitle}>ブックマークを追加</h1>
-      <p className={workbenchLead}>
-        URLを入れて、必要ならタイトルを取得してから保存します。
-      </p>
-
-      <BookmarkForm
-        initialValues={{ url: "", title: "", note: null }}
-        serverError={serverError}
-        submitLabel="登録"
-        pendingLabel="登録中…"
-        legend="ブックマーク新規登録"
-        onSubmit={handleSubmit}
-        fetchTitleAction={fetchTitleAction}
-        tagCandidates={shelfQuery.data ?? []}
-        tagsReady={shelfQuery.isSuccess}
-        createTagAction={createTagAction}
+    <div className={workbenchScreen}>
+      <WorkbenchBar
+        backTo="/bookmarks"
+        backSearch={listSearch}
+        backLabel="一覧へ戻る"
+        mobileBackLabel="キャンセル"
+        title="登録"
       />
-    </section>
+      <div className={formWrap}>
+        <BookmarkForm
+          initialValues={{ url: "", title: "", note: null }}
+          heading="ブックマークを登録"
+          footer={
+            <Link
+              className={button({ visual: "ghost" })}
+              to="/bookmarks"
+              search={listSearch}
+            >
+              キャンセル
+            </Link>
+          }
+          serverError={serverError}
+          submitLabel="登録する"
+          pendingLabel="保存中…"
+          onSubmit={handleSubmit}
+          fetchTitleAction={fetchTitleAction}
+          tagCandidates={shelfQuery.data ?? []}
+          tagsReady={shelfQuery.isSuccess}
+          createTagAction={createTagAction}
+        />
+      </div>
+    </div>
   );
 }

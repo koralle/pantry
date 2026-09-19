@@ -60,6 +60,7 @@ export const Default = meta.story({
       await new Promise((resolve) => setTimeout(resolve, 1500));
       return { status: "success", title: "取得したタイトル" };
     }),
+    heading: "ブックマークを編集",
     initialValues: defaultInitialValues,
     onSubmit:
       fn<(...args: Parameters<BookmarkFormProps["onSubmit"]>) => void>(),
@@ -175,7 +176,7 @@ export const FieldError = Default.extend({
       "入力内容を確認してください"
     );
     await expect(
-      canvas.getByText("有効なURLを入力してください")
+      canvas.getByText("URLの形式が正しくありません（例: https://example.com）")
     ).toBeInTheDocument();
     await expect(
       canvas.getByText("タイトルを入力してください")
@@ -369,7 +370,7 @@ export const ValidationClearsOnEdit = Default.extend({
     // 送信で Conform validation error を出す
     await userEvent.click(canvas.getByRole("button", { name: "更新" }));
     await expect(
-      canvas.getByText("有効なURLを入力してください")
+      canvas.getByText("URLの形式が正しくありません（例: https://example.com）")
     ).toBeInTheDocument();
 
     // URL を編集すると Conform 側の error は onInput 再検証で消える
@@ -378,7 +379,9 @@ export const ValidationClearsOnEdit = Default.extend({
     await userEvent.type(url, "https://example.com/edited");
     await waitFor(() => {
       expect(
-        canvas.queryByText("有効なURLを入力してください")
+        canvas.queryByText(
+          "URLの形式が正しくありません（例: https://example.com）"
+        )
       ).not.toBeInTheDocument();
     });
   },
@@ -419,8 +422,15 @@ export const SubmitsBrandedValues = Default.extend({
   },
 });
 
+const tagInputName = "タグを検索・追加";
+
+// タグ入力ボックスを押すと候補が開く（デスクトップはポップオーバー）。
 async function openTagPicker(canvas: ReturnType<typeof within>) {
-  await userEvent.click(canvas.getByRole("button", { name: "タグを選ぶ" }));
+  await userEvent.click(canvas.getByRole("searchbox", { name: tagInputName }));
+  const body = within(document.body);
+  await waitFor(() => {
+    expect(body.getAllByRole("option").length).toBeGreaterThan(0);
+  });
 }
 
 export const SelectsAndRemovesTags = Default.extend({
@@ -455,8 +465,10 @@ export const SearchKeepsCandidateOrder = Default.extend({
     const canvas = within(canvasElement);
     const body = within(document.body);
     await openTagPicker(canvas);
-    const search = body.getByRole("searchbox", { name: "タグを検索" });
-    await userEvent.type(search, "t");
+    await userEvent.type(
+      canvas.getByRole("searchbox", { name: tagInputName }),
+      "t"
+    );
     const options = body.getAllByRole("option");
     await expect(options.map((option) => option.textContent)).toEqual([
       expect.stringContaining("React"),
@@ -473,9 +485,8 @@ export const CreateCtaWaitsUntilNamesAreReady = Default.extend({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
-    await openTagPicker(canvas);
     await userEvent.type(
-      body.getByRole("searchbox", { name: "タグを検索" }),
+      canvas.getByRole("searchbox", { name: tagInputName }),
       "Python"
     );
     await expect(
@@ -501,7 +512,7 @@ export const CreatesAndSelectsNewTag = Default.extend({
     const body = within(document.body);
     await openTagPicker(canvas);
     await userEvent.type(
-      body.getByRole("searchbox", { name: "タグを検索" }),
+      canvas.getByRole("searchbox", { name: tagInputName }),
       "Python"
     );
     await userEvent.click(
@@ -532,7 +543,7 @@ export const CreatePendingBlocksBookmarkSubmit = Default.extend({
     const body = within(document.body);
     await openTagPicker(canvas);
     await userEvent.type(
-      body.getByRole("searchbox", { name: "タグを検索" }),
+      canvas.getByRole("searchbox", { name: tagInputName }),
       "Python"
     );
     await userEvent.click(
@@ -564,7 +575,7 @@ export const CreateFailureKeepsDraftAndShowsFieldError = Default.extend({
     await openTagPicker(canvas);
     await userEvent.click(body.getByRole("option", { name: /React/ }));
     await userEvent.type(
-      body.getByRole("searchbox", { name: "タグを検索" }),
+      canvas.getByRole("searchbox", { name: tagInputName }),
       "Python"
     );
     await userEvent.click(

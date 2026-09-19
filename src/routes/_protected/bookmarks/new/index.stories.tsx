@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
 import preview from "../../../../storybook/preview";
-import { Route } from "./edit";
+import { Route } from "./index";
 
 const storyQueryClient = new QueryClient({
   defaultOptions: {
@@ -12,26 +12,16 @@ const storyQueryClient = new QueryClient({
   },
 });
 
-const bookmarkId = "019fae92-3bb0-78cd-b488-65ce0e26a939";
-
-const editorRecord = {
-  id: bookmarkId,
-  note: "要点だけ残す",
-  tagIds: [1],
-  title: "TanStack Router の型安全な検索パラメータ",
-  url: "https://tanstack.com/router/latest/docs/guide/search-params",
-};
+const createdId = "019fae92-3bb0-78cd-b488-65ce0e26a939";
 
 const shelfTags = [
   { id: 1, lastUsedAt: null, name: "frontend", pinned: true, sortOrder: 0 },
   { id: 2, lastUsedAt: null, name: "tanstack", pinned: false, sortOrder: 1 },
 ];
 
-type EditorFixture = () => typeof editorRecord | Promise<typeof editorRecord>;
-type UpdateFixture = () => { id: string } | Promise<{ id: string }>;
+type CreateFixture = () => { id: string } | Promise<{ id: string }>;
 
-let editorFixture: EditorFixture;
-let updateFixture: UpdateFixture;
+let createFixture: CreateFixture;
 
 /**
  * fixture が投げると oRPC の defined error envelope として返す。
@@ -55,10 +45,8 @@ type StoryRpcHandler = (input: unknown) => unknown;
 // global fetch がそのまま拾われる。oRPC の wire format（{json} envelope）に
 // 合わせて fixture を返し、実際の link codec 経路ごと検証する。
 const storyRpcHandlers = new Map<string, StoryRpcHandler>([
-  ["bookmarks.editor", () => editorFixture()],
-  ["bookmarks.update", () => updateFixture()],
+  ["bookmarks.create", () => createFixture()],
   ["bookmarks.title", () => "取得したタイトル"],
-  ["bookmarks.delete", () => ({ id: bookmarkId })],
   ["bookmarks.counts", () => ({ favorites: 0, inbox: 0, recent: 0 })],
   ["tags.shelf", () => shelfTags],
   [
@@ -141,23 +129,16 @@ const meta = preview.meta({
     layout: "fullscreen",
     tanstack: {
       router: {
-        params: {
-          id: bookmarkId,
-        },
         route: Route,
         routeOverrides: {
           "/_protected": {},
-          "/_protected/bookmarks/$id/edit": {
-            loader: async () => ({ kind: "ok" as const }),
-          },
         },
       },
     },
   },
-  title: "Pages / ブックマーク編集画面",
+  title: "Pages / ブックマーク登録画面",
   beforeEach: async () => {
-    editorFixture = () => editorRecord;
-    updateFixture = () => ({ id: bookmarkId });
+    createFixture = () => ({ id: createdId });
     await storyQueryClient.clear();
   },
 });
@@ -167,124 +148,134 @@ export const Default = meta.story({
     const canvas = within(canvasElement);
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("heading", { name: "ブックマークを編集" })
+        canvas.getByRole("heading", { name: "ブックマークを登録" })
       ).toBeInTheDocument();
     });
-    await expect(canvas.getByLabelText("URL")).toHaveValue(editorRecord.url);
-    await expect(canvas.getByLabelText("タイトル")).toHaveValue(
-      editorRecord.title
-    );
+    await expect(canvas.getByLabelText("URL")).toHaveValue("");
     await expect(
-      canvas.getByRole("button", { name: "frontendを外す" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("button", { name: "変更を保存" })
+      canvas.getByRole("button", { name: "登録する" })
     ).toBeEnabled();
     await expect(
       canvas.getByRole("link", { name: "キャンセル" })
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole("button", { name: /削除/ })
+      canvas.getByRole("link", { name: /一覧へ戻る/ })
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole("link", { name: /詳細へ戻る/ })
-    ).toBeInTheDocument();
-  },
-});
-
-export const InitialLoading = meta.story({
-  beforeEach: async () => {
-    editorFixture = async () => await new Promise<never>(() => {});
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByText("ブックマークを読み込み中")
-      ).toBeInTheDocument();
-    });
-    await expect(
-      canvas.queryByRole("heading", { name: "ブックマークを編集" })
-    ).not.toBeInTheDocument();
-  },
-});
-
-export const BookmarkIsNotFound = meta.story({
-  beforeEach: async () => {
-    editorFixture = async () => {
-      throw new StoryRpcError("bookmark-not-found", 404, "bookmark not found");
-    };
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByText("このブックマークは見つかりません")
-      ).toBeInTheDocument();
-    });
-    await expect(
-      canvas.getByRole("link", { name: "一覧へ戻る" })
+      canvas.getByRole("searchbox", { name: "タグを検索・追加" })
     ).toBeInTheDocument();
   },
 });
 
-export const UpdateHasDuplicateUrl = meta.story({
-  beforeEach: async () => {
-    updateFixture = () => {
-      throw new StoryRpcError("duplicate-url", 409, "duplicate url");
-    };
-  },
+export const InvalidUrl = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole("button", { name: "変更を保存" })
-      ).toBeEnabled();
-    });
-    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
+    await userEvent.type(canvas.getByLabelText("URL"), "tanstack");
+    await userEvent.type(canvas.getByLabelText("タイトル"), "TanStack");
+    await userEvent.click(canvas.getByRole("button", { name: "登録する" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
-      "同じ URL のブックマークが既にあります"
+      "入力内容を確認してください"
     );
+    await expect(
+      canvas.getByText("URLの形式が正しくありません（例: https://example.com）")
+    ).toBeInTheDocument();
+    // 入力値は保持される
+    await expect(canvas.getByLabelText("URL")).toHaveValue("tanstack");
   },
 });
 
-export const UpdateHasUnexpectedError = meta.story({
+export const SavePending = meta.story({
   beforeEach: async () => {
-    updateFixture = () => {
-      throw new Error("server boom");
-    };
+    createFixture = async () => await new Promise<never>(() => {});
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole("button", { name: "変更を保存" })
-      ).toBeEnabled();
-    });
-    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
-    await expect(canvas.getByRole("alert")).toHaveTextContent(
-      "保存に失敗しました"
+    await userEvent.type(
+      canvas.getByLabelText("URL"),
+      "https://example.com/article"
     );
-  },
-});
-
-export const UpdatePending = meta.story({
-  beforeEach: async () => {
-    updateFixture = async () => await new Promise<never>(() => {});
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole("button", { name: "変更を保存" })
-      ).toBeEnabled();
-    });
-    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
+    await userEvent.type(canvas.getByLabelText("タイトル"), "Example");
+    await userEvent.click(canvas.getByRole("button", { name: "登録する" }));
     await expect(
       canvas.getByRole("button", { name: "保存中…" })
     ).toBeDisabled();
     await expect(canvas.getByLabelText("URL")).toBeDisabled();
     // 入力値は保持される
-    await expect(canvas.getByLabelText("URL")).toHaveValue(editorRecord.url);
+    await expect(canvas.getByLabelText("URL")).toHaveValue(
+      "https://example.com/article"
+    );
+  },
+});
+
+export const SaveFailure = meta.story({
+  beforeEach: async () => {
+    createFixture = () => {
+      throw new Error("server boom");
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(
+      canvas.getByLabelText("URL"),
+      "https://example.com/article"
+    );
+    await userEvent.type(canvas.getByLabelText("タイトル"), "Example");
+    await userEvent.click(canvas.getByRole("button", { name: "登録する" }));
+    await waitFor(async () => {
+      await expect(canvas.getByRole("alert")).toHaveTextContent(
+        "ブックマークの保存に失敗しました"
+      );
+    });
+    // 入力値は保持される
+    await expect(canvas.getByLabelText("URL")).toHaveValue(
+      "https://example.com/article"
+    );
+  },
+});
+
+export const DuplicateUrl = meta.story({
+  beforeEach: async () => {
+    createFixture = () => {
+      throw new StoryRpcError("duplicate-url", 409, "duplicate url");
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(
+      canvas.getByLabelText("URL"),
+      "https://example.com/article"
+    );
+    await userEvent.type(canvas.getByLabelText("タイトル"), "Example");
+    await userEvent.click(canvas.getByRole("button", { name: "登録する" }));
+    await waitFor(async () => {
+      await expect(canvas.getByRole("alert")).toHaveTextContent(
+        "同じURLのブックマークが既にあります"
+      );
+    });
+  },
+});
+
+export const Mobile = meta.story({
+  globals: {
+    viewport: {
+      value: "iphone12",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(async () => {
+      await expect(
+        canvas.getByRole("heading", { name: "ブックマークを登録" })
+      ).toBeInTheDocument();
+    });
+    const bar = within(canvas.getByRole("banner"));
+    await expect(bar.getByText("登録")).toBeInTheDocument();
+    // モバイルでは戻るラベルが「キャンセル」に切り替わる
+    await expect(
+      bar.getByRole("link", { name: "キャンセル" })
+    ).toBeInTheDocument();
+    await expect(
+      bar.getByRole("link", { name: "アカウント" })
+    ).toBeInTheDocument();
   },
 });
