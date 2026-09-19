@@ -47,6 +47,7 @@ function baseDeps(): ReadDeps {
     listBookmarks: vi.fn(async () => ({ items: [], nextCursor: null })),
     listShelfTags: vi.fn(async () => [] satisfies ShelfTag[]),
     listTags: vi.fn(async () => []),
+    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: vi.fn(
       async (): Promise<{ kind: "bookmark-not-found"; id: string }> => ({
         id: "",

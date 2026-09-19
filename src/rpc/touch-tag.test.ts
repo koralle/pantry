@@ -20,6 +20,7 @@ const readDeps = {
   listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [] as never[],
   listTags: async () => [] as never[],
+  setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
   softDeleteBookmark: async () =>
     ({ id: "", kind: "bookmark-not-found" }) as const,
   updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,

@@ -23,6 +23,9 @@ describe("server direct RPC client", () => {
       listBookmarks: async () => ({ items: [], nextCursor: null }),
       listShelfTags: async () => [],
       listTags: async () => [],
+      setBookmarkFavorite: async () => ({
+        kind: "bookmark-not-found" as const,
+      }),
       softDeleteBookmark: async () => ({ id: "", kind: "bookmark-not-found" }),
       touchTag: async () => ({ kind: "touched" }),
       updateBookmark: async () => ({ kind: "bookmark-not-found" }),

@@ -143,6 +143,7 @@ describe(getBookmarkDetail, () => {
 
     expect(detail).toStrictEqual({
       createdAt: new Date("2026-08-01T00:00:00.000Z").toISOString(),
+      favorite: false,
       id: "b-1",
       note: "メモ",
       tagNames: ["reading"],

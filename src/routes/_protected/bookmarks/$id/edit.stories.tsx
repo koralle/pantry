@@ -49,6 +49,7 @@ function buildRpcRouter(): AppRouter {
     listBookmarks: async () => ({ items: [], nextCursor: null }),
     getBookmarkDetail: async () => null,
     getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
+    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: async () => ({ kind: "bookmark-not-found", id: "" }),
   });
 }
@@ -66,14 +67,21 @@ function installRpcFetchStub(): void {
   }
   const passthroughFetch = originalFetch;
   globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url =
+    const requestUrl =
       typeof input === "string"
         ? input
         : input instanceof URL
           ? input.href
           : input.url;
-    if (new URL(url, window.location.origin).pathname === "/api/rpc") {
-      return await handleRpcRequest(new Request(url, init), buildRpcRouter());
+    const url = new URL(requestUrl, window.location.origin);
+    if (url.pathname.startsWith("/api/rpc")) {
+      // rpcFetch は fetch(request, init) を呼ぶので body は Request 側にある。
+      // URL だけを差し替えて Request を引き継ぎ、handleRpcRequest へ渡す。
+      const request =
+        input instanceof Request
+          ? new Request(url, input)
+          : new Request(url, init);
+      return await handleRpcRequest(request, buildRpcRouter());
     }
     return await passthroughFetch(input, init);
   };

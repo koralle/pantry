@@ -17,3 +17,14 @@ const toDate = (value: string | Date): Date =>
 
 export const formatDateTime = (date: string | Date): string =>
   dateTimeFormatter.format(toDate(date));
+
+const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+});
+
+/** 詳細メタ用の日付のみ（「2026/09/14」）。 */
+export const formatDate = (date: string | Date): string =>
+  dateFormatter.format(toDate(date));

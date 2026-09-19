@@ -79,6 +79,7 @@ function authenticatedRouter(overrides?: {
     listBookmarks: async () => ({ items: [], nextCursor: null }),
     listShelfTags: async () => [],
     listTags: async () => [],
+    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: async () =>
       ({ id: "", kind: "bookmark-not-found" }) as const,
     touchTag: async () => ({ kind: "touched" }),

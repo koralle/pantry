@@ -7,6 +7,7 @@ import type { SessionUser } from "../features/auth/domain/auth-values";
 import type { InsertBookmarkOutput } from "../features/bookmarks/application/create-bookmark";
 import type { SoftDeleteBookmark } from "../features/bookmarks/application/delete-bookmark";
 import type { FetchPageTitleOutput } from "../features/bookmarks/application/fetch-page-title";
+import type { SetBookmarkFavorite } from "../features/bookmarks/application/set-bookmark-favorite";
 import type { UpdateBookmarkOutput } from "../features/bookmarks/application/update-bookmark";
 import type { BookmarkId } from "../features/bookmarks/domain/bookmark-values";
 import type { BookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
@@ -50,6 +51,7 @@ function baseDeps(): MutableDeps {
     })),
     listShelfTags: vi.fn(async () => []),
     listTags: vi.fn(async () => []),
+    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: vi.fn(
       async (): Promise<{ kind: "bookmark-not-found" }> => ({
         kind: "bookmark-not-found",
@@ -279,6 +281,7 @@ describe("bookmarks.detail", () => {
   test("詳細 projection を返す", async () => {
     const detail: BookmarkDetail = {
       createdAt: "2026-08-01T00:00:00.000Z",
+      favorite: false,
       id: detailInput.id,
       note: null,
       tagNames: ["reading"],
@@ -384,6 +387,81 @@ describe("bookmarks.delete", () => {
     await expect(client.bookmarks.delete(deleteTarget)).rejects.toBeInstanceOf(
       Error
     );
+
+    expect(getResponse().status).toBe(500);
+    await expect(getResponse().text()).resolves.not.toContain("disk exploded");
+  });
+});
+
+describe("bookmarks.setFavorite", () => {
+  const favoriteTarget = {
+    favorite: true,
+    id: "019fae92-3bb0-78cd-b488-65ce0e26a001",
+  };
+
+  test("更新成功は plain string の id を返す", async () => {
+    const setBookmarkFavorite: SetBookmarkFavorite = vi.fn(async () => ({
+      id: favoriteTarget.id,
+      kind: "updated" as const,
+    }));
+    const deps = baseDeps();
+    const { client, getResponse } = createTestClient(
+      createAppRouter({ ...deps, setBookmarkFavorite })
+    );
+
+    const result = await client.bookmarks.setFavorite(favoriteTarget);
+
+    expect(result).toStrictEqual({ id: favoriteTarget.id });
+    expect(setBookmarkFavorite).toHaveBeenCalledWith({
+      favorite: true,
+      id: favoriteTarget.id,
+      userId: expect.any(String),
+    });
+    expect(getResponse().status).toBe(200);
+  });
+
+  test("対象なしは 404 bookmark-not-found を返す", async () => {
+    const deps = baseDeps();
+    const { client, getResponse } = createTestClient(createAppRouter(deps));
+
+    const error = await rejection(client.bookmarks.setFavorite(favoriteTarget));
+
+    expect(error.code).toBe("bookmark-not-found");
+    expect(getResponse().status).toBe(404);
+  });
+
+  test("不正な入力は 400 BAD_REQUEST で port を呼ばない", async () => {
+    const setBookmarkFavorite: SetBookmarkFavorite = vi.fn(async () => ({
+      id: "x",
+      kind: "updated" as const,
+    }));
+    const deps = baseDeps();
+    const { client, getResponse } = createTestClient(
+      createAppRouter({ ...deps, setBookmarkFavorite })
+    );
+
+    const error = await rejection(
+      // @ts-expect-error 不正な入力
+      client.bookmarks.setFavorite({ favorite: "yes", id: 42 })
+    );
+
+    expect(error.code).toBe("BAD_REQUEST");
+    expect(getResponse().status).toBe(400);
+    expect(setBookmarkFavorite).not.toHaveBeenCalled();
+  });
+
+  test("未知の障害は内部メッセージを漏らさず 500 を返す", async () => {
+    const setBookmarkFavorite: SetBookmarkFavorite = vi.fn(async () => {
+      throw new Error("disk exploded");
+    });
+    const deps = baseDeps();
+    const { client, getResponse } = createTestClient(
+      createAppRouter({ ...deps, setBookmarkFavorite })
+    );
+
+    await expect(
+      client.bookmarks.setFavorite(favoriteTarget)
+    ).rejects.toBeInstanceOf(Error);
 
     expect(getResponse().status).toBe(500);
     await expect(getResponse().text()).resolves.not.toContain("disk exploded");

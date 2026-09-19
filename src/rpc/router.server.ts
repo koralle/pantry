@@ -10,6 +10,7 @@ import { getBookmarkDetail } from "../features/bookmarks/persistence/get-bookmar
 import { insertBookmark } from "../features/bookmarks/persistence/insert-bookmark";
 import { listBookmarks } from "../features/bookmarks/persistence/list-bookmarks";
 import { selectBookmarkEditor } from "../features/bookmarks/persistence/select-bookmark-editor";
+import { setBookmarkFavorite } from "../features/bookmarks/persistence/set-bookmark-favorite";
 import { softDeleteBookmark } from "../features/bookmarks/persistence/soft-delete-bookmark";
 import { updateBookmark } from "../features/bookmarks/persistence/update-bookmark";
 import { fetchPageTitle } from "../features/bookmarks/server/fetch-page-title.server";
@@ -46,6 +47,8 @@ export const appRouter = createAppRouter({
   listBookmarks: async (input) => await listBookmarks(getDB(), input),
   listShelfTags: async (userId) => await selectShelfTags(getDB(), userId),
   listTags: async (userId, page) => await selectTags(getDB(), userId, page),
+  setBookmarkFavorite: async (input) =>
+    await setBookmarkFavorite(getDB(), input),
   softDeleteBookmark: async (input) => await softDeleteBookmark(getDB(), input),
   touchTag: async (input) => await touchTag(getDB(), input),
   updateBookmark: async (input) => await updateBookmark(getDB(), input),

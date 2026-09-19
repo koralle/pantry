@@ -15,6 +15,8 @@ import {
   fetchPageTitleInputSchema,
 } from "../features/bookmarks/application/fetch-page-title";
 import type { FetchPageTitle } from "../features/bookmarks/application/fetch-page-title";
+import { executeSetBookmarkFavorite } from "../features/bookmarks/application/set-bookmark-favorite";
+import type { SetBookmarkFavorite } from "../features/bookmarks/application/set-bookmark-favorite";
 import {
   executeUpdateBookmark,
   updateBookmarkInputSchema,
@@ -99,6 +101,7 @@ export interface AppRouterDeps {
     userId: UserId,
     input: { readonly id: string }
   ) => Promise<BookmarkDetail | null>;
+  readonly setBookmarkFavorite: SetBookmarkFavorite;
   readonly softDeleteBookmark: SoftDeleteBookmark;
 }
 
@@ -447,6 +450,34 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       return { id: result.id };
     });
 
+  /** 成功なら plain string ID を wire へ返す。favorite はトグル先を input が持つ。 */
+  const setFavorite = base
+    .use(requireAuth)
+    .errors({
+      "bookmark-not-found": {
+        status: 404,
+      },
+    })
+    .input(
+      v.object({
+        favorite: v.boolean(),
+        id: v.pipe(v.string(), v.uuid()),
+      })
+    )
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeSetBookmarkFavorite({
+        command: input,
+        setBookmarkFavorite: deps.setBookmarkFavorite,
+        userId: context.userId,
+      });
+
+      if (result.kind === "bookmark-not-found") {
+        throw errors["bookmark-not-found"]();
+      }
+
+      return { id: result.id };
+    });
+
   return {
     auth,
     bookmarks: {
@@ -460,6 +491,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       detail: bookmarkDetail,
       editor,
       list: listBookmarks,
+      setFavorite,
       title: fetchTitle,
       update: updateBookmark,
     },

@@ -17,6 +17,7 @@ export interface BookmarkDetail {
   readonly note: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly favorite: boolean;
   readonly tagNames: string[];
 }
 
@@ -29,6 +30,7 @@ export const getBookmarkDetail = async (
   const [bookmark] = await db
     .select({
       createdAt: bookmarkTable.createdAt,
+      favorite: bookmarkTable.favorite,
       id: bookmarkTable.id,
       note: bookmarkTable.note,
       title: bookmarkTable.title,
