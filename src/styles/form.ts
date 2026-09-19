@@ -43,7 +43,10 @@ export const fieldUrlRow = css({
 });
 
 export const fieldError = css({
+  alignItems: "center",
   color: "danger.solid",
+  columnGap: "1.5",
+  display: "flex",
   fontSize: "xs",
   margin: "0",
 });

@@ -51,7 +51,10 @@ export const dialogField = css({
 });
 
 export const dialogError = css({
+  alignItems: "center",
   color: "danger.solid",
+  columnGap: "1.5",
+  display: "flex",
   fontSize: "2xs",
   margin: "0",
   marginBlockStart: "2",

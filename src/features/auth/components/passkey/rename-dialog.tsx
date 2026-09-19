@@ -1,4 +1,4 @@
-import { Check, Pencil } from "lucide-react";
+import { Check, CircleAlert, Pencil } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -75,7 +75,7 @@ export const PasskeyRenameDialog = ({
             </div>
             {errorMessage === null || errorMessage === undefined ? null : (
               <p className={dialogError} role="alert">
-                {errorMessage}
+                <CircleAlert aria-hidden size={12} /> {errorMessage}
               </p>
             )}
             <div className={dialogActions}>

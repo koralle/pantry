@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, RotateCw } from "lucide-react";
+import { ChevronDown, CircleAlert, RotateCw } from "lucide-react";
 import { css } from "styled-system/css";
 
 import { orpc } from "../../../rpc/query";
@@ -146,6 +146,7 @@ export const BookmarkListResults = ({
       ) : null}
       {loadMoreError === null ? null : (
         <p className={loadMoreErrorNote} role="alert">
+          <CircleAlert aria-hidden size={12} />
           {loadMoreError}
           <button
             className={css({

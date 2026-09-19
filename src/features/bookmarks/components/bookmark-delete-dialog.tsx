@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { Trash2 } from "lucide-react";
+import { CircleAlert, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import {
   Dialog,
@@ -91,7 +91,7 @@ export const BookmarkDeleteDialog = ({
             </Text>
             {deleteError ? (
               <p className={dialogError} role="alert">
-                {deleteError}
+                <CircleAlert aria-hidden size={12} /> {deleteError}
               </p>
             ) : null}
             <div className={dialogActions}>

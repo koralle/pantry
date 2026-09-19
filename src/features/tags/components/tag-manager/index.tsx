@@ -15,6 +15,7 @@ import { Link } from "@tanstack/react-router";
 import {
   Check,
   ChevronRight,
+  CircleAlert,
   LoaderCircle,
   Pencil,
   Plus,
@@ -385,7 +386,7 @@ const TagNameForm = ({
       </div>
       {error ? (
         <p className={dialogError} role="alert">
-          {error}
+          <CircleAlert aria-hidden size={12} /> {error}
         </p>
       ) : null}
       <div className={dialogActions}>
@@ -494,7 +495,7 @@ const TagDeleteConfirm = ({
       </Text>
       {error ? (
         <p className={dialogError} role="alert">
-          {error}
+          <CircleAlert aria-hidden size={12} /> {error}
         </p>
       ) : null}
       <div className={dialogActions}>

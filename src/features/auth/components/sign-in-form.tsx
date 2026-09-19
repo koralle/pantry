@@ -112,7 +112,9 @@ export const SignInWithEmailAndPasswordForm = ({
             aria-invalid={emailError !== null && emailError !== undefined}
           />
           {emailError === null || emailError === undefined ? null : (
-            <p className={fieldError}>{emailError}</p>
+            <p className={fieldError}>
+              <CircleAlert size={12} aria-hidden /> {emailError}
+            </p>
           )}
         </div>
 
@@ -129,7 +131,9 @@ export const SignInWithEmailAndPasswordForm = ({
             aria-invalid={passwordError !== null && passwordError !== undefined}
           />
           {passwordError === null || passwordError === undefined ? null : (
-            <p className={fieldError}>{passwordError}</p>
+            <p className={fieldError}>
+              <CircleAlert size={12} aria-hidden /> {passwordError}
+            </p>
           )}
         </div>
       </fieldset>

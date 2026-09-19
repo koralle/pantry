@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { CircleAlert, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -54,7 +54,7 @@ export const PasskeyDeleteDialog = ({
           </Text>
           {errorMessage === null || errorMessage === undefined ? null : (
             <p className={dialogError} role="alert">
-              {errorMessage}
+              <CircleAlert aria-hidden size={12} /> {errorMessage}
             </p>
           )}
           <div className={dialogActions}>
