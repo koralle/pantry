@@ -21,8 +21,8 @@ import {
   detailCenter,
   detailFlashRow,
   detailPage,
-} from "../../../../styles/detail";
-import { flash } from "../../../../styles/flash";
+} from "../../../../shared/styles/detail";
+import { flash } from "../../../../shared/styles/flash";
 
 function isBookmarkNotFound(error: unknown): boolean {
   return (

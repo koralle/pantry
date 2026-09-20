@@ -7,7 +7,7 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.tsx, ./app-shell.stories.tsx
- * - ../../../styles/shell.ts (rail* recipes)
+ * - ../styles.ts (rail* recipes)
  */
 
 import { Link } from "@tanstack/react-router";
@@ -16,16 +16,10 @@ import { History, Inbox, Star, Tag } from "lucide-react";
 import { cx } from "styled-system/css";
 
 import { TagDot } from "../../../shared/components/tag-chip";
-import { toneFor } from "../../../styles/domain-tone";
-import {
-  rail,
-  railCount,
-  railIcon,
-  railItem,
-  railSection,
-} from "../../../styles/shell";
+import { toneFor } from "../../../shared/styles/domain-tone";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import type { ShellCounts, ShellTag, ShellView } from "../lib/shell-nav";
+import { rail, railCount, railIcon, railItem, railSection } from "../styles";
 
 const viewItems: {
   view: "recent" | "inbox" | "favorites";

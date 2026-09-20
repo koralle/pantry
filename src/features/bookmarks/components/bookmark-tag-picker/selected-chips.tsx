@@ -1,8 +1,12 @@
 import { X } from "lucide-react";
 
 import { TagDot } from "../../../../shared/components/tag-chip";
-import { toneFor } from "../../../../styles/domain-tone";
-import { tchip, tchipName, tchipRemove } from "../../../../styles/form-screen";
+import { toneFor } from "../../../../shared/styles/domain-tone";
+import {
+  tchip,
+  tchipName,
+  tchipRemove,
+} from "../../../../shared/styles/form-screen";
 import type { NamedTag } from "./lib";
 
 interface SelectedTagChipsProps {

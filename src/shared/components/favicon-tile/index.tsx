@@ -12,8 +12,8 @@
 import { Globe } from "lucide-react";
 import { cva, cx } from "styled-system/css";
 
-import { toneFor } from "../../../styles/domain-tone";
-import type { DomainTone } from "../../../styles/domain-tone";
+import { toneFor } from "../../styles/domain-tone";
+import type { DomainTone } from "../../styles/domain-tone";
 
 const faviconTile = cva({
   base: {

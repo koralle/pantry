@@ -18,9 +18,9 @@ import * as v from "valibot";
 
 import { FaviconTile } from "../../../../shared/components/favicon-tile";
 import { StyledButton } from "../../../../shared/components/styled-button";
-import { button } from "../../../../styles/button";
-import { domainToneVar, toneFor } from "../../../../styles/domain-tone";
-import { spinner } from "../../../../styles/feedback";
+import { button } from "../../../../shared/components/styled-button/styles";
+import { domainToneVar, toneFor } from "../../../../shared/styles/domain-tone";
+import { spinner } from "../../../../shared/styles/feedback";
 import {
   fieldErr,
   flabel,
@@ -29,7 +29,19 @@ import {
   inputBoxIcon,
   noteArea,
   noteBox,
-} from "../../../../styles/form-screen";
+} from "../../../../shared/styles/form-screen";
+import { kbd } from "../../../../shared/styles/kbd";
+import { srOnly } from "../../../../shared/styles/sr-only";
+import { bookmarkUrlSchema } from "../../domain/bookmark-values";
+import type { CreateTagFromPickerAction } from "../../lib/tag-picker/execute-create-tag-from-picker";
+import type {
+  BookmarkFormServerError,
+  BookmarkTitleFetchAction,
+} from "../bookmark-editor/bookmark-form";
+import { useBookmarkTagDraft } from "../bookmark-editor/bookmark-form/use-bookmark-tag-draft";
+import { BookmarkTagPicker } from "../bookmark-tag-picker";
+import type { TagCandidate } from "../bookmark-tag-picker";
+import type { NamedTag } from "../bookmark-tag-picker/lib";
 import {
   qaActions,
   qaBadge,
@@ -50,19 +62,7 @@ import {
   qaTitle,
   qaWarnNote,
   qaWarnNoteIcon,
-} from "../../../../styles/quick-add";
-import { kbd } from "../../../../styles/shell";
-import { srOnly } from "../../../../styles/sr-only";
-import { bookmarkUrlSchema } from "../../domain/bookmark-values";
-import type { CreateTagFromPickerAction } from "../../lib/tag-picker/execute-create-tag-from-picker";
-import type {
-  BookmarkFormServerError,
-  BookmarkTitleFetchAction,
-} from "../bookmark-editor/bookmark-form";
-import { useBookmarkTagDraft } from "../bookmark-editor/bookmark-form/use-bookmark-tag-draft";
-import { BookmarkTagPicker } from "../bookmark-tag-picker";
-import type { TagCandidate } from "../bookmark-tag-picker";
-import type { NamedTag } from "../bookmark-tag-picker/lib";
+} from "./styles";
 
 export interface QuickAddCreateCommand {
   readonly url: string;

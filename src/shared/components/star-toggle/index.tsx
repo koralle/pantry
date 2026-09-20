@@ -7,14 +7,14 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx
- * - ../../../styles/icon-button.ts (shared surface)
+ * - ../icon-button/styles.ts (shared surface)
  */
 
 import { Star } from "lucide-react";
 import { Button as AriaButton } from "react-aria-components";
 import { css, cx } from "styled-system/css";
 
-import { iconButton } from "../../../styles/icon-button";
+import { iconButton } from "../icon-button/styles";
 
 const pressedStyle = css({
   "@media (any-hover: hover)": {

@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUpRight, Pencil } from "lucide-react";
 
 import { FaviconTile } from "../../../shared/components/favicon-tile";
+import { button } from "../../../shared/components/styled-button/styles";
 import { TagChip } from "../../../shared/components/tag-chip";
-import { button } from "../../../styles/button";
 import {
   backlink,
   detailActs,
@@ -19,7 +19,7 @@ import {
   detailTop,
   detailUrl,
   detailWrap,
-} from "../../../styles/detail";
+} from "../../../shared/styles/detail";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import {
   buildListBackSearch,

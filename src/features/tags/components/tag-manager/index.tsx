@@ -7,7 +7,7 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx
- * - ../../../../styles/tags.ts
+ * - ../../styles.ts
  * - ../../../../routes/_protected/tags/index.tsx
  */
 
@@ -50,9 +50,13 @@ import {
   dialogError,
   dialogField,
   dialogTitle,
-} from "../../../../styles/dialog";
-import { toneFor } from "../../../../styles/domain-tone";
-import { spinner, skeletonBar } from "../../../../styles/feedback";
+} from "../../../../shared/styles/dialog";
+import { toneFor } from "../../../../shared/styles/domain-tone";
+import { skeletonBar, spinner } from "../../../../shared/styles/feedback";
+import { tagShelfSearch } from "../../../navigation/lib/bookmark-search-builders";
+import { tagNameSchema } from "../../lib/tag-name-schema";
+import type { ShelfTag } from "../../lib/tag-shelf";
+import { sortTagsForNav } from "../../lib/tag-shelf";
 import {
   tagDialogLabel,
   tagRow,
@@ -74,11 +78,7 @@ import {
   tagsPage,
   tagsPageInner,
   tagsTitle,
-} from "../../../../styles/tags";
-import { tagShelfSearch } from "../../../navigation/lib/bookmark-search-builders";
-import { tagNameSchema } from "../../lib/tag-name-schema";
-import type { ShelfTag } from "../../lib/tag-shelf";
-import { sortTagsForNav } from "../../lib/tag-shelf";
+} from "../../styles";
 
 /**
  * `message` が null のときは UNAUTHORIZED。sign-in への redirect が進行中なので

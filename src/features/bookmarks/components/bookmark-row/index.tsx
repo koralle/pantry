@@ -5,7 +5,7 @@ import { visuallyHidden } from "styled-system/patterns";
 
 import { FaviconTile } from "../../../../shared/components/favicon-tile";
 import { TagChip } from "../../../../shared/components/tag-chip";
-import { domainToneVar, toneFor } from "../../../../styles/domain-tone";
+import { domainToneVar, toneFor } from "../../../../shared/styles/domain-tone";
 import {
   rowDate,
   rowDomain,
@@ -20,7 +20,7 @@ import {
   rowTags,
   rowTitle,
   rowTitleMobile,
-} from "../../../../styles/list";
+} from "../../styles";
 
 export interface BookmarkTag {
   name: string;

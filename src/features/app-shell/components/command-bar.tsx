@@ -12,14 +12,16 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.tsx (⌘K focuses the input via inputRef)
- * - ../../../styles/shell.ts (commandBar / commandInput / kbd recipes)
+ * - ../styles.ts (commandBar / commandInput recipes)
+ * - ../../../shared/styles/kbd.ts (kbd recipe)
  */
 
 import { Search } from "lucide-react";
 import type { RefObject } from "react";
 import { css, cx } from "styled-system/css";
 
-import { commandBar, commandInput, kbd } from "../../../styles/shell";
+import { kbd } from "../../../shared/styles/kbd";
+import { commandBar, commandInput } from "../styles";
 
 const formContents = css({ display: "contents" });
 

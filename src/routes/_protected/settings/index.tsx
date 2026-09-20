@@ -3,9 +3,6 @@ import { ArrowLeft, LogOut } from "lucide-react";
 
 import { PasskeySettings } from "../../../features/auth/components/passkey/settings";
 import { useSignOut } from "../../../features/auth/hooks/use-sign-out";
-import { defaultBookmarkSearch } from "../../../features/navigation/lib/bookmark-search";
-import { StyledButton } from "../../../shared/components/styled-button";
-import { StyledLink } from "../../../shared/components/styled-link";
 import {
   accountBackRow,
   accountKv,
@@ -17,7 +14,10 @@ import {
   accountSectionBody,
   accountSectionHeading,
   accountTitle,
-} from "../../../styles/account";
+} from "../../../features/auth/styles";
+import { defaultBookmarkSearch } from "../../../features/navigation/lib/bookmark-search";
+import { StyledButton } from "../../../shared/components/styled-button";
+import { StyledLink } from "../../../shared/components/styled-link";
 
 export const Route = createFileRoute("/_protected/settings/")({
   loader: async ({ context }) => ({

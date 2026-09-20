@@ -27,15 +27,15 @@ import { listSearchFromDetail } from "../../../../features/navigation/lib/bookma
 import { orpc } from "../../../../rpc/query";
 import { getRpcClient } from "../../../../rpc/runtime-client";
 import { createErrorFallback } from "../../../../shared/components/error-fallback";
+import { button } from "../../../../shared/components/styled-button/styles";
 import { UiEmpty } from "../../../../shared/components/ui-empty";
 import { UiLoading } from "../../../../shared/components/ui-loading";
-import { button } from "../../../../styles/button";
-import { detailCenter } from "../../../../styles/detail";
+import { detailCenter } from "../../../../shared/styles/detail";
 import {
   formFootSpacer,
   formWrap,
   workbenchScreen,
-} from "../../../../styles/form-screen";
+} from "../../../../shared/styles/form-screen";
 
 const editorStaleTime = 5000;
 

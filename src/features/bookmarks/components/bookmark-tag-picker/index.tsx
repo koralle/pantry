@@ -15,7 +15,7 @@ import {
   flabel,
   tagInputBox,
   tagInputField,
-} from "../../../../styles/form-screen";
+} from "../../../../shared/styles/form-screen";
 import { canOfferCreateTag } from "./lib";
 import type { NamedTag, TagCandidate } from "./lib";
 import { TagPickerPanel } from "./panel";

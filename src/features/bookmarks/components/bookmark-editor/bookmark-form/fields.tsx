@@ -14,7 +14,7 @@ import {
   inputRow,
   noteArea,
   noteBox,
-} from "../../../../../styles/form-screen";
+} from "../../../../../shared/styles/form-screen";
 import type { BookmarkFormFieldKey, BookmarkFormServerError } from "./types";
 
 interface BookmarkFormFieldsProps {

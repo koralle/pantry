@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react";
 import { styled } from "styled-system/jsx";
 
-import { DOMAIN_TONES } from "../../../styles/domain-tone";
+import { DOMAIN_TONES } from "../../styles/domain-tone";
 import { TagChip, TagDot } from "./";
 
 const meta = {

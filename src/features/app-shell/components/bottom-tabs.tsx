@@ -8,16 +8,16 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.tsx, ./app-shell.stories.tsx
- * - ../../../styles/shell.ts (bottomTabs / tabItem / fab recipes)
+ * - ../styles.ts (bottomTabs / tabItem / fab recipes)
  */
 
 import { Link } from "@tanstack/react-router";
 import { History, Inbox, Plus, Star, Tag } from "lucide-react";
 
-import { bottomTabs, fab, tabItem } from "../../../styles/shell";
 import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import type { ShellView } from "../lib/shell-nav";
+import { bottomTabs, fab, tabItem } from "../styles";
 
 export interface BottomTabsProps {
   newSearch?: BookmarkDetailSearch | undefined;

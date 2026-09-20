@@ -7,14 +7,14 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx
- * - ../../../styles/icon-button.ts (variant surface)
+ * - ./styles.ts (variant surface)
  */
 
 import { Button as AriaButton } from "react-aria-components";
 import { styled } from "styled-system/jsx";
 import type { HTMLStyledProps } from "styled-system/types";
 
-import { iconButton } from "../../../styles/icon-button";
+import { iconButton } from "./styles";
 
 const RawIconButton = styled(AriaButton, iconButton);
 

@@ -1,5 +1,5 @@
-import { detailCenter } from "../../../styles/detail";
-import { stateMessage } from "../../../styles/feedback";
+import { detailCenter } from "../../../shared/styles/detail";
+import { stateMessage } from "../../../shared/styles/feedback";
 
 export const BookmarkDetailSkeleton = () => (
   <div aria-busy="true" className={detailCenter}>

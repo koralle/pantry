@@ -1,18 +1,7 @@
 import { css } from "styled-system/css";
 
-export { pageLead as workbenchLead, pageTitle as workbenchTitle } from "./type";
-export const workbench = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "5",
-  maxInlineSize: "36rem",
-});
-
-export const workbenchNav = css({
-  columnGap: "5",
-  display: "flex",
-  flexWrap: "wrap",
-  rowGap: "3",
+export const signInForm = css({
+  marginBlockStart: "2",
 });
 
 export const workbenchForm = css({

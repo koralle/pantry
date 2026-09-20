@@ -19,7 +19,7 @@ import {
   dialogError,
   dialogField,
   dialogTitle,
-} from "../../../../styles/dialog";
+} from "../../../../shared/styles/dialog";
 
 export const PasskeyRenameDialog = ({
   currentName,

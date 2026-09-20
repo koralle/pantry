@@ -1,7 +1,7 @@
 import { CircleDashed } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { stateBox, stateMessage } from "../../styles/feedback";
+import { stateBox, stateMessage } from "../styles/feedback";
 
 export const UiEmpty = ({
   title,

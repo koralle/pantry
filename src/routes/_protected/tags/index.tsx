@@ -20,11 +20,11 @@ import { refreshAfterCreateTag } from "../../../features/tags/lib/refresh-after-
 import { refreshAfterDeleteTag } from "../../../features/tags/lib/refresh-after-delete-tag";
 import { refreshAfterUpdateTag } from "../../../features/tags/lib/refresh-after-update-tag";
 import type { ShelfTag } from "../../../features/tags/lib/tag-shelf";
+import { tagsPage } from "../../../features/tags/styles";
 import { orpc } from "../../../rpc/query";
 import { StateView } from "../../../shared/components/state-view";
 import { StyledButton } from "../../../shared/components/styled-button";
-import { detailCenter } from "../../../styles/detail";
-import { tagsPage } from "../../../styles/tags";
+import { detailCenter } from "../../../shared/styles/detail";
 
 const protectedRouteApi = getRouteApi("/_protected");
 

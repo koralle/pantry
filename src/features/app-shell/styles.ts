@@ -1,9 +1,9 @@
 import { css, cva } from "styled-system/css";
 
 /**
- * App-shell surfaces: top bar, command bar, navigation rail, bottom tabs,
- * and the mobile quick-add FAB. Dimensions follow the approved mock
- * (mocks/2026-09-16-directions) — keep arbitrary values aligned with it.
+ * App-shell surfaces: top bar, command bar, workbench bar, navigation rail,
+ * bottom tabs, and the mobile quick-add FAB. Dimensions follow the approved
+ * mock (mocks/2026-09-16-directions) — keep arbitrary values aligned with it.
  */
 
 export const topbar = css({
@@ -60,33 +60,41 @@ export const commandInput = css({
   minInlineSize: "0",
 });
 
-export const kbd = cva({
-  base: {
-    background: "bg.surface",
-    borderColor: "border.default",
-    borderBlockEndWidth: "medium",
-    borderRadius: "[0.25rem]",
-    borderStyle: "solid",
-    borderWidth: "thin",
-    color: "fg.muted",
-    fontFamily: "mono",
-    fontSize: "[0.625rem]",
-    lineHeight: "1",
-    paddingBlock: "[0.0625rem]",
-    paddingInline: "[0.3125rem]",
+/**
+ * 集中フロー（フォーム・クイック追加）の専用トップバー。
+ * シェルの代わりに backlink + wordmark + アカウントアイコンだけを持つ。
+ * モバイルは wordmark の代わりに画面名を中央に置く。
+ */
+export const workbenchBar = css({
+  alignItems: "center",
+  background: "bg.surface",
+  borderBlockEndColor: "border.default",
+  borderBlockEndStyle: "solid",
+  borderBlockEndWidth: "thin",
+  columnGap: "3",
+  display: "flex",
+  flexShrink: "0",
+  paddingBlock: "2.5",
+  paddingInline: "3.5",
+});
+
+export const workbenchWordmark = css({
+  display: "none",
+  marginInlineStart: "2.5",
+  md: {
+    display: "block",
   },
-  defaultVariants: {
-    tone: "default",
-  },
-  variants: {
-    tone: {
-      default: {},
-      onAccent: {
-        background: "transparent",
-        borderColor: "[rgba(255,255,255,0.35)]",
-        color: "[rgba(255,255,255,0.85)]",
-      },
-    },
+});
+
+export const workbenchBarFlex = css({
+  flex: "1",
+});
+
+export const workbenchBarTitle = css({
+  fontSize: "xs",
+  fontWeight: "bold",
+  md: {
+    display: "none",
   },
 });
 

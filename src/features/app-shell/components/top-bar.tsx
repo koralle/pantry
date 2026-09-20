@@ -7,18 +7,19 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.tsx (composition + keyboard shortcuts)
- * - ../../../styles/shell.ts (topbar / wordmark / commandBar recipes)
+ * - ../styles.ts (topbar / wordmark / commandBar recipes)
  */
 
 import { Link } from "@tanstack/react-router";
 import { Plus, UserRound } from "lucide-react";
 import { css, cx } from "styled-system/css";
 
-import { button } from "../../../styles/button";
-import { iconButton } from "../../../styles/icon-button";
-import { kbd, topbar, wordmark } from "../../../styles/shell";
+import { iconButton } from "../../../shared/components/icon-button/styles";
+import { button } from "../../../shared/components/styled-button/styles";
+import { kbd } from "../../../shared/styles/kbd";
 import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
+import { topbar, wordmark } from "../styles";
 import type { CommandBarProps } from "./command-bar";
 import { CommandBar } from "./command-bar";
 

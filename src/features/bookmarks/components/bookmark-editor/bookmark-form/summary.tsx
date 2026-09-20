@@ -6,7 +6,7 @@ import {
   formSummaryIcon,
   formSummaryList,
   formSummaryTitle,
-} from "../../../../../styles/form";
+} from "../../../../../shared/styles/form";
 
 interface BookmarkFormSummaryProps {
   readonly id: string;

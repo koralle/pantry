@@ -9,7 +9,7 @@ import {
   formSummary,
   formSummaryIcon,
   formSummaryText,
-} from "../../../../styles/form";
+} from "../../../../shared/styles/form";
 import { authClient } from "../../lib/auth-client";
 import { getPasskeySignInErrorMessage } from "../../lib/passkey/messages";
 import {
