@@ -10,6 +10,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 const CARD_GRID_COLUMNS = 3;
+const DESKTOP_QUERY = "(min-width: 48em)";
 
 const isEditableTarget = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
@@ -21,6 +22,17 @@ const isEditableTarget = (target: EventTarget | null): boolean =>
 const isInteractiveTarget = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
   target.closest("a, button, [role='dialog'], [role='listbox']") !== null;
+
+/** モーダルやウィジェット内部では一覧ショートカットを無効にする */
+const isShortcutBlocked = (target: EventTarget | null): boolean =>
+  document.querySelector("[role='dialog'], [role='alertdialog']") !== null ||
+  (target instanceof HTMLElement &&
+    target.closest(
+      "[role='listbox'], [role='menu'], [role='combobox'], [role='option']"
+    ) !== null);
+
+const normalizeKey = (key: string): string =>
+  key.length === 1 ? key.toLowerCase() : key;
 
 const clampIndex = (current: number, delta: number, count: number): number => {
   if (count === 0) {
@@ -52,11 +64,12 @@ export const useListKeyboard = ({
       if (event.metaKey || event.ctrlKey || event.altKey) {
         return;
       }
-      if (isEditableTarget(event.target)) {
+      if (isEditableTarget(event.target) || isShortcutBlocked(event.target)) {
         return;
       }
+      const key = normalizeKey(event.key);
 
-      if (event.key === "t") {
+      if (key === "t") {
         const firstTag = document.querySelector<HTMLElement>("[data-rail-tag]");
         if (firstTag !== null) {
           event.preventDefault();
@@ -65,7 +78,7 @@ export const useListKeyboard = ({
         return;
       }
 
-      if (event.key === "Enter") {
+      if (key === "Enter") {
         if (isInteractiveTarget(event.target) || selectedId === undefined) {
           return;
         }
@@ -77,7 +90,10 @@ export const useListKeyboard = ({
         return;
       }
 
-      const column = CARD_GRID_COLUMNS;
+      const column =
+        cards && window.matchMedia(DESKTOP_QUERY).matches
+          ? CARD_GRID_COLUMNS
+          : 1;
       const delta = cards
         ? {
             ArrowDown: column,
@@ -86,8 +102,8 @@ export const useListKeyboard = ({
             ArrowUp: -column,
             j: column,
             k: -column,
-          }[event.key]
-        : { ArrowDown: 1, ArrowUp: -1, j: 1, k: -1 }[event.key];
+          }[key]
+        : { ArrowDown: 1, ArrowUp: -1, j: 1, k: -1 }[key];
 
       if (delta === undefined) {
         return;

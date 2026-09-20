@@ -423,9 +423,11 @@ export const AddFailed = meta.story({
         "パスキーの登録に失敗しました"
       );
     });
+    // エラー中も空カードは残し、再登録の導線を切らない
+    await expect(canvas.getByText("パスキーが未登録です")).toBeInTheDocument();
     await expect(
-      canvas.queryByText("パスキーが未登録です")
-    ).not.toBeInTheDocument();
+      canvas.getByRole("button", { name: "パスキーを登録" })
+    ).toBeEnabled();
   },
 });
 

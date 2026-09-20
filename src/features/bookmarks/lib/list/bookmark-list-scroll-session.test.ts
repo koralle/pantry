@@ -116,6 +116,24 @@ describe("bookmark list scroll session", () => {
     );
   });
 
+  test("ビューが変わると別 identity になりスクロール位置を渡さない", () => {
+    rememberBookmarkListScroll(
+      bookmarkListSearchIdentity({ ...defaultSearch, view: "recent" }),
+      640
+    );
+
+    expect(
+      consumeBookmarkListScroll(
+        bookmarkListSearchIdentity({ ...defaultSearch, view: "inbox" })
+      )
+    ).toBeNull();
+    expect(
+      consumeBookmarkListScroll(
+        bookmarkListSearchIdentity({ ...defaultSearch, view: "recent" })
+      )
+    ).toBe(640);
+  });
+
   test("ルーターの scroll restoration は一覧 pathname では動かさない", () => {
     expect(shouldRestoreRouterScroll({ pathname: "/bookmarks" })).toBeFalsy();
     expect(

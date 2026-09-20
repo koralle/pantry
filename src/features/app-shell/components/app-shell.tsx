@@ -38,6 +38,10 @@ const isEditableTarget = (target: EventTarget | null): boolean => {
   );
 };
 
+/** モーダル表示中はグローバルショートカットを効かせない */
+const isDialogOpen = (): boolean =>
+  document.querySelector("[role='dialog'], [role='alertdialog']") !== null;
+
 export interface AppShellProps {
   view: ShellView;
   /** Rail content — pass `<NavRailRoute>` (connected) or `<NavRail>` (fixtures). */
@@ -72,18 +76,21 @@ export const AppShell = ({
         !event.metaKey &&
         !event.ctrlKey &&
         !event.altKey &&
-        !isEditableTarget(event.target)
+        !isEditableTarget(event.target) &&
+        !isDialogOpen()
       ) {
         event.preventDefault();
         searchInputRef.current?.focus();
         return;
       }
       if (
-        event.key === "n" &&
+        event.key.length === 1 &&
+        event.key.toLowerCase() === "n" &&
         !event.metaKey &&
         !event.ctrlKey &&
         !event.altKey &&
-        !isEditableTarget(event.target)
+        !isEditableTarget(event.target) &&
+        !isDialogOpen()
       ) {
         event.preventDefault();
         void navigate({ search: newSearch ?? {}, to: "/bookmarks/quick" });

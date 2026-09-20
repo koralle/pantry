@@ -29,7 +29,6 @@ import { PasskeyListItem } from "./list-item";
 import type { ManagedPasskey } from "./list-item";
 
 const passkeyFeedback = css({
-  display: "block",
   fontSize: "xs",
   marginBlockEnd: "3",
 });
@@ -93,7 +92,6 @@ export const PasskeySettings = () => {
     const { data, error } = await authClient.passkey.listUserPasskeys();
     if (error !== null && error !== undefined) {
       setErrorMessage(getPasskeyManageErrorMessage(error));
-      setPasskeys((current) => current ?? []);
       return;
     }
 
@@ -178,14 +176,12 @@ export const PasskeySettings = () => {
         </output>
       )}
 
-      {passkeys === null || passkeys === undefined ? (
+      {(passkeys === null || passkeys === undefined) &&
+      (errorMessage === null || errorMessage === undefined) ? (
         <p className={passkeyLoading}>読み込み中…</p>
       ) : null}
 
-      {passkeys !== null &&
-      passkeys !== undefined &&
-      passkeys.length === 0 &&
-      (errorMessage === null || errorMessage === undefined) ? (
+      {passkeys !== null && passkeys !== undefined && passkeys.length === 0 ? (
         <div className={passkeyEmpty}>
           <span className={passkeyEmptyIcon}>
             <KeyRound size={18} aria-hidden />

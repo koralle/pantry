@@ -110,12 +110,18 @@ export const QuickAddStrip = ({
 
 export interface InboxCalloutProps {
   count: number;
+  /** 遷移先の未整理ビューへ引き継ぐ表示レイアウト */
+  layout?: BookmarkSearchSchema["layout"];
 }
 
-export const InboxCallout = ({ count }: InboxCalloutProps) => (
+export const InboxCallout = ({ count, layout }: InboxCalloutProps) => (
   <Link
     className={inboxCallout}
-    search={{ ...defaultBookmarkSearch, view: "inbox" }}
+    search={{
+      ...defaultBookmarkSearch,
+      ...(layout === "cards" ? { layout: "cards" as const } : {}),
+      view: "inbox",
+    }}
     to="/bookmarks"
   >
     <span className={inboxBadge}>
@@ -343,7 +349,7 @@ export const BookmarkListContent = ({
         }
       />
       {state === "ideal" && inboxCount ? (
-        <InboxCallout count={inboxCount} />
+        <InboxCallout count={inboxCount} layout={listSearch.layout} />
       ) : null}
       {state === "ideal" || state === "empty" ? (
         <QuickAddStrip search={newSearch} />
