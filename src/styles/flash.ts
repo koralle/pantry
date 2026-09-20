@@ -2,6 +2,7 @@ import { css } from "styled-system/css";
 
 export const flash = css({
   background: "accent.subtle",
+  display: "block",
   borderColor: "border.accent",
   borderRadius: "box",
   borderStyle: "solid",

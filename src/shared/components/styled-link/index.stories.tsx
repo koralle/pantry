@@ -31,6 +31,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default = {
+  name: "既定",
   args: {
     size: "md",
     to: "/bookmarks",
@@ -40,6 +41,7 @@ export const Default = {
 } as const satisfies Story;
 
 export const Accent = {
+  name: "アクセント",
   args: {
     to: "/bookmarks",
     visual: "accent",
@@ -48,6 +50,7 @@ export const Accent = {
 } as const satisfies Story;
 
 export const Muted = {
+  name: "ミュート",
   args: {
     to: "/bookmarks",
     visual: "muted",
@@ -56,6 +59,7 @@ export const Muted = {
 } as const satisfies Story;
 
 export const Brand = {
+  name: "ブランド",
   args: {
     to: "/bookmarks",
     visual: "brand",
@@ -64,6 +68,7 @@ export const Brand = {
 } as const satisfies Story;
 
 export const WithIcon = {
+  name: "アイコン付き",
   args: {
     to: "/settings",
     visual: "plain",

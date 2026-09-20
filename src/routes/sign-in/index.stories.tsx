@@ -83,6 +83,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
@@ -107,7 +108,28 @@ export const Default = meta.story({
   },
 });
 
+export const Mobile = meta.story({
+  name: "モバイル",
+  globals: {
+    viewport: {
+      value: "iphone12",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole("heading", { name: "ログイン", level: 1 })
+    ).toBeInTheDocument();
+    await expect(canvas.getByText("Pantry")).toBeInTheDocument();
+    await expect(
+      await canvas.findByRole("button", { name: "パスキーでログイン" })
+    ).toBeEnabled();
+    await expect(canvas.getByLabelText("メール")).toBeEnabled();
+  },
+});
+
 export const InvalidCredentials = meta.story({
+  name: "認証情報エラー",
   beforeEach: async () => {
     mocked(authClient.signIn.email).mockResolvedValue(invalidCredentialsResult);
   },
@@ -130,6 +152,7 @@ export const InvalidCredentials = meta.story({
 });
 
 export const Pending = meta.story({
+  name: "サインイン中",
   beforeEach: async () => {
     mocked(authClient.signIn.email).mockImplementation(
       async () => await neverSignIn()
@@ -152,6 +175,7 @@ export const Pending = meta.story({
 });
 
 export const WebAuthnUnavailable = meta.story({
+  name: "WebAuthn非対応",
   beforeEach: async () => {
     mocked(isWebAuthnAvailable).mockReturnValue(false);
   },
@@ -172,6 +196,7 @@ export const WebAuthnUnavailable = meta.story({
 });
 
 export const PasskeyCancelled = meta.story({
+  name: "パスキーキャンセル",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(
@@ -192,6 +217,7 @@ export const PasskeyCancelled = meta.story({
 });
 
 export const PasskeyFailed = meta.story({
+  name: "パスキー失敗",
   beforeEach: async () => {
     mocked(authClient.signIn.passkey).mockResolvedValue(failedPasskeyResult);
   },
@@ -216,6 +242,7 @@ export const PasskeyFailed = meta.story({
 });
 
 export const ConditionalUiDoesNotBlockPassword = meta.story({
+  name: "条件付きUIでもパスワード入力可",
   beforeEach: async () => {
     mocked(isConditionalMediationAvailable).mockResolvedValue(true);
     mocked(authClient.signIn.passkey).mockImplementation(

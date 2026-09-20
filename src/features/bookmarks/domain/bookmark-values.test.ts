@@ -49,7 +49,9 @@ describe("bookmarkUrlSchema", () => {
     const result = v.safeParse(bookmarkUrlSchema, "foo");
     expect(result.success).toBeFalsy();
     if (!result.success) {
-      expect(result.issues[0]?.message).toBe("有効なURLを入力してください");
+      expect(result.issues[0]?.message).toBe(
+        "URLの形式が正しくありません（例: https://example.com）"
+      );
     }
   });
 

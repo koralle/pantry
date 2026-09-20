@@ -27,6 +27,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default = {
+  name: "既定",
   args: {
     defaultSelectedKey: "newest",
   },
@@ -43,6 +44,7 @@ export const Default = {
 } as const satisfies Story;
 
 export const Placeholder = {
+  name: "プレースホルダー",
   args: {
     children: (
       <>
@@ -78,6 +80,7 @@ const filterableItems = (
 );
 
 export const Filterable = {
+  name: "絞り込み可",
   render: () => (
     <styled.div
       minInlineSize="[100svi]"

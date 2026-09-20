@@ -88,12 +88,12 @@ describe("bookmark list query ownership", () => {
   });
 
   test("一覧条件の React key は join 区切り文字列を使わない", () => {
-    const frame = readSource(
-      "features/bookmarks/components/bookmark-list-frame.tsx"
+    const screen = readSource(
+      "features/bookmarks/components/bookmark-list-screen.tsx"
     );
-    expect(frame).toContain("bookmarkListSearchIdentity");
-    expect(frame).not.toContain("join(',')");
-    expect(frame).not.toContain("join('|')");
+    expect(screen).toContain("bookmarkListSearchIdentity");
+    expect(screen).not.toContain("join(',')");
+    expect(screen).not.toContain("join('|')");
   });
 
   test("一覧条件の正本は bookmarkListSearchIdentity だけ", () => {
@@ -116,19 +116,20 @@ describe("bookmark list query ownership", () => {
     expect(hook).not.toContain("bookmarkListSearchEquals");
     expect(hook).toContain("rememberBookmarkListScroll(searchIdentity,");
     expect(hook).toContain("consumeBookmarkListScroll(searchIdentity)");
-    expect(hook).toContain('document.querySelector("#content")');
+    expect(hook).toContain('document.querySelector("[data-list-scroll]")');
     expect(hook).toContain("scrollContainer.scrollTop");
     expect(hook).not.toContain("window.scroll");
   });
 
   test("protected main が一覧とルート遷移のスクロール領域になる", () => {
-    const shell = readSource(
-      "features/app-shell/components/protected-shell.tsx"
-    );
-    expect(shell).toContain('blockSize: "100dvh"');
-    expect(shell).toContain('minBlockSize: "0"');
-    expect(shell).toContain('overflow: "auto"');
+    const shellStyles = readSource("styles/shell.ts");
+    expect(shellStyles).toContain('blockSize: "100dvh"');
+    expect(shellStyles).toContain('minBlockSize: "0"');
+    expect(shellStyles).toContain('overflowY: "auto"');
+
+    const shell = readSource("features/app-shell/components/app-shell.tsx");
     expect(shell).toContain('data-scroll-restoration-id="content"');
+    expect(shell).toContain('id="content"');
 
     const router = readSource("router.tsx");
     expect(router).toContain('scrollToTopSelectors: ["#content"]');

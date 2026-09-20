@@ -41,12 +41,14 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  name: "既定",
   args: {
     createTagAction: fn(async () => ({ status: "idle" as const })),
     fetchTitleAction: fn<BookmarkTitleFetchAction>(async () => ({
       status: "success",
       title: "取得したタイトル",
     })),
+    heading: "ブックマークを編集",
     initialData,
     onCompleted: fn(async () => {}),
     onUpdateBookmark: fn(async () => ({ bookmarkId, ok: true as const })),
@@ -61,11 +63,14 @@ export const Default = meta.story({
     await expect(
       canvas.getByRole("button", { name: "Reactを外す" })
     ).toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: "更新" })).toBeEnabled();
+    await expect(
+      canvas.getByRole("button", { name: "変更を保存" })
+    ).toBeEnabled();
   },
 });
 
 export const UpdateHasDuplicateUrl = Default.extend({
+  name: "URL重複で更新失敗",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "duplicate-url" as const,
@@ -74,7 +79,7 @@ export const UpdateHasDuplicateUrl = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "同じ URL のブックマークが既にあります"
     );
@@ -85,6 +90,7 @@ export const UpdateHasDuplicateUrl = Default.extend({
 });
 
 export const UpdateHasUnexpectedError = Default.extend({
+  name: "更新で予期しないエラー",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "unexpected" as const,
@@ -93,7 +99,7 @@ export const UpdateHasUnexpectedError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "保存に失敗しました"
     );
@@ -101,6 +107,7 @@ export const UpdateHasUnexpectedError = Default.extend({
 });
 
 export const SessionExpiredShowsNoFormError = Default.extend({
+  name: "セッション切れはフォームエラーを出さない",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: null,
@@ -109,13 +116,14 @@ export const SessionExpiredShowsNoFormError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     // UNAUTHORIZED は interceptor の redirect に任せるため、フォームエラーは出さない。
     await expect(canvas.queryByRole("alert")).not.toBeInTheDocument();
   },
 });
 
 export const CompletionNavigationFails = Default.extend({
+  name: "完了後の遷移失敗",
   args: {
     onCompleted: fn(async () => {
       throw new Error("navigation failed");
@@ -123,7 +131,7 @@ export const CompletionNavigationFails = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "保存は完了しましたが、画面の移動に失敗しました"
     );
@@ -134,6 +142,7 @@ export const CompletionNavigationFails = Default.extend({
 });
 
 export const EditingUrlClearsUrlServerError = Default.extend({
+  name: "URL編集でURLサーバーエラーを解除",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "duplicate-url" as const,
@@ -142,7 +151,7 @@ export const EditingUrlClearsUrlServerError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     await expect(
       canvas.getByText("この URL は既に登録されています")
     ).toBeInTheDocument();
@@ -155,6 +164,7 @@ export const EditingUrlClearsUrlServerError = Default.extend({
 });
 
 export const InvalidTagKeepsDraftAndAsksToRepick = Default.extend({
+  name: "不正タグは下書き保持して再選択を促す",
   args: {
     onUpdateBookmark: fn(async () => ({
       failureCode: "invalid-tag" as const,
@@ -163,7 +173,7 @@ export const InvalidTagKeepsDraftAndAsksToRepick = Default.extend({
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "更新" }));
+    await userEvent.click(canvas.getByRole("button", { name: "変更を保存" }));
     const alerts = canvas.getAllByRole("alert");
     await expect(alerts.length).toBeGreaterThanOrEqual(2);
     await expect(alerts[0]).toHaveTextContent("タグを選び直してください");

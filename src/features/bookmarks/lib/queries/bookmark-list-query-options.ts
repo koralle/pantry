@@ -22,6 +22,7 @@ export const bookmarkListQueryOptions = (search: BookmarkSearchSchema) =>
       tagMode: search.tagMode,
       ...(search.q === undefined ? {} : { q: search.q }),
       ...(search.tags === undefined ? {} : { tagNames: [...search.tags] }),
+      ...(search.view === undefined ? {} : { view: search.view }),
       ...(pageParam === undefined ? {} : { cursor: pageParam }),
     }),
     staleTime: BOOKMARK_LIST_STALE_TIME,

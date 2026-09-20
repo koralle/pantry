@@ -1,4 +1,14 @@
-import { and, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  lt,
+  notExists,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import type { AppDb } from "../../../db/app-db";
 import { bookmarkTable } from "../../../db/schema/bookmark";
@@ -23,7 +33,9 @@ export interface BookmarkListItem {
   readonly url: string;
   readonly title: string;
   readonly note: string | null;
+  readonly createdAt: string;
   readonly updatedAt: string;
+  readonly favorite: boolean;
   readonly tags: BookmarkListTag[];
 }
 
@@ -38,7 +50,8 @@ export const listBookmarks = async (
   db: AppDb,
   input: { readonly userId: UserId } & BookmarkListQuery
 ): Promise<BookmarkListPage> => {
-  const { q, tagNames, tagMode, sort, cursor } = normalizeListQuery(input);
+  const { q, tagNames, tagMode, sort, cursor, view } =
+    normalizeListQuery(input);
   const { userId } = input;
   const decodedCursor =
     cursor === undefined ? null : decodeBookmarkListCursor(cursor);
@@ -47,6 +60,25 @@ export const listBookmarks = async (
     eq(bookmarkTable.userId, userId),
     isNull(bookmarkTable.deletedAt),
   ];
+
+  if (view === "favorites") {
+    conditions.push(eq(bookmarkTable.favorite, true));
+  } else if (view === "inbox") {
+    conditions.push(
+      notExists(
+        db
+          .select({ bookmarkId: bookmarkTagsTable.bookmarkId })
+          .from(bookmarkTagsTable)
+          .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+          .where(
+            and(
+              eq(tagsTable.userId, userId),
+              eq(bookmarkTagsTable.bookmarkId, bookmarkTable.id)
+            )
+          )
+      )
+    );
+  }
 
   if (q !== null && q !== undefined) {
     // ユーザー入力の % _ \ をリテラルとして扱わせる。LIKE のワイルドカード注入を潰す。
@@ -99,6 +131,7 @@ export const listBookmarks = async (
   const bookmarks = await db
     .select({
       createdAt: bookmarkTable.createdAt,
+      favorite: bookmarkTable.favorite,
       id: bookmarkTable.id,
       note: bookmarkTable.note,
       title: bookmarkTable.title,
@@ -134,6 +167,7 @@ export const listBookmarks = async (
   const tagRows = await db
     .select({
       bookmarkId: bookmarkTagsTable.bookmarkId,
+      color: tagsTable.color,
       id: tagsTable.id,
       name: tagsTable.name,
     })
@@ -149,6 +183,8 @@ export const listBookmarks = async (
 
   const attached = attachTagsToBookmarks(
     pageRows.map((bookmark) => ({
+      createdAt: bookmark.createdAt.toISOString(),
+      favorite: bookmark.favorite,
       id: bookmark.id,
       note: bookmark.note,
       title: bookmark.title,

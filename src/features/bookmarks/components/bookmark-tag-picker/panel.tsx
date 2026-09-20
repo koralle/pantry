@@ -29,6 +29,9 @@ interface TagPickerPanelProps {
   readonly tagsReady: boolean;
   readonly isCreatingTag: boolean;
   readonly listMaxHeight?: "sheet" | "popover";
+  /** デスクトップはフォーム側の入力が検索欄を兼ねるため、パネル内の検索欄を出さない。 */
+  readonly hideSearch?: boolean;
+  readonly listId?: string | undefined;
 }
 
 export const TagPickerPanel = ({
@@ -41,6 +44,8 @@ export const TagPickerPanel = ({
   tagsReady,
   isCreatingTag,
   listMaxHeight = "popover",
+  hideSearch = false,
+  listId,
 }: TagPickerPanelProps) => {
   const selectedIds = new Set(selectedTags.map((tag) => tag.id));
   const candidates = filterTagCandidates(sortTagsForNav(tagCandidates), query);
@@ -65,21 +70,24 @@ export const TagPickerPanel = ({
 
   return (
     <div className={panel}>
-      <SearchField
-        value={query}
-        onChange={onQueryChange}
-        aria-label="タグを検索"
-        onSubmit={() => {}}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-          }
-        }}
-      >
-        <StyledInput type="search" placeholder="タグ名で探す" />
-      </SearchField>
+      {hideSearch ? null : (
+        <SearchField
+          value={query}
+          onChange={onQueryChange}
+          aria-label="タグを検索"
+          onSubmit={() => {}}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+            }
+          }}
+        >
+          <StyledInput type="search" placeholder="タグ名で探す" />
+        </SearchField>
+      )}
 
       <ListBox
+        {...(listId === undefined ? {} : { id: listId })}
         aria-label="タグ候補"
         className={
           listMaxHeight === "sheet"

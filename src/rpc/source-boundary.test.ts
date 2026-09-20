@@ -87,8 +87,6 @@ describe("shelf query ownership", () => {
       readSource("routes/_protected/index.tsx"),
       readSource("routes/_protected/settings/index.tsx"),
       readSource("routes/_protected/tags/index.tsx"),
-      readSource("routes/_protected/tags/$id/index.tsx"),
-      readSource("routes/_protected/tags/$id.edit.tsx"),
     ]);
 
     for (const source of sources) {

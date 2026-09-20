@@ -1,11 +1,24 @@
-import { CircleAlert, KeyRound } from "lucide-react";
+import { CircleAlert, CircleCheck, KeyRound, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { css, cx } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
+import {
+  accountSectionHeadAction,
+  accountSectionHeadRow,
+  accountSectionHeading,
+  passkeyEmpty,
+  passkeyEmptyAction,
+  passkeyEmptyIcon,
+  passkeyEmptyNote,
+  passkeyEmptyTitle,
+} from "../../../../styles/account";
 import { flash } from "../../../../styles/flash";
-import { formSummary } from "../../../../styles/form";
-import { sectionLabel } from "../../../../styles/type";
+import {
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../../styles/form";
 import { authClient } from "../../lib/auth-client";
 import {
   getPasskeyManageErrorMessage,
@@ -15,30 +28,15 @@ import { isWebAuthnAvailable } from "../../lib/passkey/webauthn-support";
 import { PasskeyListItem } from "./list-item";
 import type { ManagedPasskey } from "./list-item";
 
-const passkeySettingsHeading = css({
-  marginBlockEnd: "3",
-});
-
-const passkeySettingsIntro = css({
-  color: "fg.muted",
-  fontSize: "sm",
-  margin: "0",
-  marginBlockEnd: "3",
-});
-
-const passkeySettingsToolbar = css({
-  display: "flex",
-  marginBlockEnd: "3",
-});
-
-const passkeyEmpty = css({
-  color: "fg.muted",
-  fontSize: "sm",
-  margin: "0",
-});
-
 const passkeyFeedback = css({
+  fontSize: "xs",
   marginBlockEnd: "3",
+});
+
+const passkeyLoading = css({
+  color: "fg.faint",
+  fontSize: "xs",
+  margin: "0",
 });
 
 const toManagedPasskeys = (value: unknown): ManagedPasskey[] => {
@@ -94,7 +92,6 @@ export const PasskeySettings = () => {
     const { data, error } = await authClient.passkey.listUserPasskeys();
     if (error !== null && error !== undefined) {
       setErrorMessage(getPasskeyManageErrorMessage(error));
-      setPasskeys((current) => current ?? []);
       return;
     }
 
@@ -138,10 +135,24 @@ export const PasskeySettings = () => {
 
   return (
     <>
-      <h2 className={cx(sectionLabel, passkeySettingsHeading)}>パスキー</h2>
-      <p className={passkeySettingsIntro}>
-        登録したパスキーで、パスワードを入力せずにログインできます。
-      </p>
+      <div className={accountSectionHeadRow}>
+        <h2 className={accountSectionHeading}>パスキー</h2>
+        {webAuthnAvailable &&
+        passkeys !== null &&
+        passkeys !== undefined &&
+        passkeys.length > 0 ? (
+          <div className={accountSectionHeadAction}>
+            <StyledButton
+              isPending={isAdding}
+              onPress={handleAdd}
+              size="xs"
+              visual="quiet"
+            >
+              <Plus size={13} aria-hidden /> {isAdding ? "登録中…" : "追加"}
+            </StyledButton>
+          </div>
+        ) : null}
+      </div>
 
       {errorMessage === null || errorMessage === undefined ? null : (
         <div
@@ -149,40 +160,50 @@ export const PasskeySettings = () => {
           role="alert"
           aria-live="polite"
         >
-          <p>
-            <CircleAlert size={16} aria-hidden /> {errorMessage}
-          </p>
+          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+          <p className={formSummaryText}>{errorMessage}</p>
         </div>
       )}
 
       {statusMessage === null || statusMessage === undefined ? null : (
         <output className={cx(flash, passkeyFeedback)} aria-live="polite">
+          <CircleCheck
+            size={14}
+            aria-hidden
+            className={css({ verticalAlign: "-2px" })}
+          />{" "}
           {statusMessage}
         </output>
       )}
 
-      {webAuthnAvailable ? (
-        <div className={passkeySettingsToolbar}>
-          <StyledButton
-            visual="accent"
-            onPress={handleAdd}
-            isDisabled={isAdding}
-          >
-            <KeyRound size={16} aria-hidden />{" "}
-            {isAdding ? "パスキーを登録中..." : "パスキーを追加"}
-          </StyledButton>
-        </div>
-      ) : null}
-
-      {passkeys === null || passkeys === undefined ? (
-        <p className={passkeyEmpty}>読み込み中...</p>
-      ) : null}
-
-      {passkeys !== null &&
-      passkeys !== undefined &&
-      passkeys.length === 0 &&
+      {(passkeys === null || passkeys === undefined) &&
       (errorMessage === null || errorMessage === undefined) ? (
-        <p className={passkeyEmpty}>パスキーはまだ登録されていません</p>
+        <p className={passkeyLoading}>読み込み中…</p>
+      ) : null}
+
+      {passkeys !== null && passkeys !== undefined && passkeys.length === 0 ? (
+        <div className={passkeyEmpty}>
+          <span className={passkeyEmptyIcon}>
+            <KeyRound size={18} aria-hidden />
+          </span>
+          <p className={passkeyEmptyTitle}>パスキーが未登録です</p>
+          <p className={passkeyEmptyNote}>
+            登録するとパスワードなしでサインインできます。
+          </p>
+          {webAuthnAvailable ? (
+            <div className={passkeyEmptyAction}>
+              <StyledButton
+                isPending={isAdding}
+                onPress={handleAdd}
+                size="sm"
+                visual="accent"
+              >
+                <Plus size={13} aria-hidden />{" "}
+                {isAdding ? "登録中…" : "パスキーを登録"}
+              </StyledButton>
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       {passkeys !== null && passkeys !== undefined && passkeys.length > 0 ? (

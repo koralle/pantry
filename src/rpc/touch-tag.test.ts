@@ -11,14 +11,17 @@ import { handleRpcRequest } from "./handle-request.server";
 const userId = "user-1";
 
 const readDeps = {
+  deleteTag: async () => ({ kind: "deleted" }) as const,
   fetchPageTitle: async () => ({ kind: "unavailable" }) as const,
   findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
   getBookmarkDetail: async (): Promise<null> => null,
+  getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
   insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
   listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [] as never[],
   listTags: async () => [] as never[],
+  setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
   softDeleteBookmark: async () =>
     ({ id: "", kind: "bookmark-not-found" }) as const,
   updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,

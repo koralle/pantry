@@ -8,7 +8,6 @@ import { CircleCheck } from "lucide-react";
 import { Suspense } from "react";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
-import { css } from "styled-system/css";
 
 import { BookmarkDetailResolved } from "../../../../features/bookmarks/components/bookmark-detail-resolved";
 import { BookmarkDetailSkeleton } from "../../../../features/bookmarks/components/bookmark-detail-skeleton";
@@ -18,14 +17,12 @@ import { listSearchFromDetail } from "../../../../features/navigation/lib/bookma
 import { StyledLink } from "../../../../shared/components/styled-link";
 import { UiEmpty } from "../../../../shared/components/ui-empty";
 import { UiError } from "../../../../shared/components/ui-error";
+import {
+  detailCenter,
+  detailFlashRow,
+  detailPage,
+} from "../../../../styles/detail";
 import { flash } from "../../../../styles/flash";
-
-const detailLayout = css({
-  maxInlineSize: "42rem",
-  display: "flex",
-  flexDirection: "column",
-  gap: "6",
-});
 
 function isBookmarkNotFound(error: unknown): boolean {
   return (
@@ -36,33 +33,34 @@ function isBookmarkNotFound(error: unknown): boolean {
 }
 
 function DetailFallback({ error, resetErrorBoundary }: FallbackProps) {
-  if (isBookmarkNotFound(error)) {
-    const tags = useRouterState({
-      select: (s) =>
-        (s.location.search as { tags?: string[] | undefined }).tags,
-    });
+  const search = Route.useSearch();
 
+  if (isBookmarkNotFound(error)) {
     return (
-      <UiEmpty
-        title="このブックマークは見つかりません"
-        action={
-          <StyledLink
-            to="/bookmarks"
-            search={listSearchFromDetail({ tags })}
-            visual="accent"
-          >
-            一覧へ戻る
-          </StyledLink>
-        }
-      />
+      <div className={detailCenter}>
+        <UiEmpty
+          action={
+            <StyledLink
+              search={listSearchFromDetail(search)}
+              to="/bookmarks"
+              visual="accent"
+            >
+              一覧へ戻る
+            </StyledLink>
+          }
+          title="ブックマークが見つかりません"
+        />
+      </div>
     );
   }
 
   return (
-    <UiError
-      message="詳細の読み込みに失敗しました"
-      onRetry={resetErrorBoundary}
-    />
+    <div className={detailCenter}>
+      <UiError
+        message="詳細の読み込みに失敗しました"
+        onRetry={resetErrorBoundary}
+      />
+    </div>
   );
 }
 
@@ -89,15 +87,19 @@ function RouteComponent() {
   });
 
   return (
-    <section className={detailLayout} aria-label="ブックマーク詳細">
+    <section aria-label="ブックマーク詳細" className={detailPage}>
       {newBookmarkCreated ? (
-        <div className={flash} role="alert">
-          <CircleCheck size={16} aria-hidden /> ブックマークを登録しました
+        <div className={detailFlashRow}>
+          <div className={flash} role="alert">
+            <CircleCheck aria-hidden size={16} /> ブックマークを登録しました
+          </div>
         </div>
       ) : null}
       {bookmarkUpdated ? (
-        <div className={flash} role="alert">
-          <CircleCheck size={16} aria-hidden /> ブックマークを更新しました
+        <div className={detailFlashRow}>
+          <div className={flash} role="alert">
+            <CircleCheck aria-hidden size={16} /> ブックマークを更新しました
+          </div>
         </div>
       ) : null}
 

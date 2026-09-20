@@ -45,7 +45,7 @@ describe("passkey UI contracts", () => {
     const settings = await readSource(
       "features/auth/components/passkey/settings.tsx"
     );
-    expect(settings).toContain("パスキーを追加");
+    expect(settings).toContain("パスキーを登録");
     expect(settings).toContain("authClient.passkey.addPasskey()");
     expect(settings).not.toContain("addPasskey({");
   });
@@ -63,8 +63,8 @@ describe("passkey UI contracts", () => {
     const dialog = await readSource(
       "features/auth/components/passkey/delete-dialog.tsx"
     );
-    expect(dialog).toContain("このパスキーを削除しますか？");
-    expect(dialog).toContain("削除を確認");
+    expect(dialog).toContain("パスキーを削除しますか？");
+    expect(dialog).toContain("削除する");
     expect(dialog).toContain("キャンセル");
   });
 });

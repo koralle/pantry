@@ -19,12 +19,15 @@ const readDeps = {
   findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
   getBookmarkDetail: async (): Promise<null> => null,
+  getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
   insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
   listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [],
   listTags: async () => [],
+  setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
   softDeleteBookmark: async () =>
     ({ id: "", kind: "bookmark-not-found" }) as const,
+  deleteTag: async () => ({ kind: "deleted" }) as const,
   touchTag: async () => ({ kind: "touched" }) as const,
   updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,
 };

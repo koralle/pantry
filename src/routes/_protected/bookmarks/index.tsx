@@ -5,10 +5,11 @@ import {
   getRouteApi,
 } from "@tanstack/react-router";
 
-import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list";
+import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list-screen";
 import { bookmarkListQueryOptions } from "../../../features/bookmarks/lib/queries/bookmark-list-query-options";
 import { validateBookmarkSearch } from "../../../features/navigation/lib/bookmark-search";
 import { PantryMotion } from "../../../shared/components/pantry-motion";
+import { listColumn } from "../../../styles/list";
 
 const protectedRouteApi = getRouteApi("/_protected");
 
@@ -36,7 +37,7 @@ function RouteComponent() {
   const { shelfTagsPromise } = protectedRouteApi.useLoaderData();
 
   return (
-    <PantryMotion kind="fade-up">
+    <PantryMotion className={listColumn} kind="fade-up">
       <BookmarkList search={search} shelfTagsPromise={shelfTagsPromise} />
     </PantryMotion>
   );

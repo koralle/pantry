@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
-import { formSummary } from "../../../../styles/form";
+import {
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../../styles/form";
 import { authClient } from "../../lib/auth-client";
 import { getPasskeySignInErrorMessage } from "../../lib/passkey/messages";
 import {
@@ -127,14 +131,6 @@ export const PasskeySignIn = ({
 
   return (
     <div className={passkeySignIn}>
-      {errorMessage === null || errorMessage === undefined ? null : (
-        <div className={formSummary} role="alert" aria-live="polite">
-          <p>
-            <CircleAlert size={16} aria-hidden /> {errorMessage}
-          </p>
-        </div>
-      )}
-
       <div className={passkeySignInActions}>
         <StyledButton
           type="button"
@@ -143,9 +139,16 @@ export const PasskeySignIn = ({
           isDisabled={isPending}
         >
           <KeyRound size={16} aria-hidden />
-          {isPending ? "パスキーで認証中..." : "パスキーでログイン"}
+          {isPending ? "端末で認証中…" : "パスキーでログイン"}
         </StyledButton>
       </div>
+
+      {errorMessage === null || errorMessage === undefined ? null : (
+        <div className={formSummary} role="alert" aria-live="polite">
+          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+          <p className={formSummaryText}>{errorMessage}</p>
+        </div>
+      )}
 
       <div className={passkeyDivider}>または</div>
     </div>

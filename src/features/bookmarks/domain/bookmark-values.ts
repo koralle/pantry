@@ -11,7 +11,7 @@ export type BookmarkId = v.InferOutput<typeof bookmarkIdSchema>;
 
 export const bookmarkUrlSchema = v.pipe(
   v.string(),
-  v.url("有効なURLを入力してください"),
+  v.url("URLの形式が正しくありません（例: https://example.com）"),
   v.check((value) => {
     try {
       const { protocol } = new URL(value);

@@ -1,3 +1,4 @@
+import type React from "react";
 import { useState } from "react";
 
 import type { BookmarkUrl } from "../../domain/bookmark-values";
@@ -53,6 +54,8 @@ export interface BookmarkEditorProps {
   readonly tagCandidates: readonly TagCandidate[];
   readonly tagsReady: boolean;
   readonly createTagAction: CreateTagFromPickerAction;
+  readonly heading: string;
+  readonly footer?: React.ReactNode;
 }
 
 /**
@@ -68,6 +71,8 @@ export const BookmarkEditor = ({
   tagCandidates,
   tagsReady,
   createTagAction,
+  heading,
+  footer,
 }: BookmarkEditorProps) => {
   // 更新結果の server error は BookmarkEditor が唯一の所有者になる。
   // BookmarkForm へは表示用に serverError を渡し、Conform へはコピーしない。
@@ -143,10 +148,12 @@ export const BookmarkEditor = ({
         title: initialData.title,
         url: initialData.url,
       }}
+      heading={heading}
+      footer={footer}
       serverError={editorError?.form ?? null}
       onClearFieldError={clearFormFieldError}
-      submitLabel="更新"
-      pendingLabel="更新中…"
+      submitLabel="変更を保存"
+      pendingLabel="保存中…"
       onSubmit={handleSubmit}
       fetchTitleAction={fetchTitleAction}
       tagCandidates={tagCandidates}

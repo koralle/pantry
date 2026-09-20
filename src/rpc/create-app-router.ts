@@ -15,6 +15,8 @@ import {
   fetchPageTitleInputSchema,
 } from "../features/bookmarks/application/fetch-page-title";
 import type { FetchPageTitle } from "../features/bookmarks/application/fetch-page-title";
+import { executeSetBookmarkFavorite } from "../features/bookmarks/application/set-bookmark-favorite";
+import type { SetBookmarkFavorite } from "../features/bookmarks/application/set-bookmark-favorite";
 import {
   executeUpdateBookmark,
   updateBookmarkInputSchema,
@@ -22,6 +24,7 @@ import {
 import type { UpdateBookmark } from "../features/bookmarks/application/update-bookmark";
 import { bookmarkIdSchema } from "../features/bookmarks/domain/bookmark-values";
 import { decodeBookmarkListCursor } from "../features/bookmarks/lib/list/bookmark-list-cursor";
+import type { BookmarkViewCounts } from "../features/bookmarks/persistence/get-bookmark-counts";
 import type { BookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
 import type {
   BookmarkListPage,
@@ -33,6 +36,11 @@ import {
   toCreateTagCommand,
 } from "../features/tags/application/create-tag";
 import type { InsertTag } from "../features/tags/application/create-tag";
+import {
+  deleteTagInputSchema,
+  executeDeleteTag,
+} from "../features/tags/application/delete-tag";
+import type { DeleteTag } from "../features/tags/application/delete-tag";
 import {
   executeTouchTag,
   touchTagInputSchema,
@@ -77,6 +85,7 @@ export interface AppRouterDeps {
   readonly insertTag: InsertTag;
   readonly updateTag: UpdateTag;
   readonly touchTag: TouchTag;
+  readonly deleteTag: DeleteTag;
   readonly listShelfTags: (userId: UserId) => Promise<ShelfTag[]>;
   readonly listTags: (
     userId: UserId,
@@ -93,10 +102,12 @@ export interface AppRouterDeps {
   readonly listBookmarks: (
     input: { readonly userId: UserId } & BookmarkListQuery
   ) => Promise<BookmarkListPage>;
+  readonly getBookmarkCounts: (userId: UserId) => Promise<BookmarkViewCounts>;
   readonly getBookmarkDetail: (
     userId: UserId,
     input: { readonly id: string }
   ) => Promise<BookmarkDetail | null>;
+  readonly setBookmarkFavorite: SetBookmarkFavorite;
   readonly softDeleteBookmark: SoftDeleteBookmark;
 }
 
@@ -258,6 +269,29 @@ export const createAppRouter = (deps: AppRouterDeps) => {
 
       return output;
     });
+
+  /** 成功なら plain number ID を wire へ返す。削除は紐付け解除込み。 */
+  const deleteTag = base
+    .use(requireAuth)
+    .input(deleteTagInputSchema)
+    .errors({
+      "tag-not-found": {
+        status: 404,
+      },
+    })
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeDeleteTag({
+        deleteTag: deps.deleteTag,
+        id: input.id,
+        userId: context.userId,
+      });
+
+      if (!result.ok) {
+        throw errors["tag-not-found"]();
+      }
+
+      return { id: Number(result.value.id) };
+    });
   const createBookmark = base
     .use(requireAuth)
     .input(createBookmarkInputSchema)
@@ -377,6 +411,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
     sort: v.picklist(["newest", "updated"]),
     tagMode: v.picklist(["and", "or"]),
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
+    view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
   });
   /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
   const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) });
@@ -393,6 +428,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
           ...(input.q === undefined ? {} : { q: input.q }),
           ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),
           ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+          ...(input.view === undefined ? {} : { view: input.view }),
         })
     );
 
@@ -443,14 +479,48 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       return { id: result.id };
     });
 
+  /** 成功なら plain string ID を wire へ返す。favorite はトグル先を input が持つ。 */
+  const setFavorite = base
+    .use(requireAuth)
+    .errors({
+      "bookmark-not-found": {
+        status: 404,
+      },
+    })
+    .input(
+      v.object({
+        favorite: v.boolean(),
+        id: v.pipe(v.string(), v.uuid()),
+      })
+    )
+    .handler(async ({ input, context, errors }) => {
+      const result = await executeSetBookmarkFavorite({
+        command: input,
+        setBookmarkFavorite: deps.setBookmarkFavorite,
+        userId: context.userId,
+      });
+
+      if (result.kind === "bookmark-not-found") {
+        throw errors["bookmark-not-found"]();
+      }
+
+      return { id: result.id };
+    });
+
   return {
     auth,
     bookmarks: {
+      counts: base
+        .use(requireAuth)
+        .handler(
+          async ({ context }) => await deps.getBookmarkCounts(context.userId)
+        ),
       create: createBookmark,
       delete: deleteBookmark,
       detail: bookmarkDetail,
       editor,
       list: listBookmarks,
+      setFavorite,
       title: fetchTitle,
       update: updateBookmark,
     },
@@ -471,6 +541,7 @@ export const createAppRouter = (deps: AppRouterDeps) => {
           return record;
         }),
       create: createTag,
+      delete: deleteTag,
       list: base
         .use(requireAuth)
         .input(offsetPaginationQuerySchema)

@@ -9,6 +9,7 @@ export const bookmarkListSearchIdentity = (
     sort: search.sort,
     tagMode: search.tagMode,
     tags: search.tags,
+    view: search.view,
   });
 
 interface BookmarkListScrollSession {

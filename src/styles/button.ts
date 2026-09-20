@@ -93,6 +93,27 @@ export const button = cva({
         fontSize: "xs",
         paddingInline: "3",
       },
+      ghost: {
+        "@media (any-hover: hover)": {
+          "&:hover:not(:disabled)": {
+            background: "surface.muted",
+            borderColor: "transparent",
+          },
+        },
+        background: "transparent",
+        borderColor: "transparent",
+      },
+      quiet: {
+        "@media (any-hover: hover)": {
+          "&:hover:not(:disabled)": {
+            background: "accent.subtle",
+            borderColor: "transparent",
+          },
+        },
+        background: "transparent",
+        borderColor: "transparent",
+        color: "accent.solid",
+      },
       danger: {
         "@media (any-hover: hover)": {
           "&:hover:not(:disabled)": {

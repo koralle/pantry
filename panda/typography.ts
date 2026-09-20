@@ -15,6 +15,9 @@ export const typography = defineTokens({
     body: {
       value: ["Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "sans-serif"],
     },
+    mono: {
+      value: ["ui-monospace", "SF Mono", "Menlo", "monospace"],
+    },
   },
   lineHeights: {
     tight: { value: "1.25" },

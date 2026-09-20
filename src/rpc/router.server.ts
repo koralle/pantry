@@ -5,13 +5,16 @@
 import { getDB } from "../db/get-db.server";
 import type { SessionUser } from "../features/auth/domain/auth-values";
 import { getAuth } from "../features/auth/server/get-auth.server";
+import { getBookmarkCounts } from "../features/bookmarks/persistence/get-bookmark-counts";
 import { getBookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
 import { insertBookmark } from "../features/bookmarks/persistence/insert-bookmark";
 import { listBookmarks } from "../features/bookmarks/persistence/list-bookmarks";
 import { selectBookmarkEditor } from "../features/bookmarks/persistence/select-bookmark-editor";
+import { setBookmarkFavorite } from "../features/bookmarks/persistence/set-bookmark-favorite";
 import { softDeleteBookmark } from "../features/bookmarks/persistence/soft-delete-bookmark";
 import { updateBookmark } from "../features/bookmarks/persistence/update-bookmark";
 import { fetchPageTitle } from "../features/bookmarks/server/fetch-page-title.server";
+import { deleteTag } from "../features/tags/persistence/delete-tag";
 import { insertTag } from "../features/tags/persistence/insert-tag";
 import { selectShelfTags } from "../features/tags/persistence/select-shelf-tags";
 import { selectTagById } from "../features/tags/persistence/select-tag-by-id";
@@ -24,7 +27,9 @@ export const appRouter = createAppRouter({
   fetchPageTitle: async (url) => await fetchPageTitle(url),
   findBookmarkEditor: async (userId, id) =>
     await selectBookmarkEditor(getDB(), userId, id),
+  deleteTag: async (input) => await deleteTag(getDB(), input),
   findTagById: async (userId, id) => await selectTagById(getDB(), userId, id),
+  getBookmarkCounts: async (userId) => await getBookmarkCounts(getDB(), userId),
   getBookmarkDetail: async (userId, input) =>
     await getBookmarkDetail(getDB(), userId, input),
   getSession: async (headers): Promise<SessionUser | null> => {
@@ -44,6 +49,8 @@ export const appRouter = createAppRouter({
   listBookmarks: async (input) => await listBookmarks(getDB(), input),
   listShelfTags: async (userId) => await selectShelfTags(getDB(), userId),
   listTags: async (userId, page) => await selectTags(getDB(), userId, page),
+  setBookmarkFavorite: async (input) =>
+    await setBookmarkFavorite(getDB(), input),
   softDeleteBookmark: async (input) => await softDeleteBookmark(getDB(), input),
   touchTag: async (input) => await touchTag(getDB(), input),
   updateBookmark: async (input) => await updateBookmark(getDB(), input),

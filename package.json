@@ -57,7 +57,6 @@
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "catalog:test",
-    "@internationalized/date": "catalog:date",
     "@markuplint/jsx-parser": "catalog:lint",
     "@markuplint/react-spec": "catalog:lint",
     "@pandacss/dev": "catalog:ui",

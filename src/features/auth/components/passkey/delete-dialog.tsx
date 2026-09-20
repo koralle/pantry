@@ -1,4 +1,4 @@
-import { Trash2, X } from "lucide-react";
+import { CircleAlert, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -8,14 +8,16 @@ import {
   Text,
 } from "react-aria-components";
 
+import { IconButton } from "../../../../shared/components/icon-button";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import {
   dialog,
   dialogActions,
   dialogBackdrop,
+  dialogDescription,
+  dialogError,
   dialogTitle,
 } from "../../../../styles/dialog";
-import { fieldError } from "../../../../styles/form";
 
 export const PasskeyDeleteDialog = ({
   displayName,
@@ -33,35 +35,40 @@ export const PasskeyDeleteDialog = ({
   readonly onConfirm: () => void;
 }) => (
   <DialogTrigger isOpen={isOpen} onOpenChange={onOpenChange}>
-    <StyledButton visual="danger" size="sm" isDisabled={isDeleting}>
-      <Trash2 size={16} aria-hidden /> 削除
-    </StyledButton>
+    <IconButton
+      aria-label={`「${displayName}」を削除`}
+      isDisabled={isDeleting}
+      tone="danger"
+    >
+      <Trash2 size={14} aria-hidden />
+    </IconButton>
     <ModalOverlay className={dialogBackdrop} isDismissable={!isDeleting}>
       <Modal className={dialog}>
         <Dialog>
           <Heading slot="title" className={dialogTitle}>
-            このパスキーを削除しますか？
+            パスキーを削除しますか？
           </Heading>
-          <Text slot="description">
+          <Text className={dialogDescription} slot="description">
             「{displayName}
-            」を削除します。削除すると、このパスキーではログインできなくなります。
+            」のパスキーを削除します。この端末ではサインインできなくなります。
           </Text>
           {errorMessage === null || errorMessage === undefined ? null : (
-            <p className={fieldError} role="alert">
-              {errorMessage}
+            <p className={dialogError} role="alert">
+              <CircleAlert aria-hidden size={12} /> {errorMessage}
             </p>
           )}
           <div className={dialogActions}>
-            <StyledButton slot="close" isDisabled={isDeleting}>
-              <X size={16} aria-hidden /> キャンセル
+            <StyledButton slot="close" isDisabled={isDeleting} size="sm">
+              キャンセル
             </StyledButton>
             <StyledButton
               visual="danger"
+              size="sm"
               onPress={onConfirm}
-              isDisabled={isDeleting}
+              isPending={isDeleting}
             >
-              <Trash2 size={16} aria-hidden />{" "}
-              {isDeleting ? "削除中…" : "削除を確認"}
+              <Trash2 size={14} aria-hidden />{" "}
+              {isDeleting ? "削除中…" : "削除する"}
             </StyledButton>
           </div>
         </Dialog>

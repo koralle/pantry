@@ -13,6 +13,7 @@ describe("server direct RPC client", () => {
       findBookmarkEditor: async () => null,
       findTagById: async () => null,
       getBookmarkDetail: async () => null,
+      getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
       getSession: async (headers) => {
         receivedCookie = headers.get("cookie");
         return { email: "koralle@example.com", id: "user-1", name: "koralle" };
@@ -22,7 +23,11 @@ describe("server direct RPC client", () => {
       listBookmarks: async () => ({ items: [], nextCursor: null }),
       listShelfTags: async () => [],
       listTags: async () => [],
+      setBookmarkFavorite: async () => ({
+        kind: "bookmark-not-found" as const,
+      }),
       softDeleteBookmark: async () => ({ id: "", kind: "bookmark-not-found" }),
+      deleteTag: async () => ({ kind: "deleted" }) as const,
       touchTag: async () => ({ kind: "touched" }),
       updateBookmark: async () => ({ kind: "bookmark-not-found" }),
       updateTag: async () => ({ kind: "not-found" }),

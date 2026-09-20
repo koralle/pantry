@@ -7,7 +7,13 @@ import { css, cx } from "styled-system/css";
 import { StyledButton } from "../../../shared/components/styled-button";
 import { StyledInput } from "../../../shared/components/styled-input";
 import { StyledLabel } from "../../../shared/components/styled-label";
-import { field, fieldError, formSummary } from "../../../styles/form";
+import {
+  field,
+  fieldError,
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../styles/form";
 import { srOnly } from "../../../styles/sr-only";
 import { workbenchFields, workbenchForm } from "../../../styles/workbench";
 import type { SignInError } from "../lib/sign-in-error";
@@ -89,10 +95,8 @@ export const SignInWithEmailAndPasswordForm = ({
     >
       {signInError === null || signInError === undefined ? null : (
         <div className={formSummary} role="alert" aria-live="polite">
-          <p>
-            <CircleAlert size={16} aria-hidden />{" "}
-            {signInErrorMessage(signInError)}
-          </p>
+          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+          <p className={formSummaryText}>{signInErrorMessage(signInError)}</p>
         </div>
       )}
 
@@ -108,11 +112,14 @@ export const SignInWithEmailAndPasswordForm = ({
           <StyledInput
             {...getInputProps(fields.email, { type: "email" })}
             autoComplete="email webauthn"
+            placeholder="you@example.com"
             required
             aria-invalid={emailError !== null && emailError !== undefined}
           />
           {emailError === null || emailError === undefined ? null : (
-            <p className={fieldError}>{emailError}</p>
+            <p className={fieldError}>
+              <CircleAlert size={12} aria-hidden /> {emailError}
+            </p>
           )}
         </div>
 
@@ -125,16 +132,19 @@ export const SignInWithEmailAndPasswordForm = ({
           <StyledInput
             {...getInputProps(fields.password, { type: "password" })}
             autoComplete="current-password webauthn"
+            placeholder="••••••••"
             required
             aria-invalid={passwordError !== null && passwordError !== undefined}
           />
           {passwordError === null || passwordError === undefined ? null : (
-            <p className={fieldError}>{passwordError}</p>
+            <p className={fieldError}>
+              <CircleAlert size={12} aria-hidden /> {passwordError}
+            </p>
           )}
         </div>
       </fieldset>
 
-      <StyledButton type="submit" visual="accent" isDisabled={isPending}>
+      <StyledButton type="submit" isDisabled={isPending}>
         <LogIn size={16} aria-hidden />
         {isPending ? "サインイン中..." : "サインイン"}
       </StyledButton>

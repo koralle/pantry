@@ -65,6 +65,7 @@ async function createMemoryDb(): Promise<AppDb> {
       note TEXT,
       created_at INTEGER NOT NULL DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)),
       updated_at INTEGER NOT NULL DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)),
+      favorite INTEGER NOT NULL DEFAULT 0,
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )
@@ -170,9 +171,11 @@ describe(listBookmarks, () => {
     expect(page.items.map((item) => item.id)).toStrictEqual(["b-new", "b-old"]);
     expect(page.nextCursor).toBeNull();
     expect(page.items[0]).toStrictEqual({
+      createdAt: new Date("2026-08-10T00:00:00.000Z").toISOString(),
+      favorite: false,
       id: "b-new",
       note: null,
-      tags: [{ id: readingId, name: "reading" }],
+      tags: [{ color: null, id: readingId, name: "reading" }],
       title: "新しい",
       updatedAt: new Date("2026-08-01T00:00:00.000Z").toISOString(),
       url: "https://example.com/b-new",
@@ -506,7 +509,7 @@ describe(listBookmarks, () => {
     expect(decoded?.id).toBe(last?.id);
   });
 
-  test("projection に不要な列（userId, createdAt, deletedAt）を載せない", async () => {
+  test("projection に不要な列（userId, deletedAt）を載せない", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
     await insertBookmark(db, { id: "b-1", title: "最小", userId: "user-a" });
@@ -515,6 +518,8 @@ describe(listBookmarks, () => {
     const [item] = page.items;
 
     expect(Object.keys(item ?? {})).toStrictEqual([
+      "createdAt",
+      "favorite",
       "id",
       "note",
       "title",

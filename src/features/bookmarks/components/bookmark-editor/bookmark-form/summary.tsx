@@ -1,6 +1,12 @@
 import { CircleAlert } from "lucide-react";
 
-import { formSummary } from "../../../../../styles/form";
+import {
+  formSummary,
+  formSummaryBody,
+  formSummaryIcon,
+  formSummaryList,
+  formSummaryTitle,
+} from "../../../../../styles/form";
 
 interface BookmarkFormSummaryProps {
   readonly id: string;
@@ -27,14 +33,15 @@ export const BookmarkFormSummary = ({
 
   return (
     <div id={id} className={formSummary} role="alert" aria-live="polite">
-      <p>
-        <CircleAlert size={16} aria-hidden /> 次を確認してください
-      </p>
-      <ul>
-        {uniqueMessages.map((message) => (
-          <li key={message}>{message}</li>
-        ))}
-      </ul>
+      <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
+      <div className={formSummaryBody}>
+        <p className={formSummaryTitle}>次を確認してください</p>
+        <ul className={formSummaryList}>
+          {uniqueMessages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

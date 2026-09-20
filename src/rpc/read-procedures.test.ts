@@ -35,6 +35,7 @@ function baseDeps(): ReadDeps {
     findBookmarkEditor: vi.fn(async () => null),
     findTagById: vi.fn(async () => null),
     getBookmarkDetail: vi.fn(async () => null),
+    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
     getSession: vi.fn(async () => sessionUser),
     insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({
       kind: "duplicate-url",
@@ -46,12 +47,14 @@ function baseDeps(): ReadDeps {
     listBookmarks: vi.fn(async () => ({ items: [], nextCursor: null })),
     listShelfTags: vi.fn(async () => [] satisfies ShelfTag[]),
     listTags: vi.fn(async () => []),
+    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: vi.fn(
       async (): Promise<{ kind: "bookmark-not-found"; id: string }> => ({
         id: "",
         kind: "bookmark-not-found",
       })
     ),
+    deleteTag: async () => ({ kind: "deleted" }) as const,
     touchTag: vi.fn(async (): Promise<TouchTagOutput> => ({ kind: "touched" })),
     updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
       kind: "bookmark-not-found",

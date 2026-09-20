@@ -17,6 +17,7 @@ export const bookmarkTable = sqliteTable(
       .notNull()
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`),
     deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+    favorite: integer("favorite", { mode: "boolean" }).notNull().default(false),
     id: text("id").primaryKey(),
     note: text(),
     title: text().notNull(),

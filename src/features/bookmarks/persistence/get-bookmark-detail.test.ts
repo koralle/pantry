@@ -62,6 +62,7 @@ async function createMemoryDb(): Promise<AppDb> {
       note TEXT,
       created_at INTEGER NOT NULL DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)),
       updated_at INTEGER NOT NULL DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)),
+      favorite INTEGER NOT NULL DEFAULT 0,
       deleted_at INTEGER,
       UNIQUE (user_id, url)
     )
@@ -142,6 +143,7 @@ describe(getBookmarkDetail, () => {
 
     expect(detail).toStrictEqual({
       createdAt: new Date("2026-08-01T00:00:00.000Z").toISOString(),
+      favorite: false,
       id: "b-1",
       note: "メモ",
       tagNames: ["reading"],

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { Trash2, X } from "lucide-react";
+import { CircleAlert, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import {
   Dialog,
@@ -17,9 +17,10 @@ import {
   dialog,
   dialogActions,
   dialogBackdrop,
+  dialogDescription,
+  dialogError,
   dialogTitle,
 } from "../../../styles/dialog";
-import { fieldError } from "../../../styles/form";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import { getDeleteBookmarkErrorMessage } from "../lib/errors/get-delete-bookmark-error-message";
 import { refreshAfterBookmarkMutation } from "../lib/queries/refresh-after-bookmark-mutation";
@@ -85,24 +86,25 @@ export const BookmarkDeleteDialog = ({
             <Heading slot="title" className={dialogTitle}>
               このブックマークを削除しますか？
             </Heading>
-            <Text slot="description">
+            <Text className={dialogDescription} slot="description">
               「{bookmark.title}」を削除します。一覧からは見えなくなります。
             </Text>
             {deleteError ? (
-              <p className={fieldError} role="alert">
-                {deleteError}
+              <p className={dialogError} role="alert">
+                <CircleAlert aria-hidden size={12} /> {deleteError}
               </p>
             ) : null}
             <div className={dialogActions}>
-              <StyledButton slot="close" isDisabled={isDeleting}>
-                <X size={16} aria-hidden /> キャンセル
+              <StyledButton slot="close" isDisabled={isDeleting} size="sm">
+                キャンセル
               </StyledButton>
               <StyledButton
                 visual="danger"
+                size="sm"
                 onPress={handleDelete}
                 isDisabled={isDeleting}
               >
-                <Trash2 size={16} aria-hidden />{" "}
+                <Trash2 size={14} aria-hidden />{" "}
                 {isDeleting ? "削除中…" : "削除を確認"}
               </StyledButton>
             </div>

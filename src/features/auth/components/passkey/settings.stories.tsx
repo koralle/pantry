@@ -74,22 +74,27 @@ function page(canvasElement: HTMLElement) {
 }
 
 export const EmptyList = meta.story({
+  name: "空の一覧",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
       canvas.getByRole("heading", { name: "パスキー" })
     ).toBeInTheDocument();
     await expect(
-      await canvas.findByText("パスキーはまだ登録されていません")
+      await canvas.findByText("パスキーが未登録です")
     ).toBeInTheDocument();
     await expect(
-      await canvas.findByRole("button", { name: "パスキーを追加" })
+      canvas.queryByRole("button", { name: "追加" })
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole("button", { name: "パスキーを登録" })
     ).toBeEnabled();
     await expect(canvas.queryByLabelText("表示名")).not.toBeInTheDocument();
   },
 });
 
 export const NamedAndFallbackNames = meta.story({
+  name: "表示名とフォールバック名",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [
@@ -102,20 +107,17 @@ export const NamedAndFallbackNames = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await expect(await canvas.findByText("仕事用キー")).toBeInTheDocument();
     await expect(
-      await canvas.findByRole("article", { name: "仕事用キー" })
+      canvas.getByText("Google Password Manager")
     ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("article", { name: "Google Password Manager" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("article", { name: "パスキー" })
-    ).toBeInTheDocument();
-    expect(canvas.getAllByText("登録日時 2026/08/28 12:00")).toHaveLength(3);
+    await expect(canvas.getAllByText("パスキー")[0]).toBeInTheDocument();
+    expect(canvas.getAllByText("登録 2026/08/28")).toHaveLength(3);
   },
 });
 
 export const AddWithoutPrefillingName = meta.story({
+  name: "名前入力なしで登録",
   beforeEach: async () => {
     mocked(authClient.passkey.addPasskey).mockImplementation(
       async () => await neverResolve()
@@ -124,12 +126,12 @@ export const AddWithoutPrefillingName = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(
-      await canvas.findByRole("button", { name: "パスキーを追加" })
+      await canvas.findByRole("button", { name: "パスキーを登録" })
     );
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("button", { name: "パスキーを登録中..." })
-      ).toBeDisabled();
+        canvas.getByRole("button", { name: "登録中…" })
+      ).toHaveAttribute("aria-disabled", "true");
     });
     await expect(canvas.queryByLabelText("表示名")).not.toBeInTheDocument();
     expect(
@@ -139,6 +141,7 @@ export const AddWithoutPrefillingName = meta.story({
 });
 
 export const CancelAddLeavesListUnchanged = meta.story({
+  name: "登録キャンセルで一覧は不変",
   beforeEach: async () => {
     mocked(authClient.passkey.addPasskey).mockResolvedValue({
       data: null,
@@ -153,21 +156,20 @@ export const CancelAddLeavesListUnchanged = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(
-      await canvas.findByRole("button", { name: "パスキーを追加" })
+      await canvas.findByRole("button", { name: "パスキーを登録" })
     );
     await waitFor(async () => {
       await expect(
-        canvas.getByRole("button", { name: "パスキーを追加" })
+        canvas.getByRole("button", { name: "パスキーを登録" })
       ).toBeEnabled();
     });
-    await expect(
-      canvas.getByText("パスキーはまだ登録されていません")
-    ).toBeInTheDocument();
+    await expect(canvas.getByText("パスキーが未登録です")).toBeInTheDocument();
     await expect(canvas.queryByRole("alert")).not.toBeInTheDocument();
   },
 });
 
 export const TwoPasskeys = meta.story({
+  name: "パスキー2件",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [
@@ -179,20 +181,17 @@ export const TwoPasskeys = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(
-      await canvas.findByRole("article", { name: "自宅" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("article", { name: "仕事用キー" })
-    ).toBeInTheDocument();
-    expect(canvas.getAllByRole("button", { name: "名前を変更" })).toHaveLength(
-      2
-    );
-    expect(canvas.getAllByRole("button", { name: "削除" })).toHaveLength(2);
+    await expect(await canvas.findByText("自宅")).toBeInTheDocument();
+    await expect(canvas.getByText("仕事用キー")).toBeInTheDocument();
+    expect(
+      canvas.getAllByRole("button", { name: /表示名を変更$/ })
+    ).toHaveLength(2);
+    expect(canvas.getAllByRole("button", { name: /を削除$/ })).toHaveLength(2);
   },
 });
 
 export const RenameUpdatesList = meta.story({
+  name: "表示名変更で一覧更新",
   beforeEach: async () => {
     let items = [passkey({ id: "pk-1", name: "仕事用キー" })];
     mocked(authClient.passkey.listUserPasskeys).mockImplementation(
@@ -211,27 +210,26 @@ export const RenameUpdatesList = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
     await userEvent.click(
-      await canvas.findByRole("button", { name: "名前を変更" })
+      await canvas.findByRole("button", {
+        name: "「仕事用キー」の表示名を変更",
+      })
     );
     const name = await canvas.findByLabelText("表示名");
     await userEvent.clear(name);
     await userEvent.type(name, "自宅");
     await userEvent.click(canvas.getByRole("button", { name: "保存" }));
     await waitFor(async () => {
-      await expect(
-        canvas.getByRole("article", { name: "自宅" })
-      ).toBeInTheDocument();
+      await expect(canvas.getByText("自宅")).toBeInTheDocument();
     });
     await expect(canvas.getByRole("status")).toHaveTextContent(
       "表示名を変更しました"
     );
-    await expect(
-      canvas.queryByRole("article", { name: "仕事用キー" })
-    ).not.toBeInTheDocument();
+    await expect(canvas.queryByText("仕事用キー")).not.toBeInTheDocument();
   },
 });
 
 export const DeleteShowsConfirmation = meta.story({
+  name: "削除確認を表示",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "自宅" })],
@@ -240,21 +238,26 @@ export const DeleteShowsConfirmation = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "削除" }));
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "「自宅」を削除" })
+    );
     await expect(
       await canvas.findByRole("heading", {
-        name: "このパスキーを削除しますか？",
+        name: "パスキーを削除しますか？",
       })
     ).toBeInTheDocument();
-    await expect(canvas.getByText(/「自宅」を削除します/)).toBeInTheDocument();
     await expect(
-      canvas.getByRole("button", { name: "削除を確認" })
+      canvas.getByText(/「自宅」のパスキーを削除します/)
+    ).toBeInTheDocument();
+    await expect(
+      canvas.getByRole("button", { name: "削除する" })
     ).toBeEnabled();
     expect(mocked(authClient.passkey.deletePasskey)).not.toHaveBeenCalled();
   },
 });
 
 export const CancelDeleteKeepsPasskey = meta.story({
+  name: "削除キャンセルで保持",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "自宅" })],
@@ -263,23 +266,24 @@ export const CancelDeleteKeepsPasskey = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "削除" }));
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "「自宅」を削除" })
+    );
     await userEvent.click(
       await canvas.findByRole("button", { name: "キャンセル" })
     );
     await waitFor(() => {
       expect(
-        canvas.queryByRole("heading", { name: "このパスキーを削除しますか？" })
+        canvas.queryByRole("heading", { name: "パスキーを削除しますか？" })
       ).not.toBeInTheDocument();
     });
-    await expect(
-      canvas.getByRole("article", { name: "自宅" })
-    ).toBeInTheDocument();
+    await expect(canvas.getByText("自宅")).toBeInTheDocument();
     expect(mocked(authClient.passkey.deletePasskey)).not.toHaveBeenCalled();
   },
 });
 
 export const DeleteRemovesPasskey = meta.story({
+  name: "パスキーを削除",
   beforeEach: async () => {
     let items = [
       passkey({ id: "pk-1", name: "自宅" }),
@@ -299,20 +303,16 @@ export const DeleteRemovesPasskey = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
     const deleteButtons = await canvas.findAllByRole("button", {
-      name: "削除",
+      name: /を削除$/,
     });
     await userEvent.click(deleteButtons[0]!);
     await userEvent.click(
-      await canvas.findByRole("button", { name: "削除を確認" })
+      await canvas.findByRole("button", { name: "削除する" })
     );
     await waitFor(async () => {
-      await expect(
-        canvas.queryByRole("article", { name: "自宅" })
-      ).not.toBeInTheDocument();
+      await expect(canvas.queryByText("自宅")).not.toBeInTheDocument();
     });
-    await expect(
-      canvas.getByRole("article", { name: "仕事用キー" })
-    ).toBeInTheDocument();
+    await expect(canvas.getByText("仕事用キー")).toBeInTheDocument();
     await expect(canvas.getByRole("status")).toHaveTextContent(
       "パスキーを削除しました"
     );
@@ -320,6 +320,7 @@ export const DeleteRemovesPasskey = meta.story({
 });
 
 export const LastPasskeyCanBeDeleted = meta.story({
+  name: "最後の1件も削除できる",
   beforeEach: async () => {
     let items = [passkey({ id: "pk-last", name: "最後のキー" })];
     mocked(authClient.passkey.listUserPasskeys).mockImplementation(
@@ -335,25 +336,28 @@ export const LastPasskeyCanBeDeleted = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "削除" }));
     await userEvent.click(
-      await canvas.findByRole("button", { name: "削除を確認" })
+      await canvas.findByRole("button", { name: "「最後のキー」を削除" })
+    );
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "削除する" })
     );
     await waitFor(async () => {
       await expect(
-        canvas.getByText("パスキーはまだ登録されていません")
+        canvas.getByText("パスキーが未登録です")
       ).toBeInTheDocument();
     });
     await expect(canvas.getByRole("status")).toHaveTextContent(
       "パスキーを削除しました"
     );
     await expect(
-      canvas.getByRole("button", { name: "パスキーを追加" })
+      canvas.getByRole("button", { name: "パスキーを登録" })
     ).toBeEnabled();
   },
 });
 
 export const HideAddWhenWebAuthnUnavailable = meta.story({
+  name: "WebAuthn非対応で追加を隠す",
   beforeEach: async () => {
     mocked(isWebAuthnAvailable).mockReturnValue(false);
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
@@ -363,18 +367,17 @@ export const HideAddWhenWebAuthnUnavailable = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(
-      await canvas.findByRole("article", { name: "自宅" })
-    ).toBeInTheDocument();
+    await expect(await canvas.findByText("自宅")).toBeInTheDocument();
     await waitFor(() => {
       expect(
-        canvas.queryByRole("button", { name: "パスキーを追加" })
+        canvas.queryByRole("button", { name: "追加" })
       ).not.toBeInTheDocument();
     });
   },
 });
 
 export const ListLoadError = meta.story({
+  name: "一覧の読み込み失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: null,
@@ -392,12 +395,13 @@ export const ListLoadError = meta.story({
       "パスキーの操作に失敗しました"
     );
     await expect(
-      canvas.queryByText("パスキーはまだ登録されていません")
+      canvas.queryByText("パスキーが未登録です")
     ).not.toBeInTheDocument();
   },
 });
 
 export const AddFailed = meta.story({
+  name: "登録失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.addPasskey).mockResolvedValue({
       data: null,
@@ -412,20 +416,23 @@ export const AddFailed = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(
-      await canvas.findByRole("button", { name: "パスキーを追加" })
+      await canvas.findByRole("button", { name: "パスキーを登録" })
     );
     await waitFor(async () => {
       await expect(canvas.getByRole("alert")).toHaveTextContent(
         "パスキーの登録に失敗しました"
       );
     });
+    // エラー中も空カードは残し、再登録の導線を切らない
+    await expect(canvas.getByText("パスキーが未登録です")).toBeInTheDocument();
     await expect(
-      canvas.getByText("パスキーはまだ登録されていません")
-    ).toBeInTheDocument();
+      canvas.getByRole("button", { name: "パスキーを登録" })
+    ).toBeEnabled();
   },
 });
 
 export const RenameFailed = meta.story({
+  name: "表示名変更失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "仕事用キー" })],
@@ -444,7 +451,9 @@ export const RenameFailed = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
     await userEvent.click(
-      await canvas.findByRole("button", { name: "名前を変更" })
+      await canvas.findByRole("button", {
+        name: "「仕事用キー」の表示名を変更",
+      })
     );
     const name = await canvas.findByLabelText("表示名");
     await userEvent.clear(name);
@@ -455,14 +464,13 @@ export const RenameFailed = meta.story({
         "パスキーの操作に失敗しました"
       );
     });
-    await expect(
-      canvas.getByRole("article", { name: "仕事用キー" })
-    ).toBeInTheDocument();
+    await expect(canvas.getByText("仕事用キー")).toBeInTheDocument();
     await expect(canvas.getByRole("dialog")).toBeInTheDocument();
   },
 });
 
 export const DeleteFailed = meta.story({
+  name: "削除失敗",
   beforeEach: async () => {
     mocked(authClient.passkey.listUserPasskeys).mockResolvedValue({
       data: [passkey({ id: "pk-1", name: "自宅" })],
@@ -480,20 +488,20 @@ export const DeleteFailed = meta.story({
   },
   play: async ({ canvasElement }) => {
     const canvas = page(canvasElement);
-    await userEvent.click(await canvas.findByRole("button", { name: "削除" }));
     await userEvent.click(
-      await canvas.findByRole("button", { name: "削除を確認" })
+      await canvas.findByRole("button", { name: "「自宅」を削除" })
+    );
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "削除する" })
     );
     await waitFor(async () => {
       await expect(canvas.getByRole("alert")).toHaveTextContent(
         "パスキーの操作に失敗しました"
       );
     });
+    await expect(canvas.getByText("自宅")).toBeInTheDocument();
     await expect(
-      canvas.getByRole("article", { name: "自宅" })
-    ).toBeInTheDocument();
-    await expect(
-      canvas.getByRole("heading", { name: "このパスキーを削除しますか？" })
+      canvas.getByRole("heading", { name: "パスキーを削除しますか？" })
     ).toBeInTheDocument();
   },
 });

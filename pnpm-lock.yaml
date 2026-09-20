@@ -145,10 +145,6 @@ catalogs:
     drizzle-seed:
       specifier: 1.0.0-rc.5-ab785fc
       version: 1.0.0-rc.5-ab785fc
-  date:
-    '@internationalized/date':
-      specifier: 3.12.4
-      version: 3.12.4
   debug:
     '@tanstack/devtools-vite':
       specifier: 0.8.3
@@ -432,9 +428,6 @@ importers:
       '@cloudflare/vitest-plugin':
         specifier: catalog:test
         version: https://pkg.pr.new/@cloudflare/vitest-plugin@15500(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))
-      '@internationalized/date':
-        specifier: catalog:date
-        version: 3.12.4
       '@markuplint/jsx-parser':
         specifier: catalog:lint
         version: 4.18.3(supports-color@10.2.2)

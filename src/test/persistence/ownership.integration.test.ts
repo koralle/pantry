@@ -195,7 +195,9 @@ describe("user ownership on migrated libSQL", () => {
     const editor = await selectBookmarkEditor(db, actorId, ownBookmarkId);
 
     expect(page.items.map((item) => item.id)).toStrictEqual([ownBookmarkId]);
-    expect(page.items[0]?.tags).toStrictEqual([{ id: ownTagId, name: "work" }]);
+    expect(page.items[0]?.tags).toStrictEqual([
+      { color: null, id: ownTagId, name: "work" },
+    ]);
     expect(detail?.tagNames).toStrictEqual(["work"]);
     expect(editor?.tagIds).toStrictEqual([ownTagId]);
   });

@@ -1,4 +1,4 @@
-import { Pencil, X } from "lucide-react";
+import { Check, CircleAlert, Pencil } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -8,6 +8,7 @@ import {
   ModalOverlay,
 } from "react-aria-components";
 
+import { IconButton } from "../../../../shared/components/icon-button";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { StyledInput } from "../../../../shared/components/styled-input";
 import { StyledLabel } from "../../../../shared/components/styled-label";
@@ -15,18 +16,21 @@ import {
   dialog,
   dialogActions,
   dialogBackdrop,
+  dialogError,
+  dialogField,
   dialogTitle,
 } from "../../../../styles/dialog";
-import { field, fieldError } from "../../../../styles/form";
 
 export const PasskeyRenameDialog = ({
   currentName,
+  displayName,
   errorMessage,
   inputId,
   isSaving,
   onSave,
 }: {
   readonly currentName: string;
+  readonly displayName: string;
   readonly errorMessage: string | null;
   readonly inputId: string;
   readonly isSaving: boolean;
@@ -45,16 +49,19 @@ export const PasskeyRenameDialog = ({
         }
       }}
     >
-      <StyledButton size="sm" isDisabled={isSaving}>
-        <Pencil size={16} aria-hidden /> 名前を変更
-      </StyledButton>
+      <IconButton
+        aria-label={`「${displayName}」の表示名を変更`}
+        isDisabled={isSaving}
+      >
+        <Pencil size={14} aria-hidden />
+      </IconButton>
       <ModalOverlay className={dialogBackdrop} isDismissable={!isSaving}>
         <Modal className={dialog}>
           <Dialog>
             <Heading slot="title" className={dialogTitle}>
               表示名を変更
             </Heading>
-            <div className={field}>
+            <div className={dialogField}>
               <StyledLabel htmlFor={inputId}>表示名</StyledLabel>
               <StyledInput
                 id={inputId}
@@ -67,16 +74,17 @@ export const PasskeyRenameDialog = ({
               />
             </div>
             {errorMessage === null || errorMessage === undefined ? null : (
-              <p className={fieldError} role="alert">
-                {errorMessage}
+              <p className={dialogError} role="alert">
+                <CircleAlert aria-hidden size={12} /> {errorMessage}
               </p>
             )}
             <div className={dialogActions}>
-              <StyledButton slot="close" isDisabled={isSaving}>
-                <X size={16} aria-hidden /> キャンセル
+              <StyledButton slot="close" isDisabled={isSaving} size="sm">
+                キャンセル
               </StyledButton>
               <StyledButton
                 visual="accent"
+                size="sm"
                 isDisabled={isSaving || name.trim() === ""}
                 onPress={() => {
                   void (async () => {
@@ -87,8 +95,7 @@ export const PasskeyRenameDialog = ({
                   })();
                 }}
               >
-                <Pencil size={16} aria-hidden />{" "}
-                {isSaving ? "保存中..." : "保存"}
+                <Check size={14} aria-hidden /> {isSaving ? "保存中…" : "保存"}
               </StyledButton>
             </div>
           </Dialog>

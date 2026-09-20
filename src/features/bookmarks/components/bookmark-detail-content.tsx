@@ -1,52 +1,35 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Pencil } from "lucide-react";
-import { css } from "styled-system/css";
+import { ArrowLeft, ArrowUpRight, Pencil } from "lucide-react";
 
-import { StyledLink } from "../../../shared/components/styled-link";
+import { FaviconTile } from "../../../shared/components/favicon-tile";
+import { TagChip } from "../../../shared/components/tag-chip";
 import { button } from "../../../styles/button";
-import { dialogActions } from "../../../styles/dialog";
-import { tagChip } from "../../../styles/tag-chip";
-import { workbenchNav, workbenchTitle } from "../../../styles/workbench";
+import {
+  backlink,
+  detailActs,
+  detailActsSpacer,
+  detailBacklinkRow,
+  detailCard,
+  detailDates,
+  detailDomain,
+  detailNote,
+  detailPage,
+  detailTags,
+  detailTitle,
+  detailTop,
+  detailUrl,
+  detailWrap,
+} from "../../../styles/detail";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import {
   buildListBackSearch,
   detailSearchFromList,
 } from "../../navigation/lib/bookmark-search-builders";
-import { formatDateTime } from "../lib/format/format-date-time";
+import { domainOf } from "../lib/domain-of";
+import { formatDate } from "../lib/format/format-date-time";
 import type { BookmarkDetail } from "../persistence/get-bookmark-detail";
 import { BookmarkDeleteDialog } from "./bookmark-delete-dialog";
-
-const detailHeader = css({
-  display: "flex",
-  flexDirection: "column",
-  gap: "3",
-  paddingBlockEnd: "1",
-  paddingBlockStart: "2",
-});
-const detailUrl = css({
-  color: "accent.solid",
-  lineHeight: "body",
-  wordBreak: "break-all",
-});
-const detailNote = css({
-  color: "fg.default",
-  lineHeight: "relaxed",
-  margin: "0",
-  whiteSpace: "pre-wrap",
-});
-const detailTags = css({
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "2",
-  listStyle: "none",
-  margin: "0",
-  padding: "0",
-});
-const detailMeta = css({ color: "fg.muted", margin: "0" });
-const detailDates = css({ display: "grid", gap: "3", margin: "0" });
-const detailDatesGroup = css({ display: "grid", gap: "1" });
-const detailDatesDt = css({ color: "fg.muted", fontSize: "xs2" });
-const detailDatesDd = css({ fontVariantNumeric: "tabular-nums", margin: "0" });
+import { BookmarkFavoriteToggle } from "./bookmark-favorite-toggle";
 
 export const BookmarkDetailContent = ({
   bookmark,
@@ -54,68 +37,84 @@ export const BookmarkDetailContent = ({
 }: {
   readonly bookmark: BookmarkDetail;
   readonly listSearch: BookmarkSearchSchema;
-}) => (
-  <>
-    <nav className={workbenchNav}>
-      <StyledLink to="/bookmarks" search={listSearch} visual="accent">
-        <ArrowLeft size={16} aria-hidden /> 一覧へ戻る
-      </StyledLink>
-    </nav>
+}) => {
+  const domain = domainOf(bookmark.url);
 
-    <header className={detailHeader}>
-      <h1 className={workbenchTitle}>{bookmark.title}</h1>
-      <a
-        href={bookmark.url}
-        target="_blank"
-        rel="noreferrer"
-        className={detailUrl}
-      >
-        {bookmark.url} <ExternalLink size={14} aria-hidden />
-      </a>
-    </header>
+  return (
+    <div className={detailPage}>
+      <div className={detailBacklinkRow}>
+        <Link to="/bookmarks" search={listSearch} className={backlink}>
+          <ArrowLeft size={13} aria-hidden /> 一覧
+        </Link>
+      </div>
 
-    {bookmark.note ? <p className={detailNote}>{bookmark.note}</p> : null}
+      <div className={detailWrap}>
+        <article className={detailCard}>
+          <div className={detailTop}>
+            <FaviconTile domain={domain} size="lg" />
+            <span className={detailDomain}>{domain}</span>
+            <BookmarkFavoriteToggle
+              favorite={bookmark.favorite}
+              id={bookmark.id}
+            />
+          </div>
 
-    {bookmark.tagNames.length > 0 ? (
-      <ul className={detailTags}>
-        {bookmark.tagNames.map((name) => (
-          <li key={name}>
-            <Link
-              to="/bookmarks"
-              search={buildListBackSearch([name])}
-              className={tagChip({ visual: "link" })}
+          <h1 className={detailTitle}>{bookmark.title}</h1>
+
+          <a
+            className={detailUrl}
+            href={bookmark.url}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <ArrowUpRight aria-hidden size={12} /> {bookmark.url}
+          </a>
+
+          {bookmark.tagNames.length > 0 ? (
+            <div className={detailTags}>
+              {bookmark.tagNames.map((name) => (
+                <Link
+                  key={name}
+                  search={buildListBackSearch([name], listSearch)}
+                  to="/bookmarks"
+                >
+                  <TagChip name={name} />
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
+          {bookmark.note === null ? null : (
+            <p className={detailNote}>{bookmark.note}</p>
+          )}
+
+          <div className={detailDates}>
+            <span>作成 {formatDate(bookmark.createdAt)}</span>
+            <span>更新 {formatDate(bookmark.updatedAt)}</span>
+          </div>
+
+          <div className={detailActs}>
+            <a
+              className={button({ visual: "accent" })}
+              href={bookmark.url}
+              rel="noreferrer"
+              target="_blank"
             >
-              {name}
+              <ArrowUpRight aria-hidden size={13} /> サイトを開く
+            </a>
+            <Link
+              className={button()}
+              params={{ id: bookmark.id }}
+              search={detailSearchFromList(listSearch)}
+              to="/bookmarks/$id/edit"
+            >
+              <Pencil aria-hidden size={13} /> 編集
             </Link>
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p className={detailMeta}>タグなし</p>
-    )}
-
-    <dl className={detailDates}>
-      <div className={detailDatesGroup}>
-        <dt className={detailDatesDt}>作成</dt>
-        <dd className={detailDatesDd}>{formatDateTime(bookmark.createdAt)}</dd>
+            <span aria-hidden className={detailActsSpacer} />
+            <BookmarkDeleteDialog bookmark={bookmark} listSearch={listSearch} />
+          </div>
+        </article>
       </div>
-      <div className={detailDatesGroup}>
-        <dt className={detailDatesDt}>更新</dt>
-        <dd className={detailDatesDd}>{formatDateTime(bookmark.updatedAt)}</dd>
-      </div>
-    </dl>
-
-    <div className={dialogActions}>
-      <Link
-        to="/bookmarks/$id/edit"
-        params={{ id: bookmark.id }}
-        search={detailSearchFromList(listSearch)}
-        className={button({ visual: "accent" })}
-      >
-        <Pencil size={16} aria-hidden /> 編集
-      </Link>
-
-      <BookmarkDeleteDialog bookmark={bookmark} listSearch={listSearch} />
     </div>
-  </>
-);
+  );
+};

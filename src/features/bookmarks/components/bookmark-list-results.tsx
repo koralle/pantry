@@ -1,33 +1,85 @@
-import { ChevronDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronDown, CircleAlert, RotateCw } from "lucide-react";
 import { css } from "styled-system/css";
 
-import { StyledButton } from "../../../shared/components/styled-button";
-import { StyledLink } from "../../../shared/components/styled-link";
-import { UiEmpty } from "../../../shared/components/ui-empty";
-import { UiError } from "../../../shared/components/ui-error";
+import { orpc } from "../../../rpc/query";
+import { button } from "../../../styles/button";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import {
   buildListSearch,
   detailSearchFromList,
 } from "../../navigation/lib/bookmark-search-builders";
 import { useBookmarkListPagination } from "../hooks/use-bookmark-list-pagination";
-import { BookmarkTable } from "./bookmark-table";
+import { useListKeyboard } from "../hooks/use-list-keyboard";
+import { domainOf } from "../lib/domain-of";
+import { formatRelativeTime } from "../lib/format/format-relative-time";
+import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
+import type { BookmarkListItem } from "../persistence/list-bookmarks";
+import { BookmarkListContent } from "./bookmark-list";
+import type { BookmarkRowProps } from "./bookmark-row";
 
-const partialSection = css({
+const loadMoreSection = css({
   display: "flex",
   justifyContent: "center",
   marginBlockStart: "5",
 });
-const loadMoreButton = css({
-  borderColor: "accent.solid",
-  color: "accent.solid",
-  fontWeight: "semibold",
-  minInlineSize: "12rem",
+
+const loadMoreErrorNote = css({
+  alignItems: "center",
+  color: "danger.solid",
+  columnGap: "2",
+  display: "flex",
+  fontSize: "xs",
+  justifyContent: "center",
+  marginBlockStart: "3",
 });
 
 const hasActiveConditions = (search: BookmarkSearchSchema): boolean =>
   Boolean(search.q?.trim()) ||
   (search.tags !== undefined && search.tags.length > 0);
+
+export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
+  const q = search.q?.trim();
+  if (q !== undefined && q !== "") {
+    return `「${q}」の検索結果`;
+  }
+  const tags = search.tags;
+  if (tags !== undefined && tags.length > 0) {
+    return tags.join(" / ");
+  }
+  if (search.view === "inbox") {
+    return "未整理";
+  }
+  if (search.view === "favorites") {
+    return "お気に入り";
+  }
+  return "最近保存したもの";
+};
+
+const countForView = (
+  search: BookmarkSearchSchema,
+  counts: { favorites: number; inbox: number; recent: number } | undefined
+): number | undefined => {
+  if (search.view === "inbox") {
+    return counts?.inbox;
+  }
+  if (search.view === "favorites") {
+    return counts?.favorites;
+  }
+  return counts?.recent;
+};
+
+const isRecentView = (search: BookmarkSearchSchema): boolean =>
+  search.view === undefined || search.view === "recent";
+
+const toRowProps = (item: BookmarkListItem): BookmarkRowProps => ({
+  dateLabel: formatRelativeTime(item.createdAt),
+  domain: domainOf(item.url),
+  id: item.id,
+  starred: item.favorite,
+  tags: item.tags.map((tag) => ({ color: tag.color, name: tag.name })),
+  title: item.title,
+});
 
 export const BookmarkListResults = ({
   search,
@@ -38,68 +90,88 @@ export const BookmarkListResults = ({
     useBookmarkListPagination({
       search,
     });
+  const countsQuery = useQuery(
+    orpc.bookmarks.counts.queryOptions({ staleTime: 5000 })
+  );
+
+  const title = bookmarkListTitle(search);
+  const filtered = hasActiveConditions(search);
+  const detailSearch = detailSearchFromList(search);
+  const { selectedId } = useListKeyboard({
+    cards: search.layout === "cards",
+    identity: bookmarkListSearchIdentity(search),
+    ids: items.map((item) => item.id),
+  });
 
   if (items.length === 0) {
-    if (hasActiveConditions(search)) {
-      const hasQ = Boolean(search.q?.trim());
-      const hasTags = search.tags !== undefined && search.tags.length > 0;
-      return (
-        <UiEmpty
-          title="条件に合うブックマークがありません"
-          action={
-            <StyledLink
-              to="/bookmarks"
-              search={buildListSearch(search, {
-                clearQ: hasQ,
-                clearTags: hasTags,
-              })}
-              visual="accent"
-            >
-              条件をクリア
-            </StyledLink>
-          }
-        />
-      );
-    }
-
     return (
-      <UiEmpty
-        title="まだブックマークがありません"
-        action={
-          <StyledLink
-            to="/bookmarks/new"
-            search={detailSearchFromList(search)}
-            visual="accent"
-          >
-            新規
-          </StyledLink>
+      <BookmarkListContent
+        clearSearch={
+          filtered
+            ? buildListSearch(search, {
+                clearQ: Boolean(search.q?.trim()),
+                clearTags: search.tags !== undefined && search.tags.length > 0,
+              })
+            : undefined
         }
+        emptyVariant={filtered ? "filtered" : "blank"}
+        listSearch={search}
+        newSearch={detailSearch}
+        state="empty"
+        title={title}
       />
     );
   }
 
-  const detailSearch = detailSearchFromList(search);
+  const counts = countsQuery.data;
+  const viewCount = filtered ? undefined : countForView(search, counts);
+  const inboxCount =
+    filtered || !isRecentView(search) ? undefined : counts?.inbox;
 
   return (
-    <div>
-      <BookmarkTable bookmarks={items} detailSearch={detailSearch} />
-
-      {hasMore ? (
-        <div className={partialSection}>
-          {loadMoreError === null || loadMoreError === undefined ? (
-            <StyledButton
-              className={loadMoreButton}
-              isDisabled={isLoadingMore}
-              onPress={loadMore}
-            >
-              <ChevronDown size={16} aria-hidden />{" "}
-              {isLoadingMore ? "読み込み中…" : "さらに読み込む"}
-            </StyledButton>
-          ) : (
-            <UiError message={loadMoreError} onRetry={loadMore} />
+    <BookmarkListContent
+      count={viewCount}
+      inboxCount={inboxCount}
+      items={items.map(toRowProps)}
+      listSearch={search}
+      newSearch={detailSearch}
+      selectedId={selectedId}
+      state="ideal"
+      title={title}
+      trailing={
+        <>
+          {hasMore ? (
+            <div className={loadMoreSection}>
+              <button
+                className={button({ size: "sm" })}
+                disabled={isLoadingMore}
+                onClick={loadMore}
+                type="button"
+              >
+                <ChevronDown aria-hidden size={13} />
+                {isLoadingMore ? "読み込み中…" : "もっと見る"}
+              </button>
+            </div>
+          ) : null}
+          {loadMoreError === null ? null : (
+            <p className={loadMoreErrorNote} role="alert">
+              <CircleAlert aria-hidden size={12} />
+              {loadMoreError}
+              <button
+                className={css({
+                  color: "accent.solid",
+                  fontWeight: "semibold",
+                })}
+                onClick={loadMore}
+                type="button"
+              >
+                <RotateCw aria-hidden size={12} />
+                再試行
+              </button>
+            </p>
           )}
-        </div>
-      ) : null}
-    </div>
+        </>
+      }
+    />
   );
 };

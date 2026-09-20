@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
+import { Package } from "lucide-react";
 import { css } from "styled-system/css";
 import { grid } from "styled-system/patterns";
 import * as v from "valibot";
@@ -19,6 +20,45 @@ const searchSchema = v.object({
 export const Route = createFileRoute("/sign-in/")({
   validateSearch: (search) => v.parse(searchSchema, search),
   component: RouteComponent,
+});
+
+const wideContainer = "@container sign-in-page-root (min-inline-size: 60rem)";
+
+const brandMark = css({
+  alignItems: "center",
+  background: "color-mix(in oklab, {colors.pantry.surface} 14%, transparent)",
+  borderRadius: "sheet",
+  display: "flex",
+  blockSize: "2.5rem",
+  inlineSize: "2.5rem",
+  justifyContent: "center",
+  [wideContainer]: {
+    blockSize: "3.375rem",
+    inlineSize: "3.375rem",
+  },
+});
+
+const brandWordmark = css({
+  fontSize: "md2",
+  fontWeight: "bold",
+  letterSpacing: "wide",
+  lineHeight: "tight",
+  margin: "0",
+  [wideContainer]: {
+    fontSize: "lg",
+  },
+});
+
+const brandTagline = css({
+  display: "none",
+  [wideContainer]: {
+    color:
+      "color-mix(in oklab, {colors.pantry.surface} 78%, {colors.pantry.accent})",
+    display: "block",
+    fontSize: "xs",
+    letterSpacing: "wide",
+    margin: "0",
+  },
 });
 
 function RouteComponent() {
@@ -51,42 +91,41 @@ function RouteComponent() {
     >
       <div
         className={grid({
+          gridTemplateRows: "auto 1fr",
           minBlockSize: "stretch",
-          "@container sign-in-page-root (min-inline-size: 60rem)": {
-            gridTemplateColumns: "1fr 1fr",
+          [wideContainer]: {
+            gridTemplateColumns: "46% 1fr",
+            gridTemplateRows: "1fr",
           },
         })}
       >
         <div
           className={css({
-            display: "none",
-            "@container sign-in-page-root (min-inline-size: 60rem)": {
-              display: "grid",
-              minInlineSize: 0,
-              padding: 2,
+            alignItems: "center",
+            background:
+              "linear-gradient(160deg, {colors.pantry.brandStart}, {colors.pantry.brandEnd})",
+            color: "accent.fg",
+            display: "flex",
+            flexDirection: "column",
+            gap: "2.5",
+            justifyContent: "center",
+            minInlineSize: 0,
+            paddingBlock: "8",
+            [wideContainer]: {
+              borderRadius: "sheet",
+              gap: "3",
+              margin: "2",
+              paddingBlock: "0",
             },
           })}
         >
-          <div
-            className={grid({
-              placeContent: "center",
-              backgroundColor: "accent.solid",
-              color: "accent.fg",
-              borderRadius: "sheet",
-            })}
-          >
-            <p
-              translate="no"
-              className={css({
-                margin: 0,
-                fontSize: "title",
-                fontWeight: "bold",
-                lineHeight: "tight",
-              })}
-            >
-              Pantry
-            </p>
-          </div>
+          <span className={brandMark}>
+            <Package size={21} aria-hidden />
+          </span>
+          <p translate="no" className={brandWordmark}>
+            Pantry
+          </p>
+          <p className={brandTagline}>集めて、あとで読む。</p>
         </div>
 
         <section
@@ -95,7 +134,7 @@ function RouteComponent() {
             placeItems: "center",
             minInlineSize: 0,
             paddingInline: 4,
-            "@container sign-in-page-root (min-inline-size: 60rem)": {
+            [wideContainer]: {
               paddingInline: 12,
             },
           })}
@@ -105,7 +144,7 @@ function RouteComponent() {
               paddingInline: 6,
               paddingBlock: 10,
               borderRadius: "sheet",
-              inlineSize: "min(100%, 30rem)",
+              inlineSize: "min(100%, 26rem)",
               '& button[type="submit"]': {
                 inlineSize: "stretch",
               },

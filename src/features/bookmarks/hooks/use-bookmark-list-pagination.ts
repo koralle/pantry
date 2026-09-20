@@ -20,7 +20,7 @@ export const useBookmarkListPagination = ({
   const searchIdentity = bookmarkListSearchIdentity(search);
 
   useLayoutEffect(() => {
-    const scrollContainer = document.querySelector("#content");
+    const scrollContainer = document.querySelector("[data-list-scroll]");
     if (!scrollContainer) {
       return;
     }
