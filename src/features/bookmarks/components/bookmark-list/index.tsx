@@ -39,10 +39,10 @@ import type {
 } from "../../../../features/navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
 import { buildListSearch } from "../../../../features/navigation/lib/bookmark-search-builders";
+import { Kbd } from "../../../../shared/components/kbd";
 import { StateView } from "../../../../shared/components/state-view";
 import { button } from "../../../../shared/components/styled-button/styles";
 import { skeletonBar, spinner } from "../../../../shared/styles/feedback";
-import { kbd } from "../../../../shared/styles/kbd";
 import {
   desktopOnlyText,
   hintBar,
@@ -103,7 +103,7 @@ export const QuickAddStrip = ({
         marginInlineStart: "auto",
       })}
     >
-      <kbd className={kbd()}>⌘V</kbd>
+      <Kbd>⌘V</Kbd>
     </span>
   </Link>
 );

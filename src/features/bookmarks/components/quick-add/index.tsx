@@ -13,10 +13,11 @@ import {
 import type { ReactNode } from "react";
 import { useId, useRef, useState } from "react";
 import { Input } from "react-aria-components";
-import { css, cx } from "styled-system/css";
+import { css } from "styled-system/css";
 import * as v from "valibot";
 
 import { FaviconTile } from "../../../../shared/components/favicon-tile";
+import { Kbd } from "../../../../shared/components/kbd";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { button } from "../../../../shared/components/styled-button/styles";
 import { domainToneVar, toneFor } from "../../../../shared/styles/domain-tone";
@@ -30,7 +31,6 @@ import {
   noteArea,
   noteBox,
 } from "../../../../shared/styles/form-screen";
-import { kbd } from "../../../../shared/styles/kbd";
 import { srOnly } from "../../../../shared/styles/sr-only";
 import { bookmarkUrlSchema } from "../../domain/bookmark-values";
 import type { CreateTagFromPickerAction } from "../../lib/tag-picker/execute-create-tag-from-picker";
@@ -120,11 +120,6 @@ const domainOf = (url: string): string => {
     return url;
   }
 };
-
-const kbdDesktopOnly = css({
-  display: "none",
-  md: { display: "inline" },
-});
 
 const urlValue = css({
   color: "fg.default",
@@ -412,7 +407,7 @@ const QuickAddRound = ({
                   type="url"
                   value={urlDraft}
                 />
-                <kbd className={cx(kbd(), kbdDesktopOnly)}>⌘V</kbd>
+                <Kbd display={{ base: "none", md: "inline" }}>⌘V</Kbd>
               </div>
               {urlError === null ? null : (
                 <p className={fieldErr} id={`${urlInputId}-error`} role="alert">

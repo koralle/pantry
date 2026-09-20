@@ -15,8 +15,8 @@ import { Plus, UserRound } from "lucide-react";
 import { css, cx } from "styled-system/css";
 
 import { iconButton } from "../../../shared/components/icon-button/styles";
+import { Kbd } from "../../../shared/components/kbd";
 import { button } from "../../../shared/components/styled-button/styles";
-import { kbd } from "../../../shared/styles/kbd";
 import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import { topbar, wordmark } from "../styles";
@@ -64,7 +64,7 @@ export const TopBar = ({
     >
       <Plus aria-hidden size={13} />
       登録
-      <kbd className={kbd({ tone: "onAccent" })}>N</kbd>
+      <Kbd tone="onAccent">N</Kbd>
     </Link>
     <Link
       aria-current={accountActive ? "page" : undefined}
