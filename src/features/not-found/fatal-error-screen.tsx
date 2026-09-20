@@ -10,7 +10,7 @@ import {
   stateIconDanger,
   stateSub,
   stateTitle,
-} from "../../styles/not-found";
+} from "./not-found-screen/styles";
 
 /** シェル無しの致命的エラー。アプリ自体が起動できない場合の全画面表示。 */
 export const FatalErrorScreen = ({

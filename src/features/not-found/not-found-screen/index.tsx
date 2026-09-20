@@ -1,9 +1,11 @@
 import { ArrowLeft, Compass } from "lucide-react";
-import { css, cx } from "styled-system/css";
+import { cx } from "styled-system/css";
 
-import { StyledLink } from "../../shared/components/styled-link";
-import { button } from "../../styles/button";
+import { StyledLink } from "../../../shared/components/styled-link";
+import { button } from "../../../styles/button";
+import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import {
+  desktopOnly,
   stateActions,
   stateCenter,
   stateCode,
@@ -11,12 +13,7 @@ import {
   stateIconMute,
   stateSub,
   stateTitle,
-} from "../../styles/not-found";
-import { defaultBookmarkSearch } from "../navigation/lib/bookmark-search";
-
-const desktopOnly = css({
-  display: { base: "none", md: "inline-flex" },
-});
+} from "./styles";
 
 /** シェル内404。存在しないパス・削除済みブックマークの着地先。 */
 export const NotFoundScreen = () => (
