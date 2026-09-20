@@ -6,14 +6,14 @@ import type { FallbackProps } from "react-error-boundary";
 
 import { PantryMotion } from "../../../shared/components/pantry-motion";
 import { StateView } from "../../../shared/components/state-view";
-import { button } from "../../../styles/button";
-import { listColumn } from "../../../styles/list";
+import { button } from "../../../shared/components/styled-button/styles";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import { detailSearchFromList } from "../../navigation/lib/bookmark-search-builders";
 import { useTouchTagLastUsedOnce } from "../../tags/hooks/use-touch-tag-last-used";
 import type { ShelfTag } from "../../tags/lib/tag-shelf";
 import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
+import { listColumn } from "../styles";
 import { BookmarkListContent } from "./bookmark-list";
 import {
   BookmarkListResults,

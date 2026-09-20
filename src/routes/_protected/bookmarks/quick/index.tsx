@@ -22,7 +22,10 @@ import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/ta
 import { bookmarkQuickAddSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
-import { formWrap, workbenchScreen } from "../../../../styles/form-screen";
+import {
+  formWrap,
+  workbenchScreen,
+} from "../../../../shared/styles/form-screen";
 
 export const Route = createFileRoute("/_protected/bookmarks/quick/")({
   validateSearch: bookmarkQuickAddSearchSchema,

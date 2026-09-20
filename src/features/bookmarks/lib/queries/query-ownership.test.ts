@@ -122,7 +122,7 @@ describe("bookmark list query ownership", () => {
   });
 
   test("protected main が一覧とルート遷移のスクロール領域になる", () => {
-    const shellStyles = readSource("styles/shell.ts");
+    const shellStyles = readSource("features/app-shell/styles.ts");
     expect(shellStyles).toContain('blockSize: "100dvh"');
     expect(shellStyles).toContain('minBlockSize: "0"');
     expect(shellStyles).toContain('overflowY: "auto"');

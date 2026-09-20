@@ -1,6 +1,6 @@
 import { RefreshCw, TriangleAlert } from "lucide-react";
 
-import { stateBox, stateErrorMessage } from "../../styles/feedback";
+import { stateBox, stateErrorMessage } from "../styles/feedback";
 import { StyledButton } from "./styled-button";
 
 export const UiError = ({

@@ -2,27 +2,23 @@ import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithValibot } from "@conform-to/valibot";
 import { CircleAlert, Lock, LogIn, Mail } from "lucide-react";
 import { startTransition, useActionState } from "react";
-import { css, cx } from "styled-system/css";
+import { cx } from "styled-system/css";
 
-import { StyledButton } from "../../../shared/components/styled-button";
-import { StyledInput } from "../../../shared/components/styled-input";
-import { StyledLabel } from "../../../shared/components/styled-label";
+import { StyledButton } from "../../../../shared/components/styled-button";
+import { StyledInput } from "../../../../shared/components/styled-input";
+import { StyledLabel } from "../../../../shared/components/styled-label";
 import {
   field,
   fieldError,
   formSummary,
   formSummaryIcon,
   formSummaryText,
-} from "../../../styles/form";
-import { srOnly } from "../../../styles/sr-only";
-import { workbenchFields, workbenchForm } from "../../../styles/workbench";
-import type { SignInError } from "../lib/sign-in-error";
-import { signInSchema } from "../lib/sign-in-schema";
-import type { SignInSchema } from "../lib/sign-in-schema";
-
-const signInForm = css({
-  marginBlockStart: "2",
-});
+} from "../../../../shared/styles/form";
+import { srOnly } from "../../../../shared/styles/sr-only";
+import type { SignInError } from "../../lib/sign-in-error";
+import { signInSchema } from "../../lib/sign-in-schema";
+import type { SignInSchema } from "../../lib/sign-in-schema";
+import { signInForm, workbenchFields, workbenchForm } from "./styles";
 
 interface SignInWithEmailAndPasswordFormProps {
   readonly onSignIn: ({

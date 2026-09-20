@@ -1,43 +1,5 @@
 import { css, cva } from "styled-system/css";
 
-/**
- * 集中フロー（フォーム・クイック追加）の専用トップバー。
- * シェルの代わりに backlink + wordmark + アカウントアイコンだけを持つ。
- * モバイルは wordmark の代わりに画面名を中央に置く。
- */
-export const workbenchBar = css({
-  alignItems: "center",
-  background: "bg.surface",
-  borderBlockEndColor: "border.default",
-  borderBlockEndStyle: "solid",
-  borderBlockEndWidth: "thin",
-  columnGap: "3",
-  display: "flex",
-  flexShrink: "0",
-  paddingBlock: "2.5",
-  paddingInline: "3.5",
-});
-
-export const workbenchWordmark = css({
-  display: "none",
-  marginInlineStart: "2.5",
-  md: {
-    display: "block",
-  },
-});
-
-export const workbenchBarFlex = css({
-  flex: "1",
-});
-
-export const workbenchBarTitle = css({
-  fontSize: "xs",
-  fontWeight: "bold",
-  md: {
-    display: "none",
-  },
-});
-
 /** シェル無し画面の全高コンテナ（トップバー + スクロール本体）。 */
 export const workbenchScreen = css({
   background: "bg.canvas",

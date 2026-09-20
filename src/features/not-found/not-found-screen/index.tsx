@@ -1,8 +1,8 @@
 import { ArrowLeft, Compass } from "lucide-react";
 import { cx } from "styled-system/css";
 
+import { button } from "../../../shared/components/styled-button/styles";
 import { StyledLink } from "../../../shared/components/styled-link";
-import { button } from "../../../styles/button";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import {
   desktopOnly,

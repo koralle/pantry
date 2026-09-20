@@ -7,14 +7,14 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx
- * - ../../../styles/tag-chip.ts (chip + dot recipes)
+ * - ./styles.ts (chip + dot recipes)
  */
 
 import { css, cx } from "styled-system/css";
 
-import type { DomainTone } from "../../../styles/domain-tone";
-import { toneFor } from "../../../styles/domain-tone";
-import { tagChip, tagDot } from "../../../styles/tag-chip";
+import type { DomainTone } from "../../styles/domain-tone";
+import { toneFor } from "../../styles/domain-tone";
+import { tagChip, tagDot } from "./styles";
 
 export interface TagDotProps {
   tone?: DomainTone | undefined;

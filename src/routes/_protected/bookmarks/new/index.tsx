@@ -21,8 +21,11 @@ import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/ta
 import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
-import { button } from "../../../../styles/button";
-import { formWrap, workbenchScreen } from "../../../../styles/form-screen";
+import { button } from "../../../../shared/components/styled-button/styles";
+import {
+  formWrap,
+  workbenchScreen,
+} from "../../../../shared/styles/form-screen";
 
 const fetchTitleAction = bookmarkTitleFetchAction;
 

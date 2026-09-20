@@ -8,7 +8,7 @@
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx
  * - ../bookmark-row/index.tsx
- * - ../../../styles/list.ts
+ * - ../../styles.ts
  */
 
 import { Link } from "@tanstack/react-router";
@@ -39,9 +39,10 @@ import type {
 } from "../../../../features/navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
 import { buildListSearch } from "../../../../features/navigation/lib/bookmark-search-builders";
+import { Kbd } from "../../../../shared/components/kbd";
 import { StateView } from "../../../../shared/components/state-view";
-import { button } from "../../../../styles/button";
-import { skeletonBar, spinner } from "../../../../styles/feedback";
+import { button } from "../../../../shared/components/styled-button/styles";
+import { skeletonBar, spinner } from "../../../../shared/styles/feedback";
 import {
   desktopOnlyText,
   hintBar,
@@ -67,8 +68,7 @@ import {
   skeletonBody,
   skeletonRow,
   stateFill,
-} from "../../../../styles/list";
-import { kbd } from "../../../../styles/shell";
+} from "../../styles";
 import { BookmarkCardGrid } from "../bookmark-card";
 import type { BookmarkRowProps } from "../bookmark-row";
 import { BookmarkRow } from "../bookmark-row";
@@ -103,7 +103,7 @@ export const QuickAddStrip = ({
         marginInlineStart: "auto",
       })}
     >
-      <kbd className={kbd()}>⌘V</kbd>
+      <Kbd>⌘V</Kbd>
     </span>
   </Link>
 );

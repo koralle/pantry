@@ -12,21 +12,18 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.tsx (⌘K focuses the input via inputRef)
- * - ../../../styles/shell.ts (commandBar / commandInput / kbd recipes)
+ * - ../styles.ts (commandBar / commandInput recipes)
+ * - ../../../shared/components/kbd/styles.ts (kbd recipe)
  */
 
 import { Search } from "lucide-react";
 import type { RefObject } from "react";
-import { css, cx } from "styled-system/css";
+import { css } from "styled-system/css";
 
-import { commandBar, commandInput, kbd } from "../../../styles/shell";
+import { Kbd } from "../../../shared/components/kbd";
+import { commandBar, commandInput } from "../styles";
 
 const formContents = css({ display: "contents" });
-
-const kbdDesktopOnly = css({
-  display: "none",
-  md: { display: "inline" },
-});
 
 export interface CommandBarProps {
   defaultValue?: string | undefined;
@@ -58,7 +55,7 @@ export const CommandBar = ({
         ref={inputRef}
         type="search"
       />
-      <kbd className={cx(kbd(), kbdDesktopOnly)}>⌘K</kbd>
+      <Kbd display={{ base: "none", md: "inline" }}>⌘K</Kbd>
     </form>
   </search>
 );

@@ -17,7 +17,7 @@ import {
   dialogDescription,
   dialogError,
   dialogTitle,
-} from "../../../../styles/dialog";
+} from "../../../../shared/styles/dialog";
 
 export const PasskeyDeleteDialog = ({
   displayName,

@@ -9,8 +9,8 @@ import {
   formFieldset,
   formFoot,
   formHeading,
-} from "../../../../../styles/form-screen";
-import { srOnly } from "../../../../../styles/sr-only";
+} from "../../../../../shared/styles/form-screen";
+import { srOnly } from "../../../../../shared/styles/sr-only";
 import { BookmarkTagPicker } from "../../bookmark-tag-picker";
 import { BookmarkFormFields, BookmarkFormNoteField } from "./fields";
 import { bookmarkFormSchema } from "./schema";

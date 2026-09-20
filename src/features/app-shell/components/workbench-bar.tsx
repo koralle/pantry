@@ -2,16 +2,16 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, UserRound } from "lucide-react";
 import { css, cx } from "styled-system/css";
 
-import { backlink } from "../../../styles/detail";
+import { iconButton } from "../../../shared/components/icon-button/styles";
+import { backlink } from "../../../shared/styles/detail";
+import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import {
+  wordmark,
   workbenchBar,
   workbenchBarFlex,
   workbenchBarTitle,
   workbenchWordmark,
-} from "../../../styles/form-screen";
-import { iconButton } from "../../../styles/icon-button";
-import { wordmark } from "../../../styles/shell";
-import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
+} from "../styles";
 
 const mobileOnly = css({
   md: {

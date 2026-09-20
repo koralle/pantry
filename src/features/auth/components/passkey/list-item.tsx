@@ -1,6 +1,10 @@
 import { KeyRound } from "lucide-react";
 import { useState } from "react";
 
+import { authClient } from "../../lib/auth-client";
+import { passkeyDisplayName } from "../../lib/passkey/display-name";
+import { formatPasskeyCreatedAt } from "../../lib/passkey/format-created-at";
+import { getPasskeyManageErrorMessage } from "../../lib/passkey/messages";
 import {
   passkeyRow,
   passkeyRowBody,
@@ -8,11 +12,7 @@ import {
   passkeyRowMeta,
   passkeyRowName,
   passkeyRowOps,
-} from "../../../../styles/account";
-import { authClient } from "../../lib/auth-client";
-import { passkeyDisplayName } from "../../lib/passkey/display-name";
-import { formatPasskeyCreatedAt } from "../../lib/passkey/format-created-at";
-import { getPasskeyManageErrorMessage } from "../../lib/passkey/messages";
+} from "../../styles";
 import { PasskeyDeleteDialog } from "./delete-dialog";
 import { PasskeyRenameDialog } from "./rename-dialog";
 

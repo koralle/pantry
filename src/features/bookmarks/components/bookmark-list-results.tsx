@@ -3,7 +3,7 @@ import { ChevronDown, CircleAlert, RotateCw } from "lucide-react";
 import { css } from "styled-system/css";
 
 import { orpc } from "../../../rpc/query";
-import { button } from "../../../styles/button";
+import { button } from "../../../shared/components/styled-button/styles";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import {
   buildListSearch,

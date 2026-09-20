@@ -7,9 +7,9 @@ import {
 
 import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list-screen";
 import { bookmarkListQueryOptions } from "../../../features/bookmarks/lib/queries/bookmark-list-query-options";
+import { listColumn } from "../../../features/bookmarks/styles";
 import { validateBookmarkSearch } from "../../../features/navigation/lib/bookmark-search";
 import { PantryMotion } from "../../../shared/components/pantry-motion";
-import { listColumn } from "../../../styles/list";
 
 const protectedRouteApi = getRouteApi("/_protected");
 

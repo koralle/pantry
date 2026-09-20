@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 import { ToggleButton } from "react-aria-components";
 
 import { orpc } from "../../../rpc/query";
-import { starToggle } from "../../../styles/detail";
+import { starToggle } from "../../../shared/styles/detail";
 import { bookmarkDetailQueryOptions } from "../lib/queries/bookmark-detail-query-options";
 import { refreshAfterBookmarkMutation } from "../lib/queries/refresh-after-bookmark-mutation";
 import type { BookmarkDetail } from "../persistence/get-bookmark-detail";

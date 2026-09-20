@@ -3,6 +3,18 @@ import { useEffect, useState } from "react";
 import { css, cx } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
+import { flash } from "../../../../shared/styles/flash";
+import {
+  formSummary,
+  formSummaryIcon,
+  formSummaryText,
+} from "../../../../shared/styles/form";
+import { authClient } from "../../lib/auth-client";
+import {
+  getPasskeyManageErrorMessage,
+  getPasskeyRegisterErrorMessage,
+} from "../../lib/passkey/messages";
+import { isWebAuthnAvailable } from "../../lib/passkey/webauthn-support";
 import {
   accountSectionHeadAction,
   accountSectionHeadRow,
@@ -12,19 +24,7 @@ import {
   passkeyEmptyIcon,
   passkeyEmptyNote,
   passkeyEmptyTitle,
-} from "../../../../styles/account";
-import { flash } from "../../../../styles/flash";
-import {
-  formSummary,
-  formSummaryIcon,
-  formSummaryText,
-} from "../../../../styles/form";
-import { authClient } from "../../lib/auth-client";
-import {
-  getPasskeyManageErrorMessage,
-  getPasskeyRegisterErrorMessage,
-} from "../../lib/passkey/messages";
-import { isWebAuthnAvailable } from "../../lib/passkey/webauthn-support";
+} from "../../styles";
 import { PasskeyListItem } from "./list-item";
 import type { ManagedPasskey } from "./list-item";
 

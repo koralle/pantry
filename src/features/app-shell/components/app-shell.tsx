@@ -8,21 +8,16 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./app-shell.stories.tsx
- * - ../../../styles/shell.ts (shell layout recipes)
+ * - ../styles.ts (shell layout recipes)
  */
 
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
-import {
-  shellBody,
-  shellMain,
-  shellRoot,
-  skipLink,
-} from "../../../styles/shell";
 import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import type { ShellView } from "../lib/shell-nav";
+import { shellBody, shellMain, shellRoot, skipLink } from "../styles";
 import { BottomTabs } from "./bottom-tabs";
 import { TopBar } from "./top-bar";
 

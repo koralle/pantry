@@ -7,6 +7,7 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx (stories for new/changed variants)
+ * - ./styles.ts (button recipe)
  *
  * Last synced props: visual (default | accent | danger | toggle | chip), size, type, className, css, plus every Panda style prop
  */
@@ -15,7 +16,7 @@ import { Button as AriaButton } from "react-aria-components";
 import { styled } from "styled-system/jsx";
 import type { HTMLStyledProps } from "styled-system/types";
 
-import { button } from "../../../styles/button";
+import { button } from "./styles";
 
 /**
  * Intentionally not exported. Consumers get `StyledButton` (or the `button`

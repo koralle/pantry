@@ -8,7 +8,7 @@
  *
  * SYNC: When modified, update these files to stay in sync:
  * - ../bookmark-list/index.tsx
- * - ../../../../styles/list.ts
+ * - ../../styles.ts
  */
 
 import { Link } from "@tanstack/react-router";
@@ -26,7 +26,7 @@ import {
   cardStar,
   cardTitle,
   cardTop,
-} from "../../../../styles/list";
+} from "../../styles";
 import type { BookmarkRowProps } from "../bookmark-row";
 
 export const BookmarkCard = ({
