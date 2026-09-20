@@ -66,10 +66,13 @@ export const buildListSearch = (
 };
 
 export const buildListBackSearch = (
-  tags?: readonly string[]
+  tags?: readonly string[],
+  current?: BookmarkSearchSchema
 ): BookmarkSearchSchema =>
-  listSearchFromDetail({
+  buildListSearch(current ?? defaultBookmarkSearch, {
+    clearQ: true,
     tags: tags === undefined ? undefined : [...tags],
+    view: "recent",
   });
 
 export const listSearchFromDetail = (

@@ -75,7 +75,7 @@ export const BookmarkDetailContent = ({
               {bookmark.tagNames.map((name) => (
                 <Link
                   key={name}
-                  search={buildListBackSearch([name])}
+                  search={buildListBackSearch([name], listSearch)}
                   to="/bookmarks"
                 >
                   <TagChip name={name} />

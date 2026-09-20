@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { defaultBookmarkSearch } from "./bookmark-search";
 import {
   allShelfSearch,
+  buildListBackSearch,
   chromeListSearch,
   detailSearchFromList,
   listSearchFromDetail,
@@ -90,6 +91,33 @@ describe(resolveChromeListSearch, () => {
     ).toStrictEqual({
       ...defaultBookmarkSearch,
       tags: ["frontend"],
+    });
+  });
+});
+
+describe(buildListBackSearch, () => {
+  test("keeps the current layout while resetting view and q", () => {
+    const next = buildListBackSearch(["TanStack"], {
+      ...defaultBookmarkSearch,
+      layout: "cards",
+      q: "react",
+      sort: "updated",
+      tags: ["frontend"],
+      view: "favorites",
+    });
+
+    expect(next).toStrictEqual({
+      ...defaultBookmarkSearch,
+      layout: "cards",
+      sort: "updated",
+      tags: ["tanstack"],
+    });
+  });
+
+  test("without current search, produces a fresh tag filter", () => {
+    expect(buildListBackSearch(["docs"])).toStrictEqual({
+      ...defaultBookmarkSearch,
+      tags: ["docs"],
     });
   });
 });

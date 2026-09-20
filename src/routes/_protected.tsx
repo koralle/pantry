@@ -168,6 +168,7 @@ function ShellLayout({
 
   return (
     <AppShell
+      layout={listSearch?.layout}
       newSearch={
         listSearch === undefined ? {} : detailSearchFromList(listSearch)
       }

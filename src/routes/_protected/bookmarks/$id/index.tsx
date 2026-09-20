@@ -33,18 +33,15 @@ function isBookmarkNotFound(error: unknown): boolean {
 }
 
 function DetailFallback({ error, resetErrorBoundary }: FallbackProps) {
-  if (isBookmarkNotFound(error)) {
-    const tags = useRouterState({
-      select: (s) =>
-        (s.location.search as { tags?: string[] | undefined }).tags,
-    });
+  const search = Route.useSearch();
 
+  if (isBookmarkNotFound(error)) {
     return (
       <div className={detailCenter}>
         <UiEmpty
           action={
             <StyledLink
-              search={listSearchFromDetail({ tags })}
+              search={listSearchFromDetail(search)}
               to="/bookmarks"
               visual="accent"
             >

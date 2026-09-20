@@ -48,6 +48,8 @@ export interface AppShellProps {
   rail: ReactNode;
   newSearch?: BookmarkDetailSearch | undefined;
   searchDefaultValue?: string | undefined;
+  /** 一覧の表示レイアウト。下部タブのビュー遷移へ引き継ぐ */
+  layout?: "rows" | "cards" | undefined;
   onSearchSubmit: (value: string) => void;
   children: ReactNode;
 }
@@ -57,6 +59,7 @@ export const AppShell = ({
   rail,
   newSearch,
   searchDefaultValue,
+  layout,
   onSearchSubmit,
   children,
 }: AppShellProps) => {
@@ -65,7 +68,12 @@ export const AppShell = ({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.key.length === 1 &&
+        event.key.toLowerCase() === "k" &&
+        !isDialogOpen()
+      ) {
         event.preventDefault();
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -128,7 +136,7 @@ export const AppShell = ({
         </main>
       </div>
       {view === "account" ? null : (
-        <BottomTabs newSearch={newSearch} view={view} />
+        <BottomTabs layout={layout} newSearch={newSearch} view={view} />
       )}
     </div>
   );

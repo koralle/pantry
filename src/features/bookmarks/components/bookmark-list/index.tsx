@@ -443,11 +443,13 @@ export const BookmarkListView = ({
   ...content
 }: BookmarkListViewProps) => (
   <AppShell
+    layout={content.listSearch.layout}
     onSearchSubmit={onSearchSubmit}
     rail={
       <NavRail
         activeTagId={activeTagId}
         counts={counts}
+        layout={content.listSearch.layout}
         tags={tags}
         view={view}
       />
