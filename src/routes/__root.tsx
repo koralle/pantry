@@ -5,7 +5,7 @@ import { createRootRouteWithContext } from "@tanstack/react-router";
 import { RootDocument } from "../features/app-shell/components/root-document";
 import { FatalErrorScreen } from "../features/not-found/fatal-error-screen";
 import { NotFoundScreen } from "../features/not-found/not-found-screen";
-import { fatalScreen } from "../styles/not-found";
+import { fatalScreen } from "../features/not-found/not-found-screen/styles";
 
 export const Route = createRootRouteWithContext<{
   readonly queryClient: QueryClient;
