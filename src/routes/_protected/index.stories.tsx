@@ -345,7 +345,7 @@ function listQuery(query: Partial<BookmarkSearchSchema>) {
   return {
     tanstack: {
       router: {
-        route: storyListRoute,
+        route: storyBookmarksRoute,
         path: "/bookmarks" as const,
         query,
         context: {
@@ -372,7 +372,7 @@ const meta = preview.meta({
     },
     tanstack: {
       router: {
-        route: storyListRoute,
+        route: storyBookmarksRoute,
         path: "/bookmarks" as const,
         context: {
           queryClient: storyQueryClient,
