@@ -29,10 +29,10 @@ catalogs:
     drizzle-kit: 1.0.0-rc.5-ab785fc
     drizzle-seed: 1.0.0-rc.5-ab785fc
   debug:
-    "@tanstack/devtools-vite": 0.8.5
-    "@tanstack/react-devtools": 0.10.13
-    "@tanstack/react-query-devtools": 5.104.0
-    "@tanstack/react-router-devtools": 1.167.2
+    "@tanstack/devtools-vite": 0.8.3
+    "@tanstack/react-devtools": 0.10.10
+    "@tanstack/react-query-devtools": 5.101.4
+    "@tanstack/react-router-devtools": 1.167.1
   envvars:
     "@t3-oss/env-core": 0.13.11
     "@varlock/cloudflare-integration": 1.5.1
@@ -46,10 +46,10 @@ catalogs:
   format:
     oxfmt: 0.66.0
   framework:
-    "@tanstack/react-query": 5.104.0
-    "@tanstack/react-router": 1.170.40
-    "@tanstack/react-router-ssr-query": 1.167.3
-    "@tanstack/react-start": 1.168.59
+    "@tanstack/react-query": 5.101.4
+    "@tanstack/react-router": 1.170.27
+    "@tanstack/react-router-ssr-query": 1.167.1
+    "@tanstack/react-start": 1.168.44
   githooks:
     lefthook: 2.1.10
   lint:
@@ -116,7 +116,7 @@ minimumReleaseAgeExclude:
 overrides:
   "@babel/core>semver": 7.8.0
   "@babel/helper-compilation-targets>semver": 7.8.0
-  "@tanstack/query-core": 5.104.0
+  "@tanstack/query-core": 5.100.11
   chokidar: 5.0.0
   kysely: 0.28.17
   esbuild: 0.28.1
