@@ -3,24 +3,24 @@ import * as v from "valibot";
 import { bookmarkIdSchema } from "../../domain/bookmark-values";
 
 export interface BookmarkListCursor {
-  readonly sortValueMs: number;
+  readonly createdAtMs: number;
   readonly id: string;
 }
 
-const CURSOR_PATTERN = /^(?<sortValueMs>\d+):(?<id>.+)$/;
+const CURSOR_PATTERN = /^(?<createdAtMs>\d+):(?<id>.+)$/;
 
-const parseCursorSortValueMs = (value: string | undefined): number | null => {
+const parseCursorCreatedAtMs = (value: string | undefined): number | null => {
   if (value === undefined) {
     return null;
   }
-  const sortValueMs = Number(value);
+  const createdAtMs = Number(value);
   if (
-    !Number.isSafeInteger(sortValueMs) ||
-    new Date(sortValueMs).getTime() !== sortValueMs
+    !Number.isSafeInteger(createdAtMs) ||
+    new Date(createdAtMs).getTime() !== createdAtMs
   ) {
     return null;
   }
-  return sortValueMs;
+  return createdAtMs;
 };
 
 const parseCursorBookmarkId = (value: string | undefined): string | null => {
@@ -39,14 +39,14 @@ export const decodeBookmarkListCursor = (
     return null;
   }
 
-  const sortValueMs = parseCursorSortValueMs(matched.groups?.["sortValueMs"]);
+  const createdAtMs = parseCursorCreatedAtMs(matched.groups?.["createdAtMs"]);
   const id = parseCursorBookmarkId(matched.groups?.["id"]);
-  if (sortValueMs === null || id === null) {
+  if (createdAtMs === null || id === null) {
     return null;
   }
 
-  return { id, sortValueMs };
+  return { createdAtMs, id };
 };
 
 export const encodeBookmarkListCursor = (cursor: BookmarkListCursor): string =>
-  `${cursor.sortValueMs}:${cursor.id}`;
+  `${cursor.createdAtMs}:${cursor.id}`;

@@ -187,8 +187,6 @@ describe("user ownership on migrated libSQL", () => {
     });
 
     const page = await listBookmarks(db, {
-      sort: "newest",
-      tagMode: "and",
       userId: actorId,
     });
     const detail = await getBookmarkDetail(db, actorId, { id: ownBookmarkId });

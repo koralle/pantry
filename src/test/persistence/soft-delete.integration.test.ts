@@ -33,8 +33,6 @@ describe("softDeleteBookmark on migrated libSQL", () => {
       .from(bookmarkTable)
       .where(eq(bookmarkTable.id, targetId));
     const page = await listBookmarks(db, {
-      sort: "newest",
-      tagMode: "and",
       userId: v.parse(userIdSchema, "user-a"),
     });
     const detail = await getBookmarkDetail(db, actorId, { id: targetId });

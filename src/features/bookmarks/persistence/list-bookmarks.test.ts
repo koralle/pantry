@@ -134,8 +134,6 @@ function query(
   overrides: Partial<BookmarkListQuery> = {}
 ): Parameters<typeof listBookmarks>[1] {
   return {
-    sort: "newest",
-    tagMode: "and",
     userId: v.parse(userIdSchema, userId),
     ...overrides,
   };
@@ -261,7 +259,7 @@ describe(listBookmarks, () => {
     }
   );
 
-  test("タグ AND は全て持つブックマークだけ、OR はどれかを含む", async () => {
+  test("タグは全て持つブックマークだけを返す", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
     const readingId = await insertTag(db, {
@@ -279,20 +277,12 @@ describe(listBookmarks, () => {
     await attachTag(db, "b-both", workId);
     await attachTag(db, "b-reading", readingId);
 
-    const andResult = await listBookmarks(
+    const result = await listBookmarks(
       db,
-      query("user-a", { tagMode: "and", tagNames: ["reading", "work"] })
-    );
-    const orResult = await listBookmarks(
-      db,
-      query("user-a", { tagMode: "or", tagNames: ["reading", "work"] })
+      query("user-a", { tagNames: ["reading", "work"] })
     );
 
-    expect(andResult.items.map((item) => item.id)).toStrictEqual(["b-both"]);
-    expect(orResult.items.map((item) => item.id)).toStrictEqual([
-      "b-reading",
-      "b-both",
-    ]);
+    expect(result.items.map((item) => item.id)).toStrictEqual(["b-both"]);
   });
 
   test("tagNames は正規化して照合し、q は trim する", async () => {
@@ -315,32 +305,6 @@ describe(listBookmarks, () => {
     );
 
     expect(items.items.map((item) => item.id)).toStrictEqual(["b-1"]);
-  });
-
-  test("sort updated は updatedAt の降順で返す", async () => {
-    const db = await createMemoryDb();
-    await insertUser(db, "user-a");
-    await insertBookmark(db, {
-      createdAt: newer,
-      id: "b-old",
-      title: "古い更新",
-      updatedAt: base,
-      userId: "user-a",
-    });
-    await insertBookmark(db, {
-      createdAt: base,
-      id: "b-new",
-      title: "新しい更新",
-      updatedAt: newer,
-      userId: "user-a",
-    });
-
-    const items = await listBookmarks(db, query("user-a", { sort: "updated" }));
-
-    expect(items.items.map((item) => item.id)).toStrictEqual([
-      "b-new",
-      "b-old",
-    ]);
   });
 
   test("21件以上あるとき初回は先頭20件と nextCursor を返す", async () => {
@@ -420,36 +384,6 @@ describe(listBookmarks, () => {
     expect(new Set(allIds).size).toBe(ids.length);
   });
 
-  test("同一 updatedAt でも updated 順のページ境界で欠落・重複がない", async () => {
-    const db = await createMemoryDb();
-    await insertUser(db, "user-a");
-    const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 2);
-    for (const [index, id] of ids.entries()) {
-      await insertBookmark(db, {
-        createdAt: new Date(base.getTime() + index),
-        id,
-        title: id,
-        updatedAt: base,
-        userId: "user-a",
-      });
-    }
-
-    const first = await listBookmarks(db, query("user-a", { sort: "updated" }));
-    const second = await listBookmarks(
-      db,
-      query(
-        "user-a",
-        first.nextCursor === null
-          ? { sort: "updated" }
-          : { cursor: first.nextCursor, sort: "updated" }
-      )
-    );
-    const allIds = [...first.items, ...second.items].map((item) => item.id);
-
-    expect(allIds).toStrictEqual([...ids].toReversed());
-    expect(new Set(allIds).size).toBe(ids.length);
-  });
-
   test("cursor があっても現在の検索・タグ条件と所有者境界を迂回しない", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
@@ -480,13 +414,12 @@ describe(listBookmarks, () => {
 
     const first = await listBookmarks(
       db,
-      query("user-a", { tagMode: "and", tagNames: ["reading"] })
+      query("user-a", { tagNames: ["reading"] })
     );
     const leaked = await listBookmarks(
       db,
       query("user-a", {
         cursor: first.nextCursor ?? encodeFromItem("a-old", base),
-        tagMode: "and",
         tagNames: ["reading"],
       })
     );
@@ -496,7 +429,7 @@ describe(listBookmarks, () => {
     expect(leaked.items.map((item) => item.id)).not.toContain("b-other");
   });
 
-  test("nextCursor は選択中の並びの末尾位置を表す", async () => {
+  test("nextCursor は末尾の位置を表す", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
     await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 1);
@@ -507,6 +440,7 @@ describe(listBookmarks, () => {
 
     expect(last).toBeDefined();
     expect(decoded?.id).toBe(last?.id);
+    expect(decoded?.createdAtMs).toBe(Date.parse(last?.createdAt ?? ""));
   });
 
   test("projection に不要な列（userId, deletedAt）を載せない", async () => {

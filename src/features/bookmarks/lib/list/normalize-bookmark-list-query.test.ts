@@ -7,8 +7,6 @@ describe(normalizeListQuery, () => {
     expect(
       normalizeListQuery({
         q: "  ",
-        sort: "newest",
-        tagMode: "and",
       }).q
     ).toBeUndefined();
   });
@@ -16,8 +14,6 @@ describe(normalizeListQuery, () => {
   test("normalizes tag names", () => {
     expect(
       normalizeListQuery({
-        sort: "updated",
-        tagMode: "or",
         tagNames: [" React ", "react", "TS", "TypeScript"],
       }).tagNames
     ).toStrictEqual(["react", "ts", "typescript"]);
@@ -26,8 +22,6 @@ describe(normalizeListQuery, () => {
   test("collapses tag names that differ only by Unicode composition", () => {
     expect(
       normalizeListQuery({
-        sort: "updated",
-        tagMode: "or",
         tagNames: ["ハ\u309A", "パ"],
       }).tagNames
     ).toStrictEqual(["パ"]);

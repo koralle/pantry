@@ -55,7 +55,7 @@
 ### TanStack Query ownership
 
 - route loaderはcomponentと同じquery options工場（`bookmarkListQueryOptions`、`bookmarkDetailQueryOptions`等）でprefetchし、componentは同じcacheを読む。
-- ブックマーク一覧は`useSuspenseInfiniteQuery`でページを蓄積する。query keyは`q` / `tags` / `tagMode` / `sort`のみ。cursorはpageParam。
+- ブックマーク一覧は`useSuspenseInfiniteQuery`でページを蓄積する。query keyは`q` / `tags` / `view`のみ。cursorはpageParam。
 - 一覧→詳細→一覧では読み込み済みページを再利用するため、list queryは`staleTime: Infinity`。Create / Update / Delete後は`removeQueries`して先頭20件から再構築する。
 - mutation成功後のrefreshは`void router.invalidate().catch(console.error)`のbest-effortとし、refresh失敗で成功を覆さない。
 

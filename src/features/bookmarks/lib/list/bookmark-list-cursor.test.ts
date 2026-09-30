@@ -6,15 +6,15 @@ import {
 } from "./bookmark-list-cursor";
 
 describe("bookmark list cursor", () => {
-  test("sort 値と Bookmark ID を往復できる", () => {
+  test("createdAt と Bookmark ID を往復できる", () => {
     const encoded = encodeBookmarkListCursor({
+      createdAtMs: 1_775_001_600_000,
       id: "019fae92-3bb0-78cd-b488-65ce0e26a001",
-      sortValueMs: 1_775_001_600_000,
     });
 
     expect(decodeBookmarkListCursor(encoded)).toStrictEqual({
+      createdAtMs: 1_775_001_600_000,
       id: "019fae92-3bb0-78cd-b488-65ce0e26a001",
-      sortValueMs: 1_775_001_600_000,
     });
   });
 
@@ -26,7 +26,7 @@ describe("bookmark list cursor", () => {
     expect(decodeBookmarkListCursor("1.5:id")).toBeNull();
   });
 
-  test("Date として無効な sort 値は null を返す", () => {
+  test("Date として無効な createdAt は null を返す", () => {
     expect(
       decodeBookmarkListCursor(
         `${Number.MAX_SAFE_INTEGER}:019fae92-3bb0-78cd-b488-65ce0e26a001`
