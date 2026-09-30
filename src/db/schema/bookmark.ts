@@ -32,7 +32,6 @@ export const bookmarkTable = sqliteTable(
   (t) => [
     unique().on(t.userId, t.url),
     index("bookmarks_user_id_created_at_idx").on(t.userId, t.createdAt),
-    index("bookmarks_user_id_updated_at_idx").on(t.userId, t.updatedAt),
   ]
 );
 

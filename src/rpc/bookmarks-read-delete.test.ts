@@ -132,7 +132,7 @@ describe("bookmarks RPC 契約", () => {
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     for (const call of [
       async (client: RouterClient<AppRouter>) =>
-        await client.bookmarks.list({ sort: "newest", tagMode: "and" }),
+        await client.bookmarks.list({}),
       async (client: RouterClient<AppRouter>) =>
         await client.bookmarks.detail({ id: detailFixtureId }),
       async (client: RouterClient<AppRouter>) =>
@@ -164,7 +164,7 @@ describe("bookmarks RPC 契約", () => {
       cookie: "better-auth.session_token=abc",
     });
 
-    await client.bookmarks.list({ sort: "newest", tagMode: "and" });
+    await client.bookmarks.list({});
 
     expect(getSession).toHaveBeenCalledOnce();
   });
@@ -193,16 +193,12 @@ describe("bookmarks.list", () => {
 
     const result = await client.bookmarks.list({
       q: "React",
-      sort: "newest",
-      tagMode: "and",
     });
 
     expect(result).toStrictEqual(page);
     expect(deps.listBookmarks).toHaveBeenCalledWith(
       expect.objectContaining({
         q: "React",
-        sort: "newest",
-        tagMode: "and",
         userId: expect.any(String),
       })
     );
@@ -219,8 +215,8 @@ describe("bookmarks.list", () => {
     const { client, getResponse } = createTestClient(createAppRouter(deps));
 
     await expect(
-      // @ts-expect-error 不正な sort 値
-      client.bookmarks.list({ sort: "bogus", tagMode: "and" })
+      // @ts-expect-error 不正な view 値
+      client.bookmarks.list({ view: "bogus" })
     ).rejects.toBeInstanceOf(Error);
     expect(getResponse().status).toBeGreaterThanOrEqual(400);
     expect(getResponse().status).toBeLessThan(500);
@@ -233,8 +229,6 @@ describe("bookmarks.list", () => {
     const error = await rejection(
       client.bookmarks.list({
         cursor: "not-a-cursor",
-        sort: "newest",
-        tagMode: "and",
       })
     );
 
@@ -250,8 +244,6 @@ describe("bookmarks.list", () => {
     const error = await rejection(
       client.bookmarks.list({
         cursor: `${String(Number.MAX_SAFE_INTEGER)}:019fae92-3bb0-78cd-b488-65ce0e26a001`,
-        sort: "newest",
-        tagMode: "and",
       })
     );
 
@@ -267,9 +259,7 @@ describe("bookmarks.list", () => {
     });
     const { client, getResponse } = createTestClient(createAppRouter(deps));
 
-    await expect(
-      client.bookmarks.list({ sort: "newest", tagMode: "and" })
-    ).rejects.toBeInstanceOf(Error);
+    await expect(client.bookmarks.list({})).rejects.toBeInstanceOf(Error);
 
     expect(getResponse().status).toBe(500);
     await expect(getResponse().text()).resolves.not.toContain("disk exploded");

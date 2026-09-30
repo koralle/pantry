@@ -16,15 +16,11 @@ describe("shelf filter search", () => {
     const next = allShelfSearch({
       ...defaultBookmarkSearch,
       q: "react",
-      sort: "updated",
-      tagMode: "or",
       tags: ["frontend"],
     });
 
     expect(next).toStrictEqual({
       q: "react",
-      sort: "updated",
-      tagMode: "or",
     });
   });
 
@@ -32,14 +28,11 @@ describe("shelf filter search", () => {
     const next = tagShelfSearch("TypeScript", {
       ...defaultBookmarkSearch,
       q: "react",
-      sort: "updated",
       tags: ["frontend", "docs"],
     });
 
     expect(next).toStrictEqual({
       q: "react",
-      sort: "updated",
-      tagMode: "and",
       tags: ["typescript"],
     });
   });
@@ -101,7 +94,6 @@ describe(buildListBackSearch, () => {
       ...defaultBookmarkSearch,
       layout: "cards",
       q: "react",
-      sort: "updated",
       tags: ["frontend"],
       view: "favorites",
     });
@@ -109,7 +101,6 @@ describe(buildListBackSearch, () => {
     expect(next).toStrictEqual({
       ...defaultBookmarkSearch,
       layout: "cards",
-      sort: "updated",
       tags: ["tanstack"],
     });
   });
@@ -127,8 +118,6 @@ describe("detail search round-trip", () => {
     const current = {
       ...defaultBookmarkSearch,
       q: "react",
-      sort: "updated" as const,
-      tagMode: "or" as const,
       tags: ["frontend"],
     };
 

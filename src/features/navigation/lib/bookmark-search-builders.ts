@@ -9,8 +9,6 @@ export interface BookmarkSearchPatch {
   readonly layout?: BookmarkSearchSchema["layout"] | undefined;
   readonly q?: string | undefined;
   readonly tags?: string[] | undefined;
-  readonly tagMode?: BookmarkSearchSchema["tagMode"] | undefined;
-  readonly sort?: BookmarkSearchSchema["sort"] | undefined;
   readonly view?: BookmarkSearchSchema["view"] | undefined;
   readonly clearQ?: boolean;
   readonly clearTags?: boolean;
@@ -34,10 +32,7 @@ export const buildListSearch = (
   current: BookmarkSearchSchema,
   patch: BookmarkSearchPatch
 ): BookmarkSearchSchema => {
-  const next: BookmarkSearchSchema = {
-    sort: patch.sort ?? current.sort,
-    tagMode: patch.tagMode ?? current.tagMode,
-  };
+  const next: BookmarkSearchSchema = {};
 
   const view = patch.view ?? current.view;
   if (view !== undefined && view !== "recent") {
@@ -83,8 +78,6 @@ export const listSearchFromDetail = (
     clearTags: search.tags === undefined || search.tags.length === 0,
     layout: search.layout,
     q: search.q,
-    sort: search.sort,
-    tagMode: search.tagMode,
     tags: search.tags,
     view: search.view,
   });
@@ -97,8 +90,6 @@ export const detailSearchFromList = (
   ...(search.tags !== undefined && search.tags.length > 0
     ? { tags: search.tags }
     : {}),
-  ...(search.tagMode === "and" ? {} : { tagMode: search.tagMode }),
-  ...(search.sort === "newest" ? {} : { sort: search.sort }),
   ...(search.view === undefined || search.view === "recent"
     ? {}
     : { view: search.view }),

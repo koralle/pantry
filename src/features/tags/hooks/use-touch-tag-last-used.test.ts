@@ -41,7 +41,7 @@ function shelfTag(id: number, name: string): ShelfTag {
 }
 
 function searchWithTags(tags?: string[]): BookmarkSearchSchema {
-  return { sort: "newest", tagMode: "and", tags };
+  return { tags };
 }
 
 function mountHook(

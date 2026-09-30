@@ -73,10 +73,7 @@ describe(ssrRpcFetch, () => {
     const { router, capturedCookies } = capturingSessionRouter();
     const client = clientThroughSsr(router);
 
-    const result = await client.bookmarks.list({
-      sort: "newest",
-      tagMode: "and",
-    });
+    const result = await client.bookmarks.list({});
 
     expect(result).toStrictEqual({ items: [], nextCursor: null });
     expect(capturedCookies).toStrictEqual([
@@ -91,7 +88,7 @@ describe(ssrRpcFetch, () => {
     const { router, capturedCookies } = capturingSessionRouter();
     const client = clientThroughSsr(router, { cookie: "link-cookie=explicit" });
 
-    await client.bookmarks.list({ sort: "newest", tagMode: "and" });
+    await client.bookmarks.list({});
 
     expect(capturedCookies).toStrictEqual(["link-cookie=explicit"]);
   });

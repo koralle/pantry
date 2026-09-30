@@ -504,8 +504,8 @@ export const SearchResults = meta.story({
 });
 
 export const TagFilterAnd = meta.story({
-  name: "タグAND絞り込み",
-  parameters: listQuery({ tags: ["reading", "work"], tagMode: "and" }),
+  name: "タグ絞り込み",
+  parameters: listQuery({ tags: ["reading", "work"] }),
   beforeEach: async () => {
     listFixture = () => ({ items: [longBookmark], nextCursor: null });
   },
@@ -518,41 +518,6 @@ export const TagFilterAnd = meta.story({
     });
     await expect(
       canvas.getByRole("heading", { name: "reading / work" })
-    ).toBeInTheDocument();
-  },
-});
-
-export const TagFilterOr = meta.story({
-  name: "タグOR絞り込み",
-  parameters: listQuery({ tags: ["reading"], tagMode: "or" }),
-  beforeEach: async () => {
-    listFixture = () => ({ items: [longBookmark], nextCursor: null });
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole("link", { name: rowLinkName(longBookmark.title) })
-      ).toBeInTheDocument();
-    });
-    await expect(
-      canvas.getByRole("heading", { name: "reading" })
-    ).toBeInTheDocument();
-  },
-});
-
-export const SortUpdated = meta.story({
-  name: "並び替え",
-  parameters: listQuery({ sort: "updated" }),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await waitFor(async () => {
-      await expect(
-        canvas.getByRole("link", { name: rowLinkName(shortBookmark.title) })
-      ).toBeInTheDocument();
-    });
-    await expect(
-      canvas.getByRole("heading", { name: "最近保存したもの" })
     ).toBeInTheDocument();
   },
 });

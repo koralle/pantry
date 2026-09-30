@@ -9,10 +9,7 @@ import {
   shouldRestoreRouterScroll,
 } from "./bookmark-list-scroll-session";
 
-const defaultSearch = {
-  sort: "newest",
-  tagMode: "and",
-} as const satisfies BookmarkSearchSchema;
+const defaultSearch = {} as const satisfies BookmarkSearchSchema;
 
 describe("bookmark list scroll session", () => {
   afterEach(() => {
@@ -38,27 +35,13 @@ describe("bookmark list scroll session", () => {
     rememberBookmarkListScroll(bookmarkListSearchIdentity(defaultSearch), 640);
 
     expect(
-      consumeBookmarkListScroll(
-        bookmarkListSearchIdentity({
-          q: "react",
-          sort: "newest",
-          tagMode: "and",
-        })
-      )
+      consumeBookmarkListScroll(bookmarkListSearchIdentity({ q: "react" }))
     ).toBeNull();
   });
 
   test("タグ名のカンマとタグ配列の区切りを同一条件として扱わない", () => {
-    const commaInName = bookmarkListSearchIdentity({
-      sort: "newest",
-      tagMode: "and",
-      tags: ["a,b"],
-    });
-    const twoTags = bookmarkListSearchIdentity({
-      sort: "newest",
-      tagMode: "and",
-      tags: ["a", "b"],
-    });
+    const commaInName = bookmarkListSearchIdentity({ tags: ["a,b"] });
+    const twoTags = bookmarkListSearchIdentity({ tags: ["a", "b"] });
 
     rememberBookmarkListScroll(commaInName, 640);
 
@@ -67,52 +50,20 @@ describe("bookmark list scroll session", () => {
   });
 
   test("一覧 identity はタグ名のカンマと配列区切りを衝突させない", () => {
-    expect(
-      bookmarkListSearchIdentity({
-        sort: "newest",
-        tagMode: "and",
-        tags: ["a,b"],
-      })
-    ).not.toBe(
-      bookmarkListSearchIdentity({
-        sort: "newest",
-        tagMode: "and",
-        tags: ["a", "b"],
-      })
+    expect(bookmarkListSearchIdentity({ tags: ["a,b"] })).not.toBe(
+      bookmarkListSearchIdentity({ tags: ["a", "b"] })
     );
   });
 
   test("タグ配列は要素と並びが同じときだけ同一条件", () => {
-    expect(
-      bookmarkListSearchIdentity({
-        sort: "newest",
-        tagMode: "and",
-        tags: ["a", "b"],
-      })
-    ).toBe(
-      bookmarkListSearchIdentity({
-        sort: "newest",
-        tagMode: "and",
-        tags: ["a", "b"],
-      })
+    expect(bookmarkListSearchIdentity({ tags: ["a", "b"] })).toBe(
+      bookmarkListSearchIdentity({ tags: ["a", "b"] })
     );
-    expect(
-      bookmarkListSearchIdentity({
-        sort: "newest",
-        tagMode: "and",
-        tags: ["a", "b"],
-      })
-    ).not.toBe(
-      bookmarkListSearchIdentity({
-        sort: "newest",
-        tagMode: "and",
-        tags: ["b", "a"],
-      })
+    expect(bookmarkListSearchIdentity({ tags: ["a", "b"] })).not.toBe(
+      bookmarkListSearchIdentity({ tags: ["b", "a"] })
     );
-    expect(
-      bookmarkListSearchIdentity({ sort: "newest", tagMode: "and" })
-    ).not.toBe(
-      bookmarkListSearchIdentity({ sort: "newest", tagMode: "and", tags: [] })
+    expect(bookmarkListSearchIdentity({})).not.toBe(
+      bookmarkListSearchIdentity({ tags: [] })
     );
   });
 

@@ -50,8 +50,7 @@ export const listBookmarks = async (
   db: AppDb,
   input: { readonly userId: UserId } & BookmarkListQuery
 ): Promise<BookmarkListPage> => {
-  const { q, tagNames, tagMode, sort, cursor, view } =
-    normalizeListQuery(input);
+  const { q, tagNames, cursor, view } = normalizeListQuery(input);
   const { userId } = input;
   const decodedCursor =
     cursor === undefined ? null : decodeBookmarkListCursor(cursor);
@@ -105,25 +104,22 @@ export const listBookmarks = async (
       )
       .groupBy(bookmarkTagsTable.bookmarkId);
 
-    const matchingIds =
-      tagMode === "and"
-        ? taggedBookmarks.having(
-            sql`count(distinct ${tagsTable.normalizedName}) = ${tagNames.length}`
-          )
-        : taggedBookmarks;
+    const matchingIds = taggedBookmarks.having(
+      sql`count(distinct ${tagsTable.normalizedName}) = ${tagNames.length}`
+    );
 
     conditions.push(inArray(bookmarkTable.id, matchingIds));
   }
 
-  const sortColumn =
-    sort === "newest" ? bookmarkTable.createdAt : bookmarkTable.updatedAt;
-
   if (decodedCursor !== null && decodedCursor !== undefined) {
-    const cursorDate = new Date(decodedCursor.sortValueMs);
+    const cursorDate = new Date(decodedCursor.createdAtMs);
     conditions.push(
       or(
-        lt(sortColumn, cursorDate),
-        and(eq(sortColumn, cursorDate), lt(bookmarkTable.id, decodedCursor.id))
+        lt(bookmarkTable.createdAt, cursorDate),
+        and(
+          eq(bookmarkTable.createdAt, cursorDate),
+          lt(bookmarkTable.id, decodedCursor.id)
+        )
       )!
     );
   }
@@ -140,7 +136,7 @@ export const listBookmarks = async (
     })
     .from(bookmarkTable)
     .where(and(...conditions))
-    .orderBy(desc(sortColumn), desc(bookmarkTable.id))
+    .orderBy(desc(bookmarkTable.createdAt), desc(bookmarkTable.id))
     .limit(BOOKMARK_LIST_PAGE_SIZE + 1);
 
   const hasMore = bookmarks.length > BOOKMARK_LIST_PAGE_SIZE;
@@ -151,11 +147,8 @@ export const listBookmarks = async (
   const nextCursor =
     hasMore && lastRow !== undefined
       ? encodeBookmarkListCursor({
+          createdAtMs: lastRow.createdAt.getTime(),
           id: lastRow.id,
-          sortValueMs: (sort === "newest"
-            ? lastRow.createdAt
-            : lastRow.updatedAt
-          ).getTime(),
         })
       : null;
 

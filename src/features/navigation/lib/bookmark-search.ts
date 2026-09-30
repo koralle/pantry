@@ -3,8 +3,6 @@ import * as v from "valibot";
 export const bookmarkSearchSchema = v.object({
   layout: v.optional(v.picklist(["rows", "cards"])),
   q: v.optional(v.string()),
-  sort: v.optional(v.picklist(["newest", "updated"]), "newest"),
-  tagMode: v.optional(v.picklist(["and", "or"]), "and"),
   tags: v.optional(v.array(v.string())),
   view: v.optional(
     v.fallback(v.picklist(["recent", "inbox", "favorites"]), "recent")
@@ -21,8 +19,6 @@ export const validateBookmarkSearch = (search: unknown): BookmarkSearchSchema =>
 export const bookmarkDetailSearchSchema = v.object({
   layout: v.optional(v.picklist(["rows", "cards"])),
   q: v.optional(v.string()),
-  sort: v.optional(v.picklist(["newest", "updated"])),
-  tagMode: v.optional(v.picklist(["and", "or"])),
   tags: v.optional(v.array(v.string())),
   view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
 });
@@ -41,7 +37,5 @@ export type BookmarkQuickAddSearch = v.InferOutput<
   typeof bookmarkQuickAddSearchSchema
 >;
 
-export const defaultBookmarkSearch: BookmarkSearchSchema = {
-  sort: "newest",
-  tagMode: "and",
-};
+/** 条件なしの一覧 search。既定値は schema 側の fallback に任せる。 */
+export const defaultBookmarkSearch: BookmarkSearchSchema = {};

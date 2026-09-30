@@ -25,8 +25,6 @@ function query(
   overrides: Partial<BookmarkListQuery> = {}
 ): Parameters<typeof listBookmarks>[1] {
   return {
-    sort: "newest",
-    tagMode: "and",
     userId: v.parse(userIdSchema, userId),
     ...overrides,
   };
@@ -106,7 +104,7 @@ describe("listBookmarks on migrated libSQL", () => {
     );
   });
 
-  test("タグ AND は全て持つブックマークだけ、OR はどれかを含む", async () => {
+  test("タグは全て持つブックマークだけを返す", async () => {
     const db = persistence.getDb();
     await seedUser(db, "user-a");
     const readingId = await seedTag(db, { name: "reading", userId: "user-a" });
@@ -124,22 +122,12 @@ describe("listBookmarks on migrated libSQL", () => {
       userId: "user-a",
     });
 
-    const andResult = await listBookmarks(
+    const result = await listBookmarks(
       db,
-      query("user-a", { tagMode: "and", tagNames: ["reading", "work"] })
-    );
-    const orResult = await listBookmarks(
-      db,
-      query("user-a", { tagMode: "or", tagNames: ["reading", "work"] })
+      query("user-a", { tagNames: ["reading", "work"] })
     );
 
-    expect(andResult.items.map((item) => item.id)).toStrictEqual([
-      bookmarkId(1),
-    ]);
-    expect(orResult.items.map((item) => item.id)).toStrictEqual([
-      bookmarkId(2),
-      bookmarkId(1),
-    ]);
+    expect(result.items.map((item) => item.id)).toStrictEqual([bookmarkId(1)]);
   });
 
   test("q の % はワイルドカードではなくリテラルとして一致させる", async () => {

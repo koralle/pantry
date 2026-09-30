@@ -408,8 +408,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       )
     ),
     q: v.optional(v.string()),
-    sort: v.picklist(["newest", "updated"]),
-    tagMode: v.picklist(["and", "or"]),
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
     view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
   });
@@ -422,8 +420,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
     .handler(
       async ({ input, context }) =>
         await deps.listBookmarks({
-          sort: input.sort,
-          tagMode: input.tagMode,
           userId: context.userId,
           ...(input.q === undefined ? {} : { q: input.q }),
           ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),

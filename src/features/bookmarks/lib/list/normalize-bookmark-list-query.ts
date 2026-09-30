@@ -3,8 +3,6 @@ import { uniqueNormalizedTagNames } from "../../../tags/domain/tag-values";
 export interface FetchBookmarksInput {
   q?: string;
   tagNames?: string[];
-  tagMode: "and" | "or";
-  sort: "newest" | "updated";
   cursor?: string | undefined;
   view?: "recent" | "inbox" | "favorites" | undefined;
 }
@@ -15,10 +13,7 @@ export const normalizeListQuery = (
   const q = input.q?.trim();
   const tagNames = uniqueNormalizedTagNames(input.tagNames ?? []);
 
-  const normalized: FetchBookmarksInput = {
-    sort: input.sort,
-    tagMode: input.tagMode,
-  };
+  const normalized: FetchBookmarksInput = {};
 
   if (q) {
     normalized.q = q;
