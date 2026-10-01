@@ -27,7 +27,6 @@ import type { ReactNode } from "react";
 import { css, cx } from "styled-system/css";
 
 import { AppShell } from "../../../../features/app-shell/components/app-shell";
-import { NavRail } from "../../../../features/app-shell/components/nav-rail";
 import type {
   ShellCounts,
   ShellTag,
@@ -434,29 +433,16 @@ export interface BookmarkListViewProps extends BookmarkListContentProps {
 }
 
 export const BookmarkListView = ({
-  view,
-  counts,
-  tags,
-  activeTagId,
+  newSearch,
   searchDefaultValue,
   onSearchSubmit,
   ...content
 }: BookmarkListViewProps) => (
   <AppShell
-    layout={content.listSearch.layout}
+    newSearch={newSearch}
     onSearchSubmit={onSearchSubmit}
-    rail={
-      <NavRail
-        activeTagId={activeTagId}
-        counts={counts}
-        layout={content.listSearch.layout}
-        tags={tags}
-        view={view}
-      />
-    }
     searchDefaultValue={searchDefaultValue}
-    view={view}
   >
-    <BookmarkListContent {...content} />
+    <BookmarkListContent {...content} newSearch={newSearch} />
   </AppShell>
 );

@@ -12,8 +12,6 @@ import { useRef } from "react";
 import * as v from "valibot";
 
 import { AppShell } from "../features/app-shell/components/app-shell";
-import { NavRailRoute } from "../features/app-shell/components/nav-rail-route";
-import type { ShellView } from "../features/app-shell/lib/shell-nav";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
 import { bookmarkUrlSchema } from "../features/bookmarks/domain/bookmark-values";
 import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
@@ -72,19 +70,6 @@ export const Route = createFileRoute("/_protected")({
 
 const SHELL_LESS_PATH = /^\/bookmarks\/(?:new|quick|[^/]+\/edit)\/?$/;
 
-const viewForPath = (
-  pathname: string,
-  listSearch: BookmarkSearchSchema | undefined
-): ShellView => {
-  if (pathname.startsWith("/tags")) {
-    return "tags";
-  }
-  if (pathname.startsWith("/settings")) {
-    return "account";
-  }
-  return listSearch?.view ?? "recent";
-};
-
 function Layout() {
   const indexSearch = useSearch({
     from: "/_protected/bookmarks/",
@@ -127,7 +112,7 @@ function Layout() {
   }
 
   return (
-    <ShellLayout listSearch={listSearch} pathname={pathname}>
+    <ShellLayout listSearch={listSearch}>
       <Outlet />
     </ShellLayout>
   );
@@ -135,16 +120,12 @@ function Layout() {
 
 function ShellLayout({
   listSearch,
-  pathname,
   children,
 }: {
   readonly listSearch: BookmarkSearchSchema | undefined;
-  readonly pathname: string;
   readonly children: ReactNode;
 }) {
   const navigate = useNavigate();
-
-  const view = viewForPath(pathname, listSearch);
 
   const commitSearch = (raw: string) => {
     const nextQ = raw.trim();
@@ -168,20 +149,11 @@ function ShellLayout({
 
   return (
     <AppShell
-      layout={listSearch?.layout}
       newSearch={
         listSearch === undefined ? {} : detailSearchFromList(listSearch)
       }
       onSearchSubmit={commitSearch}
-      rail={
-        <NavRailRoute
-          filterTags={listSearch?.tags}
-          layout={listSearch?.layout}
-          view={view}
-        />
-      }
       searchDefaultValue={listSearch?.q ?? ""}
-      view={view}
     >
       {children}
     </AppShell>

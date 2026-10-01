@@ -16,10 +16,10 @@ import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
 import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
-import type { ShellView } from "../lib/shell-nav";
 import { shellBody, shellMain, shellRoot, skipLink } from "../styles";
+import { AppHeader } from "./app-header";
 import { BottomTabs } from "./bottom-tabs";
-import { TopBar } from "./top-bar";
+import { SideBar } from "./sidebar";
 
 const isEditableTarget = (target: EventTarget | null): boolean => {
   if (!(target instanceof HTMLElement)) {
@@ -38,23 +38,16 @@ const isDialogOpen = (): boolean =>
   document.querySelector("[role='dialog'], [role='alertdialog']") !== null;
 
 export interface AppShellProps {
-  view: ShellView;
-  /** Rail content — pass `<NavRailRoute>` (connected) or `<NavRail>` (fixtures). */
-  rail: ReactNode;
   newSearch?: BookmarkDetailSearch | undefined;
   searchDefaultValue?: string | undefined;
   /** 一覧の表示レイアウト。下部タブのビュー遷移へ引き継ぐ */
-  layout?: "rows" | "cards" | undefined;
   onSearchSubmit: (value: string) => void;
   children: ReactNode;
 }
 
 export const AppShell = ({
-  view,
-  rail,
   newSearch,
   searchDefaultValue,
-  layout,
   onSearchSubmit,
   children,
 }: AppShellProps) => {
@@ -110,8 +103,8 @@ export const AppShell = ({
       <a className={skipLink} href="#content">
         本文へ
       </a>
-      <TopBar
-        accountActive={view === "account"}
+
+      <AppHeader
         newSearch={newSearch}
         search={{
           defaultValue: searchDefaultValue,
@@ -119,8 +112,10 @@ export const AppShell = ({
           onSubmit: onSearchSubmit,
         }}
       />
+
       <div className={shellBody}>
-        {rail}
+        <SideBar />
+
         <main
           className={shellMain}
           data-scroll-restoration-id="content"
@@ -130,9 +125,8 @@ export const AppShell = ({
           {children}
         </main>
       </div>
-      {view === "account" ? null : (
-        <BottomTabs layout={layout} newSearch={newSearch} view={view} />
-      )}
+
+      <BottomTabs newSearch={newSearch} />
     </div>
   );
 };

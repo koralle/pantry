@@ -10,8 +10,7 @@ import { button } from "../../../shared/components/styled-button/styles";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import { detailSearchFromList } from "../../navigation/lib/bookmark-search-builders";
-import { useTouchTagLastUsedOnce } from "../../tags/hooks/use-touch-tag-last-used";
-import type { ShelfTag } from "../../tags/lib/tag-shelf";
+// import { useTouchTagLastUsedOnce } from "../../tags/hooks/use-touch-tag-last-used";
 import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
 import { listColumn } from "../styles";
 import { BookmarkListContent } from "./bookmark-list";
@@ -52,14 +51,10 @@ const ListError = ({ resetErrorBoundary }: FallbackProps) => (
 
 interface BookmarkListProps {
   readonly search: BookmarkSearchSchema;
-  readonly shelfTagsPromise: Promise<ShelfTag[]>;
 }
 
-export const BookmarkList = ({
-  search,
-  shelfTagsPromise,
-}: BookmarkListProps) => {
-  useTouchTagLastUsedOnce(search, shelfTagsPromise);
+export const BookmarkList = ({ search }: BookmarkListProps) => {
+  // useTouchTagLastUsedOnce(search, shelfTagsPromise);
   const router = useRouter();
   const title = bookmarkListTitle(search);
   const newSearch = detailSearchFromList(search);
