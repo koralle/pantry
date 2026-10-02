@@ -22,14 +22,16 @@ describe("bookmarkSearchSchema", () => {
     });
   });
 
-  test("strips legacy limit and offset without error", async () => {
+  test("strips removed search params without error", async () => {
     const result = await v.parseAsync(bookmarkSearchSchema, {
       limit: 50,
       offset: 100,
+      q: "react",
     });
     expect(result).toStrictEqual({});
     expect(result).not.toHaveProperty("limit");
     expect(result).not.toHaveProperty("offset");
+    expect(result).not.toHaveProperty("q");
   });
 
   test("strips removed sort and tagMode without error", async () => {
