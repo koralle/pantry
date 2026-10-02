@@ -1,6 +1,7 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, ErrorComponent } from "@tanstack/react-router";
 
+import { StandardShell } from "../../../features/app-shell/components/standard-shell";
 import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list-screen";
 import { bookmarkListQueryOptions } from "../../../features/bookmarks/lib/queries/bookmark-list-query-options";
 import { listColumn } from "../../../features/bookmarks/styles";
@@ -20,15 +21,21 @@ export const Route = createFileRoute("/_protected/bookmarks/")({
 });
 
 function BookmarkPageFallbackComponent({ error }: ErrorComponentProps) {
-  return <ErrorComponent error={error} />;
+  return (
+    <StandardShell>
+      <ErrorComponent error={error} />
+    </StandardShell>
+  );
 }
 
 function RouteComponent() {
   const search = Route.useSearch();
 
   return (
-    <PantryMotion className={listColumn} kind="fade-up">
-      <BookmarkList search={search} />
-    </PantryMotion>
+    <StandardShell>
+      <PantryMotion className={listColumn} kind="fade-up">
+        <BookmarkList search={search} />
+      </PantryMotion>
+    </StandardShell>
   );
 }

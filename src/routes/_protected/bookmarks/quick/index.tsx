@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import * as v from "valibot";
 
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
+import { WorkbenchShell } from "../../../../features/app-shell/components/workbench-shell";
 import { buildNewBookmarkCommand } from "../../../../features/bookmarks/components/new-bookmark-command";
 import {
   QuickAddFetchingCard,
@@ -22,10 +23,7 @@ import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/ta
 import { bookmarkQuickAddSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
-import {
-  formWrap,
-  workbenchScreen,
-} from "../../../../shared/styles/form-screen";
+import { formWrap } from "../../../../shared/styles/form-screen";
 
 export const Route = createFileRoute("/_protected/bookmarks/quick/")({
   validateSearch: bookmarkQuickAddSearchSchema,
@@ -124,14 +122,17 @@ function RouteComponent() {
   };
 
   return (
-    <div className={workbenchScreen}>
-      <WorkbenchBar
-        backLabel="一覧へ戻る"
-        backSearch={listSearch}
-        backTo="/bookmarks"
-        mobileBackLabel="キャンセル"
-        title="登録"
-      />
+    <WorkbenchShell
+      header={
+        <WorkbenchBar
+          backLabel="一覧へ戻る"
+          backSearch={listSearch}
+          backTo="/bookmarks"
+          mobileBackLabel="キャンセル"
+          title="登録"
+        />
+      }
+    >
       <div className={formWrap}>
         {prefetchUrl === undefined ? (
           <QuickAddScreen {...ports} />
@@ -139,6 +140,6 @@ function RouteComponent() {
           <QuickAddWithPrefetchedTitle ports={ports} url={prefetchUrl} />
         )}
       </div>
-    </div>
+    </WorkbenchShell>
   );
 }

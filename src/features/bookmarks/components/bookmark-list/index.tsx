@@ -26,10 +26,7 @@ import {
 import type { ReactNode } from "react";
 import { css, cx } from "styled-system/css";
 
-import { AppHeader } from "../../../../features/app-shell/components/app-header";
-import { AppShell } from "../../../../features/app-shell/components/app-shell";
-import { BottomTabs } from "../../../../features/app-shell/components/bottom-tabs";
-import { SideBar } from "../../../../features/app-shell/components/sidebar";
+import { StandardShell } from "../../../../features/app-shell/components/standard-shell";
 import type {
   ShellCounts,
   ShellTag,
@@ -431,15 +428,8 @@ export interface BookmarkListViewProps extends BookmarkListContentProps {
   activeTagId?: string | undefined;
 }
 
-export const BookmarkListView = ({
-  newSearch,
-  ...content
-}: BookmarkListViewProps) => (
-  <AppShell
-    renderBottomTab={() => <BottomTabs newSearch={newSearch} />}
-    renderHeader={() => <AppHeader />}
-    renderSideBar={() => <SideBar />}
-  >
-    <BookmarkListContent {...content} newSearch={newSearch} />
-  </AppShell>
+export const BookmarkListView = (content: BookmarkListViewProps) => (
+  <StandardShell>
+    <BookmarkListContent {...content} />
+  </StandardShell>
 );

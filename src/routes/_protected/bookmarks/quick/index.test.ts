@@ -5,10 +5,6 @@ import { describe, expect, test } from "vitest";
 
 const dir = import.meta.dirname;
 const routeSource = readFileSync(join(dir, "index.tsx"), "utf-8");
-const protectedSource = readFileSync(
-  join(dir, "../../../_protected.tsx"),
-  "utf-8"
-);
 const screenSource = readFileSync(
   join(dir, "../../../../features/bookmarks/components/quick-add/index.tsx"),
   "utf-8"
@@ -57,11 +53,8 @@ describe("quick add route", () => {
     expect(routeSource).not.toContain("error.message");
   });
 
-  test("シェル無しの作業台として描画される", () => {
-    expect(protectedSource).toContain(
-      "SHELL_LESS_PATH = /^\\/bookmarks\\/(?:new|quick|[^/]+\\/edit)\\/?$/"
-    );
-    expect(routeSource).toContain("workbenchScreen");
+  test("作業台として描画される", () => {
+    expect(routeSource).toContain("WorkbenchShell");
     expect(routeSource).toContain("WorkbenchBar");
   });
 });

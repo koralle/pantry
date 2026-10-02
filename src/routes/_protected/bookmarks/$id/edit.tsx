@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
+import { WorkbenchShell } from "../../../../features/app-shell/components/workbench-shell";
 import { BookmarkDeleteDialog } from "../../../../features/bookmarks/components/bookmark-delete-dialog";
 import { BookmarkEditor } from "../../../../features/bookmarks/components/bookmark-editor";
 import type {
@@ -34,7 +35,6 @@ import { detailCenter } from "../../../../shared/styles/detail";
 import {
   formFootSpacer,
   formWrap,
-  workbenchScreen,
 } from "../../../../shared/styles/form-screen";
 
 const editorStaleTime = 5000;
@@ -134,16 +134,19 @@ function RouteComponent() {
     [queryClient, router]
   );
 
+  const listBackBar = (
+    <WorkbenchBar
+      backTo="/bookmarks"
+      backSearch={listSearch}
+      backLabel="一覧へ戻る"
+      mobileBackLabel="キャンセル"
+      title="編集"
+    />
+  );
+
   if (data.kind === "not-found") {
     return (
-      <div className={workbenchScreen}>
-        <WorkbenchBar
-          backTo="/bookmarks"
-          backSearch={listSearch}
-          backLabel="一覧へ戻る"
-          mobileBackLabel="キャンセル"
-          title="編集"
-        />
+      <WorkbenchShell header={listBackBar}>
         <div className={detailCenter}>
           <UiEmpty
             title="このブックマークは見つかりません"
@@ -158,25 +161,18 @@ function RouteComponent() {
             }
           />
         </div>
-      </div>
+      </WorkbenchShell>
     );
   }
 
   // Loader の ensureQueryData が成功しているため、cache は原則ここで埋まっている。
   if (!editorQuery.data) {
     return (
-      <div className={workbenchScreen}>
-        <WorkbenchBar
-          backTo="/bookmarks"
-          backSearch={listSearch}
-          backLabel="一覧へ戻る"
-          mobileBackLabel="キャンセル"
-          title="編集"
-        />
+      <WorkbenchShell header={listBackBar}>
         <div className={detailCenter}>
           <UiLoading label="ブックマークを読み込み中" />
         </div>
-      </div>
+      </WorkbenchShell>
     );
   }
 
@@ -190,15 +186,18 @@ function RouteComponent() {
   };
 
   return (
-    <div className={workbenchScreen}>
-      <WorkbenchBar
-        backTo="/bookmarks/$id"
-        backParams={{ id: initialData.bookmarkId }}
-        backSearch={detailSearch}
-        backLabel="詳細へ戻る"
-        mobileBackLabel="キャンセル"
-        title="編集"
-      />
+    <WorkbenchShell
+      header={
+        <WorkbenchBar
+          backTo="/bookmarks/$id"
+          backParams={{ id: initialData.bookmarkId }}
+          backSearch={detailSearch}
+          backLabel="詳細へ戻る"
+          mobileBackLabel="キャンセル"
+          title="編集"
+        />
+      }
+    >
       <div className={formWrap}>
         <ErrorBoundary FallbackComponent={EditError}>
           <BookmarkEditor
@@ -266,6 +265,6 @@ function RouteComponent() {
           />
         </ErrorBoundary>
       </div>
-    </div>
+    </WorkbenchShell>
   );
 }

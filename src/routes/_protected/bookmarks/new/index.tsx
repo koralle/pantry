@@ -8,6 +8,7 @@ import {
 import { useMemo, useState } from "react";
 
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
+import { WorkbenchShell } from "../../../../features/app-shell/components/workbench-shell";
 import { BookmarkForm } from "../../../../features/bookmarks/components/bookmark-editor/bookmark-form";
 import type {
   BookmarkFormServerError,
@@ -22,10 +23,7 @@ import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
 import { button } from "../../../../shared/components/styled-button/styles";
-import {
-  formWrap,
-  workbenchScreen,
-} from "../../../../shared/styles/form-screen";
+import { formWrap } from "../../../../shared/styles/form-screen";
 
 const fetchTitleAction = bookmarkTitleFetchAction;
 
@@ -94,14 +92,17 @@ function RouteComponent() {
   }
 
   return (
-    <div className={workbenchScreen}>
-      <WorkbenchBar
-        backTo="/bookmarks"
-        backSearch={listSearch}
-        backLabel="一覧へ戻る"
-        mobileBackLabel="キャンセル"
-        title="登録"
-      />
+    <WorkbenchShell
+      header={
+        <WorkbenchBar
+          backTo="/bookmarks"
+          backSearch={listSearch}
+          backLabel="一覧へ戻る"
+          mobileBackLabel="キャンセル"
+          title="登録"
+        />
+      }
+    >
       <div className={formWrap}>
         <BookmarkForm
           initialValues={{ url: "", title: "", note: null }}
@@ -125,6 +126,6 @@ function RouteComponent() {
           createTagAction={createTagAction}
         />
       </div>
-    </div>
+    </WorkbenchShell>
   );
 }

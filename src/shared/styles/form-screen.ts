@@ -1,13 +1,5 @@
 import { css, cva } from "styled-system/css";
 
-/** シェル無し画面の全高コンテナ（トップバー + スクロール本体）。 */
-export const workbenchScreen = css({
-  background: "bg.canvas",
-  display: "flex",
-  flexDirection: "column",
-  minBlockSize: "dvh",
-});
-
 /** フォームを中央の狭いカラムに置くラッパー。 */
 export const formWrap = css({
   display: "flex",

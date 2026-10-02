@@ -9,6 +9,7 @@ import { Suspense, use } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import type { FallbackProps } from "react-error-boundary";
 
+import { StandardShell } from "../../../features/app-shell/components/standard-shell";
 import {
   TagManagerScreen,
   TagManagerSkeleton,
@@ -65,11 +66,13 @@ function RouteComponent() {
   const { shelfTagsPromise } = protectedRouteApi.useLoaderData();
 
   return (
-    <ErrorBoundary FallbackComponent={TagsError}>
-      <Suspense fallback={<TagManagerSkeleton />}>
-        <TagManagerResolved tagPromise={shelfTagsPromise} />
-      </Suspense>
-    </ErrorBoundary>
+    <StandardShell>
+      <ErrorBoundary FallbackComponent={TagsError}>
+        <Suspense fallback={<TagManagerSkeleton />}>
+          <TagManagerResolved tagPromise={shelfTagsPromise} />
+        </Suspense>
+      </ErrorBoundary>
+    </StandardShell>
   );
 }
 

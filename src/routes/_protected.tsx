@@ -1,24 +1,7 @@
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import {
-  createFileRoute,
-  Outlet,
-  redirect,
-  useRouterState,
-  useSearch,
-} from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { useRef } from "react";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { AppHeader } from "../features/app-shell/components/app-header";
-import { AppShell } from "../features/app-shell/components/app-shell";
-import { BottomTabs } from "../features/app-shell/components/bottom-tabs";
-import { SideBar } from "../features/app-shell/components/sidebar";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
-import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
-import {
-  detailSearchFromList,
-  resolveChromeListSearch,
-} from "../features/navigation/lib/bookmark-search-builders";
 import { getRpcClient } from "../rpc/runtime-client";
 
 export const Route = createFileRoute("/_protected")({
@@ -63,79 +46,6 @@ export const Route = createFileRoute("/_protected")({
 
     return { countsPromise, shelfTagsPromise };
   },
-  component: () => <Layout />,
+  // 画面ごとのシェル（StandardShell / WorkbenchShell）はルート側で選ぶ。
+  component: () => <Outlet />,
 });
-
-const SHELL_LESS_PATH = /^\/bookmarks\/(?:new|quick|[^/]+\/edit)\/?$/;
-
-function Layout() {
-  const indexSearch = useSearch({
-    from: "/_protected/bookmarks/",
-    shouldThrow: false,
-  });
-  const detailSearch = useSearch({
-    from: "/_protected/bookmarks/$id/",
-    shouldThrow: false,
-  });
-  const newSearch = useSearch({
-    from: "/_protected/bookmarks/new/",
-    shouldThrow: false,
-  });
-  const quickSearch = useSearch({
-    from: "/_protected/bookmarks/quick/",
-    shouldThrow: false,
-  });
-  const editSearch = useSearch({
-    from: "/_protected/bookmarks/$id/edit",
-    shouldThrow: false,
-  });
-  const rememberedListSearch = useRef(indexSearch);
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
-
-  if (indexSearch !== undefined) {
-    rememberedListSearch.current = indexSearch;
-  }
-
-  const listSearch = resolveChromeListSearch(
-    indexSearch,
-    rememberedListSearch.current,
-    [detailSearch, newSearch, quickSearch, editSearch]
-  );
-
-  // クイック追加・フォームは集中フロー（専用画面）としてシェルを出さない
-  if (SHELL_LESS_PATH.test(pathname)) {
-    return <Outlet />;
-  }
-
-  return (
-    <ShellLayout listSearch={listSearch}>
-      <Outlet />
-    </ShellLayout>
-  );
-}
-
-function ShellLayout({
-  listSearch,
-  children,
-}: {
-  readonly listSearch: BookmarkSearchSchema | undefined;
-  readonly children: ReactNode;
-}) {
-  return (
-    <AppShell
-      renderHeader={() => <AppHeader />}
-      renderSideBar={() => <SideBar />}
-      renderBottomTab={() => (
-        <BottomTabs
-          newSearch={
-            listSearch === undefined ? {} : detailSearchFromList(listSearch)
-          }
-        />
-      )}
-    >
-      {children}
-    </AppShell>
-  );
-}

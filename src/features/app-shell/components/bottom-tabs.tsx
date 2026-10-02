@@ -1,7 +1,7 @@
 /**
  * @file bottom-tabs.tsx
  *
- * Input:    active view, new-bookmark return search
+ * Input:    なし（現在地から導出）
  * Output:   BottomTabs component
  * Position: Mobile-only bottom tab bar with the centered quick-add FAB
  *           (hidden at md and up)
@@ -18,15 +18,10 @@ import { useIsFavorites } from "../../../shared/hooks/use-is-favorites";
 import { useIsInbox } from "../../../shared/hooks/use-is-inbox";
 import { useIsRecent } from "../../../shared/hooks/use-is-recent";
 import { useIsInTagPage } from "../../../shared/hooks/use-is-tag-page";
-import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import { bottomTabs, fab, tabItem } from "../styles";
 
-export interface BottomTabsProps {
-  newSearch?: BookmarkDetailSearch | undefined;
-}
-
-export const BottomTabs = ({ newSearch }: BottomTabsProps) => {
+export const BottomTabs = () => {
   const isInbox = useIsInbox();
   const isFavorites = useIsFavorites();
   const isRecent = useIsRecent();
@@ -57,7 +52,7 @@ export const BottomTabs = ({ newSearch }: BottomTabsProps) => {
       <Link
         aria-label="ブックマークを登録"
         className={fab}
-        search={newSearch ?? {}}
+        search={{}}
         to="/bookmarks/quick"
       >
         <Plus aria-hidden size={22} />

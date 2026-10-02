@@ -1,7 +1,7 @@
 /**
  * @file app-header.tsx
  *
- * Input:    new-bookmark search conditions
+ * Input:    なし（現在地から導出）
  * Output:   AppHeader component
  * Position: 52px top bar — wordmark, new-bookmark CTA, account icon
  *
@@ -16,7 +16,6 @@ import { css, cx } from "styled-system/css";
 import { iconButton } from "../../../../shared/components/icon-button/styles";
 import { Kbd } from "../../../../shared/components/kbd";
 import { button } from "../../../../shared/components/styled-button/styles";
-import type { BookmarkDetailSearch } from "../../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../../navigation/lib/bookmark-search";
 import { topbar, wordmark } from "../../styles";
 
@@ -34,11 +33,7 @@ const wordmarkDesktop = css({
   },
 });
 
-export interface AppHeaderProps {
-  newSearch?: BookmarkDetailSearch | undefined;
-}
-
-export const AppHeader = ({ newSearch }: AppHeaderProps) => {
+export const AppHeader = () => {
   const matchRoute = useMatchRoute();
   const isSettingPageActive = !!matchRoute({ to: "/settings" });
 
@@ -54,7 +49,7 @@ export const AppHeader = ({ newSearch }: AppHeaderProps) => {
 
       <Link
         className={cx(button({ size: "sm", visual: "accent" }), desktopOnly)}
-        search={newSearch ?? {}}
+        search={{}}
         to="/bookmarks/quick"
       >
         <Plus aria-hidden size={13} />
