@@ -25,10 +25,6 @@ export const HistoryLink = ({ count }: { count: number }) => {
       return false;
     }
 
-    if (searchParams.q !== undefined) {
-      return false;
-    }
-
     return (
       !matchRoute({ to: "/bookmarks", search: { view: "inbox" } }) &&
       !matchRoute({ to: "/bookmarks", search: { view: "favorites" } })

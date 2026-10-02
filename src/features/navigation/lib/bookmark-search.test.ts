@@ -26,11 +26,8 @@ describe("bookmarkSearchSchema", () => {
     const result = await v.parseAsync(bookmarkSearchSchema, {
       limit: 50,
       offset: 100,
-      q: "react",
     });
-    expect(result).toStrictEqual({
-      q: "react",
-    });
+    expect(result).toStrictEqual({});
     expect(result).not.toHaveProperty("limit");
     expect(result).not.toHaveProperty("offset");
   });
@@ -43,33 +40,33 @@ describe("bookmarkSearchSchema", () => {
     expect(result).toStrictEqual({});
   });
 
-  test("detail search keeps list conditions without filling defaults", async () => {
-    const result = await v.parseAsync(bookmarkDetailSearchSchema, {
-      q: "react",
+  test("detail search keeps list conditions without filling defaults", () => {
+    const result = v.parse(bookmarkDetailSearchSchema, {
+      tags: ["frontend"],
     });
     expect(result).toStrictEqual({
-      q: "react",
+      tags: ["frontend"],
     });
   });
 
-  test("parses all fields", async () => {
-    const result = await v.parse(bookmarkSearchSchema, {
-      q: "react",
+  test("parses all fields", () => {
+    const result = v.parse(bookmarkSearchSchema, {
+      layout: "cards",
       tags: ["frontend", "typescript"],
+      view: "favorites",
     });
     expect(result).toStrictEqual({
-      q: "react",
+      layout: "cards",
       tags: ["frontend", "typescript"],
+      view: "favorites",
     });
   });
 
   test("BookmarkDetailSearch は schema の出力型である", () => {
     const parsed: BookmarkDetailSearch = v.parse(bookmarkDetailSearchSchema, {
-      q: "react",
       tags: ["frontend"],
     });
     expect(parsed).toStrictEqual({
-      q: "react",
       tags: ["frontend"],
     });
   });

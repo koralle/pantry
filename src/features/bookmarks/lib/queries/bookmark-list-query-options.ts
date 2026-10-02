@@ -18,7 +18,6 @@ export const bookmarkListQueryOptions = (search: BookmarkSearchSchema) =>
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     initialPageParam: undefined as string | undefined,
     input: (pageParam: string | undefined) => ({
-      ...(search.q === undefined ? {} : { q: search.q }),
       ...(search.tags === undefined ? {} : { tagNames: [...search.tags] }),
       ...(search.view === undefined ? {} : { view: search.view }),
       ...(pageParam === undefined ? {} : { cursor: pageParam }),

@@ -56,8 +56,6 @@ const demoItems: BookmarkRowProps[] = [
 const meta = {
   args: {
     listSearch: defaultBookmarkSearch,
-    onSearchSubmit: () => {},
-    searchDefaultValue: "",
     state: "ideal",
     title: "最近保存したもの",
     view: "recent",
@@ -74,8 +72,6 @@ type Story = StoryObj<typeof meta>;
 const Screen = (props: Partial<Parameters<typeof BookmarkListView>[0]>) => (
   <BookmarkListView
     listSearch={defaultBookmarkSearch}
-    onSearchSubmit={() => {}}
-    searchDefaultValue=""
     state="ideal"
     title="最近保存したもの"
     view="recent"

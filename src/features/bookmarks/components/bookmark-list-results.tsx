@@ -34,15 +34,10 @@ const loadMoreErrorNote = css({
   marginBlockStart: "3",
 });
 
-const hasActiveConditions = (search: BookmarkSearchSchema): boolean =>
-  Boolean(search.q?.trim()) ||
-  (search.tags !== undefined && search.tags.length > 0);
+const hasTagFilter = (search: BookmarkSearchSchema): boolean =>
+  search.tags !== undefined && search.tags.length > 0;
 
 export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
-  const q = search.q?.trim();
-  if (q !== undefined && q !== "") {
-    return `「${q}」の検索結果`;
-  }
   const tags = search.tags;
   if (tags !== undefined && tags.length > 0) {
     return tags.join(" / ");
@@ -95,7 +90,7 @@ export const BookmarkListResults = ({
   );
 
   const title = bookmarkListTitle(search);
-  const filtered = hasActiveConditions(search);
+  const filtered = hasTagFilter(search);
   const detailSearch = detailSearchFromList(search);
   const { selectedId } = useListKeyboard({
     cards: search.layout === "cards",
@@ -106,13 +101,8 @@ export const BookmarkListResults = ({
   if (items.length === 0) {
     return (
       <BookmarkListContent
-        clearSearch={
-          filtered
-            ? buildListSearch(search, {
-                clearQ: Boolean(search.q?.trim()),
-                clearTags: search.tags !== undefined && search.tags.length > 0,
-              })
-            : undefined
+        clearedSearch={
+          filtered ? buildListSearch(search, { clearTags: true }) : undefined
         }
         emptyVariant={filtered ? "filtered" : "blank"}
         listSearch={search}

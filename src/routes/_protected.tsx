@@ -3,24 +3,19 @@ import {
   createFileRoute,
   Outlet,
   redirect,
-  useNavigate,
   useRouterState,
   useSearch,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useRef } from "react";
-import * as v from "valibot";
 
 import { AppHeader } from "../features/app-shell/components/app-header";
 import { AppShell } from "../features/app-shell/components/app-shell";
 import { BottomTabs } from "../features/app-shell/components/bottom-tabs";
 import { SideBar } from "../features/app-shell/components/sidebar";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
-import { bookmarkUrlSchema } from "../features/bookmarks/domain/bookmark-values";
 import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
-import { defaultBookmarkSearch } from "../features/navigation/lib/bookmark-search";
 import {
-  buildListSearch,
   detailSearchFromList,
   resolveChromeListSearch,
 } from "../features/navigation/lib/bookmark-search-builders";
@@ -128,39 +123,9 @@ function ShellLayout({
   readonly listSearch: BookmarkSearchSchema | undefined;
   readonly children: ReactNode;
 }) {
-  const navigate = useNavigate();
-
-  const commitSearch = (raw: string) => {
-    const nextQ = raw.trim();
-    const current = listSearch ?? defaultBookmarkSearch;
-    // コマンドバーへの URL 貼付はクイック追加画面を開く
-    if (v.safeParse(bookmarkUrlSchema, nextQ).success) {
-      void navigate({
-        search: { ...detailSearchFromList(current), url: nextQ },
-        to: "/bookmarks/quick",
-      });
-      return;
-    }
-    void navigate({
-      search:
-        nextQ === ""
-          ? buildListSearch(current, { clearQ: true })
-          : buildListSearch(current, { q: nextQ }),
-      to: "/bookmarks",
-    });
-  };
-
   return (
     <AppShell
-      renderHeader={() => (
-        <AppHeader
-          search={{
-            defaultValue: listSearch?.q ?? "",
-            onSubmit: commitSearch,
-          }}
-        />
-      )}
-
+      renderHeader={() => <AppHeader />}
       renderSideBar={() => <SideBar />}
       renderBottomTab={() => (
         <BottomTabs

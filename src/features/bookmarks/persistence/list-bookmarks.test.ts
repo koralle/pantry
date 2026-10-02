@@ -203,62 +203,6 @@ describe(listBookmarks, () => {
     expect(page.nextCursor).toBeNull();
   });
 
-  test("q はタイトル、URL、メモの部分一致で絞る", async () => {
-    const db = await createMemoryDb();
-    await insertUser(db, "user-a");
-    await insertBookmark(db, {
-      id: "b-title",
-      title: "React 19 の use()",
-      userId: "user-a",
-    });
-    await insertBookmark(db, {
-      id: "b-url",
-      title: "無関係",
-      userId: "user-a",
-    });
-    await insertBookmark(db, {
-      id: "b-note",
-      note: "zenn の記事",
-      title: "無関係2",
-      userId: "user-a",
-    });
-
-    const byTitle = await listBookmarks(db, query("user-a", { q: "React" }));
-    const byUrl = await listBookmarks(
-      db,
-      query("user-a", { q: "example.com/b-url" })
-    );
-    const byNote = await listBookmarks(db, query("user-a", { q: "zenn" }));
-    const none = await listBookmarks(db, query("user-a", { q: "存在しない" }));
-
-    expect(byTitle.items.map((item) => item.id)).toStrictEqual(["b-title"]);
-    expect(byUrl.items.map((item) => item.id)).toStrictEqual(["b-url"]);
-    expect(byNote.items.map((item) => item.id)).toStrictEqual(["b-note"]);
-    expect(none.items).toStrictEqual([]);
-  });
-
-  test(
-    String.raw`q の % _ \ はワイルドカードではなくリテラルとして一致させる`,
-    async () => {
-      const db = await createMemoryDb();
-      await insertUser(db, "user-a");
-      await insertBookmark(db, {
-        id: "b-literal",
-        title: "50%_off",
-        userId: "user-a",
-      });
-      await insertBookmark(db, {
-        id: "b-wildcard",
-        title: "50Xoff",
-        userId: "user-a",
-      });
-
-      const items = await listBookmarks(db, query("user-a", { q: "50%_" }));
-
-      expect(items.items.map((item) => item.id)).toStrictEqual(["b-literal"]);
-    }
-  );
-
   test("タグは全て持つブックマークだけを返す", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
@@ -285,7 +229,7 @@ describe(listBookmarks, () => {
     expect(result.items.map((item) => item.id)).toStrictEqual(["b-both"]);
   });
 
-  test("tagNames は正規化して照合し、q は trim する", async () => {
+  test("tagNames は正規化して照合する", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
     const readingId = await insertTag(db, {
@@ -301,7 +245,7 @@ describe(listBookmarks, () => {
 
     const items = await listBookmarks(
       db,
-      query("user-a", { q: "  パディング  ", tagNames: ["Reading", "reading"] })
+      query("user-a", { tagNames: ["Reading", "reading"] })
     );
 
     expect(items.items.map((item) => item.id)).toStrictEqual(["b-1"]);
@@ -384,7 +328,7 @@ describe(listBookmarks, () => {
     expect(new Set(allIds).size).toBe(ids.length);
   });
 
-  test("cursor があっても現在の検索・タグ条件と所有者境界を迂回しない", async () => {
+  test("cursor があっても現在のタグ条件と所有者境界を迂回しない", async () => {
     const db = await createMemoryDb();
     await insertUser(db, "user-a");
     await insertUser(db, "user-b");

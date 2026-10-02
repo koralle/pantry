@@ -130,44 +130,6 @@ describe("listBookmarks on migrated libSQL", () => {
     expect(result.items.map((item) => item.id)).toStrictEqual([bookmarkId(1)]);
   });
 
-  test("q の % はワイルドカードではなくリテラルとして一致させる", async () => {
-    const db = persistence.getDb();
-    await seedUser(db, "user-a");
-    await seedBookmark(db, {
-      id: bookmarkId(1),
-      title: "50%off",
-      userId: "user-a",
-    });
-    await seedBookmark(db, {
-      id: bookmarkId(2),
-      title: "50Xoff",
-      userId: "user-a",
-    });
-
-    const page = await listBookmarks(db, query("user-a", { q: "50%" }));
-
-    expect(page.items.map((item) => item.id)).toStrictEqual([bookmarkId(1)]);
-  });
-
-  test("q の _ はワイルドカードではなくリテラルとして一致させる", async () => {
-    const db = persistence.getDb();
-    await seedUser(db, "user-a");
-    await seedBookmark(db, {
-      id: bookmarkId(1),
-      title: "50_off",
-      userId: "user-a",
-    });
-    await seedBookmark(db, {
-      id: bookmarkId(2),
-      title: "50Xoff",
-      userId: "user-a",
-    });
-
-    const page = await listBookmarks(db, query("user-a", { q: "50_" }));
-
-    expect(page.items.map((item) => item.id)).toStrictEqual([bookmarkId(1)]);
-  });
-
   test("削除済みと他人のブックマークは返さない", async () => {
     const db = persistence.getDb();
     await seedUser(db, "user-a");
