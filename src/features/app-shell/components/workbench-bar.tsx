@@ -39,7 +39,7 @@ export interface WorkbenchBarProps {
 
 /**
  * 集中フロー（新規/編集フォーム・クイック追加）の専用トップバー。
- * シェルのコマンドバーや登録 CTA は出さず、戻る導線とアカウントだけを持つ。
+ * シェルの登録 CTA は出さず、戻る導線とアカウントだけを持つ。
  */
 export const WorkbenchBar = ({
   backTo,

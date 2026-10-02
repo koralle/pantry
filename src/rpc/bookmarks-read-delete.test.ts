@@ -192,13 +192,13 @@ describe("bookmarks.list", () => {
     const { client } = createTestClient(createAppRouter(deps));
 
     const result = await client.bookmarks.list({
-      q: "React",
+      tagNames: ["typescript"],
     });
 
     expect(result).toStrictEqual(page);
     expect(deps.listBookmarks).toHaveBeenCalledWith(
       expect.objectContaining({
-        q: "React",
+        tagNames: ["typescript"],
         userId: expect.any(String),
       })
     );

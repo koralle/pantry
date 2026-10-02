@@ -139,9 +139,8 @@ export const Input = meta.story({
     await expect(
       canvas.getByRole("button", { name: "登録する" })
     ).toBeDisabled();
-    // シェル無し: ナビやコマンドバーは出ない
+    // シェル無し: ナビやヘッダは出ない
     await expect(canvas.queryByRole("navigation")).not.toBeInTheDocument();
-    await expect(canvas.queryByRole("search")).not.toBeInTheDocument();
     await expect(
       canvas.getByRole("link", { name: /一覧へ戻る/ })
     ).toBeInTheDocument();

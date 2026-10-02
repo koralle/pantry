@@ -50,7 +50,7 @@ export const listBookmarks = async (
   db: AppDb,
   input: { readonly userId: UserId } & BookmarkListQuery
 ): Promise<BookmarkListPage> => {
-  const { q, tagNames, cursor, view } = normalizeListQuery(input);
+  const { tagNames, cursor, view } = normalizeListQuery(input);
   const { userId } = input;
   const decodedCursor =
     cursor === undefined ? null : decodeBookmarkListCursor(cursor);
@@ -76,18 +76,6 @@ export const listBookmarks = async (
             )
           )
       )
-    );
-  }
-
-  if (q !== null && q !== undefined) {
-    // ユーザー入力の % _ \ をリテラルとして扱わせる。LIKE のワイルドカード注入を潰す。
-    const pattern = `%${q.replaceAll(/[\\%_]/g, String.raw`\$&`)}%`;
-    conditions.push(
-      or(
-        sql`${bookmarkTable.title} like ${pattern} escape '\\'`,
-        sql`${bookmarkTable.url} like ${pattern} escape '\\'`,
-        sql`${bookmarkTable.note} like ${pattern} escape '\\'`
-      )!
     );
   }
 

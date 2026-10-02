@@ -407,7 +407,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
         v.check((value) => decodeBookmarkListCursor(value) != null)
       )
     ),
-    q: v.optional(v.string()),
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
     view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
   });
@@ -421,7 +420,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       async ({ input, context }) =>
         await deps.listBookmarks({
           userId: context.userId,
-          ...(input.q === undefined ? {} : { q: input.q }),
           ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),
           ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
           ...(input.view === undefined ? {} : { view: input.view }),

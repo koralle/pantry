@@ -73,7 +73,3 @@ export const fatalScreen = css({
   flexDirection: "column",
   minBlockSize: "100svb",
 });
-
-export const desktopOnly = css({
-  display: { base: "none", md: "inline-flex" },
-});

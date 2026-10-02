@@ -11,7 +11,10 @@ import { resetBookmarkListCache } from "./reset-bookmark-list-cache";
 describe(resetBookmarkListCache, () => {
   test("infinite list query を remove し、保存したスクロール位置を捨てる", () => {
     const removeQueries = vi.fn();
-    rememberBookmarkListScroll(bookmarkListSearchIdentity({ q: "q" }), 480);
+    rememberBookmarkListScroll(
+      bookmarkListSearchIdentity({ tags: ["react"] }),
+      480
+    );
     const queryClient = { removeQueries } as never;
 
     resetBookmarkListCache(queryClient);
@@ -20,7 +23,7 @@ describe(resetBookmarkListCache, () => {
       queryKey: orpc.bookmarks.list.key({ type: "infinite" }),
     });
     expect(
-      consumeBookmarkListScroll(bookmarkListSearchIdentity({ q: "q" }))
+      consumeBookmarkListScroll(bookmarkListSearchIdentity({ tags: ["react"] }))
     ).toBeNull();
   });
 });
