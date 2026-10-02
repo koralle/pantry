@@ -11,7 +11,10 @@ import type { ReactNode } from "react";
 import { useRef } from "react";
 import * as v from "valibot";
 
+import { AppHeader } from "../features/app-shell/components/app-header";
 import { AppShell } from "../features/app-shell/components/app-shell";
+import { BottomTabs } from "../features/app-shell/components/bottom-tabs";
+import { SideBar } from "../features/app-shell/components/sidebar";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
 import { bookmarkUrlSchema } from "../features/bookmarks/domain/bookmark-values";
 import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
@@ -149,11 +152,23 @@ function ShellLayout({
 
   return (
     <AppShell
-      newSearch={
-        listSearch === undefined ? {} : detailSearchFromList(listSearch)
-      }
-      onSearchSubmit={commitSearch}
-      searchDefaultValue={listSearch?.q ?? ""}
+      renderHeader={() => (
+        <AppHeader
+          search={{
+            defaultValue: listSearch?.q ?? "",
+            onSubmit: commitSearch,
+          }}
+        />
+      )}
+
+      renderSideBar={() => <SideBar />}
+      renderBottomTab={() => (
+        <BottomTabs
+          newSearch={
+            listSearch === undefined ? {} : detailSearchFromList(listSearch)
+          }
+        />
+      )}
     >
       {children}
     </AppShell>
