@@ -9,7 +9,10 @@ import { Suspense, use } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import type { FallbackProps } from "react-error-boundary";
 
-import { StandardShell } from "../../../features/app-shell/components/standard-shell";
+import { AppHeader } from "../../../app/header";
+import { Layout } from "../../../app/layout";
+import { SideBar } from "../../../app/sidebar";
+import { BottomTabs } from "../../../features/app-shell/components/bottom-tabs";
 import {
   TagManagerScreen,
   TagManagerSkeleton,
@@ -66,13 +69,17 @@ function RouteComponent() {
   const { shelfTagsPromise } = protectedRouteApi.useLoaderData();
 
   return (
-    <StandardShell>
+    <Layout
+      renderBottomTab={() => <BottomTabs />}
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+    >
       <ErrorBoundary FallbackComponent={TagsError}>
         <Suspense fallback={<TagManagerSkeleton />}>
           <TagManagerResolved tagPromise={shelfTagsPromise} />
         </Suspense>
       </ErrorBoundary>
-    </StandardShell>
+    </Layout>
   );
 }
 

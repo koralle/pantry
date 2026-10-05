@@ -10,8 +10,9 @@ import {
 import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
+import { Layout } from "../../../../app/layout";
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
-import { WorkbenchShell } from "../../../../features/app-shell/components/workbench-shell";
+import { workbenchScreen } from "../../../../features/app-shell/styles";
 import { BookmarkDeleteDialog } from "../../../../features/bookmarks/components/bookmark-delete-dialog";
 import { BookmarkEditor } from "../../../../features/bookmarks/components/bookmark-editor";
 import type {
@@ -134,7 +135,7 @@ function RouteComponent() {
     [queryClient, router]
   );
 
-  const listBackBar = (
+  const renderListBackBar = () => (
     <WorkbenchBar
       backTo="/bookmarks"
       backSearch={listSearch}
@@ -146,33 +147,45 @@ function RouteComponent() {
 
   if (data.kind === "not-found") {
     return (
-      <WorkbenchShell header={listBackBar}>
-        <div className={detailCenter}>
-          <UiEmpty
-            title="このブックマークは見つかりません"
-            action={
-              <Link
-                className={button({ visual: "ghost" })}
-                to="/bookmarks"
-                search={listSearch}
-              >
-                一覧へ戻る
-              </Link>
-            }
-          />
+      <Layout
+        renderBottomTab={() => null}
+        renderHeader={renderListBackBar}
+        renderSideBar={() => null}
+      >
+        <div className={workbenchScreen}>
+          <div className={detailCenter}>
+            <UiEmpty
+              title="このブックマークは見つかりません"
+              action={
+                <Link
+                  className={button({ visual: "ghost" })}
+                  to="/bookmarks"
+                  search={listSearch}
+                >
+                  一覧へ戻る
+                </Link>
+              }
+            />
+          </div>
         </div>
-      </WorkbenchShell>
+      </Layout>
     );
   }
 
   // Loader の ensureQueryData が成功しているため、cache は原則ここで埋まっている。
   if (!editorQuery.data) {
     return (
-      <WorkbenchShell header={listBackBar}>
-        <div className={detailCenter}>
-          <UiLoading label="ブックマークを読み込み中" />
+      <Layout
+        renderBottomTab={() => null}
+        renderHeader={renderListBackBar}
+        renderSideBar={() => null}
+      >
+        <div className={workbenchScreen}>
+          <div className={detailCenter}>
+            <UiLoading label="ブックマークを読み込み中" />
+          </div>
         </div>
-      </WorkbenchShell>
+      </Layout>
     );
   }
 
@@ -186,8 +199,9 @@ function RouteComponent() {
   };
 
   return (
-    <WorkbenchShell
-      header={
+    <Layout
+      renderBottomTab={() => null}
+      renderHeader={() => (
         <WorkbenchBar
           backTo="/bookmarks/$id"
           backParams={{ id: initialData.bookmarkId }}
@@ -196,75 +210,78 @@ function RouteComponent() {
           mobileBackLabel="キャンセル"
           title="編集"
         />
-      }
+      )}
+      renderSideBar={() => null}
     >
-      <div className={formWrap}>
-        <ErrorBoundary FallbackComponent={EditError}>
-          <BookmarkEditor
-            key={initialData.bookmarkId}
-            initialData={initialData}
-            heading="ブックマークを編集"
-            footer={
-              <>
-                <Link
-                  className={button({ visual: "ghost" })}
-                  to="/bookmarks/$id"
-                  params={{ id: initialData.bookmarkId }}
-                  search={detailSearch}
-                >
-                  キャンセル
-                </Link>
-                <span aria-hidden className={formFootSpacer} />
-                <BookmarkDeleteDialog
-                  bookmark={{
-                    id: initialData.bookmarkId,
-                    title: initialData.title,
-                  }}
-                  listSearch={listSearch}
-                />
-              </>
-            }
-            onUpdateBookmark={async (
-              command
-            ): Promise<BookmarkEditorSubmitResult> => {
-              try {
-                const output = await updateMutation.mutateAsync({
-                  id: command.bookmarkId,
-                  url: command.url,
-                  title: command.title,
-                  note: command.note,
-                  tags: [...command.tagIds],
-                });
-                return { ok: true, bookmarkId: output.id };
-              } catch (error: unknown) {
-                return {
-                  ok: false,
-                  failureCode: toUpdateBookmarkFailureCode(error),
-                };
+      <div className={workbenchScreen}>
+        <div className={formWrap}>
+          <ErrorBoundary FallbackComponent={EditError}>
+            <BookmarkEditor
+              key={initialData.bookmarkId}
+              initialData={initialData}
+              heading="ブックマークを編集"
+              footer={
+                <>
+                  <Link
+                    className={button({ visual: "ghost" })}
+                    to="/bookmarks/$id"
+                    params={{ id: initialData.bookmarkId }}
+                    search={detailSearch}
+                  >
+                    キャンセル
+                  </Link>
+                  <span aria-hidden className={formFootSpacer} />
+                  <BookmarkDeleteDialog
+                    bookmark={{
+                      id: initialData.bookmarkId,
+                      title: initialData.title,
+                    }}
+                    listSearch={listSearch}
+                  />
+                </>
               }
-            }}
-            fetchTitleAction={fetchTitleAction}
-            tagCandidates={shelfQuery.data ?? []}
-            tagsReady={shelfQuery.isSuccess}
-            createTagAction={createTagAction}
-            onCompleted={async (bookmarkId) => {
-              // DB commit 済みの成功を refresh failure で覆さない。invalidate は best-effort。
-              refreshAfterBookmarkMutation(
-                router,
-                queryClient,
-                "UpdateBookmark"
-              );
+              onUpdateBookmark={async (
+                command
+              ): Promise<BookmarkEditorSubmitResult> => {
+                try {
+                  const output = await updateMutation.mutateAsync({
+                    id: command.bookmarkId,
+                    url: command.url,
+                    title: command.title,
+                    note: command.note,
+                    tags: [...command.tagIds],
+                  });
+                  return { ok: true, bookmarkId: output.id };
+                } catch (error: unknown) {
+                  return {
+                    ok: false,
+                    failureCode: toUpdateBookmarkFailureCode(error),
+                  };
+                }
+              }}
+              fetchTitleAction={fetchTitleAction}
+              tagCandidates={shelfQuery.data ?? []}
+              tagsReady={shelfQuery.isSuccess}
+              createTagAction={createTagAction}
+              onCompleted={async (bookmarkId) => {
+                // DB commit 済みの成功を refresh failure で覆さない。invalidate は best-effort。
+                refreshAfterBookmarkMutation(
+                  router,
+                  queryClient,
+                  "UpdateBookmark"
+                );
 
-              await navigate({
-                to: "/bookmarks/$id",
-                params: { id: bookmarkId },
-                search: detailSearch,
-                state: { bookmarkUpdated: true },
-              });
-            }}
-          />
-        </ErrorBoundary>
+                await navigate({
+                  to: "/bookmarks/$id",
+                  params: { id: bookmarkId },
+                  search: detailSearch,
+                  state: { bookmarkUpdated: true },
+                });
+              }}
+            />
+          </ErrorBoundary>
+        </div>
       </div>
-    </WorkbenchShell>
+    </Layout>
   );
 }

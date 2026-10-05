@@ -1,12 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { StandardShell } from "../../features/app-shell/components/standard-shell";
+import { AppHeader } from "../../app/header";
+import { Layout } from "../../app/layout";
+import { SideBar } from "../../app/sidebar";
+import { BottomTabs } from "../../features/app-shell/components/bottom-tabs";
 import { NotFoundScreen } from "../../features/not-found/not-found-screen";
 
 export const Route = createFileRoute("/_protected/$")({
   component: () => (
-    <StandardShell>
+    <Layout
+      renderBottomTab={() => <BottomTabs />}
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+    >
       <NotFoundScreen />
-    </StandardShell>
+    </Layout>
   ),
 });

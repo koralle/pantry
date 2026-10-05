@@ -5,7 +5,7 @@
 import { getDB } from "../db/get-db.server";
 import type { SessionUser } from "../features/auth/domain/auth-values";
 import { getAuth } from "../features/auth/server/get-auth.server";
-import { getBookmarkCounts } from "../features/bookmarks/persistence/get-bookmark-counts";
+import { getBookmarkCount } from "../features/bookmarks/persistence/get-bookmark-count";
 import { getBookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
 import { insertBookmark } from "../features/bookmarks/persistence/insert-bookmark";
 import { listBookmarks } from "../features/bookmarks/persistence/list-bookmarks";
@@ -29,7 +29,8 @@ export const appRouter = createAppRouter({
     await selectBookmarkEditor(getDB(), userId, id),
   deleteTag: async (input) => await deleteTag(getDB(), input),
   findTagById: async (userId, id) => await selectTagById(getDB(), userId, id),
-  getBookmarkCounts: async (userId) => await getBookmarkCounts(getDB(), userId),
+  getBookmarkCount: async (userId, view) =>
+    await getBookmarkCount(getDB(), userId, view),
   getBookmarkDetail: async (userId, input) =>
     await getBookmarkDetail(getDB(), userId, input),
   getSession: async (headers): Promise<SessionUser | null> => {

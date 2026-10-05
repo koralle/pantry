@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, LogOut } from "lucide-react";
 
-import { StandardShell } from "../../../features/app-shell/components/standard-shell";
+import { AppHeader } from "../../../app/header";
+import { Layout } from "../../../app/layout";
+import { SideBar } from "../../../app/sidebar";
+import { BottomTabs } from "../../../features/app-shell/components/bottom-tabs";
 import { PasskeySettings } from "../../../features/auth/components/passkey/settings";
 import { useSignOut } from "../../../features/auth/hooks/use-sign-out";
 import {
@@ -32,7 +35,11 @@ function RouteComponent() {
   const { handleSignOut, isPending } = useSignOut();
 
   return (
-    <StandardShell>
+    <Layout
+      renderBottomTab={() => <BottomTabs />}
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+    >
       <div className={accountPage}>
         <div className={accountPageInner}>
           <div className={accountBackRow}>
@@ -80,6 +87,6 @@ function RouteComponent() {
           </section>
         </div>
       </div>
-    </StandardShell>
+    </Layout>
   );
 }

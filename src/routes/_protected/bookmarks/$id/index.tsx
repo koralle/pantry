@@ -9,7 +9,10 @@ import { Suspense } from "react";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
 
-import { StandardShell } from "../../../../features/app-shell/components/standard-shell";
+import { AppHeader } from "../../../../app/header";
+import { Layout } from "../../../../app/layout";
+import { SideBar } from "../../../../app/sidebar";
+import { BottomTabs } from "../../../../features/app-shell/components/bottom-tabs";
 import { BookmarkDetailResolved } from "../../../../features/bookmarks/components/bookmark-detail-resolved";
 import { BookmarkDetailSkeleton } from "../../../../features/bookmarks/components/bookmark-detail-skeleton";
 import { bookmarkDetailQueryOptions } from "../../../../features/bookmarks/lib/queries/bookmark-detail-query-options";
@@ -88,7 +91,11 @@ function RouteComponent() {
   });
 
   return (
-    <StandardShell>
+    <Layout
+      renderBottomTab={() => <BottomTabs />}
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+    >
       <section aria-label="ブックマーク詳細" className={detailPage}>
         {newBookmarkCreated ? (
           <div className={detailFlashRow}>
@@ -116,6 +123,6 @@ function RouteComponent() {
           </Suspense>
         </ErrorBoundary>
       </section>
-    </StandardShell>
+    </Layout>
   );
 }

@@ -1,32 +1,25 @@
-/**
- * @file app-shell.tsx
- *
- * Input:    header / side bar / bottom tab render props + page content
- * Output:   AppShell component
- * Position: Authenticated app chrome layout — renders the slots the caller
- *           provides (top bar, rail, bottom tabs, content)
- *
- * SYNC: When modified, update these files to stay in sync:
- * - ../styles.ts (shell layout recipes)
- */
-
 import type { ReactNode } from "react";
 
-import { shellBody, shellMain, shellRoot, skipLink } from "../styles";
+import {
+  shellRoot,
+  skipLink,
+  shellBody,
+  shellMain,
+} from "../features/app-shell/styles";
 
-export interface AppShellProps {
+export interface LayoutProps {
   renderHeader: () => ReactNode;
   renderSideBar: () => ReactNode;
   renderBottomTab: () => ReactNode;
   children: ReactNode;
 }
 
-export const AppShell = ({
+export const Layout = ({
   renderHeader,
   renderSideBar,
   renderBottomTab,
   children,
-}: AppShellProps) => (
+}: LayoutProps) => (
   <div className={shellRoot}>
     <a className={skipLink} href="#content">
       本文へ

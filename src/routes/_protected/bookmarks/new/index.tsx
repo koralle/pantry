@@ -7,8 +7,9 @@ import {
 } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
+import { Layout } from "../../../../app/layout";
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
-import { WorkbenchShell } from "../../../../features/app-shell/components/workbench-shell";
+import { workbenchScreen } from "../../../../features/app-shell/styles";
 import { BookmarkForm } from "../../../../features/bookmarks/components/bookmark-editor/bookmark-form";
 import type {
   BookmarkFormServerError,
@@ -92,8 +93,9 @@ function RouteComponent() {
   }
 
   return (
-    <WorkbenchShell
-      header={
+    <Layout
+      renderBottomTab={() => null}
+      renderHeader={() => (
         <WorkbenchBar
           backTo="/bookmarks"
           backSearch={listSearch}
@@ -101,31 +103,34 @@ function RouteComponent() {
           mobileBackLabel="キャンセル"
           title="登録"
         />
-      }
+      )}
+      renderSideBar={() => null}
     >
-      <div className={formWrap}>
-        <BookmarkForm
-          initialValues={{ url: "", title: "", note: null }}
-          heading="ブックマークを登録"
-          footer={
-            <Link
-              className={button({ visual: "ghost" })}
-              to="/bookmarks"
-              search={listSearch}
-            >
-              キャンセル
-            </Link>
-          }
-          serverError={serverError}
-          submitLabel="登録する"
-          pendingLabel="保存中…"
-          onSubmit={handleSubmit}
-          fetchTitleAction={fetchTitleAction}
-          tagCandidates={shelfQuery.data ?? []}
-          tagsReady={shelfQuery.isSuccess}
-          createTagAction={createTagAction}
-        />
+      <div className={workbenchScreen}>
+        <div className={formWrap}>
+          <BookmarkForm
+            initialValues={{ url: "", title: "", note: null }}
+            heading="ブックマークを登録"
+            footer={
+              <Link
+                className={button({ visual: "ghost" })}
+                to="/bookmarks"
+                search={listSearch}
+              >
+                キャンセル
+              </Link>
+            }
+            serverError={serverError}
+            submitLabel="登録する"
+            pendingLabel="保存中…"
+            onSubmit={handleSubmit}
+            fetchTitleAction={fetchTitleAction}
+            tagCandidates={shelfQuery.data ?? []}
+            tagsReady={shelfQuery.isSuccess}
+            createTagAction={createTagAction}
+          />
+        </div>
       </div>
-    </WorkbenchShell>
+    </Layout>
   );
 }

@@ -127,7 +127,7 @@ describe("bookmark list query ownership", () => {
     expect(shellStyles).toContain('minBlockSize: "0"');
     expect(shellStyles).toContain('overflowY: "auto"');
 
-    const shell = readSource("features/app-shell/components/app-shell.tsx");
+    const shell = readSource("app/layout.tsx");
     expect(shell).toContain('data-scroll-restoration-id="content"');
     expect(shell).toContain('id="content"');
 

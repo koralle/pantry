@@ -54,8 +54,9 @@ describe("quick add route", () => {
   });
 
   test("作業台として描画される", () => {
-    expect(routeSource).toContain("WorkbenchShell");
     expect(routeSource).toContain("WorkbenchBar");
+    expect(routeSource).toContain("workbenchScreen");
+    expect(routeSource).toContain("Layout");
   });
 });
 

@@ -33,7 +33,9 @@ type StoryRpcHandler = (input: unknown) => unknown;
 // 合わせて fixture を返し、実際の link codec 経路ごと検証する。
 const storyRpcHandlers = new Map<string, StoryRpcHandler>([
   ["bookmarks.create", () => createFixture()],
-  ["bookmarks.counts", () => ({ favorites: 0, inbox: 0, recent: 0 })],
+  ["bookmarks.counts.favorites", () => 0],
+  ["bookmarks.counts.inbox", () => 0],
+  ["bookmarks.counts.recent", () => 0],
   ["bookmarks.list", () => ({ items: [], nextCursor: null })],
   ["bookmarks.title", () => titleFixture()],
   ["tags.shelf", () => shelfTags],
@@ -52,7 +54,12 @@ globalThis.fetch = async (input, init) => {
       : input instanceof URL
         ? input.href
         : input.url;
-  const url = new URL(requestUrl, window.location.origin);
+  let url: URL;
+  try {
+    url = new URL(requestUrl, window.location.origin);
+  } catch {
+    return new Response(null, { status: 400 });
+  }
   if (!url.pathname.startsWith("/api/rpc/")) {
     return await storyOriginalFetch(input, init);
   }
@@ -63,16 +70,20 @@ globalThis.fetch = async (input, init) => {
     return new Response(null, { status: 404 });
   }
   let procedureInput: unknown;
-  const dataParam = url.searchParams.get("data");
-  if (input instanceof Request) {
-    const body = await input.clone().text();
-    if (body !== "") {
-      procedureInput = (JSON.parse(body) as { json?: unknown }).json;
+  try {
+    const dataParam = url.searchParams.get("data");
+    if (input instanceof Request) {
+      const body = await input.clone().text();
+      if (body !== "") {
+        procedureInput = (JSON.parse(body) as { json?: unknown }).json;
+      }
+    } else if (typeof init?.body === "string") {
+      procedureInput = (JSON.parse(init.body) as { json?: unknown }).json;
+    } else if (dataParam !== null) {
+      procedureInput = (JSON.parse(dataParam) as { json?: unknown }).json;
     }
-  } else if (typeof init?.body === "string") {
-    procedureInput = (JSON.parse(init.body) as { json?: unknown }).json;
-  } else if (dataParam !== null) {
-    procedureInput = (JSON.parse(dataParam) as { json?: unknown }).json;
+  } catch {
+    return new Response(null, { status: 400 });
   }
   try {
     return Response.json({ json: await handler(procedureInput) });

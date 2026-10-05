@@ -3,8 +3,9 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMemo } from "react";
 import * as v from "valibot";
 
+import { Layout } from "../../../../app/layout";
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
-import { WorkbenchShell } from "../../../../features/app-shell/components/workbench-shell";
+import { workbenchScreen } from "../../../../features/app-shell/styles";
 import { buildNewBookmarkCommand } from "../../../../features/bookmarks/components/new-bookmark-command";
 import {
   QuickAddFetchingCard,
@@ -122,8 +123,9 @@ function RouteComponent() {
   };
 
   return (
-    <WorkbenchShell
-      header={
+    <Layout
+      renderBottomTab={() => null}
+      renderHeader={() => (
         <WorkbenchBar
           backLabel="一覧へ戻る"
           backSearch={listSearch}
@@ -131,15 +133,18 @@ function RouteComponent() {
           mobileBackLabel="キャンセル"
           title="登録"
         />
-      }
+      )}
+      renderSideBar={() => null}
     >
-      <div className={formWrap}>
-        {prefetchUrl === undefined ? (
-          <QuickAddScreen {...ports} />
-        ) : (
-          <QuickAddWithPrefetchedTitle ports={ports} url={prefetchUrl} />
-        )}
+      <div className={workbenchScreen}>
+        <div className={formWrap}>
+          {prefetchUrl === undefined ? (
+            <QuickAddScreen {...ports} />
+          ) : (
+            <QuickAddWithPrefetchedTitle ports={ports} url={prefetchUrl} />
+          )}
+        </div>
       </div>
-    </WorkbenchShell>
+    </Layout>
   );
 }

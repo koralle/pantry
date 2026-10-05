@@ -51,17 +51,14 @@ export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
   return "最近保存したもの";
 };
 
-const countForView = (
-  search: BookmarkSearchSchema,
-  counts: { favorites: number; inbox: number; recent: number } | undefined
-): number | undefined => {
-  if (search.view === "inbox") {
-    return counts?.inbox;
+const countQueryOptionsFor = (view: BookmarkSearchSchema["view"]) => {
+  if (view === "inbox") {
+    return orpc.bookmarks.counts.inbox.queryOptions({ staleTime: 5000 });
   }
-  if (search.view === "favorites") {
-    return counts?.favorites;
+  if (view === "favorites") {
+    return orpc.bookmarks.counts.favorites.queryOptions({ staleTime: 5000 });
   }
-  return counts?.recent;
+  return orpc.bookmarks.counts.recent.queryOptions({ staleTime: 5000 });
 };
 
 const isRecentView = (search: BookmarkSearchSchema): boolean =>
@@ -85,12 +82,17 @@ export const BookmarkListResults = ({
     useBookmarkListPagination({
       search,
     });
-  const countsQuery = useQuery(
-    orpc.bookmarks.counts.queryOptions({ staleTime: 5000 })
-  );
-
   const title = bookmarkListTitle(search);
   const filtered = hasTagFilter(search);
+  const viewCountQuery = useQuery({
+    ...countQueryOptionsFor(search.view),
+    enabled: !filtered,
+  });
+  const inboxCountQuery = useQuery({
+    ...orpc.bookmarks.counts.inbox.queryOptions({ staleTime: 5000 }),
+    enabled: !filtered && isRecentView(search),
+  });
+
   const detailSearch = detailSearchFromList(search);
   const { selectedId } = useListKeyboard({
     cards: search.layout === "cards",
@@ -113,10 +115,9 @@ export const BookmarkListResults = ({
     );
   }
 
-  const counts = countsQuery.data;
-  const viewCount = filtered ? undefined : countForView(search, counts);
+  const viewCount = filtered ? undefined : viewCountQuery.data;
   const inboxCount =
-    filtered || !isRecentView(search) ? undefined : counts?.inbox;
+    filtered || !isRecentView(search) ? undefined : inboxCountQuery.data;
 
   return (
     <BookmarkListContent

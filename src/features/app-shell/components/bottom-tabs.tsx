@@ -7,7 +7,7 @@
  *           (hidden at md and up)
  *
  * SYNC: When modified, update these files to stay in sync:
- * - ./app-shell.tsx, ./app-shell.stories.tsx
+ * - ../../../app/layout.tsx (bottom tab slot)
  * - ../styles.ts (bottomTabs / tabItem / fab recipes)
  */
 

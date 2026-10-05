@@ -6,18 +6,18 @@
  * Position: 52px top bar — wordmark, new-bookmark CTA, account icon
  *
  * SYNC: When modified, update these files to stay in sync:
- * - ./app-shell.tsx (composition)
- * - ../styles.ts (topbar / wordmark recipes)
+ * - ./layout.tsx (composition)
+ * - ../../features/app-shell/styles.ts (topbar / wordmark recipes)
  */
 import { Link, useMatchRoute } from "@tanstack/react-router";
 import { Plus, UserRound } from "lucide-react";
 import { css, cx } from "styled-system/css";
 
-import { iconButton } from "../../../../shared/components/icon-button/styles";
-import { Kbd } from "../../../../shared/components/kbd";
-import { button } from "../../../../shared/components/styled-button/styles";
-import { defaultBookmarkSearch } from "../../../navigation/lib/bookmark-search";
-import { topbar, wordmark } from "../../styles";
+import { topbar, wordmark } from "../../features/app-shell/styles";
+import { defaultBookmarkSearch } from "../../features/navigation/lib/bookmark-search";
+import { iconButton } from "../../shared/components/icon-button/styles";
+import { Kbd } from "../../shared/components/kbd";
+import { button } from "../../shared/components/styled-button/styles";
 
 const desktopOnly = css({
   display: "none",

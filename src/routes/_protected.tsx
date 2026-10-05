@@ -40,12 +40,20 @@ export const Route = createFileRoute("/_protected")({
     const shelfTagsPromise = context.queryClient.ensureQueryData(
       orpc.tags.shelf.queryOptions({ staleTime: 5000 })
     );
-    const countsPromise = context.queryClient.ensureQueryData(
-      orpc.bookmarks.counts.queryOptions({ staleTime: 5000 })
-    );
+    const countsPromise = Promise.all([
+      context.queryClient.ensureQueryData(
+        orpc.bookmarks.counts.recent.queryOptions({ staleTime: 5000 })
+      ),
+      context.queryClient.ensureQueryData(
+        orpc.bookmarks.counts.inbox.queryOptions({ staleTime: 5000 })
+      ),
+      context.queryClient.ensureQueryData(
+        orpc.bookmarks.counts.favorites.queryOptions({ staleTime: 5000 })
+      ),
+    ]);
 
     return { countsPromise, shelfTagsPromise };
   },
-  // 画面ごとのシェル（StandardShell / WorkbenchShell）はルート側で選ぶ。
+  // 画面ごとのクローム（Layout の render props）はルート側で選ぶ。
   component: () => <Outlet />,
 });

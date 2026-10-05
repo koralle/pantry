@@ -32,7 +32,7 @@ function baseDeps(): MutableDeps {
     findBookmarkEditor: vi.fn(async () => null),
     findTagById: vi.fn(async () => null),
     getBookmarkDetail: vi.fn(async (): Promise<BookmarkDetail | null> => null),
-    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
+    getBookmarkCount: async () => 0,
     getSession: vi.fn(async (): Promise<SessionUser | null> => ({
       email: `${userId}@example.com`,
       id: userId,

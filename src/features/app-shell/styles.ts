@@ -28,7 +28,7 @@ export const wordmark = css({
 });
 
 /**
- * 集中フロー（フォーム・クイック追加）の本体。AppShell の main に合わせて伸縮し、
+ * 集中フロー（フォーム・クイック追加）の本体。Layout の main に合わせて伸縮し、
  * 中身（formWrap）がスクロールする。
  */
 export const workbenchScreen = css({
