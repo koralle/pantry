@@ -80,7 +80,7 @@ export type QuickAddCreateResult =
   | { readonly ok: false; readonly failure: BookmarkFormServerError | null };
 
 export interface QuickAddScreenProps {
-  /** URL prefill（コマンドバーへの URL 貼付など）。title 系とセットで渡す。 */
+  /** URL prefill（`?url=` 付きで開いたとき）。title 系とセットで渡す。 */
   readonly initialUrl?: string | undefined;
   /** prefill 時に route 側で取得済みのタイトル。undefined のとき入力状態から始まる。 */
   readonly initialTitle?: string | undefined;

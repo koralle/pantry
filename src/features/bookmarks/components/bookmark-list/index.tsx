@@ -26,7 +26,10 @@ import {
 import type { ReactNode } from "react";
 import { css, cx } from "styled-system/css";
 
-import { AppShell } from "../../../../features/app-shell/components/app-shell";
+import { AppHeader } from "../../../../app/header";
+import { Layout } from "../../../../app/layout";
+import { SideBar } from "../../../../app/sidebar";
+import { BottomTabs } from "../../../../features/app-shell/components/bottom-tabs";
 import type {
   ShellCounts,
   ShellTag,
@@ -282,9 +285,6 @@ export const HintBar = () => (
     <span>
       <b>N</b> 新規登録
     </span>
-    <span>
-      <b>/</b> 検索
-    </span>
   </div>
 );
 
@@ -297,7 +297,8 @@ export interface BookmarkListContentProps {
   inboxCount?: number | undefined;
   selectedId?: string | undefined;
   emptyVariant?: "blank" | "filtered" | undefined;
-  clearSearch?: BookmarkSearchSchema | undefined;
+  /** タグ絞り込みを外した一覧条件。「条件をクリア」ボタンの遷移先。 */
+  clearedSearch?: BookmarkSearchSchema | undefined;
   newSearch?: BookmarkDetailSearch | undefined;
   onRetry?: (() => void) | undefined;
   /** 一覧末尾に出す要素（「もっと見る」など）。スクロール領域の内側に置く。 */
@@ -313,7 +314,7 @@ export const BookmarkListContent = ({
   inboxCount,
   selectedId,
   emptyVariant = "blank",
-  clearSearch,
+  clearedSearch,
   newSearch,
   onRetry,
   trailing,
@@ -384,14 +385,14 @@ export const BookmarkListContent = ({
             action={
               <Link
                 className={button({ size: "sm", visual: "accent" })}
-                search={clearSearch ?? defaultBookmarkSearch}
+                search={clearedSearch ?? defaultBookmarkSearch}
                 to="/bookmarks"
               >
                 条件をクリア
               </Link>
             }
             className={stateFill}
-            description="検索語やタグを変えると見つかるかもしれません。"
+            description="タグを変えると見つかるかもしれません。"
             icon={Bookmark}
             title="条件に合うブックマークがありません"
           />
@@ -428,21 +429,14 @@ export interface BookmarkListViewProps extends BookmarkListContentProps {
   counts?: ShellCounts | undefined;
   tags?: ShellTag[] | undefined;
   activeTagId?: string | undefined;
-  searchDefaultValue?: string | undefined;
-  onSearchSubmit: (value: string) => void;
 }
 
-export const BookmarkListView = ({
-  newSearch,
-  searchDefaultValue,
-  onSearchSubmit,
-  ...content
-}: BookmarkListViewProps) => (
-  <AppShell
-    newSearch={newSearch}
-    onSearchSubmit={onSearchSubmit}
-    searchDefaultValue={searchDefaultValue}
+export const BookmarkListView = (content: BookmarkListViewProps) => (
+  <Layout
+    renderBottomTab={() => <BottomTabs />}
+    renderHeader={() => <AppHeader />}
+    renderSideBar={() => <SideBar />}
   >
-    <BookmarkListContent {...content} newSearch={newSearch} />
-  </AppShell>
+    <BookmarkListContent {...content} />
+  </Layout>
 );

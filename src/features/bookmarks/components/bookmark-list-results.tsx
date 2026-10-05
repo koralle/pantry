@@ -34,15 +34,10 @@ const loadMoreErrorNote = css({
   marginBlockStart: "3",
 });
 
-const hasActiveConditions = (search: BookmarkSearchSchema): boolean =>
-  Boolean(search.q?.trim()) ||
-  (search.tags !== undefined && search.tags.length > 0);
+const hasTagFilter = (search: BookmarkSearchSchema): boolean =>
+  search.tags !== undefined && search.tags.length > 0;
 
 export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
-  const q = search.q?.trim();
-  if (q !== undefined && q !== "") {
-    return `「${q}」の検索結果`;
-  }
   const tags = search.tags;
   if (tags !== undefined && tags.length > 0) {
     return tags.join(" / ");
@@ -56,17 +51,14 @@ export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
   return "最近保存したもの";
 };
 
-const countForView = (
-  search: BookmarkSearchSchema,
-  counts: { favorites: number; inbox: number; recent: number } | undefined
-): number | undefined => {
-  if (search.view === "inbox") {
-    return counts?.inbox;
+const countQueryOptionsFor = (view: BookmarkSearchSchema["view"]) => {
+  if (view === "inbox") {
+    return orpc.bookmarks.counts.inbox.queryOptions({ staleTime: 5000 });
   }
-  if (search.view === "favorites") {
-    return counts?.favorites;
+  if (view === "favorites") {
+    return orpc.bookmarks.counts.favorites.queryOptions({ staleTime: 5000 });
   }
-  return counts?.recent;
+  return orpc.bookmarks.counts.recent.queryOptions({ staleTime: 5000 });
 };
 
 const isRecentView = (search: BookmarkSearchSchema): boolean =>
@@ -90,12 +82,17 @@ export const BookmarkListResults = ({
     useBookmarkListPagination({
       search,
     });
-  const countsQuery = useQuery(
-    orpc.bookmarks.counts.queryOptions({ staleTime: 5000 })
-  );
-
   const title = bookmarkListTitle(search);
-  const filtered = hasActiveConditions(search);
+  const filtered = hasTagFilter(search);
+  const viewCountQuery = useQuery({
+    ...countQueryOptionsFor(search.view),
+    enabled: !filtered,
+  });
+  const inboxCountQuery = useQuery({
+    ...orpc.bookmarks.counts.inbox.queryOptions({ staleTime: 5000 }),
+    enabled: !filtered && isRecentView(search),
+  });
+
   const detailSearch = detailSearchFromList(search);
   const { selectedId } = useListKeyboard({
     cards: search.layout === "cards",
@@ -106,13 +103,8 @@ export const BookmarkListResults = ({
   if (items.length === 0) {
     return (
       <BookmarkListContent
-        clearSearch={
-          filtered
-            ? buildListSearch(search, {
-                clearQ: Boolean(search.q?.trim()),
-                clearTags: search.tags !== undefined && search.tags.length > 0,
-              })
-            : undefined
+        clearedSearch={
+          filtered ? buildListSearch(search, { clearTags: true }) : undefined
         }
         emptyVariant={filtered ? "filtered" : "blank"}
         listSearch={search}
@@ -123,10 +115,9 @@ export const BookmarkListResults = ({
     );
   }
 
-  const counts = countsQuery.data;
-  const viewCount = filtered ? undefined : countForView(search, counts);
+  const viewCount = filtered ? undefined : viewCountQuery.data;
   const inboxCount =
-    filtered || !isRecentView(search) ? undefined : counts?.inbox;
+    filtered || !isRecentView(search) ? undefined : inboxCountQuery.data;
 
   return (
     <BookmarkListContent

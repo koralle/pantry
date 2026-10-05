@@ -1,26 +1,7 @@
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import {
-  createFileRoute,
-  Outlet,
-  redirect,
-  useNavigate,
-  useRouterState,
-  useSearch,
-} from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { useRef } from "react";
-import * as v from "valibot";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { AppShell } from "../features/app-shell/components/app-shell";
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
-import { bookmarkUrlSchema } from "../features/bookmarks/domain/bookmark-values";
-import type { BookmarkSearchSchema } from "../features/navigation/lib/bookmark-search";
-import { defaultBookmarkSearch } from "../features/navigation/lib/bookmark-search";
-import {
-  buildListSearch,
-  detailSearchFromList,
-  resolveChromeListSearch,
-} from "../features/navigation/lib/bookmark-search-builders";
 import { getRpcClient } from "../rpc/runtime-client";
 
 export const Route = createFileRoute("/_protected")({
@@ -59,103 +40,20 @@ export const Route = createFileRoute("/_protected")({
     const shelfTagsPromise = context.queryClient.ensureQueryData(
       orpc.tags.shelf.queryOptions({ staleTime: 5000 })
     );
-    const countsPromise = context.queryClient.ensureQueryData(
-      orpc.bookmarks.counts.queryOptions({ staleTime: 5000 })
-    );
+    const countsPromise = Promise.all([
+      context.queryClient.ensureQueryData(
+        orpc.bookmarks.counts.recent.queryOptions({ staleTime: 5000 })
+      ),
+      context.queryClient.ensureQueryData(
+        orpc.bookmarks.counts.inbox.queryOptions({ staleTime: 5000 })
+      ),
+      context.queryClient.ensureQueryData(
+        orpc.bookmarks.counts.favorites.queryOptions({ staleTime: 5000 })
+      ),
+    ]);
 
     return { countsPromise, shelfTagsPromise };
   },
-  component: () => <Layout />,
+  // 画面ごとのクローム（Layout の render props）はルート側で選ぶ。
+  component: () => <Outlet />,
 });
-
-const SHELL_LESS_PATH = /^\/bookmarks\/(?:new|quick|[^/]+\/edit)\/?$/;
-
-function Layout() {
-  const indexSearch = useSearch({
-    from: "/_protected/bookmarks/",
-    shouldThrow: false,
-  });
-  const detailSearch = useSearch({
-    from: "/_protected/bookmarks/$id/",
-    shouldThrow: false,
-  });
-  const newSearch = useSearch({
-    from: "/_protected/bookmarks/new/",
-    shouldThrow: false,
-  });
-  const quickSearch = useSearch({
-    from: "/_protected/bookmarks/quick/",
-    shouldThrow: false,
-  });
-  const editSearch = useSearch({
-    from: "/_protected/bookmarks/$id/edit",
-    shouldThrow: false,
-  });
-  const rememberedListSearch = useRef(indexSearch);
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
-
-  if (indexSearch !== undefined) {
-    rememberedListSearch.current = indexSearch;
-  }
-
-  const listSearch = resolveChromeListSearch(
-    indexSearch,
-    rememberedListSearch.current,
-    [detailSearch, newSearch, quickSearch, editSearch]
-  );
-
-  // クイック追加・フォームは集中フロー（専用画面）としてシェルを出さない
-  if (SHELL_LESS_PATH.test(pathname)) {
-    return <Outlet />;
-  }
-
-  return (
-    <ShellLayout listSearch={listSearch}>
-      <Outlet />
-    </ShellLayout>
-  );
-}
-
-function ShellLayout({
-  listSearch,
-  children,
-}: {
-  readonly listSearch: BookmarkSearchSchema | undefined;
-  readonly children: ReactNode;
-}) {
-  const navigate = useNavigate();
-
-  const commitSearch = (raw: string) => {
-    const nextQ = raw.trim();
-    const current = listSearch ?? defaultBookmarkSearch;
-    // コマンドバーへの URL 貼付はクイック追加画面を開く
-    if (v.safeParse(bookmarkUrlSchema, nextQ).success) {
-      void navigate({
-        search: { ...detailSearchFromList(current), url: nextQ },
-        to: "/bookmarks/quick",
-      });
-      return;
-    }
-    void navigate({
-      search:
-        nextQ === ""
-          ? buildListSearch(current, { clearQ: true })
-          : buildListSearch(current, { q: nextQ }),
-      to: "/bookmarks",
-    });
-  };
-
-  return (
-    <AppShell
-      newSearch={
-        listSearch === undefined ? {} : detailSearchFromList(listSearch)
-      }
-      onSearchSubmit={commitSearch}
-      searchDefaultValue={listSearch?.q ?? ""}
-    >
-      {children}
-    </AppShell>
-  );
-}

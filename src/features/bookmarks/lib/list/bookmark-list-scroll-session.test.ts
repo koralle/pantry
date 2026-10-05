@@ -35,7 +35,7 @@ describe("bookmark list scroll session", () => {
     rememberBookmarkListScroll(bookmarkListSearchIdentity(defaultSearch), 640);
 
     expect(
-      consumeBookmarkListScroll(bookmarkListSearchIdentity({ q: "react" }))
+      consumeBookmarkListScroll(bookmarkListSearchIdentity({ tags: ["react"] }))
     ).toBeNull();
   });
 

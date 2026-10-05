@@ -4,10 +4,11 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { SessionUser } from "../features/auth/domain/auth-values";
+import type { SessionUser, UserId } from "../features/auth/domain/auth-values";
 import type { InsertBookmarkOutput } from "../features/bookmarks/application/create-bookmark";
 import type { FetchPageTitleOutput } from "../features/bookmarks/application/fetch-page-title";
 import type { UpdateBookmarkOutput } from "../features/bookmarks/application/update-bookmark";
+import type { BookmarkCountView } from "../features/bookmarks/persistence/get-bookmark-count";
 import type { InsertTagOutput } from "../features/tags/application/create-tag";
 import type { TouchTagOutput } from "../features/tags/application/touch-tag";
 import type { UpdateTagOutput } from "../features/tags/application/update-tag";
@@ -35,7 +36,7 @@ function baseDeps(): ReadDeps {
     findBookmarkEditor: vi.fn(async () => null),
     findTagById: vi.fn(async () => null),
     getBookmarkDetail: vi.fn(async () => null),
-    getBookmarkCounts: async () => ({ favorites: 0, inbox: 0, recent: 0 }),
+    getBookmarkCount: async () => 0,
     getSession: vi.fn(async () => sessionUser),
     insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({
       kind: "duplicate-url",
@@ -291,5 +292,29 @@ describe("tags.byId RPC", () => {
       sortOrder: number;
       color: string | null;
     }>();
+  });
+});
+
+describe("bookmarks.counts RPC", () => {
+  test("view ごとに独立した procedure が、対応する view の件数を返す", async () => {
+    const counts: Record<BookmarkCountView, number> = {
+      favorites: 6,
+      inbox: 3,
+      recent: 128,
+    };
+    const getBookmarkCount = vi.fn(
+      async (_userId: UserId, view: BookmarkCountView) => counts[view]
+    );
+    const { client } = createTestClient(
+      authenticatedRouter({ getBookmarkCount })
+    );
+
+    await expect(client.bookmarks.counts.recent()).resolves.toBe(128);
+    await expect(client.bookmarks.counts.inbox()).resolves.toBe(3);
+    await expect(client.bookmarks.counts.favorites()).resolves.toBe(6);
+
+    expect(getBookmarkCount).toHaveBeenNthCalledWith(1, userId, "recent");
+    expect(getBookmarkCount).toHaveBeenNthCalledWith(2, userId, "inbox");
+    expect(getBookmarkCount).toHaveBeenNthCalledWith(3, userId, "favorites");
   });
 });

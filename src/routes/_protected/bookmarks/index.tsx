@@ -1,6 +1,10 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, ErrorComponent } from "@tanstack/react-router";
 
+import { AppHeader } from "../../../app/header";
+import { Layout } from "../../../app/layout";
+import { SideBar } from "../../../app/sidebar";
+import { BottomTabs } from "../../../features/app-shell/components/bottom-tabs";
 import { BookmarkList } from "../../../features/bookmarks/components/bookmark-list-screen";
 import { bookmarkListQueryOptions } from "../../../features/bookmarks/lib/queries/bookmark-list-query-options";
 import { listColumn } from "../../../features/bookmarks/styles";
@@ -20,15 +24,29 @@ export const Route = createFileRoute("/_protected/bookmarks/")({
 });
 
 function BookmarkPageFallbackComponent({ error }: ErrorComponentProps) {
-  return <ErrorComponent error={error} />;
+  return (
+    <Layout
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+      renderBottomTab={() => <BottomTabs />}
+    >
+      <ErrorComponent error={error} />
+    </Layout>
+  );
 }
 
 function RouteComponent() {
   const search = Route.useSearch();
 
   return (
-    <PantryMotion className={listColumn} kind="fade-up">
-      <BookmarkList search={search} />
-    </PantryMotion>
+    <Layout
+      renderBottomTab={() => <BottomTabs />}
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+    >
+      <PantryMotion className={listColumn} kind="fade-up">
+        <BookmarkList search={search} />
+      </PantryMotion>
+    </Layout>
   );
 }

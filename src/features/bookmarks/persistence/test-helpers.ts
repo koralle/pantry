@@ -124,10 +124,12 @@ export const insertBookmarkRow = async (
     readonly url: string;
     readonly title?: string;
     readonly note?: string | null;
+    readonly favorite?: boolean;
     readonly deletedAt?: Date | null;
   }
 ): Promise<void> => {
   await db.insert(bookmarkTable).values({
+    favorite: values.favorite ?? false,
     id: values.id,
     note: values.note ?? null,
     title: values.title ?? "Seed Title",

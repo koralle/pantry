@@ -24,7 +24,7 @@ import {
 import type { UpdateBookmark } from "../features/bookmarks/application/update-bookmark";
 import { bookmarkIdSchema } from "../features/bookmarks/domain/bookmark-values";
 import { decodeBookmarkListCursor } from "../features/bookmarks/lib/list/bookmark-list-cursor";
-import type { BookmarkViewCounts } from "../features/bookmarks/persistence/get-bookmark-counts";
+import type { BookmarkCountView } from "../features/bookmarks/persistence/get-bookmark-count";
 import type { BookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
 import type {
   BookmarkListPage,
@@ -102,7 +102,10 @@ export interface AppRouterDeps {
   readonly listBookmarks: (
     input: { readonly userId: UserId } & BookmarkListQuery
   ) => Promise<BookmarkListPage>;
-  readonly getBookmarkCounts: (userId: UserId) => Promise<BookmarkViewCounts>;
+  readonly getBookmarkCount: (
+    userId: UserId,
+    view: BookmarkCountView
+  ) => Promise<number>;
   readonly getBookmarkDetail: (
     userId: UserId,
     input: { readonly id: string }
@@ -407,7 +410,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
         v.check((value) => decodeBookmarkListCursor(value) != null)
       )
     ),
-    q: v.optional(v.string()),
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
     view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
   });
@@ -421,12 +423,19 @@ export const createAppRouter = (deps: AppRouterDeps) => {
       async ({ input, context }) =>
         await deps.listBookmarks({
           userId: context.userId,
-          ...(input.q === undefined ? {} : { q: input.q }),
           ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),
           ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
           ...(input.view === undefined ? {} : { view: input.view }),
         })
     );
+
+  /** レールの view ごとに独立した procedure。件数の定義は persistence 側を正本にする。 */
+  const bookmarkCount = (view: BookmarkCountView) =>
+    base
+      .use(requireAuth)
+      .handler(
+        async ({ context }) => await deps.getBookmarkCount(context.userId, view)
+      );
 
   /**
    * Query service の対象なし null は、ここでだけ 404 defined error へ変換する。
@@ -506,11 +515,11 @@ export const createAppRouter = (deps: AppRouterDeps) => {
   return {
     auth,
     bookmarks: {
-      counts: base
-        .use(requireAuth)
-        .handler(
-          async ({ context }) => await deps.getBookmarkCounts(context.userId)
-        ),
+      counts: {
+        favorites: bookmarkCount("favorites"),
+        inbox: bookmarkCount("inbox"),
+        recent: bookmarkCount("recent"),
+      },
       create: createBookmark,
       delete: deleteBookmark,
       detail: bookmarkDetail,

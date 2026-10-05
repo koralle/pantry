@@ -5,7 +5,6 @@ import { button } from "../../../shared/components/styled-button/styles";
 import { StyledLink } from "../../../shared/components/styled-link";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import {
-  desktopOnly,
   stateActions,
   stateCenter,
   stateCode,
@@ -33,13 +32,6 @@ export const NotFoundScreen = () => (
         to="/bookmarks"
       >
         <ArrowLeft size={14} aria-hidden /> 一覧へ戻る
-      </StyledLink>
-      <StyledLink
-        className={cx(button({ size: "sm" }), desktopOnly)}
-        search={defaultBookmarkSearch}
-        to="/bookmarks"
-      >
-        検索する
       </StyledLink>
     </div>
   </div>

@@ -1,7 +1,7 @@
 import { css, cva } from "styled-system/css";
 
 /**
- * App-shell surfaces: top bar, command bar, workbench bar, navigation rail,
+ * App-shell surfaces: top bar, workbench bar, navigation rail,
  * bottom tabs, and the mobile quick-add FAB. Dimensions follow the approved
  * mock (mocks/2026-09-16-directions) — keep arbitrary values aligned with it.
  */
@@ -27,37 +27,16 @@ export const wordmark = css({
   textDecoration: "none",
 });
 
-export const commandBar = css({
-  _focusWithin: {
-    borderColor: "border.accent",
-  },
-  alignItems: "center",
-  background: "surface.muted",
-  borderColor: "border.default",
-  borderRadius: "[0.5625rem]",
-  borderStyle: "solid",
-  borderWidth: "thin",
-  color: "fg.faint",
-  columnGap: "2.5",
+/**
+ * 集中フロー（フォーム・クイック追加）の本体。Layout の main に合わせて伸縮し、
+ * 中身（formWrap）がスクロールする。
+ */
+export const workbenchScreen = css({
+  background: "bg.canvas",
   display: "flex",
   flex: "1",
-  fontSize: "[0.8125rem]",
-  marginInline: "auto",
-  maxInlineSize: "[38.75rem]",
-  paddingBlock: "[0.4375rem]",
-  paddingInline: "3",
-});
-
-export const commandInput = css({
-  _focusVisible: {
-    outline: "none",
-  },
-  background: "transparent",
-  border: "none",
-  color: "fg.default",
-  flex: "1",
-  font: "inherit",
-  minInlineSize: "0",
+  flexDirection: "column",
+  minBlockSize: "0",
 });
 
 /**

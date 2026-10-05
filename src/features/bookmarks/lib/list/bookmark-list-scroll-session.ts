@@ -5,7 +5,6 @@ export const bookmarkListSearchIdentity = (
   search: BookmarkSearchSchema
 ): string =>
   JSON.stringify({
-    q: search.q,
     tags: search.tags,
     view: search.view,
   });

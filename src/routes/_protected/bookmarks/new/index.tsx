@@ -7,7 +7,9 @@ import {
 } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
+import { Layout } from "../../../../app/layout";
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
+import { workbenchScreen } from "../../../../features/app-shell/styles";
 import { BookmarkForm } from "../../../../features/bookmarks/components/bookmark-editor/bookmark-form";
 import type {
   BookmarkFormServerError,
@@ -22,10 +24,7 @@ import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
 import { button } from "../../../../shared/components/styled-button/styles";
-import {
-  formWrap,
-  workbenchScreen,
-} from "../../../../shared/styles/form-screen";
+import { formWrap } from "../../../../shared/styles/form-screen";
 
 const fetchTitleAction = bookmarkTitleFetchAction;
 
@@ -94,37 +93,44 @@ function RouteComponent() {
   }
 
   return (
-    <div className={workbenchScreen}>
-      <WorkbenchBar
-        backTo="/bookmarks"
-        backSearch={listSearch}
-        backLabel="一覧へ戻る"
-        mobileBackLabel="キャンセル"
-        title="登録"
-      />
-      <div className={formWrap}>
-        <BookmarkForm
-          initialValues={{ url: "", title: "", note: null }}
-          heading="ブックマークを登録"
-          footer={
-            <Link
-              className={button({ visual: "ghost" })}
-              to="/bookmarks"
-              search={listSearch}
-            >
-              キャンセル
-            </Link>
-          }
-          serverError={serverError}
-          submitLabel="登録する"
-          pendingLabel="保存中…"
-          onSubmit={handleSubmit}
-          fetchTitleAction={fetchTitleAction}
-          tagCandidates={shelfQuery.data ?? []}
-          tagsReady={shelfQuery.isSuccess}
-          createTagAction={createTagAction}
+    <Layout
+      renderBottomTab={() => null}
+      renderHeader={() => (
+        <WorkbenchBar
+          backTo="/bookmarks"
+          backSearch={listSearch}
+          backLabel="一覧へ戻る"
+          mobileBackLabel="キャンセル"
+          title="登録"
         />
+      )}
+      renderSideBar={() => null}
+    >
+      <div className={workbenchScreen}>
+        <div className={formWrap}>
+          <BookmarkForm
+            initialValues={{ url: "", title: "", note: null }}
+            heading="ブックマークを登録"
+            footer={
+              <Link
+                className={button({ visual: "ghost" })}
+                to="/bookmarks"
+                search={listSearch}
+              >
+                キャンセル
+              </Link>
+            }
+            serverError={serverError}
+            submitLabel="登録する"
+            pendingLabel="保存中…"
+            onSubmit={handleSubmit}
+            fetchTitleAction={fetchTitleAction}
+            tagCandidates={shelfQuery.data ?? []}
+            tagsReady={shelfQuery.isSuccess}
+            createTagAction={createTagAction}
+          />
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }

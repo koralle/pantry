@@ -3,7 +3,9 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMemo } from "react";
 import * as v from "valibot";
 
+import { Layout } from "../../../../app/layout";
 import { WorkbenchBar } from "../../../../features/app-shell/components/workbench-bar";
+import { workbenchScreen } from "../../../../features/app-shell/styles";
 import { buildNewBookmarkCommand } from "../../../../features/bookmarks/components/new-bookmark-command";
 import {
   QuickAddFetchingCard,
@@ -22,10 +24,7 @@ import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/ta
 import { bookmarkQuickAddSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
 import { orpc } from "../../../../rpc/query";
-import {
-  formWrap,
-  workbenchScreen,
-} from "../../../../shared/styles/form-screen";
+import { formWrap } from "../../../../shared/styles/form-screen";
 
 export const Route = createFileRoute("/_protected/bookmarks/quick/")({
   validateSearch: bookmarkQuickAddSearchSchema,
@@ -124,21 +123,28 @@ function RouteComponent() {
   };
 
   return (
-    <div className={workbenchScreen}>
-      <WorkbenchBar
-        backLabel="一覧へ戻る"
-        backSearch={listSearch}
-        backTo="/bookmarks"
-        mobileBackLabel="キャンセル"
-        title="登録"
-      />
-      <div className={formWrap}>
-        {prefetchUrl === undefined ? (
-          <QuickAddScreen {...ports} />
-        ) : (
-          <QuickAddWithPrefetchedTitle ports={ports} url={prefetchUrl} />
-        )}
+    <Layout
+      renderBottomTab={() => null}
+      renderHeader={() => (
+        <WorkbenchBar
+          backLabel="一覧へ戻る"
+          backSearch={listSearch}
+          backTo="/bookmarks"
+          mobileBackLabel="キャンセル"
+          title="登録"
+        />
+      )}
+      renderSideBar={() => null}
+    >
+      <div className={workbenchScreen}>
+        <div className={formWrap}>
+          {prefetchUrl === undefined ? (
+            <QuickAddScreen {...ports} />
+          ) : (
+            <QuickAddWithPrefetchedTitle ports={ports} url={prefetchUrl} />
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }

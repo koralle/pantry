@@ -23,7 +23,9 @@ const shelfTags: ShelfTag[] = [];
 
 // タグ管理 story と同じく oRPC wire format（{json} envelope）で応答する。
 const storyRpcHandlers = new Map<string, () => unknown>([
-  ["bookmarks.counts", () => ({ favorites: 6, inbox: 3, recent: 128 })],
+  ["bookmarks.counts.favorites", () => 6],
+  ["bookmarks.counts.inbox", () => 3],
+  ["bookmarks.counts.recent", () => 128],
   ["bookmarks.list", () => ({ items: [], nextCursor: null })],
   ["tags.shelf", () => shelfTags],
 ]);
@@ -37,7 +39,12 @@ globalThis.fetch = async (input, init) => {
       : input instanceof URL
         ? input.href
         : input.url;
-  const url = new URL(requestUrl, window.location.origin);
+  let url: URL;
+  try {
+    url = new URL(requestUrl, window.location.origin);
+  } catch {
+    return new Response(null, { status: 400 });
+  }
   if (!url.pathname.startsWith("/api/rpc/")) {
     return await storyOriginalFetch(input, init);
   }

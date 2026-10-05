@@ -9,6 +9,10 @@ import { Suspense } from "react";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
 
+import { AppHeader } from "../../../../app/header";
+import { Layout } from "../../../../app/layout";
+import { SideBar } from "../../../../app/sidebar";
+import { BottomTabs } from "../../../../features/app-shell/components/bottom-tabs";
 import { BookmarkDetailResolved } from "../../../../features/bookmarks/components/bookmark-detail-resolved";
 import { BookmarkDetailSkeleton } from "../../../../features/bookmarks/components/bookmark-detail-skeleton";
 import { bookmarkDetailQueryOptions } from "../../../../features/bookmarks/lib/queries/bookmark-detail-query-options";
@@ -87,32 +91,38 @@ function RouteComponent() {
   });
 
   return (
-    <section aria-label="ブックマーク詳細" className={detailPage}>
-      {newBookmarkCreated ? (
-        <div className={detailFlashRow}>
-          <div className={flash} role="alert">
-            <CircleCheck aria-hidden size={16} /> ブックマークを登録しました
+    <Layout
+      renderBottomTab={() => <BottomTabs />}
+      renderHeader={() => <AppHeader />}
+      renderSideBar={() => <SideBar />}
+    >
+      <section aria-label="ブックマーク詳細" className={detailPage}>
+        {newBookmarkCreated ? (
+          <div className={detailFlashRow}>
+            <div className={flash} role="alert">
+              <CircleCheck aria-hidden size={16} /> ブックマークを登録しました
+            </div>
           </div>
-        </div>
-      ) : null}
-      {bookmarkUpdated ? (
-        <div className={detailFlashRow}>
-          <div className={flash} role="alert">
-            <CircleCheck aria-hidden size={16} /> ブックマークを更新しました
+        ) : null}
+        {bookmarkUpdated ? (
+          <div className={detailFlashRow}>
+            <div className={flash} role="alert">
+              <CircleCheck aria-hidden size={16} /> ブックマークを更新しました
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      <ErrorBoundary
-        FallbackComponent={DetailFallback}
-        onReset={() => {
-          void router.invalidate();
-        }}
-      >
-        <Suspense fallback={<BookmarkDetailSkeleton />}>
-          <BookmarkDetailResolved id={id} listSearch={listSearch} />
-        </Suspense>
-      </ErrorBoundary>
-    </section>
+        <ErrorBoundary
+          FallbackComponent={DetailFallback}
+          onReset={() => {
+            void router.invalidate();
+          }}
+        >
+          <Suspense fallback={<BookmarkDetailSkeleton />}>
+            <BookmarkDetailResolved id={id} listSearch={listSearch} />
+          </Suspense>
+        </ErrorBoundary>
+      </section>
+    </Layout>
   );
 }

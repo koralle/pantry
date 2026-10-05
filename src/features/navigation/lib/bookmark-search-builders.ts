@@ -7,26 +7,10 @@ import { defaultBookmarkSearch } from "./bookmark-search";
 
 export interface BookmarkSearchPatch {
   readonly layout?: BookmarkSearchSchema["layout"] | undefined;
-  readonly q?: string | undefined;
   readonly tags?: string[] | undefined;
   readonly view?: BookmarkSearchSchema["view"] | undefined;
-  readonly clearQ?: boolean;
   readonly clearTags?: boolean;
 }
-
-const resolveSearchPatch = <T>(
-  clear: boolean | undefined,
-  patchValue: T | undefined,
-  currentValue: T | undefined
-): T | undefined => {
-  if (clear) {
-    return undefined;
-  }
-  if (patchValue !== undefined) {
-    return patchValue;
-  }
-  return currentValue;
-};
 
 export const buildListSearch = (
   current: BookmarkSearchSchema,
@@ -44,12 +28,8 @@ export const buildListSearch = (
     next.layout = "cards";
   }
 
-  const q = resolveSearchPatch(patch.clearQ, patch.q, current.q);
-  const tags = resolveSearchPatch(patch.clearTags, patch.tags, current.tags);
+  const tags = patch.clearTags ? undefined : (patch.tags ?? current.tags);
 
-  if (q !== undefined && q !== "") {
-    next.q = q;
-  }
   if (tags !== undefined && tags.length > 0) {
     const canonicalTags = uniqueNormalizedTagNames(tags);
     if (canonicalTags.length > 0) {
@@ -65,7 +45,6 @@ export const buildListBackSearch = (
   current?: BookmarkSearchSchema
 ): BookmarkSearchSchema =>
   buildListSearch(current ?? defaultBookmarkSearch, {
-    clearQ: true,
     tags: tags === undefined ? undefined : [...tags],
     view: "recent",
   });
@@ -74,10 +53,8 @@ export const listSearchFromDetail = (
   search: BookmarkDetailSearch
 ): BookmarkSearchSchema =>
   buildListSearch(defaultBookmarkSearch, {
-    clearQ: search.q === undefined,
     clearTags: search.tags === undefined || search.tags.length === 0,
     layout: search.layout,
-    q: search.q,
     tags: search.tags,
     view: search.view,
   });
@@ -86,7 +63,6 @@ export const detailSearchFromList = (
   search: BookmarkSearchSchema
 ): BookmarkDetailSearch => ({
   ...(search.layout === "cards" ? { layout: "cards" as const } : {}),
-  ...(search.q !== undefined && search.q !== "" ? { q: search.q } : {}),
   ...(search.tags !== undefined && search.tags.length > 0
     ? { tags: search.tags }
     : {}),
@@ -105,41 +81,3 @@ export const tagShelfSearch = (
   current?: BookmarkSearchSchema
 ): BookmarkSearchSchema =>
   buildListSearch(current ?? defaultBookmarkSearch, { tags: [tagName] });
-
-export const chromeListSearch = (
-  indexSearch: BookmarkSearchSchema | undefined,
-  tagCarriers: readonly ({ tags?: readonly string[] | undefined } | undefined)[]
-): BookmarkSearchSchema | undefined => {
-  if (indexSearch !== undefined) {
-    return indexSearch;
-  }
-
-  for (const carrier of tagCarriers) {
-    const tags = carrier?.tags;
-    if (tags !== undefined && tags.length > 0) {
-      const canonicalTags = uniqueNormalizedTagNames([...tags]);
-      if (canonicalTags.length > 0) {
-        return {
-          ...defaultBookmarkSearch,
-          tags: canonicalTags,
-        };
-      }
-    }
-  }
-
-  return undefined;
-};
-
-export const resolveChromeListSearch = (
-  indexSearch: BookmarkSearchSchema | undefined,
-  remembered: BookmarkSearchSchema | undefined,
-  tagCarriers: readonly ({ tags?: readonly string[] | undefined } | undefined)[]
-): BookmarkSearchSchema | undefined => {
-  if (indexSearch !== undefined) {
-    return indexSearch;
-  }
-  if (remembered !== undefined) {
-    return remembered;
-  }
-  return chromeListSearch(undefined, tagCarriers);
-};

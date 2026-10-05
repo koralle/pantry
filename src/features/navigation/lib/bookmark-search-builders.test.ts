@@ -4,96 +4,38 @@ import { defaultBookmarkSearch } from "./bookmark-search";
 import {
   allShelfSearch,
   buildListBackSearch,
-  chromeListSearch,
   detailSearchFromList,
   listSearchFromDetail,
-  resolveChromeListSearch,
   tagShelfSearch,
 } from "./bookmark-search-builders";
 
 describe("shelf filter search", () => {
-  test("all keeps q and clears tags", () => {
+  test("all clears tags", () => {
     const next = allShelfSearch({
       ...defaultBookmarkSearch,
-      q: "react",
       tags: ["frontend"],
     });
 
-    expect(next).toStrictEqual({
-      q: "react",
-    });
+    expect(next).toStrictEqual(defaultBookmarkSearch);
   });
 
-  test("tag keeps q and writes the normalized name into search", () => {
+  test("tag writes the normalized name into search", () => {
     const next = tagShelfSearch("TypeScript", {
       ...defaultBookmarkSearch,
-      q: "react",
       tags: ["frontend", "docs"],
     });
 
     expect(next).toStrictEqual({
-      q: "react",
       tags: ["typescript"],
     });
   });
 });
 
-describe(chromeListSearch, () => {
-  test("prefers the list search when present", () => {
-    const index = {
-      ...defaultBookmarkSearch,
-      q: "react",
-      tags: ["frontend"],
-    };
-
-    expect(chromeListSearch(index, [{ tags: ["ignored"] }])).toStrictEqual(
-      index
-    );
-  });
-
-  test("uses tags from a child route when the list is not mounted", () => {
-    expect(
-      chromeListSearch(undefined, [{ tags: ["frontend"] }, { tags: ["other"] }])
-    ).toStrictEqual({
-      ...defaultBookmarkSearch,
-      tags: ["frontend"],
-    });
-  });
-
-  test("returns undefined when no list and no tags", () => {
-    expect(chromeListSearch(undefined, [{}, undefined])).toBeUndefined();
-  });
-});
-
-describe(resolveChromeListSearch, () => {
-  test("keeps remembered list search when the index route is unmounted", () => {
-    const remembered = {
-      ...defaultBookmarkSearch,
-      q: "react",
-      tags: ["frontend"],
-    };
-
-    expect(
-      resolveChromeListSearch(undefined, remembered, [{ tags: ["other"] }])
-    ).toStrictEqual(remembered);
-  });
-
-  test("falls back to child-route tags when nothing is remembered", () => {
-    expect(
-      resolveChromeListSearch(undefined, undefined, [{ tags: ["frontend"] }])
-    ).toStrictEqual({
-      ...defaultBookmarkSearch,
-      tags: ["frontend"],
-    });
-  });
-});
-
 describe(buildListBackSearch, () => {
-  test("keeps the current layout while resetting view and q", () => {
+  test("keeps the current layout while resetting view", () => {
     const next = buildListBackSearch(["TanStack"], {
       ...defaultBookmarkSearch,
       layout: "cards",
-      q: "react",
       tags: ["frontend"],
       view: "favorites",
     });
@@ -117,8 +59,9 @@ describe("detail search round-trip", () => {
   test("non-default list conditions travel to detail and back", () => {
     const current = {
       ...defaultBookmarkSearch,
-      q: "react",
+      layout: "cards" as const,
       tags: ["frontend"],
+      view: "favorites" as const,
     };
 
     expect(listSearchFromDetail(detailSearchFromList(current))).toStrictEqual(
