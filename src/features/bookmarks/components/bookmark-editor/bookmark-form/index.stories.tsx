@@ -455,6 +455,11 @@ export const SelectsAndRemovesTags = Default.extend({
     await expect(
       canvas.getByRole("button", { name: "TypeScriptを外す" })
     ).toBeInTheDocument();
+    // タグ選択でピッカーは閉じる
+    await expect(
+      canvas.getByRole("searchbox", { name: tagInputName })
+    ).toHaveAttribute("aria-expanded", "false");
+    await expect(body.queryByRole("listbox")).not.toBeInTheDocument();
     await userEvent.keyboard("{Escape}");
     await expect(
       canvas.getByRole("button", { name: "TypeScriptを外す" })
@@ -470,6 +475,31 @@ export const SelectsAndRemovesTags = Default.extend({
     await expect(
       canvas.queryByRole("button", { name: "TypeScriptを外す" })
     ).not.toBeInTheDocument();
+  },
+});
+
+export const SelectsTagOnMobileSheet = Default.extend({
+  name: "モバイルシートでタグ選択",
+  globals: {
+    viewport: {
+      value: "iphone12",
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+    const searchbox = canvas.getByRole("searchbox", { name: tagInputName });
+    // モバイルでは readOnly のシート起動トリガーになる
+    await expect(searchbox).toHaveAttribute("readonly");
+    await userEvent.click(searchbox);
+    const option = await body.findByRole("option", { name: /React/ });
+    await userEvent.click(option);
+    // タグ選択でシートは閉じ、チップが付く
+    await expect(searchbox).toHaveAttribute("aria-expanded", "false");
+    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole("button", { name: "Reactを外す" })
+    ).toBeInTheDocument();
   },
 });
 

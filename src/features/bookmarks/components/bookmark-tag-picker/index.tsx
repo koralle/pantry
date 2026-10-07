@@ -1,4 +1,10 @@
-import { useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   Dialog,
   Heading,
@@ -72,12 +78,79 @@ export const BookmarkTagPicker = ({
   const [pickerOpen, setPickerOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const popoverRef = useRef<HTMLElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  // FocusScope が閉じたピッカーから入力欄へ戻すフォーカスで onFocus が
+  // 開き直すのを抑止するフラグ。closePicker 後の rAF 2回で解除する。
+  const suppressFocusOpenRef = useRef(false);
   const isDesktop = useSyncExternalStore(
     subscribeDesktop,
     () => globalThis.matchMedia(desktopQuery).matches,
     () => true
   );
+
+  // ピッカー内にフォーカスがある状態で閉じると FocusScope がフォーカスを入力欄へ
+  // 戻し、その onFocus でピッカーが開き直される。先に入力欄へ戻せれば復帰自体が
+  // 走らないが、モーダルの contain に阻まれる場合は復帰の onFocus をフラグで抑止する。
+  const closePicker = useCallback(() => {
+    suppressFocusOpenRef.current = true;
+    if (overlayRef.current?.contains(document.activeElement) ?? false) {
+      inputRef.current?.focus();
+    }
+    setPickerOpen(false);
+    setQuery("");
+    // 復帰が走らない経路ではフラグが残るので、復帰の rAF より後で解除する
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        suppressFocusOpenRef.current = false;
+      });
+    });
+  }, []);
+
+  // isNonModal の Popover は外側操作で閉じない（isDismissable 無効）ため、
+  // ピッカー外へのポインター操作とフォーカス移動を自前で検知して閉じる。
+  useEffect(() => {
+    if (!pickerOpen) {
+      return;
+    }
+    const isInsidePicker = (target: EventTarget | null): boolean =>
+      target instanceof Node &&
+      ((boxRef.current?.contains(target) ?? false) ||
+        (overlayRef.current?.contains(target) ?? false));
+    const onPointerDown = (event: PointerEvent) => {
+      if (!isInsidePicker(event.target)) {
+        closePicker();
+      }
+    };
+    const onFocusIn = (event: FocusEvent) => {
+      if (!isInsidePicker(event.target)) {
+        closePicker();
+      }
+    };
+    // isNonModal では Escape がオーバレイの onOpenChange に届かない（実測）ため
+    // ピッカー内では自前で閉じる。キーイベントは filterDOMProps で落とされるので
+    // JSX の onKeyDown ではなくネイティブリスナーで拾う。IME 変換中の Escape は
+    // 変換キャンセルなのでピッカーは閉じない。
+    const overlay = overlayRef.current;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !event.isComposing) {
+        event.preventDefault();
+        closePicker();
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("focusin", onFocusIn, true);
+    overlay?.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("focusin", onFocusIn, true);
+      overlay?.removeEventListener("keydown", onKeyDown);
+    };
+  }, [pickerOpen, closePicker]);
+
+  const handleCreateTag = (name: string) => {
+    closePicker();
+    onCreateTag(name);
+  };
 
   // タグ作成が確定したら入力を空へ戻す。render 中の state 調整で
   // prop 変化へ同期する（effect による「描画後の追従」を避ける）。
@@ -103,19 +176,17 @@ export const BookmarkTagPicker = ({
     tagsReady,
   });
 
-  const closePicker = () => {
-    setPickerOpen(false);
-    setQuery("");
-  };
-
   const panel = (
     <TagPickerPanel
       tagCandidates={tagCandidates}
       selectedTags={selectedTags}
       query={query}
       onQueryChange={setQuery}
-      onToggleTag={onToggleTag}
-      onCreateTag={onCreateTag}
+      onToggleTag={(tag) => {
+        onToggleTag(tag);
+        closePicker();
+      }}
+      onCreateTag={handleCreateTag}
       tagsReady={tagsReady}
       isCreatingTag={isCreatingTag}
       listMaxHeight={isDesktop ? "popover" : "sheet"}
@@ -154,6 +225,14 @@ export const BookmarkTagPicker = ({
             }
           }}
           onFocus={() => {
+            // フラグは rAF でしか解除しない（消費しない）。inert 非対応の環境では
+            // 事前の focus() が通り contain がフォーカスを戻し、復帰の onFocus が
+            // 再度来る経路があるため。
+            if (!suppressFocusOpenRef.current) {
+              setPickerOpen(true);
+            }
+          }}
+          onClick={() => {
             setPickerOpen(true);
           }}
           readOnly={!isDesktop}
@@ -162,10 +241,14 @@ export const BookmarkTagPicker = ({
           aria-expanded={pickerOpen}
           aria-controls={candidatesListId}
           onKeyDown={(event) => {
+            // IME 変換中の Enter/Escape/ArrowDown は変換操作なので素通しする
+            if (event.nativeEvent.isComposing) {
+              return;
+            }
             if (event.key === "Enter") {
               event.preventDefault();
               if (canCreate) {
-                onCreateTag(query);
+                handleCreateTag(query);
               }
               return;
             }
@@ -177,7 +260,7 @@ export const BookmarkTagPicker = ({
             }
             if (event.key === "ArrowDown" && pickerOpen) {
               event.preventDefault();
-              popoverRef.current
+              overlayRef.current
                 ?.querySelector<HTMLElement>('[role="option"]')
                 ?.focus();
             }
@@ -198,7 +281,7 @@ export const BookmarkTagPicker = ({
       ) : null}
       {isDesktop ? (
         <Popover
-          ref={popoverRef}
+          ref={overlayRef}
           isOpen={pickerOpen}
           onOpenChange={(open) => {
             if (!open) {
@@ -227,7 +310,7 @@ export const BookmarkTagPicker = ({
           }}
           className={sheetBackdrop}
         >
-          <Modal className={sheet}>
+          <Modal className={sheet} ref={overlayRef}>
             <Dialog>
               <div className={sheetHeader}>
                 <Heading slot="title" className={sheetTitle}>
