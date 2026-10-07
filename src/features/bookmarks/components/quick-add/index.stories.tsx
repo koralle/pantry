@@ -186,6 +186,9 @@ export const SelectsTags = meta.story({
         canvas.getByRole("button", { name: "Reactを外す" })
       ).toBeInTheDocument();
     });
+    // タグ選択でピッカーは閉じる
+    await expect(searchbox).toHaveAttribute("aria-expanded", "false");
+    await expect(body.queryByRole("listbox")).not.toBeInTheDocument();
   },
 });
 
