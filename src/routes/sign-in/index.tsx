@@ -1,4 +1,9 @@
-import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
+import {
+  ClientOnly,
+  createFileRoute,
+  useRouter,
+  useSearch,
+} from "@tanstack/react-router";
 import { Package } from "lucide-react";
 import { css } from "styled-system/css";
 import { grid } from "styled-system/patterns";
@@ -151,7 +156,9 @@ function RouteComponent() {
             })}
           >
             <h1 className={css({ textAlign: "center" })}>ログイン</h1>
-            <PasskeySignIn redirect={redirect} />
+            <ClientOnly fallback={null}>
+              <PasskeySignIn redirect={redirect} />
+            </ClientOnly>
             <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
           </div>
         </section>

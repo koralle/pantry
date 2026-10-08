@@ -1,6 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { CircleAlert, KeyRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useTransition } from "react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
@@ -48,39 +48,36 @@ export const PasskeySignIn = ({
   readonly redirect: string | undefined;
 }) => {
   const router = useRouter();
-  const [webAuthnAvailable, setWebAuthnAvailable] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  useEffect(() => {
-    setWebAuthnAvailable(isWebAuthnAvailable());
-  }, []);
 
-  if (!webAuthnAvailable) {
+  if (!isWebAuthnAvailable()) {
     return null;
   }
 
   const handlePasskeySignIn = () => {
     setErrorMessage(null);
-    setIsPending(true);
 
-    void (async () => {
+    startTransition(async () => {
       try {
         const { error } = await authClient.signIn.passkey();
         if (error !== null && error !== undefined) {
           const message = getPasskeySignInErrorMessage(error);
           if (message !== null && message !== undefined) {
-            setErrorMessage(message);
+            startTransition(() => {
+              setErrorMessage(message);
+            });
           }
           return;
         }
 
         await router.navigate({ to: redirect ?? "/bookmarks" });
       } catch {
-        setErrorMessage(getPasskeySignInErrorMessage({}));
-      } finally {
-        setIsPending(false);
+        startTransition(() => {
+          setErrorMessage(getPasskeySignInErrorMessage({}));
+        });
       }
-    })();
+    });
   };
 
   return (
@@ -96,14 +93,12 @@ export const PasskeySignIn = ({
           {isPending ? "端末で認証中…" : "パスキーでログイン"}
         </StyledButton>
       </div>
-
       {errorMessage === null || errorMessage === undefined ? null : (
         <div className={formSummary} role="alert" aria-live="polite">
           <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
           <p className={formSummaryText}>{errorMessage}</p>
         </div>
       )}
-
       <div className={passkeyDivider}>または</div>
     </div>
   );
