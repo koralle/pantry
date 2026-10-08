@@ -25,9 +25,16 @@ describe("passkey UI contracts", () => {
     expect(signIn).toContain("パスキーでログイン");
     expect(signIn).toContain("または");
     expect(signIn).toContain('to: redirect ?? "/bookmarks"');
-    expect(signIn).toContain("signIn.passkey({");
-    expect(signIn).toContain("autoFill: true");
-    expect(signIn).toContain("WebAuthnAbortService.cancelCeremony()");
+    expect(signIn).toContain("authClient.signIn.passkey()");
+    expect(signIn).not.toContain("autoFill");
+    expect(signIn).not.toContain("isConditionalMediationAvailable");
+
+    const form = await readSource(
+      "features/auth/components/sign-in-form/index.tsx"
+    );
+    expect(form).toContain('autoComplete="email"');
+    expect(form).toContain('autoComplete="current-password"');
+    expect(form).not.toContain("webauthn");
   });
 
   test("settings hosts passkey management between account and session", async () => {

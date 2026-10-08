@@ -1,7 +1,6 @@
-import { WebAuthnAbortService } from "@simplewebauthn/browser";
 import { useRouter } from "@tanstack/react-router";
 import { CircleAlert, KeyRound } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
@@ -12,10 +11,7 @@ import {
 } from "../../../../shared/styles/form";
 import { authClient } from "../../lib/auth-client";
 import { getPasskeySignInErrorMessage } from "../../lib/passkey/messages";
-import {
-  isConditionalMediationAvailable,
-  isWebAuthnAvailable,
-} from "../../lib/passkey/webauthn-support";
+import { isWebAuthnAvailable } from "../../lib/passkey/webauthn-support";
 
 const passkeySignIn = css({
   display: "flex",
@@ -55,48 +51,9 @@ export const PasskeySignIn = ({
   const [webAuthnAvailable, setWebAuthnAvailable] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const explicitInFlight = useRef(false);
-
   useEffect(() => {
-    if (!isWebAuthnAvailable()) {
-      setWebAuthnAvailable(false);
-      return;
-    }
-
-    setWebAuthnAvailable(true);
-
-    let ignore = false;
-
-    void (async () => {
-      if (!(await isConditionalMediationAvailable())) {
-        return;
-      }
-
-      const { data, error } = await authClient.signIn.passkey({
-        autoFill: true,
-      });
-      if (ignore || explicitInFlight.current) {
-        return;
-      }
-
-      if (error !== null && error !== undefined) {
-        const message = getPasskeySignInErrorMessage(error);
-        if (message !== null && message !== undefined) {
-          setErrorMessage(message);
-        }
-        return;
-      }
-
-      if (data !== null && data !== undefined) {
-        await router.navigate({ to: redirect ?? "/bookmarks" });
-      }
-    })();
-
-    return () => {
-      ignore = true;
-      WebAuthnAbortService.cancelCeremony();
-    };
-  }, [redirect, router]);
+    setWebAuthnAvailable(isWebAuthnAvailable());
+  }, []);
 
   if (!webAuthnAvailable) {
     return null;
@@ -104,8 +61,6 @@ export const PasskeySignIn = ({
 
   const handlePasskeySignIn = () => {
     setErrorMessage(null);
-    explicitInFlight.current = true;
-    WebAuthnAbortService.cancelCeremony();
     setIsPending(true);
 
     void (async () => {
@@ -123,7 +78,6 @@ export const PasskeySignIn = ({
       } catch {
         setErrorMessage(getPasskeySignInErrorMessage({}));
       } finally {
-        explicitInFlight.current = false;
         setIsPending(false);
       }
     })();

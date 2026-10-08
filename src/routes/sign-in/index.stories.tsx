@@ -1,10 +1,7 @@
 import { expect, mocked, userEvent, waitFor, within } from "storybook/test";
 
 import { authClient } from "../../features/auth/lib/auth-client";
-import {
-  isConditionalMediationAvailable,
-  isWebAuthnAvailable,
-} from "../../features/auth/lib/passkey/webauthn-support";
+import { isWebAuthnAvailable } from "../../features/auth/lib/passkey/webauthn-support";
 import preview from "../../storybook/preview";
 import { Route } from "./index";
 
@@ -77,8 +74,6 @@ const meta = preview.meta({
     mocked(authClient.signIn.passkey).mockResolvedValue(cancelledPasskeyResult);
     mocked(isWebAuthnAvailable).mockReset();
     mocked(isWebAuthnAvailable).mockReturnValue(true);
-    mocked(isConditionalMediationAvailable).mockReset();
-    mocked(isConditionalMediationAvailable).mockResolvedValue(false);
   },
 });
 
@@ -241,19 +236,8 @@ export const PasskeyFailed = meta.story({
   },
 });
 
-export const ConditionalUiDoesNotBlockPassword = meta.story({
-  name: "条件付きUIでもパスワード入力可",
-  beforeEach: async () => {
-    mocked(isConditionalMediationAvailable).mockResolvedValue(true);
-    mocked(authClient.signIn.passkey).mockImplementation(
-      async (opts?: { autoFill?: boolean }) => {
-        if (opts?.autoFill === true) {
-          return await neverSignIn();
-        }
-        return cancelledPasskeyResult;
-      }
-    );
-  },
+export const PasskeyDoesNotBlockPassword = meta.story({
+  name: "パスキー認証でもパスワード入力を維持",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
@@ -261,10 +245,12 @@ export const ConditionalUiDoesNotBlockPassword = meta.story({
     ).toBeEnabled();
     await expect(canvas.getByLabelText("メール")).toBeEnabled();
     await expect(canvas.getByLabelText("パスワード")).toBeEnabled();
+    await expect(authClient.signIn.passkey).not.toHaveBeenCalled();
     await userEvent.type(canvas.getByLabelText("メール"), "user@example.com");
     await userEvent.click(
       canvas.getByRole("button", { name: "パスキーでログイン" })
     );
+    await expect(authClient.signIn.passkey).toHaveBeenCalledTimes(1);
     await waitFor(async () => {
       await expect(
         canvas.getByRole("button", { name: "パスキーでログイン" })

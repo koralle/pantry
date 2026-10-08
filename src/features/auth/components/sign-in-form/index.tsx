@@ -107,7 +107,7 @@ export const SignInWithEmailAndPasswordForm = ({
 
           <StyledInput
             {...getInputProps(fields.email, { type: "email" })}
-            autoComplete="email webauthn"
+            autoComplete="email"
             placeholder="you@example.com"
             required
             aria-invalid={emailError !== null && emailError !== undefined}
@@ -127,7 +127,7 @@ export const SignInWithEmailAndPasswordForm = ({
 
           <StyledInput
             {...getInputProps(fields.password, { type: "password" })}
-            autoComplete="current-password webauthn"
+            autoComplete="current-password"
             placeholder="••••••••"
             required
             aria-invalid={passwordError !== null && passwordError !== undefined}
