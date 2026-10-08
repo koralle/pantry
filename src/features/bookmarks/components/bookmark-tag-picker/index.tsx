@@ -1,17 +1,11 @@
+import { useState } from "react";
 import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
-import {
+  Button,
   Dialog,
+  DialogTrigger,
   Heading,
-  Input,
   Modal,
   ModalOverlay,
-  Popover,
 } from "react-aria-components";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
@@ -20,34 +14,21 @@ import {
   fieldGroup,
   flabel,
   tagInputBox,
-  tagInputField,
 } from "../../../../shared/styles/form-screen";
-import { canOfferCreateTag } from "./lib";
 import type { NamedTag, TagCandidate } from "./lib";
 import { TagPickerPanel } from "./panel";
 import { SelectedTagChips } from "./selected-chips";
 import {
-  popover,
-  sheet,
-  sheetBackdrop,
-  sheetHeader,
-  sheetTitle,
+  backdrop,
+  dialog,
+  dialogBody,
+  dialogHeader,
+  dialogTitle,
   statusMessage,
+  trigger,
 } from "./styles";
 
 export type { TagCandidate } from "./lib";
-
-const desktopQuery = "(min-width: 768px)";
-
-const subscribeDesktop = (onStoreChange: () => void): (() => void) => {
-  const media = globalThis.matchMedia(desktopQuery);
-  media.addEventListener("change", onStoreChange);
-  return () => {
-    media.removeEventListener("change", onStoreChange);
-  };
-};
-
-const candidatesListId = "bookmark-tag-candidates";
 
 interface BookmarkTagPickerProps {
   readonly selectedTags: readonly NamedTag[];
@@ -62,6 +43,10 @@ interface BookmarkTagPickerProps {
   readonly serverError: string | undefined;
 }
 
+/**
+ * タグの選択と作成を1つの Modal で扱う。dismiss（外側クリック・Escape）と
+ * フォーカスの復帰は RAC に任せ、見た目だけ md 以上で中央ダイアログへ変える。
+ */
 export const BookmarkTagPicker = ({
   selectedTags,
   tagCandidates,
@@ -76,76 +61,11 @@ export const BookmarkTagPicker = ({
 }: BookmarkTagPickerProps) => {
   const [query, setQuery] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const boxRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const overlayRef = useRef<HTMLDivElement | null>(null);
-  // FocusScope が閉じたピッカーから入力欄へ戻すフォーカスで onFocus が
-  // 開き直すのを抑止するフラグ。closePicker 後の rAF 2回で解除する。
-  const suppressFocusOpenRef = useRef(false);
-  const isDesktop = useSyncExternalStore(
-    subscribeDesktop,
-    () => globalThis.matchMedia(desktopQuery).matches,
-    () => true
-  );
 
-  // ピッカー内にフォーカスがある状態で閉じると FocusScope がフォーカスを入力欄へ
-  // 戻し、その onFocus でピッカーが開き直される。先に入力欄へ戻せれば復帰自体が
-  // 走らないが、モーダルの contain に阻まれる場合は復帰の onFocus をフラグで抑止する。
-  const closePicker = useCallback(() => {
-    suppressFocusOpenRef.current = true;
-    if (overlayRef.current?.contains(document.activeElement) ?? false) {
-      inputRef.current?.focus();
-    }
+  const closePicker = () => {
     setPickerOpen(false);
     setQuery("");
-    // 復帰が走らない経路ではフラグが残るので、復帰の rAF より後で解除する
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        suppressFocusOpenRef.current = false;
-      });
-    });
-  }, []);
-
-  // isNonModal の Popover は外側操作で閉じない（isDismissable 無効）ため、
-  // ピッカー外へのポインター操作とフォーカス移動を自前で検知して閉じる。
-  useEffect(() => {
-    if (!pickerOpen) {
-      return;
-    }
-    const isInsidePicker = (target: EventTarget | null): boolean =>
-      target instanceof Node &&
-      ((boxRef.current?.contains(target) ?? false) ||
-        (overlayRef.current?.contains(target) ?? false));
-    const onPointerDown = (event: PointerEvent) => {
-      if (!isInsidePicker(event.target)) {
-        closePicker();
-      }
-    };
-    const onFocusIn = (event: FocusEvent) => {
-      if (!isInsidePicker(event.target)) {
-        closePicker();
-      }
-    };
-    // isNonModal では Escape がオーバレイの onOpenChange に届かない（実測）ため
-    // ピッカー内では自前で閉じる。キーイベントは filterDOMProps で落とされるので
-    // JSX の onKeyDown ではなくネイティブリスナーで拾う。IME 変換中の Escape は
-    // 変換キャンセルなのでピッカーは閉じない。
-    const overlay = overlayRef.current;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.isComposing) {
-        event.preventDefault();
-        closePicker();
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("focusin", onFocusIn, true);
-    overlay?.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("focusin", onFocusIn, true);
-      overlay?.removeEventListener("keydown", onKeyDown);
-    };
-  }, [pickerOpen, closePicker]);
+  };
 
   const handleCreateTag = (name: string) => {
     closePicker();
@@ -170,31 +90,6 @@ export const BookmarkTagPicker = ({
     .filter((id): id is string => id !== null)
     .join(" ");
 
-  const canCreate = canOfferCreateTag({
-    query,
-    tags: tagCandidates,
-    tagsReady,
-  });
-
-  const panel = (
-    <TagPickerPanel
-      tagCandidates={tagCandidates}
-      selectedTags={selectedTags}
-      query={query}
-      onQueryChange={setQuery}
-      onToggleTag={(tag) => {
-        onToggleTag(tag);
-        closePicker();
-      }}
-      onCreateTag={handleCreateTag}
-      tagsReady={tagsReady}
-      isCreatingTag={isCreatingTag}
-      listMaxHeight={isDesktop ? "popover" : "sheet"}
-      hideSearch={isDesktop}
-      listId={candidatesListId}
-    />
-  );
-
   return (
     <fieldset
       className={fieldGroup}
@@ -203,7 +98,6 @@ export const BookmarkTagPicker = ({
     >
       <legend className={flabel}>タグ</legend>
       <div
-        ref={boxRef}
         className={tagInputBox({
           invalid:
             fieldErrorMessage !== null && fieldErrorMessage !== undefined,
@@ -213,59 +107,44 @@ export const BookmarkTagPicker = ({
           selectedTags={selectedTags}
           onRemoveTag={onRemoveTag}
         />
-        <Input
-          ref={inputRef}
-          type="search"
-          className={tagInputField}
-          value={query}
-          onChange={(event) => {
-            setQuery(event.currentTarget.value);
-            if (!pickerOpen) {
+        <DialogTrigger
+          isOpen={pickerOpen}
+          onOpenChange={(open) => {
+            if (open) {
               setPickerOpen(true);
-            }
-          }}
-          onFocus={() => {
-            // フラグは rAF でしか解除しない（消費しない）。inert 非対応の環境では
-            // 事前の focus() が通り contain がフォーカスを戻し、復帰の onFocus が
-            // 再度来る経路があるため。
-            if (!suppressFocusOpenRef.current) {
-              setPickerOpen(true);
-            }
-          }}
-          onClick={() => {
-            setPickerOpen(true);
-          }}
-          readOnly={!isDesktop}
-          placeholder={selectedTags.length === 0 ? "タグを入力…" : ""}
-          aria-label="タグを検索・追加"
-          aria-expanded={pickerOpen}
-          aria-controls={candidatesListId}
-          onKeyDown={(event) => {
-            // IME 変換中の Enter/Escape/ArrowDown は変換操作なので素通しする
-            if (event.nativeEvent.isComposing) {
               return;
             }
-            if (event.key === "Enter") {
-              event.preventDefault();
-              if (canCreate) {
-                handleCreateTag(query);
-              }
-              return;
-            }
-            if (event.key === "Escape" && pickerOpen) {
-              event.preventDefault();
-              event.stopPropagation();
-              closePicker();
-              return;
-            }
-            if (event.key === "ArrowDown" && pickerOpen) {
-              event.preventDefault();
-              overlayRef.current
-                ?.querySelector<HTMLElement>('[role="option"]')
-                ?.focus();
-            }
+            closePicker();
           }}
-        />
+        >
+          <Button className={trigger}>タグを追加</Button>
+          <ModalOverlay className={backdrop} isDismissable>
+            <Modal className={dialog}>
+              <Dialog className={dialogBody}>
+                <div className={dialogHeader}>
+                  <Heading slot="title" className={dialogTitle}>
+                    タグを選ぶ
+                  </Heading>
+                  <StyledButton slot="close">完了</StyledButton>
+                </div>
+                <TagPickerPanel
+                  tagCandidates={tagCandidates}
+                  selectedTags={selectedTags}
+                  query={query}
+                  onQueryChange={setQuery}
+                  onToggleTag={(tag) => {
+                    onToggleTag(tag);
+                    closePicker();
+                  }}
+                  onCreateTag={handleCreateTag}
+                  tagsReady={tagsReady}
+                  isCreatingTag={isCreatingTag}
+                  onRequestClose={closePicker}
+                />
+              </Dialog>
+            </Modal>
+          </ModalOverlay>
+        </DialogTrigger>
       </div>
       {isCreatingTag ? (
         <output id="bookmark-tag-creating" className={statusMessage}>
@@ -279,52 +158,6 @@ export const BookmarkTagPicker = ({
           {fieldErrorMessage}
         </p>
       ) : null}
-      {isDesktop ? (
-        <Popover
-          ref={overlayRef}
-          isOpen={pickerOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              closePicker();
-            }
-          }}
-          shouldCloseOnInteractOutside={(element) =>
-            !(boxRef.current?.contains(element) ?? false)
-          }
-          triggerRef={boxRef}
-          placement="bottom start"
-          offset={4}
-          className={popover}
-          isNonModal
-        >
-          <div>{panel}</div>
-        </Popover>
-      ) : (
-        <ModalOverlay
-          isDismissable
-          isOpen={pickerOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              closePicker();
-            }
-          }}
-          className={sheetBackdrop}
-        >
-          <Modal className={sheet} ref={overlayRef}>
-            <Dialog>
-              <div className={sheetHeader}>
-                <Heading slot="title" className={sheetTitle}>
-                  タグを選ぶ
-                </Heading>
-                <StyledButton slot="close" type="button">
-                  完了
-                </StyledButton>
-              </div>
-              {panel}
-            </Dialog>
-          </Modal>
-        </ModalOverlay>
-      )}
     </fieldset>
   );
 };

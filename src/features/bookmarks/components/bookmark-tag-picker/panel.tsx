@@ -1,4 +1,5 @@
 import { Check, Plus } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { ListBox, ListBoxItem, SearchField } from "react-aria-components";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
@@ -16,7 +17,6 @@ import {
   checkSlot,
   emptyState,
   panel,
-  sheetList,
 } from "./styles";
 
 interface TagPickerPanelProps {
@@ -28,10 +28,7 @@ interface TagPickerPanelProps {
   readonly onCreateTag: (name: string) => void;
   readonly tagsReady: boolean;
   readonly isCreatingTag: boolean;
-  readonly listMaxHeight?: "sheet" | "popover";
-  /** デスクトップはフォーム側の入力が検索欄を兼ねるため、パネル内の検索欄を出さない。 */
-  readonly hideSearch?: boolean;
-  readonly listId?: string | undefined;
+  readonly onRequestClose: () => void;
 }
 
 export const TagPickerPanel = ({
@@ -43,10 +40,10 @@ export const TagPickerPanel = ({
   onCreateTag,
   tagsReady,
   isCreatingTag,
-  listMaxHeight = "popover",
-  hideSearch = false,
-  listId,
+  onRequestClose,
 }: TagPickerPanelProps) => {
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const selectedIds = new Set(selectedTags.map((tag) => tag.id));
   const candidates = filterTagCandidates(sortTagsForNav(tagCandidates), query);
   const canCreate = canOfferCreateTag({
@@ -54,6 +51,13 @@ export const TagPickerPanel = ({
     tags: tagCandidates,
     tagsReady,
   });
+
+  // ダイアログを開いたら検索欄へフォーカスする。autoFocus 属性は
+  // markuplint が許さず、RAC の FocusScope は最初の要素（完了ボタン）を
+  // 選ぶため、mount 時に自分で移す（panel は開くたびに mount される）。
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const renderEmpty = () => {
     if (!tagsReady) {
@@ -70,30 +74,50 @@ export const TagPickerPanel = ({
 
   return (
     <div className={panel}>
-      {hideSearch ? null : (
-        <SearchField
-          value={query}
-          onChange={onQueryChange}
-          aria-label="タグを検索"
-          onSubmit={() => {}}
+      <SearchField
+        value={query}
+        onChange={onQueryChange}
+        aria-label="タグを検索"
+        onSubmit={() => {}}
+      >
+        {/* キー処理は SearchField ではなく input に置く。Escape は RAC の
+            SearchField が input 側で握って stopPropagation するため、
+            SearchField の onKeyDown には届かない。 */}
+        <StyledInput
+          ref={inputRef}
+          type="search"
+          placeholder="タグ名で探す"
           onKeyDown={(event) => {
+            // IME 変換中の Enter/Escape/ArrowDown は変換操作なので素通しする
+            if (event.nativeEvent.isComposing) {
+              return;
+            }
             if (event.key === "Enter") {
               event.preventDefault();
+              if (canCreate && !isCreatingTag) {
+                onCreateTag(query);
+              }
+              return;
+            }
+            if (event.key === "Escape") {
+              event.preventDefault();
+              onRequestClose();
+              return;
+            }
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              listRef.current
+                ?.querySelector<HTMLElement>('[role="option"]')
+                ?.focus();
             }
           }}
-        >
-          <StyledInput type="search" placeholder="タグ名で探す" />
-        </SearchField>
-      )}
+        />
+      </SearchField>
 
       <ListBox
-        {...(listId === undefined ? {} : { id: listId })}
+        ref={listRef}
         aria-label="タグ候補"
-        className={
-          listMaxHeight === "sheet"
-            ? `${candidateList} ${sheetList}`
-            : candidateList
-        }
+        className={candidateList}
         items={[...candidates]}
         selectionMode="none"
         renderEmptyState={renderEmpty}
