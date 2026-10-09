@@ -43,10 +43,6 @@ const failedPasskeyResult = {
   },
 } as const;
 
-async function neverSignIn() {
-  return await new Promise<never>(() => {});
-}
-
 const meta = preview.meta({
   title: "Pages / サインイン画面",
   parameters: {
@@ -209,7 +205,7 @@ export const Pending = meta.story({
   name: "サインイン中",
   beforeEach: async () => {
     mocked(authClient.signIn.email).mockImplementation(
-      async () => await neverSignIn()
+      async () => await new Promise<never>(() => {})
     );
   },
   play: async ({ canvasElement, step }) => {
