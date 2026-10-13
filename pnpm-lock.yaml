@@ -113,9 +113,6 @@ catalogs:
     '@better-auth/passkey':
       specifier: 1.6.27
       version: 1.6.27
-    '@simplewebauthn/browser':
-      specifier: 13.3.0
-      version: 13.3.0
     better-auth:
       specifier: 1.6.27
       version: 1.6.27
@@ -373,9 +370,6 @@ importers:
       '@praha/error-factory':
         specifier: catalog:errors
         version: 1.4.1
-      '@simplewebauthn/browser':
-        specifier: catalog:authentication
-        version: 13.3.0
       '@tanstack/react-devtools':
         specifier: catalog:debug
         version: 0.10.10(@neodrag/core@3.0.0-next.11)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(csstype@3.2.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)
