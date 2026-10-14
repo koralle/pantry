@@ -79,11 +79,11 @@ catalogs:
     "@tsconfig/strictest": 2.0.8
     typescript: 7.0.2
   storybook:
-    "@storybook/addon-docs": 10.5.8
-    "@storybook/builder-vite": 10.5.8
-    "@storybook/tanstack-react": 10.5.8
+    "@storybook/addon-docs": 10.6.2
+    "@storybook/builder-vite": 10.6.2
+    "@storybook/tanstack-react": 10.6.2
     storybook-device-viewports: 0.1.2
-    storybook: 10.5.8
+    storybook: 10.6.2
   ui:
     "@fontsource/noto-sans-jp": 5.3.0
     "@pandacss/dev": 1.12.0
