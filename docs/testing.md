@@ -23,13 +23,13 @@ UI のブラウザ検証の正本は Storybook の Story と `play` 関数とす
 
 - Route Story（例: ブックマーク編集）は `Route` を起点に、Ideal / Blank / Loading / Error を網羅する。
 - Route Story の backend は MSW で差し替える。`/api/rpc/*` のリクエストは本物の `RPCHandler` が受け、リクエストの包み方、入力検証、defined error は本番と同じ経路で返る（実装は `src/storybook/backend/`、判断は ADR 0003）。
-- 差し替えるのは persistence の port（`createAppRouter(deps)` の deps）だけとし、procedure は本番のものを実行する。指定のない port は例外を投げ、画面は 500 のエラー状態になる。
-- Story は `parameters.backend` に port の差分だけを書く。既定はシェル（session、件数 0、空の棚、空の一覧）。
+- 差し替えるのは persistence の port（`createAppRouter(deps)` の deps）だけとし、procedure は本番のものを実行する。指定のない port は例外を投げ、画面は 500 のエラー状態になり、コンソールに port 名が残る。
+- Story は `parameters.backend` に port の差分だけを書く。既定はシェル（session、件数 0、空の棚）。
 - fixture は Story と同じ `stories/` に置く。複数の Story で共有する fixture モジュールは作らない。
 - Story は対象のルートファイルと同じディレクトリの `stories/` に、ルートと同じ名前で置く（`stories/index.tsx`、`stories/edit.tsx`）。
 - Component Story は注入された port（fake）で更新 Result とフォームエラーを再現する。HTTP を使わないため MSW は使わない。
 - HTTP でない境界（`authClient`、WebAuthn 対応判定）は `sb.mock` でモジュールごと差し替える。
-- MSW の worker ファイルは `src/storybook/public/mockServiceWorker.js` に置き、`staticDirs` で配信する。msw 本体を上げたら同じバージョンで再生成する。
+- MSW の worker スクリプトは `msw/vite`（`mode: "worker-only"`）で配信する。生成物は commit せず、`staticDirs` も使わない。
 
 ## 2.2 Persistence Integration（実 libSQL）
 
