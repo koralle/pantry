@@ -31,6 +31,8 @@ const nodeTests = [
   "src/features/bookmarks/lib/queries/query-ownership.test.ts",
   "src/features/auth/passkey-plugin-wiring.test.ts",
   "src/features/auth/passkey-ui.source.test.ts",
+  "src/features/auth/hooks/use-passkey-sign-in.test.tsx",
+  "src/features/auth/hooks/use-email-sign-in.test.tsx",
 ];
 
 export default defineConfig({

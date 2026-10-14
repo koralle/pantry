@@ -18,16 +18,41 @@ describe("passkey UI contracts", () => {
 
     expect(passkeyIndex).toBeGreaterThan(-1);
     expect(passwordIndex).toBeGreaterThan(passkeyIndex);
+    expect(page).toMatch(
+      /<ClientOnly fallback=\{null\}>\s*<PasskeySignIn signInAction=\{signInWithPasskey\} \/>\s*<\/ClientOnly>/
+    );
 
     const signIn = await readSource(
       "features/auth/components/passkey/sign-in.tsx"
     );
     expect(signIn).toContain("パスキーでログイン");
     expect(signIn).toContain("または");
-    expect(signIn).toContain('to: redirect ?? "/bookmarks"');
-    expect(signIn).toContain("signIn.passkey({");
-    expect(signIn).toContain("autoFill: true");
-    expect(signIn).toContain("WebAuthnAbortService.cancelCeremony()");
+    expect(signIn).toContain("await signInAction()");
+    expect(signIn).not.toContain("authClient");
+    expect(signIn).not.toContain("useRouter");
+    expect(signIn).not.toContain("autoFill");
+    expect(signIn).not.toContain("isConditionalMediationAvailable");
+    expect(signIn).not.toContain("useEffect");
+    expect(signIn).toContain("if (!isWebAuthnAvailable())");
+
+    const form = await readSource(
+      "features/auth/components/sign-in-form/index.tsx"
+    );
+    expect(form).toContain('autoComplete="email"');
+    expect(form).toContain('autoComplete="current-password"');
+    expect(form).not.toContain("webauthn");
+  });
+
+  test("passkey sign-in uses transition pending state", async () => {
+    const signIn = await readSource(
+      "features/auth/components/passkey/sign-in.tsx"
+    );
+    expect(signIn).toContain(
+      "const [isPending, startTransition] = useTransition()"
+    );
+    expect(signIn).toContain("startTransition(async () => {");
+    expect(signIn).toContain("isDisabled={isPending}");
+    expect(signIn).not.toContain("setIsPending");
   });
 
   test("settings hosts passkey management between account and session", async () => {

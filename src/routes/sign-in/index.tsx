@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, useSearch } from "@tanstack/react-router";
 import { Package } from "lucide-react";
 import { css } from "styled-system/css";
 import { grid } from "styled-system/patterns";
@@ -6,10 +6,9 @@ import * as v from "valibot";
 
 import { PasskeySignIn } from "../../features/auth/components/passkey/sign-in";
 import { SignInWithEmailAndPasswordForm } from "../../features/auth/components/sign-in-form";
-import { authClient } from "../../features/auth/lib/auth-client";
+import { useEmailSignIn } from "../../features/auth/hooks/use-email-sign-in";
+import { usePasskeySignIn } from "../../features/auth/hooks/use-passkey-sign-in";
 import { isInternalPath } from "../../features/auth/lib/is-internal-path";
-import { SignInError } from "../../features/auth/lib/sign-in-error";
-import type { SignInSchema } from "../../features/auth/lib/sign-in-schema";
 
 const internalRedirectSchema = v.pipe(v.string(), v.check(isInternalPath));
 
@@ -63,22 +62,8 @@ const brandTagline = css({
 
 function RouteComponent() {
   const { redirect } = useSearch({ from: "/sign-in/" });
-  const router = useRouter();
-
-  async function onSignIn({ email, password }: SignInSchema) {
-    const { error } = await authClient.signIn.email({ email, password });
-
-    if (error === null) {
-      await router.navigate({ to: redirect ?? "/bookmarks" });
-      return null;
-    }
-
-    return new SignInError({
-      code: error.code,
-      status: error.status,
-      statusText: error.statusText,
-    });
-  }
+  const { signInWithPasskey } = usePasskeySignIn({ redirect });
+  const { signInWithEmailAndPassword } = useEmailSignIn({ redirect });
 
   return (
     <div
@@ -151,8 +136,12 @@ function RouteComponent() {
             })}
           >
             <h1 className={css({ textAlign: "center" })}>ログイン</h1>
-            <PasskeySignIn redirect={redirect} />
-            <SignInWithEmailAndPasswordForm onSignIn={onSignIn} />
+            <ClientOnly fallback={null}>
+              <PasskeySignIn signInAction={signInWithPasskey} />
+            </ClientOnly>
+            <SignInWithEmailAndPasswordForm
+              signInAction={signInWithEmailAndPassword}
+            />
           </div>
         </section>
       </div>

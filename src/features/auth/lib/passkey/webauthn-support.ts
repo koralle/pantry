@@ -12,18 +12,3 @@ const publicKeyCredential = (
 export const isWebAuthnAvailable = (
   globals: WebAuthnGlobals = globalThis
 ): boolean => publicKeyCredential(globals) !== undefined;
-
-export const isConditionalMediationAvailable = async (
-  globals: WebAuthnGlobals = globalThis
-): Promise<boolean> => {
-  const credential = publicKeyCredential(globals);
-  if (credential === undefined) {
-    return false;
-  }
-
-  if (typeof credential.isConditionalMediationAvailable !== "function") {
-    return false;
-  }
-
-  return await credential.isConditionalMediationAvailable();
-};

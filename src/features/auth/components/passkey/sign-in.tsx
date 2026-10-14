@@ -1,21 +1,17 @@
-import { WebAuthnAbortService } from "@simplewebauthn/browser";
-import { useRouter } from "@tanstack/react-router";
 import { CircleAlert, KeyRound } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState, useTransition } from "react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
+import type { Result } from "../../../../shared/domain/result";
 import {
   formSummary,
   formSummaryIcon,
   formSummaryText,
 } from "../../../../shared/styles/form";
-import { authClient } from "../../lib/auth-client";
+import type { PasskeySignInError } from "../../hooks/use-passkey-sign-in";
 import { getPasskeySignInErrorMessage } from "../../lib/passkey/messages";
-import {
-  isConditionalMediationAvailable,
-  isWebAuthnAvailable,
-} from "../../lib/passkey/webauthn-support";
+import { isWebAuthnAvailable } from "../../lib/passkey/webauthn-support";
 
 const passkeySignIn = css({
   display: "flex",
@@ -46,87 +42,43 @@ const passkeyDivider = css({
   gridTemplateColumns: "1fr auto 1fr",
 });
 
-export const PasskeySignIn = ({
-  redirect,
-}: {
-  readonly redirect: string | undefined;
-}) => {
-  const router = useRouter();
-  const [webAuthnAvailable, setWebAuthnAvailable] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+type PasskeySignInAction = () => Promise<Result<void, PasskeySignInError>>;
+
+interface PasskeySignInProps {
+  /** Called and awaited inside a Transition. */
+  readonly signInAction: PasskeySignInAction;
+}
+
+export const PasskeySignIn = ({ signInAction }: PasskeySignInProps) => {
+  const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const explicitInFlight = useRef(false);
 
-  useEffect(() => {
-    if (!isWebAuthnAvailable()) {
-      setWebAuthnAvailable(false);
-      return;
-    }
-
-    setWebAuthnAvailable(true);
-
-    let ignore = false;
-
-    void (async () => {
-      if (!(await isConditionalMediationAvailable())) {
-        return;
-      }
-
-      const { data, error } = await authClient.signIn.passkey({
-        autoFill: true,
-      });
-      if (ignore || explicitInFlight.current) {
-        return;
-      }
-
-      if (error !== null && error !== undefined) {
-        const message = getPasskeySignInErrorMessage(error);
-        if (message !== null && message !== undefined) {
-          setErrorMessage(message);
-        }
-        return;
-      }
-
-      if (data !== null && data !== undefined) {
-        await router.navigate({ to: redirect ?? "/bookmarks" });
-      }
-    })();
-
-    return () => {
-      ignore = true;
-      WebAuthnAbortService.cancelCeremony();
-    };
-  }, [redirect, router]);
-
-  if (!webAuthnAvailable) {
+  if (!isWebAuthnAvailable()) {
     return null;
   }
 
   const handlePasskeySignIn = () => {
     setErrorMessage(null);
-    explicitInFlight.current = true;
-    WebAuthnAbortService.cancelCeremony();
-    setIsPending(true);
 
-    void (async () => {
+    startTransition(async () => {
       try {
-        const { error } = await authClient.signIn.passkey();
-        if (error !== null && error !== undefined) {
-          const message = getPasskeySignInErrorMessage(error);
-          if (message !== null && message !== undefined) {
-            setErrorMessage(message);
-          }
+        const result = await signInAction();
+        if (result.ok) {
           return;
         }
 
-        await router.navigate({ to: redirect ?? "/bookmarks" });
+        const message = getPasskeySignInErrorMessage(result.error);
+        if (message !== null && message !== undefined) {
+          startTransition(() => {
+            setErrorMessage(message);
+          });
+        }
       } catch {
-        setErrorMessage(getPasskeySignInErrorMessage({}));
-      } finally {
-        explicitInFlight.current = false;
-        setIsPending(false);
+        startTransition(() => {
+          setErrorMessage(getPasskeySignInErrorMessage({}));
+        });
       }
-    })();
+    });
   };
 
   return (
@@ -142,14 +94,12 @@ export const PasskeySignIn = ({
           {isPending ? "端末で認証中…" : "パスキーでログイン"}
         </StyledButton>
       </div>
-
       {errorMessage === null || errorMessage === undefined ? null : (
         <div className={formSummary} role="alert" aria-live="polite">
           <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
           <p className={formSummaryText}>{errorMessage}</p>
         </div>
       )}
-
       <div className={passkeyDivider}>または</div>
     </div>
   );
