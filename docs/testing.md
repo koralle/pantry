@@ -25,11 +25,13 @@ UI のブラウザ検証の正本は Storybook の Story と `play` 関数とす
 - Route Story の backend は MSW で差し替える。`/api/rpc/*` のリクエストは本物の `RPCHandler` が受け、リクエストの包み方、入力検証、defined error は本番と同じ経路で返る（実装は `src/storybook/backend/`、判断は ADR 0003）。
 - 差し替えるのは persistence の port（`createAppRouter(deps)` の deps）だけとし、procedure は本番のものを実行する。指定のない port は例外を投げ、画面は 500 のエラー状態になり、コンソールに port 名が残る。
 - Route Story は `parameters.backend` に port の差分だけを書く。既定はシェル（session、件数 0、空の棚）。
-- fixture は Route Story と同じ `stories/` に置く。複数の Story で共有する fixture モジュールは作らない。
-- Route Story は対象のルートファイルと同じディレクトリの `stories/` に、ルートと同じ名前で置く（`stories/index.tsx`、`stories/edit.tsx`）。
+- 登録はプレビュー全体（worker）で共有される。Docs ページのように複数の Route Story を同時に描画すると、最後に `loader` を通った Story の backend が全体に効く。同時に扱えるモックは 1 Story 分と考える。
+- Route Story は対象のルートファイルと同じディレクトリの `stories/` に、`*.stories.tsx` の名前で置く（`stories/index.stories.tsx`、`stories/edit.stories.tsx`）。Storybook の索引は既定の indexer に頼るため、`stories/edit.tsx` のような名前は使わない（使うには `experimental_indexers` が必要）。
+- fixture は `stories/fixtures/` に置く。複数の Story で共有する fixture モジュールは作らない。`stories/` 配下は TanStack Router のルートにしない（`routeFileIgnorePattern`）。
 - Component Story は `*.stories.tsx` の配置のままとし、Storybook は `stories/` と `*.stories.tsx` の両方を収集する。更新 Result とフォームエラーは注入された port（fake）で再現し、HTTP を使わないため MSW は使わない。
 - HTTP でない境界（`authClient`、WebAuthn 対応判定）は `sb.mock` でモジュールごと差し替える。
 - MSW の worker スクリプトは `msw/vite`（`mode: "worker-only"`）で配信する。生成物は commit せず、`staticDirs` も使わない。
+- port の解決（既定と未宣言 port の例外）は `src/storybook/backend/defaults.test.ts` で Vitest により検証する。Storybook の実行は CI に無いため、ブラウザに依存しない契約はここで守る。
 
 ## 2.2 Persistence Integration（実 libSQL）
 
