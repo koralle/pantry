@@ -41,6 +41,10 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # pi package clones (.pi/settings.json is committed; the clone is recreated on demand)
 .pi/git/
 
+# pi goal runtime state (regenerated every turn; not source)
+.pi/goals/
+.pi/.goals-pool-snapshot.json
+
 ## Panda
 styled-system
 .playwright-mcp/
