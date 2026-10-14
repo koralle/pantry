@@ -130,7 +130,7 @@ export const Confirm = meta.story({
     });
     await expect(canvas.getByText("tanstack.com")).toBeInTheDocument();
     await expect(
-      canvas.getByRole("searchbox", { name: "タグを検索・追加" })
+      canvas.getByRole("button", { name: "タグを追加" })
     ).toBeInTheDocument();
     await expect(canvas.getByLabelText("メモ（任意）")).toBeInTheDocument();
     await expect(
@@ -174,11 +174,11 @@ export const SelectsTags = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(canvasElement.ownerDocument.body);
-    const searchbox = await canvas.findByRole("searchbox", {
-      name: "タグを検索・追加",
+    const triggerButton = await canvas.findByRole("button", {
+      name: "タグを追加",
     });
-    await userEvent.click(searchbox);
-    // Popover は document.body に portal される
+    await userEvent.click(triggerButton);
+    // ダイアログは document.body に portal される
     const option = await body.findByRole("option", { name: /React/ });
     await userEvent.click(option);
     await waitFor(async () => {
@@ -187,7 +187,7 @@ export const SelectsTags = meta.story({
       ).toBeInTheDocument();
     });
     // タグ選択でピッカーは閉じる
-    await expect(searchbox).toHaveAttribute("aria-expanded", "false");
+    await expect(triggerButton).toHaveAttribute("aria-expanded", "false");
     await expect(body.queryByRole("listbox")).not.toBeInTheDocument();
   },
 });
@@ -206,10 +206,13 @@ export const CreatesNewTag = meta.story({
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(canvasElement.ownerDocument.body);
-    const searchbox = await canvas.findByRole("searchbox", {
-      name: "タグを検索・追加",
+    const triggerButton = await canvas.findByRole("button", {
+      name: "タグを追加",
     });
-    await userEvent.click(searchbox);
+    await userEvent.click(triggerButton);
+    const searchbox = await body.findByRole("searchbox", {
+      name: "タグを検索",
+    });
     await userEvent.type(searchbox, "Python");
     const createCta = await body.findByRole("button", {
       name: "「Python」を新しいタグとして作成",
@@ -344,9 +347,9 @@ export const Mobile = meta.story({
         canvas.getByText("TanStack Router の型安全な検索パラメータ")
       ).toBeInTheDocument();
     });
-    // モバイルではタグ入力がシート起動の readOnly になる
+    // モバイルでもタグはダイアログ（下端シート）で選ぶ
     await expect(
-      canvas.getByRole("searchbox", { name: "タグを検索・追加" })
-    ).toHaveAttribute("readonly");
+      canvas.getByRole("button", { name: "タグを追加" })
+    ).toBeEnabled();
   },
 });

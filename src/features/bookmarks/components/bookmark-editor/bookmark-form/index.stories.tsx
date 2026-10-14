@@ -434,30 +434,33 @@ export const SubmitsBrandedValues = Default.extend({
   },
 });
 
-const tagInputName = "タグを検索・追加";
+const tagTriggerName = "タグを追加";
+const tagSearchName = "タグを検索";
 
-// タグ入力ボックスを押すと候補が開く（デスクトップはポップオーバー）。
+// 「タグを追加」でダイアログを開く。中身は document.body へ portal される。
 async function openTagPicker(canvas: ReturnType<typeof within>) {
-  await userEvent.click(canvas.getByRole("searchbox", { name: tagInputName }));
+  await userEvent.click(canvas.getByRole("button", { name: tagTriggerName }));
   const body = within(document.body);
   await waitFor(() => {
-    expect(body.getAllByRole("option").length).toBeGreaterThan(0);
+    expect(
+      body.getByRole("dialog", { name: "タグを選ぶ" })
+    ).toBeInTheDocument();
   });
+  return body;
 }
 
 export const SelectsAndRemovesTags = Default.extend({
   name: "タグ選択と解除",
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const body = within(document.body);
-    await openTagPicker(canvas);
+    const body = await openTagPicker(canvas);
     await userEvent.click(body.getByRole("option", { name: /TypeScript/ }));
     await expect(
       canvas.getByRole("button", { name: "TypeScriptを外す" })
     ).toBeInTheDocument();
     // タグ選択でピッカーは閉じる
     await expect(
-      canvas.getByRole("searchbox", { name: tagInputName })
+      canvas.getByRole("button", { name: tagTriggerName })
     ).toHaveAttribute("aria-expanded", "false");
     await expect(body.queryByRole("listbox")).not.toBeInTheDocument();
     await userEvent.keyboard("{Escape}");
@@ -487,15 +490,18 @@ export const SelectsTagOnMobileSheet = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    const triggerButton = canvas.getByRole("button", { name: tagTriggerName });
+    await userEvent.click(triggerButton);
     const body = within(document.body);
-    const searchbox = canvas.getByRole("searchbox", { name: tagInputName });
-    // モバイルでは readOnly のシート起動トリガーになる
-    await expect(searchbox).toHaveAttribute("readonly");
-    await userEvent.click(searchbox);
+    const searchbox = await body.findByRole("searchbox", {
+      name: tagSearchName,
+    });
+    // 開いた直後は検索欄にフォーカスが移る（そのまま入力できる）
+    await expect(searchbox).toHaveFocus();
     const option = await body.findByRole("option", { name: /React/ });
     await userEvent.click(option);
     // タグ選択でシートは閉じ、チップが付く
-    await expect(searchbox).toHaveAttribute("aria-expanded", "false");
+    await expect(triggerButton).toHaveAttribute("aria-expanded", "false");
     await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
     await expect(
       canvas.getByRole("button", { name: "Reactを外す" })
@@ -507,10 +513,9 @@ export const SearchKeepsCandidateOrder = Default.extend({
   name: "検索でも候補順を保持",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const body = within(document.body);
-    await openTagPicker(canvas);
+    const body = await openTagPicker(canvas);
     await userEvent.type(
-      canvas.getByRole("searchbox", { name: tagInputName }),
+      body.getByRole("searchbox", { name: tagSearchName }),
       "t"
     );
     const options = body.getAllByRole("option");
@@ -529,9 +534,9 @@ export const CreateCtaWaitsUntilNamesAreReady = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const body = within(document.body);
+    const body = await openTagPicker(canvas);
     await userEvent.type(
-      canvas.getByRole("searchbox", { name: tagInputName }),
+      body.getByRole("searchbox", { name: tagSearchName }),
       "Python"
     );
     await expect(
@@ -555,10 +560,9 @@ export const CreatesAndSelectsNewTag = Default.extend({
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const body = within(document.body);
-    await openTagPicker(canvas);
+    const body = await openTagPicker(canvas);
     await userEvent.type(
-      canvas.getByRole("searchbox", { name: tagInputName }),
+      body.getByRole("searchbox", { name: tagSearchName }),
       "Python"
     );
     await userEvent.click(
@@ -587,10 +591,9 @@ export const CreatePendingBlocksBookmarkSubmit = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const body = within(document.body);
-    await openTagPicker(canvas);
+    const body = await openTagPicker(canvas);
     await userEvent.type(
-      canvas.getByRole("searchbox", { name: tagInputName }),
+      body.getByRole("searchbox", { name: tagSearchName }),
       "Python"
     );
     await userEvent.click(
@@ -619,11 +622,12 @@ export const CreateFailureKeepsDraftAndShowsFieldError = Default.extend({
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const body = within(document.body);
-    await openTagPicker(canvas);
+    const body = await openTagPicker(canvas);
     await userEvent.click(body.getByRole("option", { name: /React/ }));
+    // 選択で閉じるので、失敗を試すため開き直して入力する
+    await openTagPicker(canvas);
     await userEvent.type(
-      canvas.getByRole("searchbox", { name: tagInputName }),
+      body.getByRole("searchbox", { name: tagSearchName }),
       "Python"
     );
     await userEvent.click(
