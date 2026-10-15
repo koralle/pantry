@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { handleRpcRequest } from "../../../rpc/handle-request.server";
+import { handleRpcRequest } from "../../../rpc/server/handle-request.server";
 
 /**
  * Cookie を読む認証 middleware のため、Request を丸ごと handler へ渡す。

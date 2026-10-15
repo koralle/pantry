@@ -49,7 +49,7 @@ class StoryRpcError extends Error {
 
 type StoryRpcHandler = (input: unknown) => unknown;
 
-// rpc/client.ts は fetch を呼び出し毎に解決するので、ここで差し替えた
+// rpc/client/client.ts は fetch を呼び出し毎に解決するので、ここで差し替えた
 // global fetch がそのまま拾われる。oRPC の wire format（{json} envelope）に
 // 合わせて fixture を返し、実際の link codec 経路ごと検証する。
 const storyRpcHandlers = new Map<string, StoryRpcHandler>([

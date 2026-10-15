@@ -3,8 +3,8 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
-import type { AppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
+import type { AppRouter } from "../contract/create-app-router";
+import { handleRpcRequest } from "../server/handle-request.server";
 
 /**
  * SSR 用の direct client。link の fetch を process 内の handler へ繋ぐため

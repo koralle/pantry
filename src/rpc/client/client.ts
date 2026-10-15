@@ -3,11 +3,11 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { createIsomorphicFn } from "@tanstack/react-start";
 
-import type { AppRouter } from "./create-app-router";
+import type { AppRouter } from "../contract/create-app-router";
 
 const rpcFetch = createIsomorphicFn()
   .server(async (request: Request, _init?: RequestInit) => {
-    const { ssrRpcFetch } = await import("./ssr-rpc-fetch.server");
+    const { ssrRpcFetch } = await import("../server/ssr-rpc-fetch.server");
     return await ssrRpcFetch(request);
   })
   .client(

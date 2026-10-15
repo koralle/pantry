@@ -23,8 +23,8 @@
 ## 3. システム構成
 
 - UI/SSR: TanStack Start（`src/routes/`、`src/router.tsx`）
-- API境界: oRPC procedure（`src/rpc/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
-- RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`src/rpc/client.ts`、`src/rpc/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
+- API境界: oRPC procedure（`src/rpc/contract/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
+- RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`src/rpc/client/client.ts`、`src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
 - 認証: Better AuthのCookieセッション。procedureは`getSession(headers)`で検証する。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。server実装はclient bundleに混ざらない。
 - Worker環境変数: `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`

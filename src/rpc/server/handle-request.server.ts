@@ -1,6 +1,6 @@
 import { RPCHandler } from "@orpc/server/fetch";
 
-import type { AppRouter } from "./create-app-router";
+import type { AppRouter } from "../contract/create-app-router";
 
 let productionRouterPromise: Promise<AppRouter> | undefined;
 

@@ -23,7 +23,7 @@ import { refreshAfterBookmarkMutation } from "../../../../features/bookmarks/lib
 import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/tag-picker/create-tag-from-picker-action";
 import { bookmarkQuickAddSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
-import { orpc } from "../../../../rpc/query";
+import { orpc } from "../../../../rpc/client/query";
 import { formWrap } from "../../../../shared/styles/form-screen";
 
 export const Route = createFileRoute("/_protected/bookmarks/quick/")({

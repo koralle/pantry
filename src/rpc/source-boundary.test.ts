@@ -12,7 +12,7 @@ async function readSource(path: string): Promise<string> {
 
 describe("client bundle boundary", () => {
   test("browser client は server 実装を静的に import しない", async () => {
-    const source = await readSource("rpc/client.ts");
+    const source = await readSource("rpc/client/client.ts");
 
     expect(source).not.toMatch(/from ["']\.\/client\.server["']/);
     expect(source).not.toMatch(/from ["']@tanstack\/react-start\/server["']/);
@@ -21,7 +21,7 @@ describe("client bundle boundary", () => {
   });
 
   test("runtime client は isomorphic fn 経由でのみ server 実装を選ぶ", async () => {
-    const source = await readSource("rpc/runtime-client.ts");
+    const source = await readSource("rpc/client/runtime-client.ts");
 
     expect(source).toContain("createIsomorphicFn");
     expect(source).toMatch(/await import\(["']\.\/client\.server["']\)/);

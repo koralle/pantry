@@ -3,11 +3,11 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { InsertBookmark } from "../features/bookmarks/application/create-bookmark";
-import type { BookmarkId } from "../features/bookmarks/domain/bookmark-values";
+import type { InsertBookmark } from "../../features/bookmarks/application/create-bookmark";
+import type { BookmarkId } from "../../features/bookmarks/domain/bookmark-values";
+import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
 
 const userId = "user-1";
 

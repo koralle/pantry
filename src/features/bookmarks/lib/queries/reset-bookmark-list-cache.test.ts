@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { orpc } from "../../../../rpc/query";
+import { orpc } from "../../../../rpc/client/query";
 import {
   bookmarkListSearchIdentity,
   consumeBookmarkListScroll,

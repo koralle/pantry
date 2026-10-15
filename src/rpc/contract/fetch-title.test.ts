@@ -6,10 +6,10 @@ import { describe, expect, test, vi } from "vitest";
 import type {
   FetchPageTitle,
   FetchPageTitleOutput,
-} from "../features/bookmarks/application/fetch-page-title";
+} from "../../features/bookmarks/application/fetch-page-title";
+import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
 
 const userId = "user-1";
 

@@ -3,10 +3,10 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { TouchTag } from "../features/tags/application/touch-tag";
+import type { TouchTag } from "../../features/tags/application/touch-tag";
+import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
 
 const userId = "user-1";
 

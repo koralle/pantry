@@ -11,7 +11,7 @@ import {
   Text,
 } from "react-aria-components";
 
-import { orpc } from "../../../rpc/query";
+import { orpc } from "../../../rpc/client/query";
 import { StyledButton } from "../../../shared/components/styled-button";
 import {
   dialog,

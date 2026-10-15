@@ -1,4 +1,4 @@
-import { getRpcClient } from "../../../../rpc/runtime-client";
+import { getRpcClient } from "../../../../rpc/client/runtime-client";
 import type { BookmarkTitleFetchAction } from "../../components/bookmark-editor/bookmark-form";
 import { getTitleFetchErrorMessage } from "../errors/get-title-fetch-error-message";
 

@@ -12,9 +12,9 @@ vi.mock("@tanstack/react-start/server", () => ({
   getRequestHeaders: () => mocks.getRequestHeaders(),
 }));
 
-import type { TagId } from "../features/tags/domain/tag-values";
-import { createAppRouter } from "./create-app-router";
-import type { AppRouter } from "./create-app-router";
+import type { TagId } from "../../features/tags/domain/tag-values";
+import { createAppRouter } from "../contract/create-app-router";
+import type { AppRouter } from "../contract/create-app-router";
 import { ssrRpcFetch } from "./ssr-rpc-fetch.server";
 
 function capturingSessionRouter() {
