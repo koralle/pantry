@@ -4,19 +4,22 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { SessionUser, UserId } from "../features/auth/domain/auth-values";
-import type { InsertBookmarkOutput } from "../features/bookmarks/application/create-bookmark";
-import type { FetchPageTitleOutput } from "../features/bookmarks/application/fetch-page-title";
-import type { UpdateBookmarkOutput } from "../features/bookmarks/application/update-bookmark";
-import type { BookmarkCountView } from "../features/bookmarks/persistence/get-bookmark-count";
-import type { InsertTagOutput } from "../features/tags/application/create-tag";
-import type { TouchTagOutput } from "../features/tags/application/touch-tag";
-import type { UpdateTagOutput } from "../features/tags/application/update-tag";
-import type { TagId } from "../features/tags/domain/tag-values";
-import type { ShelfTag } from "../features/tags/lib/tag-shelf";
+import type {
+  SessionUser,
+  UserId,
+} from "../../features/auth/domain/auth-values";
+import type { InsertBookmarkOutput } from "../../features/bookmarks/application/create-bookmark";
+import type { FetchPageTitleOutput } from "../../features/bookmarks/application/fetch-page-title";
+import type { UpdateBookmarkOutput } from "../../features/bookmarks/application/update-bookmark";
+import type { BookmarkCountView } from "../../features/bookmarks/persistence/get-bookmark-count";
+import type { InsertTagOutput } from "../../features/tags/application/create-tag";
+import type { TouchTagOutput } from "../../features/tags/application/touch-tag";
+import type { UpdateTagOutput } from "../../features/tags/application/update-tag";
+import type { TagId } from "../../features/tags/domain/tag-values";
+import type { ShelfTag } from "../../features/tags/lib/tag-shelf";
+import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
 
 const userId = "user-1";
 

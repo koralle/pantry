@@ -11,7 +11,7 @@ import {
   railIcon,
   railCount,
 } from "../../../features/app-shell/styles";
-import { orpc } from "../../../rpc/query";
+import { orpc } from "../../../rpc/client/query";
 
 interface FavoritesBookmarkCountProps {
   render: (count: number) => ReactNode;

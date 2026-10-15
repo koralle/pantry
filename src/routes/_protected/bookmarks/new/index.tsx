@@ -22,7 +22,7 @@ import { refreshAfterBookmarkMutation } from "../../../../features/bookmarks/lib
 import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/tag-picker/create-tag-from-picker-action";
 import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
-import { orpc } from "../../../../rpc/query";
+import { orpc } from "../../../../rpc/client/query";
 import { button } from "../../../../shared/components/styled-button/styles";
 import { formWrap } from "../../../../shared/styles/form-screen";
 

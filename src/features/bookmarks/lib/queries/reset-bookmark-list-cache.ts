@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { orpc } from "../../../../rpc/query";
+import { orpc } from "../../../../rpc/client/query";
 import { clearBookmarkListScroll } from "../list/bookmark-list-scroll-session";
 
 /**

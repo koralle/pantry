@@ -4,7 +4,7 @@ describe("server direct RPC client", () => {
   // Client.server 経由の初回は react-start/server の graph ごと読むため、
   // Workerd 上の初回呼び出しは既定の 5 秒に収まらないことがある。
   test("request headers の Cookie が procedure の getSession へ届く", async () => {
-    const { createAppRouter } = await import("./create-app-router");
+    const { createAppRouter } = await import("../contract/create-app-router");
     const { createServerRpcClient } = await import("./client.server");
 
     let receivedCookie: string | null = null;

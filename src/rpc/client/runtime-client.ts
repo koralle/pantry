@@ -1,8 +1,8 @@
 import type { RouterClient } from "@orpc/server";
 import { createIsomorphicFn } from "@tanstack/react-start";
 
+import type { AppRouter } from "../contract/create-app-router";
 import { rpcClient } from "./client";
-import type { AppRouter } from "./create-app-router";
 
 /**
  * Loader / beforeLoad は SSR でも client navigation でも走る。

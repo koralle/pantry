@@ -4,12 +4,15 @@ import type { RouterClient } from "@orpc/server";
 import * as v from "valibot";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { UserId, SessionUser } from "../features/auth/domain/auth-values";
-import type { UpdateBookmark } from "../features/bookmarks/application/update-bookmark";
-import { bookmarkIdSchema } from "../features/bookmarks/domain/bookmark-values";
+import type {
+  UserId,
+  SessionUser,
+} from "../../features/auth/domain/auth-values";
+import type { UpdateBookmark } from "../../features/bookmarks/application/update-bookmark";
+import { bookmarkIdSchema } from "../../features/bookmarks/domain/bookmark-values";
+import { handleRpcRequest } from "../server/handle-request.server";
 import type { AppRouter } from "./create-app-router";
 import { createAppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
 
 const userId = "user-1";
 const bookmarkId = v.parse(

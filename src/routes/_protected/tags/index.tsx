@@ -25,7 +25,7 @@ import { refreshAfterDeleteTag } from "../../../features/tags/lib/refresh-after-
 import { refreshAfterUpdateTag } from "../../../features/tags/lib/refresh-after-update-tag";
 import type { ShelfTag } from "../../../features/tags/lib/tag-shelf";
 import { tagsPage } from "../../../features/tags/styles";
-import { orpc } from "../../../rpc/query";
+import { orpc } from "../../../rpc/client/query";
 import { StateView } from "../../../shared/components/state-view";
 import { StyledButton } from "../../../shared/components/styled-button";
 import { detailCenter } from "../../../shared/styles/detail";

@@ -5,7 +5,7 @@ import { cx } from "styled-system/css";
 
 import { railItem, railCount } from "../../../features/app-shell/styles";
 import type { ShelfTag } from "../../../features/tags/lib/tag-shelf";
-import { orpc } from "../../../rpc/query";
+import { orpc } from "../../../rpc/client/query";
 import { TagDot } from "../../../shared/components/tag-chip";
 import { toneFor } from "../../../shared/styles/domain-tone";
 

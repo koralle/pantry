@@ -2,7 +2,7 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import { isInternalPath } from "../features/auth/lib/is-internal-path";
-import { getRpcClient } from "../rpc/runtime-client";
+import { getRpcClient } from "../rpc/client/runtime-client";
 
 export const Route = createFileRoute("/_protected")({
   beforeLoad: async ({ location }) => {

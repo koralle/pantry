@@ -26,8 +26,8 @@ import { refreshAfterBookmarkMutation } from "../../../../features/bookmarks/lib
 import { createTagFromPickerAction } from "../../../../features/bookmarks/lib/tag-picker/create-tag-from-picker-action";
 import { bookmarkDetailSearchSchema } from "../../../../features/navigation/lib/bookmark-search";
 import { listSearchFromDetail } from "../../../../features/navigation/lib/bookmark-search-builders";
-import { orpc } from "../../../../rpc/query";
-import { getRpcClient } from "../../../../rpc/runtime-client";
+import { orpc } from "../../../../rpc/client/query";
+import { getRpcClient } from "../../../../rpc/client/runtime-client";
 import { createErrorFallback } from "../../../../shared/components/error-fallback";
 import { button } from "../../../../shared/components/styled-button/styles";
 import { UiEmpty } from "../../../../shared/components/ui-empty";

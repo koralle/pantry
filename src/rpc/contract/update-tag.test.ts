@@ -3,12 +3,12 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type { InsertTag } from "../features/tags/application/create-tag";
-import type { UpdateTag } from "../features/tags/application/update-tag";
-import type { TagId } from "../features/tags/domain/tag-values";
+import type { InsertTag } from "../../features/tags/application/create-tag";
+import type { UpdateTag } from "../../features/tags/application/update-tag";
+import type { TagId } from "../../features/tags/domain/tag-values";
+import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
-import { handleRpcRequest } from "./handle-request.server";
 
 const userId = "user-1";
 const input = { color: null, id: 7, name: "Work", pinned: false, sortOrder: 0 };

@@ -1,6 +1,6 @@
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
-import type { AppRouter } from "./create-app-router";
+import type { AppRouter } from "../contract/create-app-router";
 import { handleRpcRequest } from "./handle-request.server";
 
 /**
