@@ -5,13 +5,7 @@ const config: KnipConfig = {
   // Maintenance scripts and the Node-only Better Auth entry they import.
   // The tanstack-entry stub is an alias target loaded by the Vitest bundler
   // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
-  // Cursor Project Hooks invoke `.cursor/hooks/*.mjs` by command path, not imports.
-  entry: [
-    "auth.ts",
-    "scripts/**/*.ts",
-    "vitest/tanstack-entry-stub.ts",
-    ".cursor/hooks/**/*.mjs",
-  ],
+  entry: ["auth.ts", "scripts/**/*.ts", "vitest/tanstack-entry-stub.ts"],
   vitest: {
     config: ["vitest.config.ts", "vitest.persistence.config.ts"],
   },
