@@ -12,8 +12,10 @@ const config = defineConfig({
     varlockCloudflareVitePlugin({ viteEnvironment: { name: "ssr" } }),
     tanstackStart({
       router: {
-        // Colocated Storybook and test files are not routes.
-        routeFileIgnorePattern: "\\.(stories|test)\\.(tsx|ts|jsx|js)$",
+        // Colocated Storybook and test files, and `stories/` directories
+        // (Route Story と fixtures), are not routes.
+        routeFileIgnorePattern:
+          "^stories$|\\.(stories|test)\\.(tsx|ts|jsx|js)$",
       },
     }),
     viteReact(),
