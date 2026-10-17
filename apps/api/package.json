@@ -1,0 +1,40 @@
+{
+  "name": "@pantry/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "cf-typegen": "varlock-wrangler types",
+    "deploy": "APP_ENV=production pnpm run build && APP_ENV=production varlock-wrangler deploy",
+    "dev": "vite dev --port 8787",
+    "preview": "pnpm run build && vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "catalog:authentication",
+    "@better-auth/passkey": "catalog:authentication",
+    "@orpc/server": "catalog:rpc",
+    "@pantry/api-contract": "workspace:*",
+    "@pantry/db": "workspace:*",
+    "better-auth": "catalog:authentication",
+    "hono": "catalog:server",
+    "valibot": "catalog:validation"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "catalog:build",
+    "@cloudflare/vitest-plugin": "catalog:test",
+    "@libsql/client": "catalog:database",
+    "@orpc/client": "catalog:rpc",
+    "@orpc/contract": "catalog:rpc",
+    "@tsconfig/strictest": "catalog:typescript",
+    "@types/node": "catalog:runtime",
+    "@varlock/cloudflare-integration": "catalog:envvars",
+    "drizzle-orm": "catalog:database",
+    "typescript": "catalog:typescript",
+    "varlock": "catalog:envvars",
+    "vite": "catalog:build",
+    "vitest": "catalog:test",
+    "wrangler": "catalog:runtime"
+  }
+}

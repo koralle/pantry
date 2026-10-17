@@ -25,6 +25,18 @@ const config: KnipConfig = {
         "@markuplint/react-spec",
       ],
     },
+    "apps/api": {
+      // Better Auth CLI（`auth generate --config ../../apps/api/auth.ts`）と
+      // Node スクリプト用の entry。Worker の entry は wrangler.jsonc の `main`。
+      entry: ["auth.ts"],
+      vitest: {
+        config: "vitest.config.ts",
+      },
+      ignoreDependencies: [
+        // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
+        "cloudflare",
+      ],
+    },
     "apps/web": {
       // Maintenance scripts and the Node-only Better Auth entry they import.
       // The tanstack-entry stub is an alias target loaded by the Vitest bundler
@@ -48,6 +60,11 @@ const config: KnipConfig = {
         // Self-hosted typeface loaded via @import in src/index.css
         "@fontsource/noto-sans-jp",
       ],
+    },
+    "packages/api-contract": {
+      vitest: {
+        config: "vitest.config.ts",
+      },
     },
     "packages/db": {
       vitest: {

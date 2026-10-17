@@ -9,6 +9,7 @@ export default defineConfig({
     ...(core.ignorePatterns ?? []),
     ".agents/skills/**",
     ".pnpmfile.cjs",
+    "apps/api/worker-configuration.d.ts",
     "apps/web/postcss.config.cjs",
     "apps/web/src/routeTree.gen.ts",
     "apps/web/vitest/tanstack-entry-stub.ts",

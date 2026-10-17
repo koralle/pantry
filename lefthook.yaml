@@ -24,6 +24,7 @@ pre-commit:
         - ".agents/**"
         # Wrangler の生成物で Ultracite / Oxfmt の対象外。単独で stage されたときに
         # `ultracite fix` が無視対象だけを受け取って失敗するのを避ける。
+        - "apps/api/worker-configuration.d.ts"
         - "apps/web/worker-configuration.d.ts"
       run: |
         pnpm run fix -- {staged_files}

@@ -1,0 +1,23 @@
+{
+  "name": "@pantry/api-contract",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/contract.ts",
+    "./schemas/*": "./src/schemas/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@orpc/contract": "catalog:rpc",
+    "valibot": "catalog:validation"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "catalog:typescript",
+    "@types/node": "catalog:runtime",
+    "typescript": "catalog:typescript",
+    "vitest": "catalog:test"
+  }
+}

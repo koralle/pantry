@@ -7,6 +7,7 @@ export default defineConfig({
     ...(ultracite.ignorePatterns ?? []),
     ".agents/**",
     "pnpm-lock.yaml",
+    "apps/api/worker-configuration.d.ts",
     "apps/web/src/routeTree.gen.ts",
     "apps/web/worker-configuration.d.ts",
     "packages/db/.generated/**",

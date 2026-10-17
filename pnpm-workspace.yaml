@@ -74,6 +74,8 @@ catalogs:
     wrangler: 4.123.0
   script:
     tsx: 4.23.12
+  server:
+    hono: 4.13.13
   test:
     "@cloudflare/vitest-plugin": 1.4.4
     testcontainers: 12.1.0
@@ -100,6 +102,7 @@ catalogs:
     valibot: 1.4.2
   rpc:
     "@orpc/client": 1.15.0
+    "@orpc/contract": 1.15.0
     "@orpc/server": 1.15.0
     "@orpc/tanstack-query": 1.15.0
 
