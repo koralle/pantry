@@ -10,7 +10,7 @@ fi
 url=$1
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$SCRIPT_DIR/../../../.." && pwd)
-cd "$ROOT"
+cd "$ROOT/apps/web"
 
 node --input-type=module -e '
 import { createClient } from "@libsql/client";

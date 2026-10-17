@@ -5,6 +5,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SKILL_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 ROOT=$(cd "$SKILL_DIR/../../.." && pwd)
+APP="$ROOT/apps/web"
 RUN_DIR="$SKILL_DIR/run"
 
 if [[ -f "$RUN_DIR/vite.pid" ]]; then
@@ -32,8 +33,8 @@ if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
   fi
 fi
 
-cd "$ROOT"
-local_env="$ROOT/.env.development.local"
+cd "$APP"
+local_env="$APP/.env.development.local"
 if [[ -f "$local_env" ]] && grep -q "# pantry-verify-override" "$local_env"; then
   rm -f "$local_env"
 fi

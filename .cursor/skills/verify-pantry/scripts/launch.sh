@@ -5,6 +5,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SKILL_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 ROOT=$(cd "$SKILL_DIR/../../.." && pwd)
+APP="$ROOT/apps/web"
 RUN_DIR="$SKILL_DIR/run"
 ENV_DIR="$SKILL_DIR/env"
 EXPECTED_URL="http://127.0.0.1:18080"
@@ -12,9 +13,9 @@ APP_URL="http://127.0.0.1:4173"
 
 mkdir -p "$RUN_DIR"
 
-cd "$ROOT"
+cd "$APP"
 
-LOCAL_ENV="$ROOT/.env.development.local"
+LOCAL_ENV="$APP/.env.development.local"
 MARKER="# pantry-verify-override"
 
 remove_local_env() {

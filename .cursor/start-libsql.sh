@@ -30,9 +30,9 @@ ensure_docker_daemon
 docker rm -f "${container_name}" >/dev/null 2>&1 || true
 
 docker build \
-  --file Dockerfile \
+  --file apps/web/Dockerfile \
   --tag "${image_tag}" \
-  .
+  apps/web
 
 docker run \
   --detach \
