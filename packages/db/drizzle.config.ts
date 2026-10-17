@@ -18,5 +18,5 @@ export default defineConfig({
   },
   dialect: "turso",
   out: "./drizzle",
-  schema: "./src/db/schema",
+  schema: "./src/schema",
 });

@@ -1,7 +1,7 @@
+import type { AppDb } from "@pantry/db";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { and, eq, isNull } from "drizzle-orm";
 
-import type { AppDb } from "../../../db/app-db";
-import { bookmarkTable } from "../../../db/schema/bookmark";
 import type {
   SetBookmarkFavoriteInput,
   SetBookmarkFavoriteOutput,

@@ -1,14 +1,14 @@
 import { createClient } from "@libsql/client";
+import type { AppDb } from "@pantry/db";
+import { user } from "@pantry/db/schema/auth-schema";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import type { AppDb } from "../../../db/app-db";
-import { user } from "../../../db/schema/auth-schema";
-import { bookmarkTable } from "../../../db/schema/bookmark";
-import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
-import { tagsTable } from "../../../db/schema/tag";
 import { userIdSchema } from "../../auth/domain/auth-values";
 import { decodeBookmarkListCursor } from "../lib/list/bookmark-list-cursor";
 import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/list/bookmark-list-page-size";

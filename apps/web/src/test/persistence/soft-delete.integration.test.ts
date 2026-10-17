@@ -1,8 +1,8 @@
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { bookmarkTable } from "../../db/schema/bookmark";
 import { userIdSchema } from "../../features/auth/domain/auth-values";
 import { getBookmarkDetail } from "../../features/bookmarks/persistence/get-bookmark-detail";
 import { listBookmarks } from "../../features/bookmarks/persistence/list-bookmarks";

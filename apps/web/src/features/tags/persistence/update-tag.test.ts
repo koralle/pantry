@@ -2,13 +2,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { createClient } from "@libsql/client";
+import { user } from "@pantry/db/schema/auth-schema";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { user } from "../../../db/schema/auth-schema";
-import { tagsTable } from "../../../db/schema/tag";
 import { userIdSchema } from "../../auth/domain/auth-values";
 import type { UpdateTagInput } from "../application/update-tag";
 import { tagIdSchema, tagNameSchema } from "../domain/tag-values";

@@ -1,7 +1,7 @@
+import * as schema from "@pantry/db/schema/auth-schema";
 import { eq } from "drizzle-orm";
 
 import { auth, db } from "../auth";
-import * as schema from "../src/db/schema/auth-schema";
 
 const EXIT_SUCCESS = 0;
 const EXIT_FAILURE = 1;

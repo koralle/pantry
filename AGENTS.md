@@ -22,14 +22,15 @@
   - `panda/` - Panda CSS の codegen 入力（globalCss・トークン定義。`panda.config.ts` から組み立てる。ADR-0002）
   - `src/` - アプリケーションコード
   - `src/features/` - Server Function と機能単位のUI・ロジック
-  - `src/db/` - Drizzle ORM のスキーマとTurso接続
+  - `src/db/` - Worker からのDB取得（`getDB` のみ。接続とスキーマは `packages/db`）
   - `public/` - 静的アセット
+- `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
 - `docs/` - 設計・方針ドキュメント
 - `.agents/` - エージェント向けルールとスキル
 
 ## 開発コマンド
 
-ルートのコマンドは `pnpm --filter @pantry/web` でアプリへ委譲する。
+ルートのコマンドはアプリ本体（`@pantry/web`）またはDB（`@pantry/db`）へ委譲する。
 
 | コマンド | 説明 |
 | --- | --- |
@@ -41,7 +42,10 @@
 | `pnpm run test:persistence` | Persistence Integration test（Testcontainers + 実 libSQL） |
 | `pnpm run typecheck` | ルート設定とアプリの型検査 |
 | `pnpm run cf-typegen` | Worker バインディングの型生成 |
-| `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用 |
+| `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用（`@pantry/db`） |
+| `pnpm run migrate:prod` | Turso本番DBへDrizzleマイグレーション適用（CI。`@pantry/db`） |
+| `pnpm run studio:dev` | Drizzle Studio を起動（`@pantry/db`） |
+| `pnpm run auth:generate` | Better Auth CLI の参照スキーマを `packages/db/.generated/` へ出力（差分を手で `src/schema/auth-schema.ts` へ移植） |
 | `pnpm run db:seed` | Turso開発DBへテスト／開発データを投入 |
 | `pnpm run check` | Ultracite（Oxlint + Oxfmt）の検査 |
 | `pnpm run fix` | Ultracite の自動修正 |

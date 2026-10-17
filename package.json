@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm --filter @pantry/web run build",
     "build-storybook": "pnpm --filter @pantry/web run build-storybook",
+    "auth:generate": "pnpm --filter @pantry/db run auth:generate",
     "cf-typegen": "pnpm --filter @pantry/web run cf-typegen",
     "check": "ultracite check --type-aware",
     "db:seed": "pnpm --filter @pantry/web run db:seed",
@@ -13,16 +14,16 @@
     "fix": "ultracite fix --type-aware --no-error-on-unmatched-pattern",
     "knip": "knip",
     "lint:markup": "markuplint \"**/*.{tsx,jsx}\"",
-    "migrate:dev": "pnpm --filter @pantry/web run migrate:dev",
-    "migrate:prod": "pnpm --filter @pantry/web run migrate:prod",
+    "migrate:dev": "pnpm --filter @pantry/db run migrate:dev",
+    "migrate:prod": "pnpm --filter @pantry/db run migrate:prod",
     "panda:codegen": "pnpm --filter @pantry/web run panda:codegen",
     "panda:mcp": "pnpm --filter @pantry/web run panda:mcp",
     "preview": "pnpm --filter @pantry/web run preview",
     "storybook": "pnpm --filter @pantry/web run storybook",
-    "studio:dev": "pnpm --filter @pantry/web run studio:dev",
-    "test": "pnpm --filter @pantry/web run test",
+    "studio:dev": "pnpm --filter @pantry/db run studio:dev",
+    "test": "pnpm -r run test",
     "test:persistence": "pnpm --filter @pantry/web run test:persistence",
-    "typecheck": "tsc && pnpm --filter @pantry/web run typecheck"
+    "typecheck": "tsc && pnpm -r run typecheck"
   },
   "devDependencies": {
     "@markuplint/jsx-parser": "catalog:lint",

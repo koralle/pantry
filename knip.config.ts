@@ -49,6 +49,15 @@ const config: KnipConfig = {
         "@fontsource/noto-sans-jp",
       ],
     },
+    "packages/db": {
+      vitest: {
+        config: "vitest.config.ts",
+      },
+      ignoreDependencies: [
+        // npm script の bin としてのみ使う（Better Auth CLI）
+        "auth",
+      ],
+    },
   },
 };
 
