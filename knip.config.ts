@@ -26,9 +26,6 @@ const config: KnipConfig = {
       ],
     },
     "apps/api": {
-      // Better Auth CLI（`auth generate --config ../../apps/api/auth.ts`）と
-      // Node スクリプト用の entry。Worker の entry は wrangler.jsonc の `main`。
-      entry: ["auth.ts"],
       vitest: {
         config: "vitest.config.ts",
       },
@@ -70,10 +67,6 @@ const config: KnipConfig = {
       vitest: {
         config: "vitest.config.ts",
       },
-      ignoreDependencies: [
-        // npm script の bin としてのみ使う（Better Auth CLI）
-        "auth",
-      ],
     },
     "packages/env": {
       // lefthook.yaml の post-checkout から `pnpm exec tsx` で呼ぶ。

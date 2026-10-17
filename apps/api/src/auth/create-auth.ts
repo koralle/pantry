@@ -1,13 +1,7 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { passkey } from "@better-auth/passkey";
 import type { AppDb } from "@pantry/db";
-import {
-  account,
-  passkey as passkeyTable,
-  session,
-  user,
-  verification,
-} from "@pantry/db/schema/auth-schema";
+import * as authSchema from "@pantry/db/schema/auth-schema";
 import { betterAuth } from "better-auth";
 import { admin } from "better-auth/plugins";
 
@@ -22,51 +16,26 @@ export interface CreateAuthOptions {
 /**
  * Pantry の正本となる Better Auth 構成。
  *
- * packages/db のテーブル名（複数形）に合わせて `modelName` を明示する。
- * drizzle adapter は schema を model 名で引くため、渡す schema のキーも複数形にする。
- * これで better-auth CLI が生成するテーブル名と
- * `packages/db/src/schema/auth-schema.ts` が一致する。
+ * テーブル定義は `packages/db/src/schema/auth-schema.ts` が持つ。drizzle adapter は
+ * model 名（`user` / `session` など）で schema を引くため、同名の export を持つ
+ * auth-schema をそのまま渡せば複数形のテーブル（`users` / `sessions` など）へ写る。
  */
 export const createAuth = ({ baseURL, db, secret }: CreateAuthOptions) =>
   betterAuth({
-    account: {
-      modelName: "accounts",
-    },
     baseURL,
     database: drizzleAdapter(db, {
       provider: "sqlite",
       schema: {
-        accounts: account,
-        passkeys: passkeyTable,
-        sessions: session,
-        users: user,
-        verifications: verification,
+        ...authSchema,
       },
     }),
     emailAndPassword: {
       enabled: true,
     },
-    plugins: [
-      admin(),
-      passkey({
-        ...passkeyPluginOptions(baseURL),
-        schema: {
-          passkey: {
-            modelName: "passkeys",
-          },
-        },
-      }),
-    ],
+    plugins: [admin(), passkey(passkeyPluginOptions(baseURL))],
     secret,
     session: {
       freshAge: 0,
-      modelName: "sessions",
-    },
-    user: {
-      modelName: "users",
-    },
-    verification: {
-      modelName: "verifications",
     },
   });
 

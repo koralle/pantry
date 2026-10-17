@@ -52,7 +52,6 @@
 | `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用（`@pantry/db`） |
 | `pnpm run migrate:prod` | Turso本番DBへDrizzleマイグレーション適用（CI。`@pantry/db`） |
 | `pnpm run studio:dev` | Drizzle Studio を起動（`@pantry/db`） |
-| `pnpm run auth:generate` | Better Auth CLI の参照スキーマを `packages/db/.generated/` へ出力（設定は `apps/api/auth.ts`。差分を手で `src/schema/auth-schema.ts` へ移植） |
 | `pnpm run db:seed` | Turso開発DBへテスト／開発データを投入 |
 | `pnpm run check` | Ultracite（Oxlint + Oxfmt）の検査 |
 | `pnpm run fix` | Ultracite の自動修正 |

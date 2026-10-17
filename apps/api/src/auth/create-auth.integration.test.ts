@@ -98,7 +98,7 @@ describe("createAuth", () => {
 
     expect(signUpResponse.status).toBe(200);
 
-    // better-auth の modelName が複数形になっている証拠として、実際のテーブルを読む。
+    // adapter が packages/db の複数形テーブルへ書き込んでいることを、実際のテーブルで確かめる。
     await expect(db.select().from(usersTable)).resolves.toMatchObject([
       { email: "koralle@example.com", name: "koralle" },
     ]);

@@ -20,7 +20,6 @@ catalogs:
   authentication:
     "@better-auth/drizzle-adapter": 1.6.27
     "@better-auth/passkey": 1.6.27
-    auth: 1.6.27
     better-auth: 1.6.27
   build:
     "@cloudflare/vite-plugin": 1.52.1
@@ -125,9 +124,6 @@ minimumReleaseAgeExclude:
 overrides:
   "@babel/core>semver": 7.8.0
   "@babel/helper-compilation-targets>semver": 7.8.0
-  # auth CLI が @babel/preset-typescript 経由で持ち込む。Babel は semver 7 の
-  # `lt` しか使わないため、既存の @babel/core と同じ 7.8.0 に固定する。
-  "@babel/helper-create-class-features-plugin>semver": 7.8.0
   "@tanstack/query-core": 5.100.11
   chokidar: 5.0.0
   kysely: 0.28.17

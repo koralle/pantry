@@ -8,7 +8,6 @@
     "./schema/*": "./src/schema/*.ts"
   },
   "scripts": {
-    "auth:generate": "varlock run --path ../../apps/web/ -- auth generate --config ../../apps/web/auth.ts --output .generated/auth-schema.ts --yes",
     "check:migrations": "tsx scripts/check-migrations.ts",
     "migrate:dev": "varlock run -- drizzle-kit migrate",
     "migrate:prod": "drizzle-kit migrate",
@@ -25,7 +24,6 @@
     "@tsconfig/strictest": "catalog:typescript",
     "@tursodatabase/database": "catalog:database",
     "@types/node": "catalog:runtime",
-    "auth": "catalog:authentication",
     "drizzle-kit": "catalog:database",
     "tsx": "catalog:script",
     "typescript": "catalog:typescript",

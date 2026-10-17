@@ -23,7 +23,7 @@
 ## 3. システム構成
 
 - UI/SSR: TanStack Start（`apps/web/src/routes/`、`apps/web/src/router.tsx`）
-- API Worker: Hono + oRPC（`apps/api/src/app.ts`）。contract（`packages/api-contract`）の `/rpc/*` と Better Auth の `/api/auth/*` を提供し、Cloudflare Worker `pantry-api` としてデプロイする。Better Auth の正本構成は `apps/api/src/auth/create-auth.ts`（テーブル名は`packages/db`の複数形に合わせる）。Worker は公開URLを持たず、PR 3 で web から Service Binding を張る。
+- API Worker: Hono + oRPC（`apps/api/src/app.ts`）。contract（`packages/api-contract`）の `/rpc/*` と Better Auth の `/api/auth/*` を提供し、Cloudflare Worker `pantry-api` としてデプロイする。Better Auth の正本構成は `apps/api/src/auth/create-auth.ts`（テーブルは`packages/db`の auth-schema をそのまま使う）。Worker は公開URLを持たず、PR 3 で web から Service Binding を張る。
 - API境界: oRPC procedure（`apps/web/src/rpc/contract/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
 - 移行期（PR 2 時点）: ブラウザは引き続き web の`/api/rpc`と web 自身の Better Auth（`apps/web/auth.ts`）へ接続する。web の`/rpc/*`と`/api/auth/*`を`pantry-api`へ委譲するのは PR 3。両者は同じテーブルと`BETTER_AUTH_SECRET`を共有するため、Cookie セッションは互換。
 - RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`apps/web/src/rpc/client/client.ts`、`apps/web/src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
