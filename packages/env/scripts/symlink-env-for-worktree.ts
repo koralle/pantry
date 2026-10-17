@@ -1,6 +1,6 @@
 import { exec } from "node:child_process";
 import { createHash } from "node:crypto";
-import { access, symlink, writeFile } from "node:fs/promises";
+import { access, readdir, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
 
@@ -83,6 +83,39 @@ const warnMissingSource = async (
   console.warn(`Source ${source} not found. Skipping ${file}.`);
 };
 
+/**
+ * Values files that used to live in apps/web. Varlock still reads a
+ * consumer-level `.env` (it outranks packages/env/), and the old generated
+ * `.env.development.local` can point at another libSQL port, so leftovers make
+ * the worktree silently diverge from packages/env/.
+ */
+const isLegacyWorktreeEnvFile = (name: string): boolean =>
+  name === ".env" || name.startsWith(".env.development");
+
+const warnLegacyWorktreeEnvFiles = async (
+  worktreeRoot: string
+): Promise<void> => {
+  const legacyDir = resolve(worktreeRoot, LEGACY_ENV_DIR);
+  let names: string[];
+  try {
+    names = await readdir(legacyDir);
+  } catch {
+    return;
+  }
+
+  // readdir also lists dangling symlinks, which `access` would miss.
+  const leftovers = names.filter(isLegacyWorktreeEnvFile).toSorted();
+  if (leftovers.length === 0) {
+    return;
+  }
+
+  console.warn(
+    `Legacy env files remain in ${legacyDir}: ${leftovers.join(", ")}.\n` +
+      "Values now live in packages/env/ and these files can override them (or point at another libSQL port). " +
+      "Delete them from this worktree (see packages/env/README.md)."
+  );
+};
+
 const symlinkSharedEnvFiles = async (mainRepoRoot: string): Promise<void> => {
   for (const file of ENV_FILES) {
     const source = resolve(mainRepoRoot, "packages/env", file);
@@ -129,6 +162,7 @@ const main = async (): Promise<void> => {
 
   await symlinkSharedEnvFiles(mainRepoRoot);
   await writeLocalEnvFile(worktreeRoot);
+  await warnLegacyWorktreeEnvFiles(worktreeRoot);
 };
 
 try {
