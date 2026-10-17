@@ -569,6 +569,9 @@ importers:
       drizzle-kit:
         specifier: catalog:database
         version: 1.0.0-rc.5-ab785fc
+      tsx:
+        specifier: catalog:script
+        version: 4.23.12
       typescript:
         specifier: catalog:typescript
         version: 7.0.2

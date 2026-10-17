@@ -9,6 +9,7 @@
   },
   "scripts": {
     "auth:generate": "varlock run --path ../../apps/web/ -- auth generate --config ../../apps/web/auth.ts --output .generated/auth-schema.ts --yes",
+    "check:migrations": "tsx scripts/check-migrations.ts",
     "migrate:dev": "varlock run --path ../../apps/web/ -- drizzle-kit migrate",
     "migrate:prod": "drizzle-kit migrate",
     "studio:dev": "varlock run --path ../../apps/web/ -- drizzle-kit studio",
@@ -26,6 +27,7 @@
     "@types/node": "catalog:runtime",
     "auth": "catalog:authentication",
     "drizzle-kit": "catalog:database",
+    "tsx": "catalog:script",
     "typescript": "catalog:typescript",
     "varlock": "catalog:envvars",
     "vitest": "catalog:test"
