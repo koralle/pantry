@@ -1,6 +1,6 @@
 # @pantry/api-contract
 
-Pantry API の oRPC contract（contract-first）。procedure の input / output / 型付きエラーだけを持ち、実装は `apps/api` が担当する。ブラウザ側の client（`apps/web`）は PR 3 以降でこの contract を型として使う。
+Pantry API の oRPC contract（contract-first）。procedure の input / output / 型付きエラーだけを持ち、実装は `apps/api` が担当する。client（`apps/web/src/api/`）はこの contract から `ContractRouterClient` を導出して使う。
 
 ビルドは行わず、`packages/db` と同じく TypeScript のソースをそのまま公開する。`composite` / project references は有効にしていない。消費側は workspace link 越しに bundler resolution で `.ts` を解決する（`vite` のビルドも `tsc --noEmit` もこの前提で動く）。
 

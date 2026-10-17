@@ -24,6 +24,8 @@
 - `apps/web/` - アプリケーション本体（TanStack Start + Cloudflare Workers）。以下の項目はすべて配下。
   - `panda/` - Panda CSS の codegen 入力（globalCss・トークン定義。`panda.config.ts` から組み立てる。ADR-0002）
   - `src/` - アプリケーションコード
+  - `src/server.ts` - Worker entry。`/rpc/*` と `/api/auth/*` を Service Binding（`env.API`）で `pantry-api` へ転送し、それ以外を TanStack Start へ渡す
+  - `src/api/` - `pantry-api` の oRPC client（ブラウザ用 `client.ts`、SSR 用 `client.server.ts`）
   - `src/features/` - Server Function と機能単位のUI・ロジック
   - `src/db/` - Worker からのDB取得（`getDB` のみ。接続とスキーマは `packages/db`）
   - `public/` - 静的アセット
@@ -39,7 +41,7 @@
 
 | コマンド | 説明 |
 | --- | --- |
-| `pnpm run dev` | 開発サーバー起動（Vite + workerd。`@pantry/web`） |
+| `pnpm run dev` | 開発サーバー起動（Vite + workerd。`@pantry/web`。`pantry-api` も auxiliary worker として同時に起動する） |
 | `pnpm run dev:api` | API Worker の開発サーバー起動（`@pantry/api`、`http://localhost:8787`） |
 | `pnpm run build` | プロダクションビルド（全アプリ） |
 | `pnpm run preview` | ビルド成果物を preview（`@pantry/web`） |

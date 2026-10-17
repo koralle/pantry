@@ -54,16 +54,13 @@ procedure の追加は `packages/api-contract/src/contract.ts` と `src/rpc/rout
 - `workers` project（`src/**/*.test.ts`）: `@cloudflare/vitest-plugin` で workerd 上で実行。`createApp` に stub を差し込み、oRPC client / Hono の `app.request` でルートを検証する。
 - `node` project（`src/**/*.integration.test.ts`）: 実 libSQL（`file::memory:?cache=shared`）+ `@pantry/db/migrations` で本物の `createAuth` を組み立て、Cookie セッションが通ることを検証する。
 
-## 現状の位置づけ（PR 3 まで）
+## web からの経路
 
-この PR ではブラウザの通信経路は変わらない。`apps/web` は引き続き
+ブラウザはこの Worker に直接到達しない（`workers_dev: false`）。`apps/web` の Worker entry（`apps/web/src/server.ts`）が `/rpc/*` と `/api/auth/*` を受け、元の Request をそのまま Service Binding（`env.API`）でこの Worker へ渡す。Cookie・Origin・`Set-Cookie` はそのまま往復するので、`BETTER_AUTH_URL` は web の公開 URL と一致させる（パスキーの rpID / origin もここから導く）。
 
-- 自身の `/api/rpc`（`apps/web/src/rpc/`）
-- 自身がホストする Better Auth（`apps/web/auth.ts` / `src/features/auth/server/get-auth.server.ts`）
+web の SSR / server function は `apps/web/src/api/client.server.ts` の oRPC client（fetch は `env.API.fetch`、受けたリクエストの Cookie を転送）で `me` を呼び、session を得る。web は Better Auth の server instance を持たない。web の既存機能（ブックマーク・タグなど）は移行中で、当面は web 自身の `/api/rpc` と DB の直接読み書きで動く。
 
-で動く。両者は同じ `packages/db` のテーブルと `BETTER_AUTH_SECRET` を共有するため、Cookie セッションは互いに互換（web でサインインしたセッションを api が読める）。
-
-PR 3 で `apps/web` の `/rpc/*` と `/api/auth/*` を Service Binding 経由でこの Worker へプロキシし、web 側の Better Auth と `/api/rpc` は撤去する。`apps/api/src/auth/passkey-plugin-options.ts` は PR 3 まで web 側と同じ内容を二重に持つ。
+`pnpm run dev`（web）は `@cloudflare/vite-plugin` の `auxiliaryWorkers` でこの Worker も同時に起動し、本物の `env.API` binding で繋ぐ。単体で確認するときは `pnpm run dev:api` を使う。
 
 ## 今後の認証（Bearer / OAuth）
 
