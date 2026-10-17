@@ -15,7 +15,7 @@ mkdir -p "$RUN_DIR"
 
 cd "$APP"
 
-LOCAL_ENV="$APP/.env.development.local"
+LOCAL_ENV="$APP/.env.local"
 MARKER="# pantry-verify-override"
 
 remove_local_env() {

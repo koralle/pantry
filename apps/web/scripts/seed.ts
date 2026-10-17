@@ -676,7 +676,37 @@ const latestUsedAt = (
   return usedAt.length === 0 ? null : new Date(Math.max(...usedAt));
 };
 
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
+
+/**
+ * `reset` deletes every row, so refuse to run when the local libSQL settings
+ * disagree: TURSO_PORT (the port the worktree's container listens on) and the
+ * port in TURSO_CONNECTION_URL must match. A mismatch usually means a stale
+ * override (e.g. a leftover apps/web/.env.development.local) points the seed at
+ * another worktree's database. Remote URLs are not checked.
+ */
+const assertLocalPortsAgree = (): void => {
+  const rawUrl = process.env.TURSO_CONNECTION_URL;
+  const port = process.env["TURSO_PORT"];
+  if (rawUrl === undefined || rawUrl === "" || port === undefined) {
+    return;
+  }
+
+  const url = new URL(rawUrl);
+  if (!LOOPBACK_HOSTS.has(url.hostname)) {
+    return;
+  }
+
+  if (url.port !== port) {
+    throw new Error(
+      `TURSO_PORT (${port}) と TURSO_CONNECTION_URL のポート (${url.port || "なし"}) が一致しません。` +
+        "別の worktree の DB を reset しないよう中止します。packages/env/ と消費側の .env* を確認してください"
+    );
+  }
+};
+
 const main = async (): Promise<void> => {
+  assertLocalPortsAgree();
   assertSeedInvariants();
 
   console.log("Resetting database...");

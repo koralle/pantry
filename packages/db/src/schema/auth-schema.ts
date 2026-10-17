@@ -4,7 +4,7 @@ import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 export const user = sqliteTable("users", {
   banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
   banReason: text("ban_reason"),
-  banned: integer("banned"),
+  banned: integer("banned", { mode: "boolean" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
@@ -18,7 +18,7 @@ export const user = sqliteTable("users", {
   role: text("role"),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
 
@@ -36,7 +36,7 @@ export const session = sqliteTable(
     ipAddress: text("ip_address"),
     token: text("token").notNull().unique(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     userAgent: text("user_agent"),
     userId: text("user_id")
@@ -69,7 +69,7 @@ export const account = sqliteTable(
     }),
     scope: text("scope"),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     userId: text("user_id")
       .notNull()
@@ -91,7 +91,7 @@ export const verification = sqliteTable(
     identifier: text("identifier").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     value: text("value").notNull(),
   },

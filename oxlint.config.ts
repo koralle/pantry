@@ -9,12 +9,11 @@ export default defineConfig({
     ...(core.ignorePatterns ?? []),
     ".agents/skills/**",
     ".pnpmfile.cjs",
+    "apps/api/worker-configuration.d.ts",
     "apps/web/postcss.config.cjs",
     "apps/web/src/routeTree.gen.ts",
     "apps/web/vitest/tanstack-entry-stub.ts",
     "apps/web/worker-configuration.d.ts",
-    "packages/db/.generated/**",
-    "packages/db/src/schema/auth-schema.ts",
   ],
   overrides: [
     {
@@ -75,6 +74,7 @@ export default defineConfig({
         "apps/web/src/test/**/*.ts",
         "apps/web/src/test/**/*.tsx",
         "apps/web/scripts/**/*.ts",
+        "packages/env/scripts/**/*.ts",
       ],
       rules: {
         "func-style": "off",

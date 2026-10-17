@@ -25,6 +25,15 @@ const config: KnipConfig = {
         "@markuplint/react-spec",
       ],
     },
+    "apps/api": {
+      vitest: {
+        config: "vitest.config.ts",
+      },
+      ignoreDependencies: [
+        // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
+        "cloudflare",
+      ],
+    },
     "apps/web": {
       // Maintenance scripts and the Node-only Better Auth entry they import.
       // The tanstack-entry stub is an alias target loaded by the Vitest bundler
@@ -49,13 +58,23 @@ const config: KnipConfig = {
         "@fontsource/noto-sans-jp",
       ],
     },
+    "packages/api-contract": {
+      vitest: {
+        config: "vitest.config.ts",
+      },
+    },
     "packages/db": {
       vitest: {
         config: "vitest.config.ts",
       },
+    },
+    "packages/env": {
+      // lefthook.yaml の post-checkout から `pnpm exec tsx` で呼ぶ。
+      // lefthook の解析を切っているため entry として明示する。
+      entry: ["scripts/symlink-env-for-worktree.ts"],
       ignoreDependencies: [
-        // npm script の bin としてのみ使う（Better Auth CLI）
-        "auth",
+        // lefthook から `pnpm exec tsx` で実行する script runner
+        "tsx",
       ],
     },
   },

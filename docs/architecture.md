@@ -23,13 +23,15 @@
 ## 3. システム構成
 
 - UI/SSR: TanStack Start（`apps/web/src/routes/`、`apps/web/src/router.tsx`）
+- API Worker: Hono + oRPC（`apps/api/src/app.ts`）。contract（`packages/api-contract`）の `/rpc/*` と Better Auth の `/api/auth/*` を提供し、Cloudflare Worker `pantry-api` としてデプロイする。Better Auth の正本構成は `apps/api/src/auth/create-auth.ts`（テーブルは`packages/db`の auth-schema をそのまま使う）。Worker は公開URLを持たず、PR 3 で web から Service Binding を張る。
 - API境界: oRPC procedure（`apps/web/src/rpc/contract/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
+- 移行期（PR 2 時点）: ブラウザは引き続き web の`/api/rpc`と web 自身の Better Auth（`apps/web/auth.ts`）へ接続する。web の`/rpc/*`と`/api/auth/*`を`pantry-api`へ委譲するのは PR 3。両者は同じテーブルと`BETTER_AUTH_SECRET`を共有するため、Cookie セッションは互換。
 - RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`apps/web/src/rpc/client/client.ts`、`apps/web/src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
 - 認証: Better AuthのCookieセッション。procedureは`getSession(headers)`で検証する。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。スキーマ・マイグレーション・接続ファクトリ（`createDb`）は`packages/db`（`@pantry/db`）に置き、server実装はclient bundleに混ざらない。
 - Worker環境変数: `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
-- 環境変数管理: Varlockの`apps/web/.env.schema`を正本として検証し、`apps/web/.env.development`から読み込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。`packages/db`のスクリプトは`varlock run --path ../../apps/web/`で同じ`.env`を読む。
-- ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`apps/web/scripts/symlink-env-for-worktree.ts`が`apps/web/.env.development.local`へ生成する。
+- 環境変数管理: Varlockの`packages/env/.env.schema`を正本とし、関心ごとのスキーマ（`schemas/.env.db`、`schemas/.env.auth`、`schemas/.env.local-libsql`）を`@import`で束ねる。値は`packages/env/.env.development`に置き、`apps/web`と`packages/db`は自前の`.env.schema`から必要なキーだけを`pick=[...]`で取り込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。
+- ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`packages/env/scripts/symlink-env-for-worktree.ts`が`packages/env/.env.development.local`へ生成する。
 - DBマイグレーション: `packages/db`のDrizzle生成物をTursoへ適用する。D1 bindingは使わない。
 
 ## 4. データアクセス境界（oRPC）
