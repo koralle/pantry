@@ -144,9 +144,17 @@ stop_vite() {
 }
 trap stop_vite INT TERM
 
+# Ready only when the web page renders and the pantry-api auxiliary worker answers
+# /rpc/health through the web origin (Service Binding forwarding).
+api_healthy() {
+  curl -sf -X POST "$APP_URL/rpc/health" \
+    -H 'content-type: application/json' -d '{}' | grep -q '"status":"ok"'
+}
+
 for _ in $(seq 1 90); do
   if grep -q "Local:   http://127.0.0.1:4173/" "$RUN_DIR/vite.log" &&
-    curl -sf "$APP_URL/sign-in" | grep -q "Pantry"; then
+    curl -sf "$APP_URL/sign-in" | grep -q "Pantry" &&
+    api_healthy; then
     echo "ready $APP_URL"
     wait "$vite_pid"
     exit 0
