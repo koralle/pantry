@@ -1,6 +1,9 @@
 /**
  * マイグレーションが schema.ts から drizzle-kit で生成されたものだけかを検査する。
  *
+ * 0. 検査対象のフォルダが、drizzle.config.ts の `out`（drizzle-kit の生成・適用先）
+ *    と `@pantry/db/migrations`（migrator の適用先）の両方と一致する。`out` を
+ *    別のフォルダへ向けて検査と CI の変更禁止を迂回させない
  * 1. 各マイグレーションフォルダに migration.sql と snapshot.json が揃っている
  * 2. snapshot の prevIds が直前のマイグレーションへ連なっている
  * 3. migration.sql が「直前の snapshot → 当該 snapshot」から drizzle-kit が
@@ -15,6 +18,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { generateMigration } from "drizzle-kit/payload/sqlite";
+
+import { migrationsFolder } from "../src/migrations";
 
 type SqliteSnapshot = Parameters<typeof generateMigration>[0];
 
@@ -155,6 +160,42 @@ const envOrPlaceholder = (key: string, placeholder: string): string => {
   return value === undefined || value === "" ? placeholder : value;
 };
 
+/**
+ * drizzle.config.ts の `out` と migrator のフォルダが、検査しているフォルダと同じか。
+ * drizzle.config.ts は import 時に接続情報を必須にするので、無ければ
+ * プレースホルダを入れてから読む（generate と同じく DB には接続しない）。
+ */
+const checkMigrationsDir = async (): Promise<string[]> => {
+  process.env["TURSO_AUTH_TOKEN"] = envOrPlaceholder(
+    "TURSO_AUTH_TOKEN",
+    "unused"
+  );
+  process.env["TURSO_CONNECTION_URL"] = envOrPlaceholder(
+    "TURSO_CONNECTION_URL",
+    "http://127.0.0.1:8080"
+  );
+  const { default: config } = await import("../drizzle.config");
+  const expected = path.relative(PACKAGE_DIR, MIGRATIONS_DIR);
+  const errors: string[] = [];
+
+  if (
+    config.out === undefined ||
+    path.resolve(PACKAGE_DIR, config.out) !== MIGRATIONS_DIR
+  ) {
+    errors.push(
+      `drizzle.config.ts の out（${config.out ?? "未設定"}）が検査対象の ${expected}/ と違います。マイグレーションの置き場所は変えないでください`
+    );
+  }
+
+  if (path.resolve(migrationsFolder) !== MIGRATIONS_DIR) {
+    errors.push(
+      `@pantry/db/migrations の migrationsFolder（${migrationsFolder}）が検査対象の ${expected}/ と違います`
+    );
+  }
+
+  return errors;
+};
+
 /** `drizzle-kit generate --explain` はファイルを書かずに、生成されるはずの statement を返す。 */
 const checkSchemaDrift = (): string[] => {
   const result = spawnSync(
@@ -208,11 +249,12 @@ const checkSchemaDrift = (): string[] => {
 };
 
 const main = async (): Promise<void> => {
+  const dirErrors = await checkMigrationsDir();
   const folders = listMigrationFolders();
   const missingFiles = checkFilesExist(folders);
   const errors =
-    missingFiles.length > 0
-      ? missingFiles
+    dirErrors.length > 0 || missingFiles.length > 0
+      ? [...dirErrors, ...missingFiles]
       : [...(await checkCommittedMigrations(folders)), ...checkSchemaDrift()];
 
   if (errors.length > 0) {
