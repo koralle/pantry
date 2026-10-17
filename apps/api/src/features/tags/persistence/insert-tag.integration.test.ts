@@ -10,7 +10,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
+import { userIdSchema } from "../../../domain/user-id";
 import type { InsertTagInput } from "../application/create-tag";
 import { insertTag } from "./insert-tag";
 

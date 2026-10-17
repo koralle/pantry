@@ -1,9 +1,10 @@
+import { deleteTagInputSchema } from "@pantry/api-contract/schemas/tag-procedures";
 import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import { deleteTagInputSchema, executeDeleteTag } from "./delete-tag";
+import { userIdSchema } from "../../../domain/user-id";
+import { executeDeleteTag } from "./delete-tag";
 import type { DeleteTag, DeleteTagInput, DeleteTagOutput } from "./delete-tag";
 
 function parseUserId(value: string) {
