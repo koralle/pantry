@@ -34,10 +34,11 @@ if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
 fi
 
 cd "$APP"
-local_env="$APP/.env.local"
-if [[ -f "$local_env" ]] && grep -q "# pantry-verify-override" "$local_env"; then
-  rm -f "$local_env"
-fi
+for local_env in "$APP/.env.local" "$ROOT/apps/api/.env.local"; do
+  if [[ -f "$local_env" ]] && grep -q "# pantry-verify-override" "$local_env"; then
+    rm -f "$local_env"
+  fi
+done
 
 export TURSO_PROJECT=pantry-verify
 export TURSO_PORT=18080

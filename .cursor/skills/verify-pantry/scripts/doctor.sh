@@ -13,17 +13,24 @@ APP_URL="http://127.0.0.1:4173"
 
 cd "$APP"
 
-if [[ ! -f .env.local ]] || ! grep -q "# pantry-verify-override" .env.local; then
-  echo "doctor fail: verification env override is missing" >&2
-  exit 1
-fi
+for local_env in .env.local ../api/.env.local; do
+  if [[ ! -f "$local_env" ]] || ! grep -q "# pantry-verify-override" "$local_env"; then
+    echo "doctor fail: verification env override $local_env is missing" >&2
+    exit 1
+  fi
+done
 
 resolved=$(
   ./node_modules/.bin/varlock run -- \
-    node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
+    node -e 'process.stdout.write(process.env.TURSO_CONNECTION_URL ?? "")'
 )
-if [[ "$resolved" != "$EXPECTED_URL $APP_URL" ]]; then
-  echo "doctor fail: resolved '$resolved'" >&2
+api_resolved=$(
+  cd ../api &&
+    ./node_modules/.bin/varlock run -- \
+      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
+)
+if [[ "$resolved" != "$EXPECTED_URL" || "$api_resolved" != "$EXPECTED_URL $APP_URL" ]]; then
+  echo "doctor fail: web resolved '$resolved', api resolved '$api_resolved'" >&2
   exit 1
 fi
 
