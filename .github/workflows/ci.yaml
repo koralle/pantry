@@ -12,6 +12,10 @@ permissions:
   contents: read
 
 # 同じ PR の古い実行は取り消す（push や edited が続いたときに最新の内容だけを検査する）。
+#
+# 注意: title / body だけの edited を job レベルの `if:` で skip しないこと。
+# cancel-in-progress が有効なので、push 直後の本物の実行が edited の実行に取り消され、
+# 同じ commit の必須チェックが skipped（= 成功扱い）だけになって、失敗を隠しうる。
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -79,8 +83,17 @@ jobs:
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        # PR 自身がスクリプトを書き換えて検査を無効にできないよう、base にあれば base の版を使う。
+        # base にまだ無いとき（このスクリプトを追加する PR 自身など）だけ PR の版を使う。
         run: |
-          .github/scripts/forbid-existing-migration-changes.sh "$BASE_SHA"
+          script=.github/scripts/forbid-existing-migration-changes.sh
+          if git cat-file -e "$BASE_SHA:$script" 2>/dev/null; then
+            echo "base（$BASE_SHA）の $script で検査します"
+            git show "$BASE_SHA:$script" | bash -s -- "$BASE_SHA"
+          else
+            echo "::notice::base に $script が無いため、PR の版で検査します"
+            bash "$script" "$BASE_SHA"
+          fi
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
