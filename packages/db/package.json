@@ -10,9 +10,9 @@
   "scripts": {
     "auth:generate": "varlock run --path ../../apps/web/ -- auth generate --config ../../apps/web/auth.ts --output .generated/auth-schema.ts --yes",
     "check:migrations": "tsx scripts/check-migrations.ts",
-    "migrate:dev": "varlock run --path ../../apps/web/ -- drizzle-kit migrate",
+    "migrate:dev": "varlock run -- drizzle-kit migrate",
     "migrate:prod": "drizzle-kit migrate",
-    "studio:dev": "varlock run --path ../../apps/web/ -- drizzle-kit studio",
+    "studio:dev": "varlock run -- drizzle-kit studio",
     "test": "vitest run",
     "typecheck": "tsc"
   },

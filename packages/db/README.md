@@ -27,13 +27,15 @@ barrel file を避けるため `@pantry/db/schema` というまとめエクス�
 
 ## 環境変数
 
-env ファイル（`.env.schema`、`.env.development`、`.env.development.local`）は `apps/web` に置く。正本を1箇所に保つため、`packages/db` は独自の `.env.schema` を持たない。`migrate:dev` / `studio:dev` / `auth:generate` は varlock の `--path` で `apps/web` を指す。
+env ファイル（`.env.schema`、`.env.development`、`.env.development.local`）は `packages/env` に置く。`packages/db/.env.schema` は `@import(../env/, pick=[APP_ENV, TURSO_*])` で libSQL 接続に必要なキーだけを取り込み、`migrate:dev` / `studio:dev` は varlock 経由で実行する。
 
 ```json
-"migrate:dev": "varlock run --path ../../apps/web/ -- drizzle-kit migrate"
+"migrate:dev": "varlock run -- drizzle-kit migrate"
 ```
 
-`.env.development.local` は worktree ごとに `apps/web/scripts/symlink-env-for-worktree.ts` が生成する。`migrate:prod` は varlock を通さず、CI が渡す `TURSO_CONNECTION_URL` / `TURSO_AUTH_TOKEN` をそのまま読む。
+`.env.development.local` は worktree ごとに `packages/env/scripts/symlink-env-for-worktree.ts` が生成する。`migrate:prod` は varlock を通さず、CI が渡す `TURSO_CONNECTION_URL` / `TURSO_AUTH_TOKEN` をそのまま読む。
+
+`auth:generate` は Better Auth CLI が `apps/web/auth.ts` を読むため、引き続き `varlock run --path ../../apps/web/` を指す（移行は別フェーズ）。
 
 ## auth-schema の再生成
 

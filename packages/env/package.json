@@ -1,0 +1,14 @@
+{
+  "name": "@pantry/env",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "catalog:typescript",
+    "@types/node": "catalog:runtime",
+    "tsx": "catalog:script",
+    "typescript": "catalog:typescript"
+  }
+}

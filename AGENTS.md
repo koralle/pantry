@@ -25,6 +25,7 @@
   - `src/db/` - Worker からのDB取得（`getDB` のみ。接続とスキーマは `packages/db`）
   - `public/` - 静的アセット
 - `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
+- `packages/env/` - `@pantry/env`。Varlock の env スキーマを関心ごとに分割して管理し、値ファイルと worktree 用スクリプトを置く
 - `docs/` - 設計・方針ドキュメント
 - `.agents/` - エージェント向けルールとスキル
 

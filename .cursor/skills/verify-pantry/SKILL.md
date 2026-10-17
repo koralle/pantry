@@ -7,7 +7,7 @@ description: Drive the Pantry bookmark manager in a browser against an isolated 
 
 Pantry is a signed-in web app (TanStack Start on Vite, port 4173 for verification). The user-facing surface is the browser. Storybook on port 6006 is a separate surface and is not this skill.
 
-The development database in `apps/web/.env.development` is `http://127.0.0.1:8080`. Never migrate, seed, or drive that instance. `apps/web/scripts/seed.ts` calls `drizzle-seed` `reset` and deletes every row in the database it connects to.
+The development database in `packages/env/.env.development` is `http://127.0.0.1:8080`. Never migrate, seed, or drive that instance. `apps/web/scripts/seed.ts` calls `drizzle-seed` `reset` and deletes every row in the database it connects to.
 
 ## Launch
 
@@ -17,7 +17,7 @@ From the repo root, start it in a session that stays open. The script prints `re
 .cursor/skills/verify-pantry/scripts/launch.sh
 ```
 
-The Vite plugin reads `apps/web/.env.development` itself. `varlock run -p` does not change that, so `launch.sh` writes a temporary `apps/web/.env.development.local` marked `pantry-verify-override` and `cleanup.sh` deletes that file. Launch refuses if that file already exists, or if something is listening on port 3000, because a running `pnpm dev` could reload the override and leave the development database.
+The Vite plugin loads `apps/web/.env.schema` itself. `varlock run -p` does not change that, so `launch.sh` writes a temporary `apps/web/.env.local` marked `pantry-verify-override` and `cleanup.sh` deletes that file. A consumer-level `.env.local` outranks the values imported from `packages/env/`. Launch refuses if that file already exists, or if something is listening on port 3000, because a running `pnpm dev` could reload the override and leave the development database.
 
 1. Starts Compose project `pantry-verify` (container `pantry-verify-turso`, host port 18080, tmpfs data dir).
 2. Waits until `curl -sf http://127.0.0.1:18080/health` succeeds.
