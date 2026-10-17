@@ -18,12 +18,16 @@
 
 ## ディレクトリ構造
 
+- `apps/api/` - API Worker（Hono + oRPC）。Cloudflare Worker `pantry-api` としてデプロイし、`/rpc/*` と `/api/auth/*` を提供する。contract は `packages/api-contract`。
+  - `src/` - `createApp`（Hono）/ oRPC router / Better Auth 構成
+  - `src/auth/` - Better Auth の正本構成（`create-auth.ts`）と認証 port（`session.ts`）
 - `apps/web/` - アプリケーション本体（TanStack Start + Cloudflare Workers）。以下の項目はすべて配下。
   - `panda/` - Panda CSS の codegen 入力（globalCss・トークン定義。`panda.config.ts` から組み立てる。ADR-0002）
   - `src/` - アプリケーションコード
   - `src/features/` - Server Function と機能単位のUI・ロジック
   - `src/db/` - Worker からのDB取得（`getDB` のみ。接続とスキーマは `packages/db`）
   - `public/` - 静的アセット
+- `packages/api-contract/` - `@pantry/api-contract`。oRPC の contract（procedure の input / output / 型付きエラー）だけを持ち、実装は `apps/api` が持つ
 - `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
 - `packages/env/` - `@pantry/env`。Varlock の env スキーマを関心ごとに分割して管理し、値ファイルと worktree 用スクリプトを置く
 - `docs/` - 設計・方針ドキュメント
@@ -35,18 +39,20 @@
 
 | コマンド | 説明 |
 | --- | --- |
-| `pnpm run dev` | 開発サーバー起動（Vite + workerd） |
-| `pnpm run build` | プロダクションビルド |
-| `pnpm run preview` | ビルド成果物を preview |
-| `pnpm run deploy` | Cloudflare Workers にデプロイ |
+| `pnpm run dev` | 開発サーバー起動（Vite + workerd。`@pantry/web`） |
+| `pnpm run dev:api` | API Worker の開発サーバー起動（`@pantry/api`、`http://localhost:8787`） |
+| `pnpm run build` | プロダクションビルド（全アプリ） |
+| `pnpm run preview` | ビルド成果物を preview（`@pantry/web`） |
+| `pnpm run deploy` | Cloudflare Workers にデプロイ（`@pantry/web`） |
+| `pnpm run deploy:api` | API Worker（`pantry-api`）にデプロイ（`@pantry/api`） |
 | `pnpm run test` | テスト実行（Vitest。Docker 不要） |
 | `pnpm run test:persistence` | Persistence Integration test（Testcontainers + 実 libSQL） |
 | `pnpm run typecheck` | ルート設定とアプリの型検査 |
-| `pnpm run cf-typegen` | Worker バインディングの型生成 |
+| `pnpm run cf-typegen` | Worker バインディングの型生成（全アプリ。`worker-configuration.d.ts`） |
 | `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用（`@pantry/db`） |
 | `pnpm run migrate:prod` | Turso本番DBへDrizzleマイグレーション適用（CI。`@pantry/db`） |
 | `pnpm run studio:dev` | Drizzle Studio を起動（`@pantry/db`） |
-| `pnpm run auth:generate` | Better Auth CLI の参照スキーマを `packages/db/.generated/` へ出力（差分を手で `src/schema/auth-schema.ts` へ移植） |
+| `pnpm run auth:generate` | Better Auth CLI の参照スキーマを `packages/db/.generated/` へ出力（設定は `apps/api/auth.ts`。差分を手で `src/schema/auth-schema.ts` へ移植） |
 | `pnpm run db:seed` | Turso開発DBへテスト／開発データを投入 |
 | `pnpm run check` | Ultracite（Oxlint + Oxfmt）の検査 |
 | `pnpm run fix` | Ultracite の自動修正 |
