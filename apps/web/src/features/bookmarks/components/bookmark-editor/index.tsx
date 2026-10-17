@@ -1,7 +1,7 @@
+import type { BookmarkUrl } from "@pantry/api-contract/schemas/bookmark-values";
 import type React from "react";
 import { useState } from "react";
 
-import type { BookmarkUrl } from "../../domain/bookmark-values";
 import type { UpdateBookmarkFailureCode } from "../../lib/errors/update-bookmark-failure";
 import type { CreateTagFromPickerAction } from "../../lib/tag-picker/execute-create-tag-from-picker";
 import type { TagCandidate } from "../bookmark-tag-picker";

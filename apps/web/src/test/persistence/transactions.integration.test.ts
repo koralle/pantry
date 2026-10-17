@@ -1,18 +1,18 @@
+import {
+  bookmarkIdSchema,
+  bookmarkNoteSchema,
+  bookmarkTitleSchema,
+  bookmarkUrlSchema,
+} from "@pantry/api-contract/schemas/bookmark-values";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { eq, sql } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import {
-  bookmarkIdSchema,
-  bookmarkNoteSchema,
-  bookmarkTitleSchema,
-  bookmarkUrlSchema,
-} from "../../features/bookmarks/domain/bookmark-values";
 import { insertBookmark } from "../../features/bookmarks/persistence/insert-bookmark";
 import { updateBookmark } from "../../features/bookmarks/persistence/update-bookmark";
-import { tagIdSchema } from "../../features/tags/domain/tag-values";
 import {
   bookmarkId,
   seedBookmark,

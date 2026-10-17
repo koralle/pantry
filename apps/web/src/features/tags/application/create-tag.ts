@@ -1,10 +1,10 @@
+import { tagNameSchema } from "@pantry/api-contract/schemas/tag-values";
+import type { TagId, TagName } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 
 import { err, ok } from "../../../shared/domain/result";
 import type { Result } from "../../../shared/domain/result";
 import type { UserId } from "../../auth/domain/auth-values";
-import { tagNameSchema } from "../domain/tag-values";
-import type { TagId, TagName } from "../domain/tag-values";
 
 /**
  * HTTP 直前の形。省略項目はここでは default を埋めない。

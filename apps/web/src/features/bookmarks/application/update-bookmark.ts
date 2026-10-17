@@ -1,23 +1,23 @@
-import * as v from "valibot";
-
-import { err, ok } from "../../../shared/domain/result";
-import type { Result } from "../../../shared/domain/result";
-import type { UserId } from "../../auth/domain/auth-values";
-import { tagIdSchema } from "../../tags/domain/tag-values";
-import type { TagId } from "../../tags/domain/tag-values";
-import { assertUniqueTagIds } from "../domain/bookmark";
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
   bookmarkTitleSchema,
   bookmarkUrlSchema,
-} from "../domain/bookmark-values";
+} from "@pantry/api-contract/schemas/bookmark-values";
 import type {
   BookmarkId,
   BookmarkNote,
   BookmarkTitle,
   BookmarkUrl,
-} from "../domain/bookmark-values";
+} from "@pantry/api-contract/schemas/bookmark-values";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
+import type { TagId } from "@pantry/api-contract/schemas/tag-values";
+import * as v from "valibot";
+
+import { err, ok } from "../../../shared/domain/result";
+import type { Result } from "../../../shared/domain/result";
+import type { UserId } from "../../auth/domain/auth-values";
+import { assertUniqueTagIds } from "../domain/bookmark";
 
 /**
  * HTTP 直前の形。domain schema が URL protocol・非空 title・note 正規化を担うため、

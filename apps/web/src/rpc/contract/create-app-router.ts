@@ -1,188 +1,39 @@
-import { ORPCError, os } from "@orpc/server";
-import * as v from "valibot";
-
-import { userIdSchema } from "../../features/auth/domain/auth-values";
-import type {
-  SessionUser,
-  UserId,
-} from "../../features/auth/domain/auth-values";
-import {
-  createBookmarkInputSchema,
-  executeCreateBookmark,
-} from "../../features/bookmarks/application/create-bookmark";
-import type { InsertBookmark } from "../../features/bookmarks/application/create-bookmark";
-import { executeDeleteBookmark } from "../../features/bookmarks/application/delete-bookmark";
-import type { SoftDeleteBookmark } from "../../features/bookmarks/application/delete-bookmark";
+import type { SessionUser } from "../../features/auth/domain/auth-values";
 import {
   executeFetchPageTitle,
   fetchPageTitleInputSchema,
 } from "../../features/bookmarks/application/fetch-page-title";
 import type { FetchPageTitle } from "../../features/bookmarks/application/fetch-page-title";
-import { executeSetBookmarkFavorite } from "../../features/bookmarks/application/set-bookmark-favorite";
-import type { SetBookmarkFavorite } from "../../features/bookmarks/application/set-bookmark-favorite";
-import {
-  executeUpdateBookmark,
-  updateBookmarkInputSchema,
-} from "../../features/bookmarks/application/update-bookmark";
-import type { UpdateBookmark } from "../../features/bookmarks/application/update-bookmark";
-import { bookmarkIdSchema } from "../../features/bookmarks/domain/bookmark-values";
-import { decodeBookmarkListCursor } from "../../features/bookmarks/lib/list/bookmark-list-cursor";
-import type { BookmarkCountView } from "../../features/bookmarks/persistence/get-bookmark-count";
-import type { BookmarkDetail } from "../../features/bookmarks/persistence/get-bookmark-detail";
-import type {
-  BookmarkListPage,
-  BookmarkListQuery,
-} from "../../features/bookmarks/persistence/list-bookmarks";
-import {
-  createTagInputSchema,
-  executeCreateTag,
-  toCreateTagCommand,
-} from "../../features/tags/application/create-tag";
-import type { InsertTag } from "../../features/tags/application/create-tag";
-import {
-  deleteTagInputSchema,
-  executeDeleteTag,
-} from "../../features/tags/application/delete-tag";
-import type { DeleteTag } from "../../features/tags/application/delete-tag";
-import {
-  executeTouchTag,
-  touchTagInputSchema,
-} from "../../features/tags/application/touch-tag";
-import type { TouchTag } from "../../features/tags/application/touch-tag";
-import {
-  executeUpdateTag,
-  toUpdateTagCommand,
-  updateTagInputSchema,
-} from "../../features/tags/application/update-tag";
-import type { UpdateTag } from "../../features/tags/application/update-tag";
-import type { ShelfTag, TagRecord } from "../../features/tags/lib/tag-shelf";
-import type { TagsListRow } from "../../features/tags/persistence/select-tags";
-import { offsetPaginationQuerySchema } from "../../schemas/pagination";
-
-type GetSession = (headers: Headers) => Promise<SessionUser | null>;
-
-const tagIdInputSchema = v.object({
-  id: v.pipe(v.number(), v.integer(), v.minValue(1)),
-});
-
-/** 編集画面に必要な projection。branded な型は wire output に残さない。 */
-export interface BookmarkEditorOutput {
-  readonly id: string;
-  readonly url: string;
-  readonly title: string;
-  readonly note: string | null;
-  readonly tagIds: number[];
-}
-
-type FindBookmarkEditor = (
-  userId: UserId,
-  id: string
-) => Promise<BookmarkEditorOutput | null>;
+import { createBookmarkProcedures } from "./bookmark-procedures";
+import type { BookmarksDeps } from "./bookmark-procedures";
+import { createProcedureKit } from "./procedure-kit";
+import type { GetSession } from "./procedure-kit";
+import { createTagProcedures } from "./tag-procedures";
+import type { TagsDeps } from "./tag-procedures";
 
 /**
  * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
  * RPC テストは session と各 service を差し替え、Turso を立てずに契約だけを叩く。
+ *
+ * 機能ごとの service は `tag-procedures.ts` / `bookmark-procedures.ts` が持つ。
+ * pantry-api へ移した機能は、そのファイルの procedure と service を空にする
+ * （このファイルと他の機能のファイルは変えない）。
  */
-export interface AppRouterDeps {
+export interface AppRouterDeps extends TagsDeps, BookmarksDeps {
   readonly getSession: GetSession;
-  readonly insertTag: InsertTag;
-  readonly updateTag: UpdateTag;
-  readonly touchTag: TouchTag;
-  readonly deleteTag: DeleteTag;
-  readonly listShelfTags: (userId: UserId) => Promise<ShelfTag[]>;
-  readonly listTags: (
-    userId: UserId,
-    page: v.InferOutput<typeof offsetPaginationQuerySchema>
-  ) => Promise<TagsListRow[]>;
-  readonly findTagById: (
-    userId: UserId,
-    id: number
-  ) => Promise<TagRecord | null>;
-  readonly insertBookmark: InsertBookmark;
   readonly fetchPageTitle: FetchPageTitle;
-  readonly updateBookmark: UpdateBookmark;
-  readonly findBookmarkEditor: FindBookmarkEditor;
-  readonly listBookmarks: (
-    input: { readonly userId: UserId } & BookmarkListQuery
-  ) => Promise<BookmarkListPage>;
-  readonly getBookmarkCount: (
-    userId: UserId,
-    view: BookmarkCountView
-  ) => Promise<number>;
-  readonly getBookmarkDetail: (
-    userId: UserId,
-    input: { readonly id: string }
-  ) => Promise<BookmarkDetail | null>;
-  readonly setBookmarkFavorite: SetBookmarkFavorite;
-  readonly softDeleteBookmark: SoftDeleteBookmark;
 }
 
-/**
- * HTTP 上の TouchTag 成功形。Application の branded `TagId` は載せない。
- */
-export interface TouchTagOutput {
-  readonly ok: true;
-}
-
-/**
- * HTTP 上の CreateTag 成功形。Application の branded `TagId` は載せない。
- * brand は型システムの印で、JSON には残らない。client へ TagId を出すと、
- * 画面が Domain の組み立てを知っていることになってしまう。
- */
-export interface CreateTagOutput {
-  readonly id: number;
-}
-
-/** HTTP 上の CreateBookmark 成功形。branded `BookmarkId` は wire output に残さない。 */
-export interface CreateBookmarkOutput {
-  readonly id: string;
-}
-
-/**
- * HTTP 上の UpdateTag 成功形。branded `TagId` は載せない。
- * brand は型システムの印で、JSON には残らない。
- */
-export interface UpdateTagOutput {
-  readonly id: number;
-}
-
-/** HTTP 上の UpdateBookmark 成功形。Application の branded `BookmarkId` は載せない。 */
-export interface UpdateBookmarkOutput {
-  readonly id: string;
-}
-
-/**
- * 認証失敗は Result に入れない。回復できない拒否は oRPC の `UNAUTHORIZED` として投げる。
- * Application の既知エラーだけ 409 / 404 へ写す。想定外は包み直さず 500 に抜ける。
- */
 export const createAppRouter = (deps: AppRouterDeps) => {
-  const base = os.$context<{ headers: Headers }>().errors({
-    UNAUTHORIZED: {
-      status: 401,
-    },
-    "tag-not-found": {
-      status: 404,
-    },
-  });
-  const requireAuth = base.middleware(async ({ context, next, errors }) => {
-    const session = await deps.getSession(context.headers);
-    if (session === null || session === undefined) {
-      throw errors.UNAUTHORIZED();
-    }
-
-    return await next({
-      context: {
-        userId: v.parse(userIdSchema, session.id),
-      },
-    });
-  });
+  const kit = createProcedureKit(deps.getSession);
+  const { base, requireAuth } = kit;
 
   const auth = {
     /**
      * 未認証も 200 null で返す public procedure。redirect 判定は route 側で行う。
      */
     session: base.handler(async ({ context }) => {
-      const user = await deps.getSession(context.headers);
+      const user: SessionUser | null = await deps.getSession(context.headers);
       if (user === null || user === undefined) {
         return null;
       }
@@ -190,176 +41,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
     }),
   };
 
-  const createTag = base
-    .use(requireAuth)
-    .input(createTagInputSchema)
-    .errors({
-      "tag-name-already-exists": {
-        status: 409,
-      },
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeCreateTag({
-        command: toCreateTagCommand(input),
-        insertTag: deps.insertTag,
-        userId: context.userId,
-      });
-
-      if (!result.ok) {
-        throw errors["tag-name-already-exists"]();
-      }
-
-      const output: CreateTagOutput = {
-        id: Number(result.value.id),
-      };
-
-      return output;
-    });
-  const updateTag = base
-    .use(requireAuth)
-    .input(updateTagInputSchema)
-    .errors({
-      "tag-name-already-exists": {
-        status: 409,
-      },
-      "tag-not-found": {
-        status: 404,
-      },
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeUpdateTag({
-        command: toUpdateTagCommand(input),
-        updateTag: deps.updateTag,
-        userId: context.userId,
-      });
-
-      if (!result.ok) {
-        if (result.error.code === "tag-name-already-exists") {
-          throw errors["tag-name-already-exists"]();
-        }
-        if (result.error.code === "tag-not-found") {
-          throw errors["tag-not-found"]();
-        }
-        throw new ORPCError("INTERNAL_SERVER_ERROR");
-      }
-
-      const output: UpdateTagOutput = {
-        id: Number(result.value.id),
-      };
-
-      return output;
-    });
-
-  const touchTag = base
-    .use(requireAuth)
-    .input(touchTagInputSchema)
-    .errors({
-      "tag-not-found": {
-        status: 404,
-      },
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeTouchTag({
-        id: input.id,
-        touchTag: deps.touchTag,
-        userId: context.userId,
-      });
-
-      if (!result.ok) {
-        throw errors["tag-not-found"]();
-      }
-
-      const output: TouchTagOutput = {
-        ok: true,
-      };
-
-      return output;
-    });
-
-  /** 成功なら plain number ID を wire へ返す。削除は紐付け解除込み。 */
-  const deleteTag = base
-    .use(requireAuth)
-    .input(deleteTagInputSchema)
-    .errors({
-      "tag-not-found": {
-        status: 404,
-      },
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeDeleteTag({
-        deleteTag: deps.deleteTag,
-        id: input.id,
-        userId: context.userId,
-      });
-
-      if (!result.ok) {
-        throw errors["tag-not-found"]();
-      }
-
-      return { id: Number(result.value.id) };
-    });
-  const createBookmark = base
-    .use(requireAuth)
-    .input(createBookmarkInputSchema)
-    .errors({
-      "duplicate-url": {
-        status: 409,
-      },
-      "invalid-tag": {
-        status: 409,
-      },
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeCreateBookmark({
-        command: input,
-        insertBookmark: deps.insertBookmark,
-        userId: context.userId,
-      });
-
-      if (!result.ok) {
-        if (result.error.code === "duplicate-url") {
-          throw errors["duplicate-url"]();
-        }
-        throw errors["invalid-tag"]();
-      }
-
-      const output: CreateBookmarkOutput = {
-        id: result.value.id,
-      };
-
-      return output;
-    });
-  const updateBookmark = base
-    .use(requireAuth)
-    .input(updateBookmarkInputSchema)
-    .errors({
-      "bookmark-not-found": {
-        status: 404,
-      },
-      "duplicate-url": {
-        status: 409,
-      },
-      "invalid-tag": {
-        status: 409,
-      },
-    })
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeUpdateBookmark({
-        command: input,
-        updateBookmark: deps.updateBookmark,
-        userId: context.userId,
-      });
-
-      if (!result.ok) {
-        throw errors[result.error.code]();
-      }
-
-      const output: UpdateBookmarkOutput = {
-        id: result.value.id,
-      };
-
-      return output;
-    });
   const fetchTitle = base
     .use(requireAuth)
     .input(fetchPageTitleInputSchema)
@@ -380,191 +61,13 @@ export const createAppRouter = (deps: AppRouterDeps) => {
 
       return result.value;
     });
-  const editor = base
-    .use(requireAuth)
-    .input(
-      v.object({
-        id: bookmarkIdSchema,
-      })
-    )
-    .errors({
-      "bookmark-not-found": {
-        status: 404,
-      },
-    })
-    .handler(
-      async ({ input, context, errors }): Promise<BookmarkEditorOutput> => {
-        const record = await deps.findBookmarkEditor(context.userId, input.id);
-
-        if (record === null || record === undefined) {
-          throw errors["bookmark-not-found"]();
-        }
-
-        return record;
-      }
-    );
-
-  const bookmarkListInputSchema = v.object({
-    cursor: v.optional(
-      v.pipe(
-        v.string(),
-        v.minLength(1),
-        v.maxLength(200),
-        v.check((value) => decodeBookmarkListCursor(value) != null)
-      )
-    ),
-    tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
-    view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
-  });
-  /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
-  const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) });
-
-  const listBookmarks = base
-    .use(requireAuth)
-    .input(bookmarkListInputSchema)
-    .handler(
-      async ({ input, context }) =>
-        await deps.listBookmarks({
-          userId: context.userId,
-          ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),
-          ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
-          ...(input.view === undefined ? {} : { view: input.view }),
-        })
-    );
-
-  /** レールの view ごとに独立した procedure。件数の定義は persistence 側を正本にする。 */
-  const bookmarkCount = (view: BookmarkCountView) =>
-    base
-      .use(requireAuth)
-      .handler(
-        async ({ context }) => await deps.getBookmarkCount(context.userId, view)
-      );
-
-  /**
-   * Query service の対象なし null は、ここでだけ 404 defined error へ変換する。
-   * DB 障害や不正な保存済み row は包み直さず 500 に抜ける。
-   */
-  const bookmarkDetail = base
-    .use(requireAuth)
-    .errors({
-      "bookmark-not-found": {
-        status: 404,
-      },
-    })
-    .input(bookmarkIdInputSchema)
-    .handler(async ({ input, context, errors }) => {
-      const detail = await deps.getBookmarkDetail(context.userId, {
-        id: input.id,
-      });
-
-      if (detail === null || detail === undefined) {
-        throw errors["bookmark-not-found"]();
-      }
-
-      return detail;
-    });
-
-  /** 成功なら plain string ID を wire へ返す。Application の判別子はここで消える。 */
-  const deleteBookmark = base
-    .use(requireAuth)
-    .errors({
-      "bookmark-not-found": {
-        status: 404,
-      },
-    })
-    .input(bookmarkIdInputSchema)
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeDeleteBookmark({
-        command: input,
-        softDeleteBookmark: deps.softDeleteBookmark,
-        userId: context.userId,
-      });
-
-      if (result.kind === "bookmark-not-found") {
-        throw errors["bookmark-not-found"]();
-      }
-
-      return { id: result.id };
-    });
-
-  /** 成功なら plain string ID を wire へ返す。favorite はトグル先を input が持つ。 */
-  const setFavorite = base
-    .use(requireAuth)
-    .errors({
-      "bookmark-not-found": {
-        status: 404,
-      },
-    })
-    .input(
-      v.object({
-        favorite: v.boolean(),
-        id: v.pipe(v.string(), v.uuid()),
-      })
-    )
-    .handler(async ({ input, context, errors }) => {
-      const result = await executeSetBookmarkFavorite({
-        command: input,
-        setBookmarkFavorite: deps.setBookmarkFavorite,
-        userId: context.userId,
-      });
-
-      if (result.kind === "bookmark-not-found") {
-        throw errors["bookmark-not-found"]();
-      }
-
-      return { id: result.id };
-    });
-
   return {
     auth,
     bookmarks: {
-      counts: {
-        favorites: bookmarkCount("favorites"),
-        inbox: bookmarkCount("inbox"),
-        recent: bookmarkCount("recent"),
-      },
-      create: createBookmark,
-      delete: deleteBookmark,
-      detail: bookmarkDetail,
-      editor,
-      list: listBookmarks,
-      setFavorite,
+      ...createBookmarkProcedures(kit, deps),
       title: fetchTitle,
-      update: updateBookmark,
     },
-    tags: {
-      byId: base
-        .use(requireAuth)
-        .input(tagIdInputSchema)
-        .errors({
-          "tag-not-found": {
-            status: 404,
-          },
-        })
-        .handler(async ({ input, context, errors }) => {
-          const record = await deps.findTagById(context.userId, input.id);
-          if (record === null || record === undefined) {
-            throw errors["tag-not-found"]();
-          }
-          return record;
-        }),
-      create: createTag,
-      delete: deleteTag,
-      list: base
-        .use(requireAuth)
-        .input(offsetPaginationQuerySchema)
-        .handler(
-          async ({ input, context }) =>
-            await deps.listTags(context.userId, input)
-        ),
-      shelf: base
-        .use(requireAuth)
-        .handler(
-          async ({ context }) => await deps.listShelfTags(context.userId)
-        ),
-      touch: touchTag,
-      update: updateTag,
-    },
+    tags: createTagProcedures(kit, deps),
   };
 };
 

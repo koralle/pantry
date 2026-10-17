@@ -1,14 +1,14 @@
-import { uuidv7 } from "uuidv7";
-import * as v from "valibot";
-import { describe, expect, test } from "vitest";
-
-import { tagIdSchema } from "../../../tags/domain/tag-values";
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
   bookmarkTitleSchema,
   bookmarkUrlSchema,
-} from "../../domain/bookmark-values";
+} from "@pantry/api-contract/schemas/bookmark-values";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
+import { uuidv7 } from "uuidv7";
+import * as v from "valibot";
+import { describe, expect, test } from "vitest";
+
 import { buildUpdateBookmarkCommand } from "./bookmark-editor-command";
 
 describe(buildUpdateBookmarkCommand, () => {

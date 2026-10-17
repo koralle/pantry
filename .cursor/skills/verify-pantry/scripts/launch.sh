@@ -146,7 +146,8 @@ trap stop_vite INT TERM
 # /rpc/health through the web origin (Service Binding forwarding).
 api_healthy() {
   curl -sf -X POST "$APP_URL/rpc/health" \
-    -H 'content-type: application/json' -d '{}' | grep -q '"status":"ok"'
+    -H 'content-type: application/json' -H 'x-csrf-token: orpc' -d '{}' |
+    grep -q '"status":"ok"'
 }
 
 for _ in $(seq 1 90); do

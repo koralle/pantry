@@ -21,5 +21,6 @@ describe("apiBrowserClient", () => {
       status: "ok",
     });
     expect(requests[0]?.url).toBe("https://pantry.example.com/rpc/health");
+    expect(requests[0]?.headers.get("x-csrf-token")).toBe("orpc");
   });
 });

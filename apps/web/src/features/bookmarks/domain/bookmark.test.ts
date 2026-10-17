@@ -1,7 +1,7 @@
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { tagIdSchema } from "../../tags/domain/tag-values";
 import { assertUniqueTagIds } from "./bookmark";
 
 function tagId(value: number) {

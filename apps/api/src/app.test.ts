@@ -1,5 +1,6 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
 import type { ContractRouterClient } from "@orpc/contract";
 import { contract } from "@pantry/api-contract";
 import { describe, expect, it, vi } from "vitest";
@@ -23,10 +24,16 @@ const createClient = (app: App, cookie?: string): Client => {
 
       return await app.fetch(new Request(request, { headers }));
     },
+    plugins: [new SimpleCsrfProtectionLinkPlugin()],
     url: rpcUrl,
   });
 
   return createORPCClient<Client>(link);
+};
+
+/** DB を使わない procedure だけを叩くテストの差し込み口。 */
+const unusedDb = (): never => {
+  throw new Error("db is not used in this test");
 };
 
 const unusedAuthHandler = async () => new Response("unused");
@@ -36,6 +43,7 @@ describe("createApp", () => {
     const authenticate = vi.fn(async () => null);
     const app = createApp({
       authenticate,
+      db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
     });
 
@@ -45,6 +53,46 @@ describe("createApp", () => {
     expect(authenticate).not.toHaveBeenCalled();
   });
 
+  it("x-csrf-token ヘッダーが無い procedure 呼び出しは 403 で拒否し、認証もしない", async () => {
+    const authenticate = vi.fn(async () => null);
+    const app = createApp({
+      authenticate,
+      db: unusedDb,
+      handleAuthRequest: unusedAuthHandler,
+    });
+
+    const response = await app.request(`${rpcUrl}/me`, {
+      body: JSON.stringify({}),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      json: { code: "CSRF_TOKEN_MISMATCH", status: 403 },
+    });
+    expect(authenticate).not.toHaveBeenCalled();
+  });
+
+  it("x-csrf-token の値が違えば 403 で拒否する", async () => {
+    const app = createApp({
+      authenticate: async () => null,
+      db: unusedDb,
+      handleAuthRequest: unusedAuthHandler,
+    });
+
+    const response = await app.request(`${rpcUrl}/health`, {
+      body: JSON.stringify({}),
+      headers: {
+        "content-type": "application/json",
+        "x-csrf-token": "forged",
+      },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(403);
+  });
+
   it("me は authenticator が解決したユーザーを返す", async () => {
     const app = createApp({
       authenticate: async () => ({
@@ -52,6 +100,7 @@ describe("createApp", () => {
         id: "user_1",
         name: "koralle",
       }),
+      db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
     });
 
@@ -65,6 +114,7 @@ describe("createApp", () => {
   it("me はユーザーが解決できなければ 401 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
+      db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
     });
 
@@ -81,6 +131,7 @@ describe("createApp", () => {
       authenticate: async () => {
         throw failure;
       },
+      db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
       reportError,
     });
@@ -102,6 +153,7 @@ describe("createApp", () => {
     const reportError = vi.fn();
     const app = createApp({
       authenticate: async () => null,
+      db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
       reportError,
     });
@@ -118,6 +170,7 @@ describe("createApp", () => {
     );
     const app = createApp({
       authenticate: async () => null,
+      db: unusedDb,
       handleAuthRequest,
     });
 
@@ -135,6 +188,7 @@ describe("createApp", () => {
   it("未知の path は 404 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
+      db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
     });
 

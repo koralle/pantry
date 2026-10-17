@@ -1,7 +1,6 @@
-import type { RouterClient } from "@orpc/server";
 import { createIsomorphicFn } from "@tanstack/react-start";
 
-import type { AppRouter } from "../contract/create-app-router";
+import type { AppClient } from "./app-client";
 import { rpcClient } from "./client";
 
 /**
@@ -11,8 +10,8 @@ import { rpcClient } from "./client";
  * client.server や Better Auth server が browser へ流れない。
  */
 export const getRpcClient = createIsomorphicFn()
-  .server(async (): Promise<RouterClient<AppRouter>> => {
+  .server(async (): Promise<AppClient> => {
     const { serverRpcClient } = await import("./client.server");
     return serverRpcClient;
   })
-  .client(async (): Promise<RouterClient<AppRouter>> => rpcClient);
+  .client(async (): Promise<AppClient> => rpcClient);

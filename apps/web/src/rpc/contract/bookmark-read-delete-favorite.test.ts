@@ -1,21 +1,20 @@
 import { createORPCClient, ORPCError } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
+import type { BookmarkId } from "@pantry/api-contract/schemas/bookmark-values";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
 import type { SessionUser } from "../../features/auth/domain/auth-values";
 import type { InsertBookmarkOutput } from "../../features/bookmarks/application/create-bookmark";
 import type { SoftDeleteBookmark } from "../../features/bookmarks/application/delete-bookmark";
-import type { FetchPageTitleOutput } from "../../features/bookmarks/application/fetch-page-title";
 import type { SetBookmarkFavorite } from "../../features/bookmarks/application/set-bookmark-favorite";
 import type { UpdateBookmarkOutput } from "../../features/bookmarks/application/update-bookmark";
-import type { BookmarkId } from "../../features/bookmarks/domain/bookmark-values";
 import type { BookmarkDetail } from "../../features/bookmarks/persistence/get-bookmark-detail";
 import type { BookmarkListPage } from "../../features/bookmarks/persistence/list-bookmarks";
-import type { TagId } from "../../features/tags/domain/tag-values";
 import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 const detailFixtureId = "019fae92-3bb0-78cd-b488-65ce0e26a001";
@@ -26,11 +25,8 @@ type MutableDeps = { -readonly [K in keyof RouterDeps]: RouterDeps[K] };
 
 function baseDeps(): MutableDeps {
   return {
-    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({
-      kind: "unavailable",
-    })),
+    ...stubAppRouterDeps(),
     findBookmarkEditor: vi.fn(async () => null),
-    findTagById: vi.fn(async () => null),
     getBookmarkDetail: vi.fn(async (): Promise<BookmarkDetail | null> => null),
     getBookmarkCount: async () => 0,
     getSession: vi.fn(async (): Promise<SessionUser | null> => ({
@@ -41,28 +37,19 @@ function baseDeps(): MutableDeps {
     insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({
       kind: "duplicate-url",
     })),
-    insertTag: vi.fn(async (): Promise<{ kind: "created"; id: TagId }> => ({
-      id: 1 as TagId,
-      kind: "created",
-    })),
     listBookmarks: vi.fn(async (): Promise<BookmarkListPage> => ({
       items: [],
       nextCursor: null,
     })),
-    listShelfTags: vi.fn(async () => []),
-    listTags: vi.fn(async () => []),
     setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: vi.fn(
       async (): Promise<{ kind: "bookmark-not-found" }> => ({
         kind: "bookmark-not-found",
       })
     ),
-    deleteTag: async () => ({ kind: "deleted" }) as const,
-    touchTag: vi.fn(async () => ({ kind: "touched" }) as const),
     updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
       kind: "bookmark-not-found",
     })),
-    updateTag: vi.fn(async () => ({ kind: "not-found" }) as const),
   };
 }
 

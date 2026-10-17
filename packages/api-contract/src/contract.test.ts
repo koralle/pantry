@@ -5,8 +5,13 @@ import { contract } from "./contract";
 import { sessionUserSchema } from "./schemas/session-user";
 
 describe("contract", () => {
-  it("health と me だけを公開する", () => {
-    expect(Object.keys(contract)).toStrictEqual(["health", "me"]);
+  it("health / me と機能ごとの namespace を公開する", () => {
+    expect(Object.keys(contract)).toStrictEqual([
+      "bookmarks",
+      "health",
+      "me",
+      "tags",
+    ]);
   });
 
   it("health は ok の output schema を持つ", () => {

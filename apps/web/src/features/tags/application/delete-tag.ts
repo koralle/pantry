@@ -1,10 +1,10 @@
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
+import type { TagId } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 
 import { err, ok } from "../../../shared/domain/result";
 import type { Result } from "../../../shared/domain/result";
 import type { UserId } from "../../auth/domain/auth-values";
-import { tagIdSchema } from "../domain/tag-values";
-import type { TagId } from "../domain/tag-values";
 
 /**
  * HTTP 直前の形。削除は id だけで確定する。

@@ -1,39 +1,24 @@
-import { ORPCError, implement } from "@orpc/server";
-import type { ResponseHeadersPluginContext } from "@orpc/server/plugins";
-import { contract } from "@pantry/api-contract";
+import { createRouterKit } from "./base";
+import type { RouterDeps } from "./base";
+import { createBookmarksRouter } from "./bookmarks";
+import { createTagsRouter } from "./tags";
 
-import type { Authenticator } from "../auth/session";
-
-/** Router が依存する能力。テストは stub を差し込む。 */
-export interface RouterDeps {
-  readonly authenticate: Authenticator;
-}
+export type { RouterDeps } from "./base";
 
 /**
  * contract を実装した oRPC router を作る。
  *
- * `health` は認証なし。`me` は requireAuth middleware を通し、
- * 未認証を contract の型付きエラー `UNAUTHORIZED`（401）へ写す。
+ * `health` は認証なし。それ以外は requireAuth middleware を通し、未認証を contract の
+ * 型付きエラー `UNAUTHORIZED`（401）へ写す。機能ごとの実装は `tags.ts` / `bookmarks.ts` に置く。
  */
 export const createRouter = (deps: RouterDeps) => {
-  const base = implement(contract).$context<
-    { headers: Headers } & ResponseHeadersPluginContext
-  >();
-  const requireAuth = base.middleware(async ({ context, next }) => {
-    // resHeaders は app.ts の ResponseHeadersPlugin が用意し、HTTP レスポンスへ載せる。
-    const user = await deps.authenticate(context.headers, context.resHeaders);
-    if (user === null) {
-      // contract の型付きエラーは `me` だけが宣言しているため、router 共有の
-      // middleware からは `errors.UNAUTHORIZED()` を型付けできない。
-      // `UNAUTHORIZED` の既定 status は 401 で、`me` の errorMap とも一致する。
-      throw new ORPCError("UNAUTHORIZED");
-    }
+  const kit = createRouterKit(deps);
+  const { impl, requireAuth } = kit;
 
-    return await next({ context: { user } });
-  });
-
-  return base.router({
-    health: base.health.handler(() => ({ status: "ok" })),
-    me: base.me.use(requireAuth).handler(({ context }) => context.user),
+  return impl.router({
+    bookmarks: createBookmarksRouter(kit),
+    health: impl.health.handler(() => ({ status: "ok" })),
+    me: impl.me.use(requireAuth).handler(({ context }) => context.user),
+    tags: createTagsRouter(kit),
   });
 };

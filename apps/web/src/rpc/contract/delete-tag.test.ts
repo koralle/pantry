@@ -7,25 +7,16 @@ import type { DeleteTag } from "../../features/tags/application/delete-tag";
 import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 
 const readDeps = {
-  fetchPageTitle: async () => ({ kind: "unavailable" }) as const,
-  findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
-  getBookmarkCount: async () => 0,
-  getBookmarkDetail: async (): Promise<null> => null,
-  insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
   insertTag: async () => ({ kind: "name-conflict" }) as const,
-  listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [] as never[],
   listTags: async () => [] as never[],
-  setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
-  softDeleteBookmark: async () =>
-    ({ id: "", kind: "bookmark-not-found" }) as const,
   touchTag: async () => ({ kind: "touched" }) as const,
-  updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,
   updateTag: async () => ({ kind: "not-found" }) as const,
 };
 
@@ -36,6 +27,7 @@ function authenticatedRouter(deleteTag: DeleteTag, getSession = vi.fn()) {
     name: "koralle",
   });
   return createAppRouter({
+    ...stubAppRouterDeps(),
     deleteTag,
     getSession,
     ...readDeps,
@@ -109,6 +101,7 @@ describe("DeleteTag RPC", () => {
 
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     const router = createAppRouter({
+      ...stubAppRouterDeps(),
       deleteTag: async () => ({ kind: "deleted" }) as const,
       getSession: async () => null,
       ...readDeps,

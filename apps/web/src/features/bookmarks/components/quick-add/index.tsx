@@ -1,3 +1,4 @@
+import { bookmarkUrlSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpRight,
@@ -32,7 +33,6 @@ import {
   noteBox,
 } from "../../../../shared/styles/form-screen";
 import { srOnly } from "../../../../shared/styles/sr-only";
-import { bookmarkUrlSchema } from "../../domain/bookmark-values";
 import type { CreateTagFromPickerAction } from "../../lib/tag-picker/execute-create-tag-from-picker";
 import type {
   BookmarkFormServerError,
