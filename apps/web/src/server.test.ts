@@ -51,6 +51,9 @@ describe("server entry", () => {
     "/",
     "/bookmarks",
     "/api/auth",
+    // prefix の判定は大文字小文字を区別し、URL がデコードしない %72（= r）もそのまま比べる。
+    "/RPC/me",
+    "/%72pc/me",
   ])("%s は web（TanStack Start）が処理する", async (path) => {
     mocks.appFetch.mockClear();
 
