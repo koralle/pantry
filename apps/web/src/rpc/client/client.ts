@@ -1,9 +1,11 @@
 import { createORPCClient, ORPCError, onError } from "@orpc/client";
+import type { ClientLink } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import type { RouterClient } from "@orpc/server";
 import { createIsomorphicFn } from "@tanstack/react-start";
 
-import type { AppRouter } from "../contract/create-app-router";
+import { createApiBrowserLink } from "../../api/client";
+import { createAppLink } from "./app-client";
+import type { AppClient } from "./app-client";
 
 const rpcFetch = createIsomorphicFn()
   .server(async (request: Request, _init?: RequestInit) => {
@@ -26,7 +28,18 @@ const redirectToSignIn = (): void => {
   window.location.replace(signIn);
 };
 
-const link = new RPCLink({
+/** web の `/api/rpc` と pantry-api のどちらの UNAUTHORIZED でも sign-in へ戻す。 */
+const redirectOnUnauthorized = (error: unknown): void => {
+  if (
+    error instanceof ORPCError &&
+    error.defined &&
+    error.code === "UNAUTHORIZED"
+  ) {
+    redirectToSignIn();
+  }
+};
+
+const webLink = new RPCLink({
   url: () => {
     if (typeof window !== "undefined") {
       return `${window.location.origin}/api/rpc`;
@@ -38,18 +51,29 @@ const link = new RPCLink({
   // 呼び出し毎に解決する。構築時に bind すると、あとから差し替えられた
   // global fetch（テストや Storybook の stub）を拾えない。
   fetch: async (request, init) => await rpcFetch(request, init),
-  interceptors: [
-    onError((error) => {
-      if (
-        error instanceof ORPCError &&
-        error.defined &&
-        error.code === "UNAUTHORIZED"
-      ) {
-        redirectToSignIn();
-      }
-    }),
-  ],
+  interceptors: [onError(redirectOnUnauthorized)],
 });
 
-/** Browser と SSR の両方で同じ AppRouter 契約を使う runtime client。 */
-export const rpcClient: RouterClient<AppRouter> = createORPCClient(link);
+const browserApiLink = createApiBrowserLink({
+  interceptors: [onError(redirectOnUnauthorized)],
+});
+
+/**
+ * pantry-api への link。browser は同一 origin の `/rpc`（Worker entry が Service Binding へ転送）、
+ * SSR は Service Binding を直接呼び、元リクエストの Cookie / クライアント IP を転送して
+ * api の Set-Cookie をブラウザへのレスポンスへ引き継ぐ。
+ */
+const apiLink = createIsomorphicFn()
+  .server(async (): Promise<ClientLink<Record<never, never>>> => {
+    const { ssrApiLink } = await import("./ssr-api-link.server");
+    return ssrApiLink;
+  })
+  .client(
+    async (): Promise<ClientLink<Record<never, never>>> =>
+      await Promise.resolve(browserApiLink)
+  );
+
+/** Browser と SSR の両方で同じ契約（web の AppRouter + api の contract）を使う runtime client。 */
+export const rpcClient: AppClient = createORPCClient(
+  createAppLink({ api: apiLink, web: webLink })
+);

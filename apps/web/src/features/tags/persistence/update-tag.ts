@@ -1,3 +1,4 @@
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import type { AppDb } from "@pantry/db";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq, sql } from "drizzle-orm";
@@ -7,7 +8,6 @@ import type {
   UpdateTagInput,
   UpdateTagOutput,
 } from "../application/update-tag";
-import { tagIdSchema } from "../domain/tag-values";
 
 /**
  * 同名判定の正本は `(userId, normalizedName)` の unique 制約。

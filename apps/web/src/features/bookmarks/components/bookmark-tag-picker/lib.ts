@@ -1,10 +1,9 @@
-import * as v from "valibot";
-
 import {
   tagNameSchema,
   tagNamesMatch,
   toTagName,
-} from "../../../tags/domain/tag-values";
+} from "@pantry/api-contract/schemas/tag-values";
+import * as v from "valibot";
 
 export interface NamedTag {
   readonly id: number;

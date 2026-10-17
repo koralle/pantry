@@ -1,10 +1,13 @@
+import {
+  tagIdSchema,
+  tagNameSchema,
+} from "@pantry/api-contract/schemas/tag-values";
+import type { TagId, TagName } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 
 import { err, ok } from "../../../shared/domain/result";
 import type { Result } from "../../../shared/domain/result";
 import type { UserId } from "../../auth/domain/auth-values";
-import { tagIdSchema, tagNameSchema } from "../domain/tag-values";
-import type { TagId, TagName } from "../domain/tag-values";
 
 /**
  * HTTP 直前の形。full-replace 契約で、id を含む全 5 項目が必須。部分更新は受けない。

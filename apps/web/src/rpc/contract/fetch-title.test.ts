@@ -10,6 +10,7 @@ import type {
 import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 
@@ -23,23 +24,9 @@ function authenticatedRouter(
     name: "koralle",
   });
   return createAppRouter({
+    ...stubAppRouterDeps(),
     fetchPageTitle,
-    findBookmarkEditor: async () => null,
-    findTagById: async () => null,
-    getBookmarkDetail: async () => null,
-    getBookmarkCount: async () => 0,
     getSession,
-    insertBookmark: async () => ({ kind: "duplicate-url" }),
-    insertTag: async () => ({ id: 1 as never, kind: "created" }),
-    listBookmarks: async () => ({ items: [], nextCursor: null }),
-    listShelfTags: async () => [],
-    listTags: async () => [],
-    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
-    softDeleteBookmark: async () => ({ id: "", kind: "bookmark-not-found" }),
-    deleteTag: async () => ({ kind: "deleted" }) as const,
-    touchTag: async () => ({ kind: "touched" }),
-    updateBookmark: async () => ({ kind: "bookmark-not-found" }),
-    updateTag: async () => ({ kind: "not-found" }),
   });
 }
 
@@ -56,25 +43,9 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
 describe("FetchPageTitle RPC", () => {
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     const router = createAppRouter({
+      ...stubAppRouterDeps(),
       fetchPageTitle: async () => ({ kind: "unavailable" }),
-      findBookmarkEditor: async () => null,
-      findTagById: async () => null,
-      getBookmarkDetail: async () => null,
-      getBookmarkCount: async () => 0,
       getSession: async () => null,
-      insertBookmark: async () => ({ kind: "duplicate-url" }),
-      insertTag: async () => ({ id: 1 as never, kind: "created" }),
-      listBookmarks: async () => ({ items: [], nextCursor: null }),
-      listShelfTags: async () => [],
-      listTags: async () => [],
-      setBookmarkFavorite: async () => ({
-        kind: "bookmark-not-found" as const,
-      }),
-      softDeleteBookmark: async () => ({ id: "", kind: "bookmark-not-found" }),
-      deleteTag: async () => ({ kind: "deleted" }) as const,
-      touchTag: async () => ({ kind: "touched" }),
-      updateBookmark: async () => ({ kind: "bookmark-not-found" }),
-      updateTag: async () => ({ kind: "not-found" }),
     });
     const client = createTestClient(router);
     const rejected = await client.bookmarks

@@ -1,3 +1,4 @@
+import { toTagName } from "@pantry/api-contract/schemas/tag-values";
 import { Check, Plus } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { ListBox, ListBoxItem, SearchField } from "react-aria-components";
@@ -5,7 +6,6 @@ import { ListBox, ListBoxItem, SearchField } from "react-aria-components";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { StyledInput } from "../../../../shared/components/styled-input";
 import { srOnly } from "../../../../shared/styles/sr-only";
-import { toTagName } from "../../../tags/domain/tag-values";
 import { sortTagsForNav } from "../../../tags/lib/tag-shelf";
 import { canOfferCreateTag, filterTagCandidates } from "./lib";
 import type { NamedTag, TagCandidate } from "./lib";

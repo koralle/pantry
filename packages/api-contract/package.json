@@ -12,12 +12,14 @@
   },
   "dependencies": {
     "@orpc/contract": "catalog:rpc",
+    "@pantry/db": "workspace:*",
     "valibot": "catalog:validation"
   },
   "devDependencies": {
     "@tsconfig/strictest": "catalog:typescript",
     "@types/node": "catalog:runtime",
     "typescript": "catalog:typescript",
+    "uuidv7": "catalog:uuid",
     "vitest": "catalog:test"
   }
 }

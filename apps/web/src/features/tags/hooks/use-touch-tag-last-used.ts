@@ -1,9 +1,9 @@
+import { tagNamesMatch } from "@pantry/api-contract/schemas/tag-values";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { orpc } from "../../../rpc/client/query";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
-import { tagNamesMatch } from "../domain/tag-values";
 import type { ShelfTag } from "../lib/tag-shelf";
 
 /**

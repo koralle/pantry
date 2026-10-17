@@ -1,5 +1,6 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
 import { env } from "cloudflare:workers";
 
 import type { ApiClient } from "./client";
@@ -44,24 +45,31 @@ const pickForwardedHeaders = (incoming: Headers): Record<string, string> =>
   );
 
 /**
- * SSR / server function 用の `pantry-api` client。受けたリクエストの Cookie と
+ * SSR / server function から `pantry-api` を呼ぶ link。受けたリクエストの Cookie と
  * クライアント IP のヘッダーだけを転送し、api の Set-Cookie は `onSetCookie` へ渡す。
+ * `incoming` は呼び出し毎に解決する（SSR では request context の headers を返す）。
+ * api は CSRF 対策で `x-csrf-token` を要求するので、SimpleCsrfProtectionLinkPlugin で付ける。
  */
+export const createApiServerLink = (
+  incoming: () => Headers,
+  { apiFetch = bindingFetch, onSetCookie }: ApiServerClientOptions = {}
+) =>
+  new RPCLink({
+    fetch: async (request) => {
+      const response = await apiFetch(request);
+      const cookies = response.headers.getSetCookie();
+      if (cookies.length > 0) {
+        onSetCookie?.(cookies);
+      }
+      return response;
+    },
+    headers: () => pickForwardedHeaders(incoming()),
+    plugins: [new SimpleCsrfProtectionLinkPlugin()],
+    url: API_RPC_URL,
+  });
+
+/** SSR / server function 用の `pantry-api` client。 */
 export const createApiServerClient = (
   incoming: Headers,
-  { apiFetch = bindingFetch, onSetCookie }: ApiServerClientOptions = {}
-): ApiClient =>
-  createORPCClient(
-    new RPCLink({
-      fetch: async (request) => {
-        const response = await apiFetch(request);
-        const cookies = response.headers.getSetCookie();
-        if (cookies.length > 0) {
-          onSetCookie?.(cookies);
-        }
-        return response;
-      },
-      headers: () => pickForwardedHeaders(incoming),
-      url: API_RPC_URL,
-    })
-  );
+  options: ApiServerClientOptions = {}
+): ApiClient => createORPCClient(createApiServerLink(() => incoming, options));

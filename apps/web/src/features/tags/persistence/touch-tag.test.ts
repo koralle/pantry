@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client";
+import { tagNameSchema } from "@pantry/api-contract/schemas/tag-values";
 import { user } from "@pantry/db/schema/auth-schema";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { sql } from "drizzle-orm";
@@ -9,7 +10,6 @@ import { describe, expect, test } from "vitest";
 import { userIdSchema } from "../../auth/domain/auth-values";
 import type { InsertTagInput } from "../application/create-tag";
 import type { TouchTagInput } from "../application/touch-tag";
-import { tagNameSchema } from "../domain/tag-values";
 import { insertTag } from "./insert-tag";
 import { touchTag } from "./touch-tag";
 

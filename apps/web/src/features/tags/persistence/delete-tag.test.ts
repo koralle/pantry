@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
@@ -7,7 +8,6 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { tagIdSchema } from "../domain/tag-values";
 import { deleteTag } from "./delete-tag";
 import { parseUserId, seedBookmark, seedTag, seedUser } from "./test-helpers";
 

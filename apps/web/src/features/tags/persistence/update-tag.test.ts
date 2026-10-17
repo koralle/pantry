@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { createClient } from "@libsql/client";
+import {
+  tagIdSchema,
+  tagNameSchema,
+} from "@pantry/api-contract/schemas/tag-values";
 import { user } from "@pantry/db/schema/auth-schema";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { eq, sql } from "drizzle-orm";
@@ -11,7 +15,6 @@ import { afterEach, describe, expect, test } from "vitest";
 
 import { userIdSchema } from "../../auth/domain/auth-values";
 import type { UpdateTagInput } from "../application/update-tag";
-import { tagIdSchema, tagNameSchema } from "../domain/tag-values";
 import { updateTag } from "./update-tag";
 
 const persistenceDir = import.meta.dirname;

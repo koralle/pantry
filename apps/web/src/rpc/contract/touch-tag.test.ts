@@ -7,24 +7,15 @@ import type { TouchTag } from "../../features/tags/application/touch-tag";
 import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 
 const readDeps = {
   deleteTag: async () => ({ kind: "deleted" }) as const,
-  fetchPageTitle: async () => ({ kind: "unavailable" }) as const,
-  findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
-  getBookmarkDetail: async (): Promise<null> => null,
-  getBookmarkCount: async () => 0,
-  insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
-  listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [] as never[],
   listTags: async () => [] as never[],
-  setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
-  softDeleteBookmark: async () =>
-    ({ id: "", kind: "bookmark-not-found" }) as const,
-  updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,
   updateTag: async () => ({ kind: "not-found" }) as const,
 };
 
@@ -35,6 +26,7 @@ function authenticatedRouter(touchTag: TouchTag, getSession = vi.fn()) {
     name: "koralle",
   });
   return createAppRouter({
+    ...stubAppRouterDeps(),
     getSession,
     insertTag: async () => ({ kind: "name-conflict" }),
     touchTag,
@@ -98,6 +90,7 @@ describe("TouchTag RPC", () => {
 
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     const router = createAppRouter({
+      ...stubAppRouterDeps(),
       getSession: async () => null,
       insertTag: async () => ({ kind: "name-conflict" }),
       touchTag: async () => ({ kind: "touched" }),

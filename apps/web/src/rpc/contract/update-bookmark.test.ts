@@ -1,6 +1,7 @@
 import { createORPCClient, ORPCError } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
+import { bookmarkIdSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import * as v from "valibot";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
@@ -9,10 +10,10 @@ import type {
   SessionUser,
 } from "../../features/auth/domain/auth-values";
 import type { UpdateBookmark } from "../../features/bookmarks/application/update-bookmark";
-import { bookmarkIdSchema } from "../../features/bookmarks/domain/bookmark-values";
 import { handleRpcRequest } from "../server/handle-request.server";
 import type { AppRouter } from "./create-app-router";
 import { createAppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 const bookmarkId = v.parse(
@@ -71,24 +72,17 @@ function authenticatedRouter(overrides?: {
       url: "https://example.com/article",
     }));
   return createAppRouter({
-    fetchPageTitle: async () => ({ kind: "unavailable" }),
+    ...stubAppRouterDeps(),
     findBookmarkEditor,
-    findTagById: async () => null,
     getBookmarkDetail: async (): Promise<null> => null,
     getBookmarkCount: async () => 0,
     getSession,
     insertBookmark: async () => ({ kind: "duplicate-url" }),
-    insertTag: async () => ({ id: 1 as never, kind: "created" }),
     listBookmarks: async () => ({ items: [], nextCursor: null }),
-    listShelfTags: async () => [],
-    listTags: async () => [],
     setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
     softDeleteBookmark: async () =>
       ({ id: "", kind: "bookmark-not-found" }) as const,
-    deleteTag: async () => ({ kind: "deleted" }) as const,
-    touchTag: async () => ({ kind: "touched" }),
     updateBookmark,
-    updateTag: async () => ({ kind: "not-found" }),
   });
 }
 

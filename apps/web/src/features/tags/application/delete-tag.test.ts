@@ -1,8 +1,8 @@
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
 import { userIdSchema } from "../../auth/domain/auth-values";
-import { tagIdSchema } from "../domain/tag-values";
 import { deleteTagInputSchema, executeDeleteTag } from "./delete-tag";
 import type { DeleteTag, DeleteTagInput, DeleteTagOutput } from "./delete-tag";
 

@@ -11,6 +11,7 @@
     "dev": "vite dev --port 8787",
     "preview": "pnpm run build && vite preview",
     "test": "vitest run",
+    "test:persistence": "vitest run --config vitest.persistence.config.ts",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -20,7 +21,8 @@
     "@pantry/api-contract": "workspace:*",
     "@pantry/db": "workspace:*",
     "better-auth": "catalog:authentication",
-    "hono": "catalog:server"
+    "hono": "catalog:server",
+    "valibot": "catalog:validation"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "catalog:build",
@@ -33,6 +35,7 @@
     "@varlock/cloudflare-integration": "catalog:envvars",
     "drizzle-orm": "catalog:database",
     "drizzle-seed": "catalog:database",
+    "testcontainers": "catalog:test",
     "tsx": "catalog:script",
     "typescript": "catalog:typescript",
     "uuidv7": "catalog:uuid",

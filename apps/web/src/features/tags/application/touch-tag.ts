@@ -1,10 +1,10 @@
+import type { TagId } from "@pantry/api-contract/schemas/tag-values";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 
 import { err, ok } from "../../../shared/domain/result";
 import type { Result } from "../../../shared/domain/result";
 import type { UserId } from "../../auth/domain/auth-values";
-import type { TagId } from "../domain/tag-values";
-import { tagIdSchema } from "../domain/tag-values";
 
 /**
  * HTTP 直前の形。id は wire では plain number で、ここで TagId へ確定する。

@@ -16,7 +16,14 @@ Pantry の API Worker（Cloudflare Workers、`pantry-api`）。Hono の上で
 | `GET/POST /api/auth/*` | Better Auth の handler へ素通し（`/api/auth/get-session`、`/api/auth/sign-in/email` など） |
 | その他 | 404 |
 
-procedure の追加は `packages/api-contract/src/contract.ts` と `src/rpc/router.ts` の両方に足す。contract を満たさない実装は型エラーになる。
+procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機能>.ts`（`tags` / `bookmarks`）の両方に足す。contract を満たさない実装は型エラーになる。サインインが必要な procedure は contract を `authed` から作り、実装は `kit.requireAuth` を通す（context に `user` と `userId` が入る）。DB は `kit.deps.db()` で受ける。
+
+procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求する（oRPC の `SimpleCsrfProtectionHandlerPlugin`）。無ければ 403 `CSRF_TOKEN_MISMATCH`。例外は副作用の無い `health` / `me` だけで、ヘッダーを付けない旧 web が deploy の切り替え中も session を確かめられるようにしている（allowlist は `src/rpc/csrf.ts`。書き込みのある procedure を足してはいけない）。web の client は `SimpleCsrfProtectionLinkPlugin` で付ける。curl で叩くときは `-H 'x-csrf-token: orpc'` を付ける。
+
+### テスト
+
+- `src/test/rpc-harness.ts`: 本番 migration を適用した libSQL（`file::memory:`）と、`actor` / `other` / 未認証を切り替えて `/rpc` を叩く client。procedure の behaviour テスト（所有者の分離・401・403）は `*.integration.test.ts`（Node project）でこれを使う。
+- `pnpm --filter @pantry/api run test:persistence`: 実際の libSQL server（testcontainers、Docker が必要）に migration を適用した persistence テスト（`src/test/persistence/`）。CI の `persistence-integration` job が root の `pnpm run test:persistence` で web と一緒に回す。
 
 ## 環境変数
 

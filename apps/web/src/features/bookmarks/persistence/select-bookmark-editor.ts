@@ -1,3 +1,4 @@
+import { bookmarkIdSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
@@ -6,7 +7,6 @@ import { and, eq, isNull } from "drizzle-orm";
 import * as v from "valibot";
 
 import type { UserId } from "../../auth/domain/auth-values";
-import { bookmarkIdSchema } from "../domain/bookmark-values";
 
 /**
  * 編集画面に必要な projection だけを返す読み取り専用 query service。

@@ -3,6 +3,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { createClient } from "@libsql/client";
+import {
+  bookmarkIdSchema,
+  bookmarkNoteSchema,
+  bookmarkTitleSchema,
+  bookmarkUrlSchema,
+} from "@pantry/api-contract/schemas/bookmark-values";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
+import type { TagId } from "@pantry/api-contract/schemas/tag-values";
 import { user } from "@pantry/db/schema/auth-schema";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
@@ -13,15 +21,7 @@ import * as v from "valibot";
 import { afterAll, describe, expect, test } from "vitest";
 
 import { userIdSchema } from "../../auth/domain/auth-values";
-import { tagIdSchema } from "../../tags/domain/tag-values";
-import type { TagId } from "../../tags/domain/tag-values";
 import type { InsertBookmarkInput } from "../application/create-bookmark";
-import {
-  bookmarkIdSchema,
-  bookmarkNoteSchema,
-  bookmarkTitleSchema,
-  bookmarkUrlSchema,
-} from "../domain/bookmark-values";
 import { insertBookmark } from "./insert-bookmark";
 
 const persistenceDir = import.meta.dirname;

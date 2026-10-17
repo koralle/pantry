@@ -1,6 +1,5 @@
+import { bookmarkIdSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import * as v from "valibot";
-
-import { bookmarkIdSchema } from "../../domain/bookmark-values";
 
 export interface BookmarkListCursor {
   readonly createdAtMs: number;
