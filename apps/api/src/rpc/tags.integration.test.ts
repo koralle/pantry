@@ -1,3 +1,5 @@
+import { contract } from "@pantry/api-contract";
+import type { ApiContract } from "@pantry/api-contract";
 import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
@@ -70,40 +72,47 @@ const tagRow = async (db: AppDb, id: number) => {
   return row;
 };
 
-const procedureNames = [
-  "byId",
-  "create",
-  "delete",
-  "list",
-  "shelf",
-  "touch",
-  "update",
-] as const;
+type TagProcedureName = keyof ApiContract["tags"];
 
-/** 未認証の 401 を、入力検証で落ちない正しい入力で確かめる。 */
-const callEveryProcedure = (
-  client: ApiTestClient
-): Record<(typeof procedureNames)[number], () => Promise<unknown>> => ({
-  byId: async () => await client.tags.byId({ id: 1 }),
-  create: async () => await client.tags.create({ name: "work" }),
-  delete: async () => await client.tags.delete({ id: 1 }),
-  list: async () => await client.tags.list({}),
-  shelf: async () => await client.tags.shelf(),
-  touch: async () => await client.tags.touch({ id: 1 }),
-  update: async () =>
-    await client.tags.update({
-      color: null,
-      id: 1,
-      name: "work",
-      pinned: false,
-      sortOrder: 0,
-    }),
-});
+/**
+ * tags の全 procedure を、入力検証で落ちない正しい入力で呼ぶ。
+ * `satisfies` で契約の key と過不足なく一致させ、procedure を足したら型エラーで気付く。
+ */
+const callEveryProcedure = (client: ApiTestClient) =>
+  ({
+    byId: async () => await client.tags.byId({ id: 1 }),
+    create: async () => await client.tags.create({ name: "work" }),
+    delete: async () => await client.tags.delete({ id: 1 }),
+    list: async () => await client.tags.list({}),
+    shelf: async () => await client.tags.shelf(),
+    touch: async () => await client.tags.touch({ id: 1 }),
+    update: async () =>
+      await client.tags.update({
+        color: null,
+        id: 1,
+        name: "work",
+        pinned: false,
+        sortOrder: 0,
+      }),
+  }) satisfies Record<TagProcedureName, () => Promise<unknown>>;
+
+/** テスト対象は契約から取る。手で並べた一覧だと新しい procedure が 401 / CSRF の検査から漏れる。 */
+const procedureNames = Object.keys(
+  contract.tags
+).toSorted() as TagProcedureName[];
 
 describe("tags（本番 migration を適用した libSQL）", () => {
   const { getDb } = withMigratedDb();
 
   describe("認証と CSRF", () => {
+    it("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
+      expect(
+        Object.keys(
+          callEveryProcedure(createTestClient(getDb(), null))
+        ).toSorted()
+      ).toStrictEqual(procedureNames);
+    });
+
     it.each(procedureNames)(
       "未認証の tags.%s は defined な UNAUTHORIZED（401）を返す",
       async (name) => {
@@ -112,6 +121,19 @@ describe("tags（本番 migration を適用した libSQL）", () => {
           code: "UNAUTHORIZED",
           defined: true,
           status: 401,
+        });
+      }
+    );
+
+    it.each(procedureNames)(
+      "x-csrf-token の無い tags.%s は認証済みでも 403 で拒否する（CSRF の除外は health / me だけ）",
+      async (name) => {
+        const call = callEveryProcedure(
+          createTestClient(getDb(), actor, { csrf: false })
+        )[name];
+        await expect(call()).rejects.toMatchObject({
+          code: "CSRF_TOKEN_MISMATCH",
+          status: 403,
         });
       }
     );
