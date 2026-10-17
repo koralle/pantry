@@ -1,4 +1,4 @@
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 
 export interface SetBookmarkFavoriteInput {
   readonly userId: UserId;

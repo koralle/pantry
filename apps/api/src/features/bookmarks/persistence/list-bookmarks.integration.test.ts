@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client";
+import { decodeBookmarkListCursor } from "@pantry/api-contract/schemas/bookmark-list-cursor";
 import type { AppDb } from "@pantry/db";
 import { user } from "@pantry/db/schema/auth-schema";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
@@ -9,9 +10,8 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import { decodeBookmarkListCursor } from "../lib/list/bookmark-list-cursor";
-import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/list/bookmark-list-page-size";
+import { userIdSchema } from "../../../domain/user-id";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/bookmark-list-page-size";
 import type { BookmarkListQuery } from "./list-bookmarks";
 import { listBookmarks } from "./list-bookmarks";
 

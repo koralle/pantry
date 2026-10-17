@@ -4,7 +4,7 @@ import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq, isNull } from "drizzle-orm";
 
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 
 /**
  * 詳細画面の screen projection。tagNames は tagIds を画面で組み立てさせないため、

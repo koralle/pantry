@@ -1,42 +1,18 @@
-import {
-  bookmarkIdSchema,
-  bookmarkNoteSchema,
-  bookmarkTitleSchema,
-  bookmarkUrlSchema,
-} from "@pantry/api-contract/schemas/bookmark-values";
+import type { UpdateBookmarkCommand } from "@pantry/api-contract/schemas/bookmark-procedures";
 import type {
   BookmarkId,
   BookmarkNote,
   BookmarkTitle,
   BookmarkUrl,
 } from "@pantry/api-contract/schemas/bookmark-values";
-import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import type { TagId } from "@pantry/api-contract/schemas/tag-values";
-import * as v from "valibot";
 
-import { err, ok } from "../../../shared/domain/result";
-import type { Result } from "../../../shared/domain/result";
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
+import { err, ok } from "../../../shared/result";
+import type { Result } from "../../../shared/result";
 import { assertUniqueTagIds } from "../domain/bookmark";
 
-/**
- * HTTP 直前の形。domain schema が URL protocol・非空 title・note 正規化を担うため、
- * Application 側で二重に検証しない。
- */
-export const updateBookmarkInputSchema = v.object({
-  id: bookmarkIdSchema,
-  note: bookmarkNoteSchema,
-  tags: v.array(tagIdSchema),
-  title: bookmarkTitleSchema,
-  url: bookmarkUrlSchema,
-});
-
-/**
- * Procedure の validation 済み入力が、そのまま Application へ渡る確定コマンドになる。
- */
-export type UpdateBookmarkCommand = v.InferOutput<
-  typeof updateBookmarkInputSchema
->;
+export type { UpdateBookmarkCommand } from "@pantry/api-contract/schemas/bookmark-procedures";
 
 export interface UpdatedBookmark {
   readonly id: BookmarkId;

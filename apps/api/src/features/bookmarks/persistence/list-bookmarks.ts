@@ -1,3 +1,7 @@
+import {
+  decodeBookmarkListCursor,
+  encodeBookmarkListCursor,
+} from "@pantry/api-contract/schemas/bookmark-list-cursor";
 import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
@@ -14,15 +18,11 @@ import {
   sql,
 } from "drizzle-orm";
 
-import type { UserId } from "../../auth/domain/auth-values";
-import type { BookmarkListTag } from "../lib/list/attach-bookmark-tags";
-import { attachTagsToBookmarks } from "../lib/list/attach-bookmark-tags";
-import {
-  decodeBookmarkListCursor,
-  encodeBookmarkListCursor,
-} from "../lib/list/bookmark-list-cursor";
-import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/list/bookmark-list-page-size";
-import { normalizeListQuery } from "../lib/list/normalize-bookmark-list-query";
+import type { UserId } from "../../../domain/user-id";
+import type { BookmarkListTag } from "../lib/attach-bookmark-tags";
+import { attachTagsToBookmarks } from "../lib/attach-bookmark-tags";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../lib/bookmark-list-page-size";
+import { normalizeListQuery } from "../lib/normalize-bookmark-list-query";
 
 /**
  * 一覧画面が要する screen projection。DB の行をそのまま出さず、

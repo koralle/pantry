@@ -6,7 +6,7 @@ import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq, isNull } from "drizzle-orm";
 import * as v from "valibot";
 
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 
 /**
  * 編集画面に必要な projection だけを返す読み取り専用 query service。
