@@ -17,7 +17,7 @@ From the repo root, start it in a session that stays open. The script prints `re
 .cursor/skills/verify-pantry/scripts/launch.sh
 ```
 
-The Vite plugin loads `apps/web/.env.schema` itself and starts `pantry-api` as an auxiliary worker that loads `apps/api/.env.schema`. `varlock run -p` does not change that, so `launch.sh` writes a temporary `apps/web/.env.local` (database) and `apps/api/.env.local` (database and Better Auth), both marked `pantry-verify-override`, and `cleanup.sh` deletes them. A consumer-level `.env.local` outranks the values imported from `packages/env/`. Launch refuses if either file already exists, or if something is listening on port 3000 or 8787, because a running `pnpm dev` or `pnpm dev:api` could reload the override and leave the development database.
+The Vite plugin loads `apps/web/.env.schema` itself and starts `pantry-api` as an auxiliary worker that loads `apps/api/.env.schema`. `varlock run -p` does not change that, so `launch.sh` writes a temporary `apps/web/.env.local` (database), `apps/api/.env.local` (database and Better Auth, for the Worker), and `apps/api/scripts/.env.local` (the same plus `TURSO_PORT`, for seed via `apps/api/scripts/.env.schema`), all marked `pantry-verify-override`, and `cleanup.sh` deletes them. A consumer-level `.env.local` outranks the values imported from `packages/env/`. Launch refuses if either file already exists, or if something is listening on port 3000 or 8787, because a running `pnpm dev` or `pnpm dev:api` could reload the override and leave the development database.
 
 1. Starts Compose project `pantry-verify` (container `pantry-verify-turso`, host port 18080, tmpfs data dir).
 2. Waits until `curl -sf http://127.0.0.1:18080/health` succeeds.

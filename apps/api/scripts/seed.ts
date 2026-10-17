@@ -695,6 +695,7 @@ const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
  */
 const assertLocalPortsAgree = (): void => {
   const rawUrl = process.env.TURSO_CONNECTION_URL;
+  // TURSO_PORT は scripts/.env.schema だけが取り込む（Worker の env には無い）。
   const port = process.env["TURSO_PORT"];
   if (rawUrl === undefined || rawUrl === "" || port === undefined) {
     return;

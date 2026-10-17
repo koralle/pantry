@@ -13,7 +13,7 @@ APP_URL="http://127.0.0.1:4173"
 
 cd "$APP"
 
-for local_env in .env.local ../api/.env.local; do
+for local_env in .env.local ../api/.env.local ../api/scripts/.env.local; do
   if [[ ! -f "$local_env" ]] || ! grep -q "# pantry-verify-override" "$local_env"; then
     echo "doctor fail: verification env override $local_env is missing" >&2
     exit 1

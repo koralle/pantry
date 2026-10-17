@@ -34,7 +34,7 @@ if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
 fi
 
 cd "$APP"
-for local_env in "$APP/.env.local" "$ROOT/apps/api/.env.local"; do
+for local_env in "$APP/.env.local" "$ROOT/apps/api/.env.local" "$ROOT/apps/api/scripts/.env.local"; do
   if [[ -f "$local_env" ]] && grep -q "# pantry-verify-override" "$local_env"; then
     rm -f "$local_env"
   fi

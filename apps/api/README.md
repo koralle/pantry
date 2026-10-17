@@ -40,7 +40,8 @@ procedure の追加は `packages/api-contract/src/contract.ts` と `src/rpc/rout
 | `pnpm run preview` | ビルド成果物を preview |
 | `pnpm run deploy` | 本番ビルド + `varlock-wrangler deploy` |
 | `pnpm run cf-typegen` | `worker-configuration.d.ts` を生成（varlock 経由） |
-| `pnpm run db:seed` | 開発DBへ seed（`scripts/seed.ts`。DB を全削除してから投入する。ルートの `pnpm run db:seed` から呼ぶ） |
+| `pnpm run db:seed` | 開発DBへ seed（`scripts/seed.ts`。DB を全削除してから投入する。ルートの `pnpm run db:seed` から呼ぶ。env は scripts 専用の `scripts/.env.schema` から読む） |
+| `pnpm run db:create-user` | 開発用ユーザーだけを作る（`scripts/create-user.ts`。既にあれば何もしない） |
 | `pnpm run test` | Vitest（workers project + node project） |
 | `pnpm run typecheck` | `tsc` |
 

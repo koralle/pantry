@@ -4,7 +4,8 @@ import { createAuth } from "../src/auth/create-auth";
 
 /**
  * 開発用スクリプト（seed / create-user）が使う Node 側の Better Auth。
- * Worker と同じ `createAuth` を使い、env は `varlock run`（apps/api の schema）から読む。
+ * Worker と同じ `createAuth` を使い、env は `varlock run --path scripts/`
+ * （scripts 専用の `apps/api/scripts/.env.schema`）から読む。
  */
 const requireEnv = (key: "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL"): string => {
   const value = process.env[key];

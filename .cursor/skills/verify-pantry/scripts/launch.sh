@@ -18,10 +18,12 @@ cd "$APP"
 
 LOCAL_ENV="$APP/.env.local"
 API_LOCAL_ENV="$API/.env.local"
+# seed / create-user read apps/api/scripts/.env.schema (varlock run --path scripts/).
+SCRIPTS_LOCAL_ENV="$API/scripts/.env.local"
 MARKER="# pantry-verify-override"
 
 remove_local_env() {
-  for file in "$LOCAL_ENV" "$API_LOCAL_ENV"; do
+  for file in "$LOCAL_ENV" "$API_LOCAL_ENV" "$SCRIPTS_LOCAL_ENV"; do
     if [[ -f "$file" ]] && grep -q "$MARKER" "$file"; then
       rm -f "$file"
     fi
@@ -37,7 +39,7 @@ for port in 3000 8787; do
   fi
 done
 
-for file in "$LOCAL_ENV" "$API_LOCAL_ENV"; do
+for file in "$LOCAL_ENV" "$API_LOCAL_ENV" "$SCRIPTS_LOCAL_ENV"; do
   if [[ -f "$file" ]]; then
     echo "refusing to launch: $file already exists" >&2
     exit 1
@@ -65,6 +67,17 @@ BETTER_AUTH_URL=http://127.0.0.1:4173
 BETTER_AUTH_SECRET=pantry-verify-secret-at-least-32-characters
 EOF
 
+# The scripts schema also picks TURSO_PORT so seed can refuse a mismatched port.
+cat >"$SCRIPTS_LOCAL_ENV" <<'EOF'
+# pantry-verify-override
+# Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
+TURSO_PORT=18080
+TURSO_CONNECTION_URL=http://127.0.0.1:18080
+TURSO_AUTH_TOKEN=pantry-verify-token
+BETTER_AUTH_URL=http://127.0.0.1:4173
+BETTER_AUTH_SECRET=pantry-verify-secret-at-least-32-characters
+EOF
+
 resolved=$(
   ./node_modules/.bin/varlock run -- \
     node -e 'process.stdout.write(process.env.TURSO_CONNECTION_URL ?? "")'
@@ -74,8 +87,13 @@ api_resolved=$(
     ./node_modules/.bin/varlock run -- \
       node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
 )
-if [[ "$resolved" != "$EXPECTED_URL" || "$api_resolved" != "$EXPECTED_URL $APP_URL" ]]; then
-  echo "refusing to launch: web resolved '$resolved', api resolved '$api_resolved', want $EXPECTED_URL / $EXPECTED_URL $APP_URL" >&2
+scripts_resolved=$(
+  cd "$API" &&
+    ./node_modules/.bin/varlock run --path scripts/ -- \
+      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.TURSO_PORT ?? ""))'
+)
+if [[ "$resolved" != "$EXPECTED_URL" || "$api_resolved" != "$EXPECTED_URL $APP_URL" || "$scripts_resolved" != "$EXPECTED_URL 18080" ]]; then
+  echo "refusing to launch: web resolved '$resolved', api resolved '$api_resolved', scripts resolved '$scripts_resolved', want $EXPECTED_URL / $EXPECTED_URL $APP_URL / $EXPECTED_URL 18080" >&2
   exit 1
 fi
 
@@ -95,9 +113,9 @@ curl -sf "$EXPECTED_URL/health" >/dev/null
 (cd "$ROOT/packages/db" &&
   ./node_modules/.bin/varlock run --path ../../apps/web/ -- \
     ./node_modules/.bin/drizzle-kit migrate)
-# seed lives in apps/api (it builds Better Auth with createAuth) and reads apps/api's env.
+# seed lives in apps/api (it builds Better Auth with createAuth) and reads the scripts schema.
 (cd "$API" &&
-  ./node_modules/.bin/varlock run -- \
+  ./node_modules/.bin/varlock run --path scripts/ -- \
     ./node_modules/.bin/tsx scripts/seed.ts)
 
 if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then

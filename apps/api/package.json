@@ -5,7 +5,8 @@
   "scripts": {
     "build": "vite build",
     "cf-typegen": "varlock-wrangler types",
-    "db:seed": "varlock run -- tsx scripts/seed.ts",
+    "db:create-user": "varlock run --path scripts/ -- tsx scripts/create-user.ts",
+    "db:seed": "varlock run --path scripts/ -- tsx scripts/seed.ts",
     "deploy": "APP_ENV=production pnpm run build && APP_ENV=production varlock-wrangler deploy",
     "dev": "vite dev --port 8787",
     "preview": "pnpm run build && vite preview",
