@@ -1,11 +1,11 @@
+import type { ShelfTag } from "@pantry/api-contract/schemas/tag-procedures";
 import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq, isNull, sql } from "drizzle-orm";
 
-import type { UserId } from "../../auth/domain/auth-values";
-import type { ShelfTag } from "../lib/tag-shelf";
+import type { UserId } from "../../../domain/user-id";
 
 /**
  * 棚（sidebar・mobile shelf・タグ管理）が使う行。削除済み bookmark は数えない。

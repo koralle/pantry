@@ -1,34 +1,9 @@
-import {
-  tagIdSchema,
-  tagNameSchema,
-} from "@pantry/api-contract/schemas/tag-values";
+import type { UpdateTagValidatedInput } from "@pantry/api-contract/schemas/tag-procedures";
 import type { TagId, TagName } from "@pantry/api-contract/schemas/tag-values";
-import * as v from "valibot";
 
-import { err, ok } from "../../../shared/domain/result";
-import type { Result } from "../../../shared/domain/result";
-import type { UserId } from "../../auth/domain/auth-values";
-
-/**
- * HTTP 直前の形。full-replace 契約で、id を含む全 5 項目が必須。部分更新は受けない。
- * 省略は欠落のまま 400 になるため、呼び出し側は常に現状値を送ること。
- */
-export const updateTagInputSchema = v.object({
-  id: tagIdSchema,
-  name: tagNameSchema,
-  pinned: v.boolean(),
-  // UI の NumberField は負数や小数も送り得るため、境界では数値型だけを強制する
-  sortOrder: v.number(),
-  color: v.nullable(
-    // UI は固定パレット (#RRGGBB) のみだが、#RGB も CSS として有効なので許す
-    v.pipe(v.string(), v.regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/))
-  ),
-});
-
-export type UpdateTagWireInput = v.InferInput<typeof updateTagInputSchema>;
-export type UpdateTagValidatedInput = v.InferOutput<
-  typeof updateTagInputSchema
->;
+import type { UserId } from "../../../domain/user-id";
+import { err, ok } from "../../../shared/result";
+import type { Result } from "../../../shared/result";
 
 /**
  * Application が扱う確定済みコマンド。

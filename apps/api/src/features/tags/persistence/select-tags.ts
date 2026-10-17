@@ -2,7 +2,7 @@ import type { AppDb } from "@pantry/db";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { asc, eq } from "drizzle-orm";
 
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 
 export interface TagsListRow {
   readonly id: number;

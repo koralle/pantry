@@ -1,9 +1,9 @@
+import type { TagRecord } from "@pantry/api-contract/schemas/tag-procedures";
 import type { AppDb } from "@pantry/db";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq } from "drizzle-orm";
 
-import type { UserId } from "../../auth/domain/auth-values";
-import type { TagRecord } from "../lib/tag-shelf";
+import type { UserId } from "../../../domain/user-id";
 
 /**
  * 対象なしは null で返す。404 への変換は procedure の責務。
