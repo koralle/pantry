@@ -1,5 +1,6 @@
 import { onError, ORPCError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
+import { ResponseHeadersPlugin } from "@orpc/server/plugins";
 import { Hono } from "hono";
 
 import type { Authenticator } from "./auth/session";
@@ -42,6 +43,8 @@ export const createApp = (deps: AppDeps) => {
           }
         }),
       ],
+      // authenticator が追加した Set-Cookie（session の延長）をレスポンスへ載せる。
+      plugins: [new ResponseHeadersPlugin()],
     }
   );
 
