@@ -94,7 +94,7 @@ beforeAll(async () => {
   db = drizzle({ client: libsqlClient });
   await migrate(db, { migrationsFolder });
 
-  auth = createAuth({ baseURL, db, secret });
+  auth = createAuth({ appEnv: "test", baseURL, db, secret });
 });
 
 afterAll(() => {
@@ -234,6 +234,40 @@ describe("createAuth", () => {
     expect(
       sessions.map((session) => session.ipAddress).filter(Boolean)
     ).toStrictEqual(["198.51.100.23"]);
+  });
+
+  it("本番では X-Forwarded-For を信用しない", async () => {
+    const productionAuth = createAuth({
+      appEnv: "production",
+      baseURL,
+      db,
+      secret,
+    });
+    const app = createApp({
+      authenticate: async () => null,
+      handleAuthRequest: productionAuth.handler,
+    });
+    const { user } = await productionAuth.api.signUpEmail({
+      body: { email: "prod-xff@example.com", name: "prod", password },
+    });
+
+    const response = await app.request(`${baseURL}/api/auth/sign-in/email`, {
+      body: JSON.stringify({ email: "prod-xff@example.com", password }),
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": "198.51.100.99",
+      },
+      method: "POST",
+    });
+    expect(response.status).toBe(200);
+
+    const sessions = await db
+      .select()
+      .from(sessionsTable)
+      .where(eq(sessionsTable.userId, user.id));
+    expect(sessions.map((session) => session.ipAddress)).not.toContain(
+      "198.51.100.99"
+    );
   });
 
   it("me で session が延長されたら Set-Cookie をレスポンスへ載せる", async () => {

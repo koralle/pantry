@@ -8,10 +8,25 @@ import { admin } from "better-auth/plugins";
 import { passkeyPluginOptions } from "./passkey-plugin-options";
 
 export interface CreateAuthOptions {
+  /** `APP_ENV`（development / test / production）。本番だけ信用するヘッダーを絞る。 */
+  readonly appEnv: string;
   readonly baseURL: string;
   readonly db: AppDb;
   readonly secret: string;
 }
+
+/**
+ * クライアント IP を読むヘッダー（rate limit のキーと session の ipAddress）。
+ *
+ * 本番は Cloudflare の edge が必ず上書きする CF-Connecting-IP だけを信用する。
+ * X-Forwarded-For はクライアントが自由に付けられるので、本番で読むと IP を偽装して
+ * rate limit を回避できてしまう。CF の edge を通らない開発・テストでだけ予備として読む。
+ * web は Service Binding へ元の Request をそのまま渡すので、どちらも変わらずに届く。
+ */
+export const clientIpHeaders = (appEnv: string): string[] =>
+  appEnv === "production"
+    ? ["cf-connecting-ip"]
+    : ["cf-connecting-ip", "x-forwarded-for"];
 
 /**
  * Pantry の正本となる Better Auth 構成。
@@ -20,20 +35,16 @@ export interface CreateAuthOptions {
  * model 名（`user` / `session` など）で schema を引くため、同名の export を持つ
  * auth-schema をそのまま渡せば複数形のテーブル（`users` / `sessions` など）へ写る。
  */
-/**
- * クライアント IP を読むヘッダー。Cloudflare の edge は CF-Connecting-IP を必ず
- * 上書きするので偽装できない。X-Forwarded-For はクライアントが付けた値に edge が
- * 追記するため複数値になりやすく、Better Auth は複数値を信用しない（IP 不明として
- * rate limit が共有バケットに落ちる）。CF 以外（ローカルのテストなど）の予備として残す。
- * web は Service Binding へ元の Request をそのまま渡すので、どちらも変わらずに届く。
- */
-export const CLIENT_IP_HEADERS = ["cf-connecting-ip", "x-forwarded-for"];
-
-export const createAuth = ({ baseURL, db, secret }: CreateAuthOptions) =>
+export const createAuth = ({
+  appEnv,
+  baseURL,
+  db,
+  secret,
+}: CreateAuthOptions) =>
   betterAuth({
     advanced: {
       ipAddress: {
-        ipAddressHeaders: CLIENT_IP_HEADERS,
+        ipAddressHeaders: clientIpHeaders(appEnv),
       },
     },
     baseURL,

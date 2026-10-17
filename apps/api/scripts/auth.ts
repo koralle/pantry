@@ -18,6 +18,7 @@ const requireEnv = (key: "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL"): string => {
 export const db = createDb(resolveTursoConnection(process.env));
 
 export const auth = createAuth({
+  appEnv: process.env.APP_ENV ?? "development",
   baseURL: requireEnv("BETTER_AUTH_URL"),
   db,
   secret: requireEnv("BETTER_AUTH_SECRET"),

@@ -21,6 +21,7 @@ const getDb = (): AppDb => {
 /** isolate ごとに 1 度だけ Better Auth を組み立てる。 */
 const getAuth = (): Auth => {
   cachedAuth ??= createAuth({
+    appEnv: env.APP_ENV,
     baseURL: env.BETTER_AUTH_URL,
     db: getDb(),
     secret: env.BETTER_AUTH_SECRET,
