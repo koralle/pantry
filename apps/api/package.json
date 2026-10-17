@@ -18,8 +18,7 @@
     "@pantry/api-contract": "workspace:*",
     "@pantry/db": "workspace:*",
     "better-auth": "catalog:authentication",
-    "hono": "catalog:server",
-    "valibot": "catalog:validation"
+    "hono": "catalog:server"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "catalog:build",
