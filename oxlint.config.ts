@@ -14,7 +14,6 @@ export default defineConfig({
     "apps/web/src/routeTree.gen.ts",
     "apps/web/vitest/tanstack-entry-stub.ts",
     "apps/web/worker-configuration.d.ts",
-    "packages/db/src/schema/auth-schema.ts",
   ],
   overrides: [
     {
