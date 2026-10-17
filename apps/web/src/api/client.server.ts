@@ -11,7 +11,9 @@ const API_RPC_URL = "https://pantry-api.internal/rpc";
 
 /**
  * 元リクエストから api へ引き継ぐヘッダー。Cookie（session）と、Better Auth が
- * クライアント IP を読むヘッダー（apps/api の CLIENT_IP_HEADERS）。
+ * クライアント IP を読むヘッダー（apps/api の clientIpHeaders）。X-Forwarded-For は
+ * api が本番では読まないので、常に転送しても害はない。SSR の direct client と
+ * ssrRpcFetch はどちらも procedure の context へこれらを引き継ぐ。
  */
 const FORWARDED_HEADERS = [
   "cookie",
