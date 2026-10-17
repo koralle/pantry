@@ -69,8 +69,9 @@ for _ in $(seq 1 60); do
 done
 curl -sf "$EXPECTED_URL/health" >/dev/null
 
-./node_modules/.bin/varlock run -- \
-  ./node_modules/.bin/drizzle-kit migrate
+(cd "$ROOT/packages/db" &&
+  ./node_modules/.bin/varlock run --path ../../apps/web/ -- \
+    ./node_modules/.bin/drizzle-kit migrate)
 ./node_modules/.bin/varlock run -- \
   ./node_modules/.bin/tsx scripts/seed.ts
 
@@ -101,8 +102,8 @@ stop_vite() {
 trap stop_vite INT TERM
 
 for _ in $(seq 1 90); do
-  if grep -q "Local:   http://127.0.0.1:4173/" "$RUN_DIR/vite.log" \
-    && curl -sf "$APP_URL/sign-in" | grep -q "Pantry"; then
+  if grep -q "Local:   http://127.0.0.1:4173/" "$RUN_DIR/vite.log" &&
+    curl -sf "$APP_URL/sign-in" | grep -q "Pantry"; then
     echo "ready $APP_URL"
     wait "$vite_pid"
     exit 0

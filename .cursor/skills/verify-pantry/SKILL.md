@@ -21,7 +21,7 @@ The Vite plugin reads `apps/web/.env.development` itself. `varlock run -p` does 
 
 1. Starts Compose project `pantry-verify` (container `pantry-verify-turso`, host port 18080, tmpfs data dir).
 2. Waits until `curl -sf http://127.0.0.1:18080/health` succeeds.
-3. Runs Drizzle migrations and `apps/web/scripts/seed.ts` against that URL only.
+3. Runs Drizzle migrations from `packages/db` and `apps/web/scripts/seed.ts` against that URL only.
 4. Starts `vite dev --port 4173 --host 127.0.0.1` with the same Varlock overlay. The pid is `.cursor/skills/verify-pantry/run/vite.pid`. The log is `.cursor/skills/verify-pantry/run/vite.log`.
 
 Ready means `http://127.0.0.1:4173/sign-in` returns HTML containing `Pantry`, not merely that a process is listening. Seed creates the signed-in user `koralle@example.com` / `password` and about 240 bookmarks. Two verification runs cannot share this instance: the container name, port 18080, and port 4173 are fixed. If launch says vite is already running, run cleanup first.
