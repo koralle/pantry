@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./migrations": "./src/migrations.ts",
-    "./schema/*": "./src/schema/*.ts"
+    "./schema/*": "./src/schema/*.ts",
+    "./tag-name": "./src/tag-name.ts"
   },
   "scripts": {
     "check:migrations": "tsx scripts/check-migrations.ts",
