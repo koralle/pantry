@@ -60,6 +60,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # PR の base（stack では下の PR のブランチ）との差分を取るため、履歴をすべて取得する。
+          fetch-depth: 0
+
+      # 本番に適用済みのマイグレーションは変更・削除・リネームしない。差分は新しいフォルダで追加する。
+      # base は PR が向いているブランチ（stacked PR では下の PR のブランチ）の先端。
+      - name: Forbid changes to existing migrations
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed=$(git diff --name-only --diff-filter=MDR "$BASE_SHA"...HEAD -- packages/db/drizzle)
+          if [[ -n "$changed" ]]; then
+            echo "::error::既存のマイグレーションは変更・削除・リネームできません。変更は新しいマイグレーションとして追加してください。"
+            echo "$changed"
+            exit 1
+          fi
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
