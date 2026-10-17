@@ -9,6 +9,7 @@ import {
   session as sessionsTable,
   user as usersTable,
 } from "@pantry/db/schema/auth-schema";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -73,6 +74,17 @@ const createSessionCookie = (response: Response): string => {
   return pair;
 };
 
+/** Better Auth の HTTP ルートでサインインし、Cookie ヘッダーに載せる値を返す。 */
+const signIn = async (app: App, email: string): Promise<string> => {
+  const response = await app.request(`${baseURL}/api/auth/sign-in/email`, {
+    body: JSON.stringify({ email, password }),
+    headers: { "content-type": "application/json" },
+    method: "POST",
+  });
+  expect(response.status).toBe(200);
+  return createSessionCookie(response);
+};
+
 beforeAll(async () => {
   libsqlClient = createClient({ url: memoryUrl });
   db = drizzle({ client: libsqlClient });
@@ -129,6 +141,40 @@ describe("createAuth", () => {
       id: expect.any(String),
       name: "koralle",
     });
+  });
+
+  it("admin が banUser したユーザーは、既存の Cookie でも me が 401 になる", async () => {
+    const app = createTestApp();
+    const { user: target } = await auth.api.signUpEmail({
+      body: { email: "banned@example.com", name: "banned", password },
+    });
+    const { user: admin } = await auth.api.signUpEmail({
+      body: { email: "admin@example.com", name: "admin", password },
+    });
+    await db
+      .update(usersTable)
+      .set({ role: "admin" })
+      .where(eq(usersTable.id, admin.id));
+
+    const targetCookie = await signIn(app, "banned@example.com");
+    const adminCookie = await signIn(app, "admin@example.com");
+
+    await expect(
+      createRpcClient(app, targetCookie).me()
+    ).resolves.toMatchObject({ id: target.id });
+
+    await auth.api.banUser({
+      body: { userId: target.id },
+      headers: new Headers({ cookie: adminCookie }),
+    });
+
+    await expect(createRpcClient(app, targetCookie).me()).rejects.toMatchObject(
+      { code: "UNAUTHORIZED", status: 401 }
+    );
+    // ban は対象の session だけを失効させ、admin の session は残る。
+    await expect(createRpcClient(app, adminCookie).me()).resolves.toMatchObject(
+      { id: admin.id }
+    );
   });
 
   it("Cookie セッションが無ければ me は 401 を返す", async () => {
