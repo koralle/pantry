@@ -1,12 +1,12 @@
+import { decodeBookmarkListCursor } from "@pantry/api-contract/schemas/bookmark-list-cursor";
 import { user } from "@pantry/db/schema/auth-schema";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { tagsTable } from "@pantry/db/schema/tag";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../features/auth/domain/auth-values";
-import { decodeBookmarkListCursor } from "../../features/bookmarks/lib/list/bookmark-list-cursor";
-import { BOOKMARK_LIST_PAGE_SIZE } from "../../features/bookmarks/lib/list/bookmark-list-page-size";
+import { userIdSchema } from "../../domain/user-id";
+import { BOOKMARK_LIST_PAGE_SIZE } from "../../features/bookmarks/lib/bookmark-list-page-size";
 import type { BookmarkListQuery } from "../../features/bookmarks/persistence/list-bookmarks";
 import { listBookmarks } from "../../features/bookmarks/persistence/list-bookmarks";
 import {

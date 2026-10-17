@@ -18,8 +18,8 @@ import type { TagId, TagName } from "@pantry/api-contract/schemas/tag-values";
 import { uuidv7 } from "uuidv7";
 import * as v from "valibot";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import type { UserId } from "../../auth/domain/auth-values";
+import { userIdSchema } from "../../../domain/user-id";
+import type { UserId } from "../../../domain/user-id";
 
 export const bookmarkId = (value: string = uuidv7()): BookmarkId =>
   v.parse(bookmarkIdSchema, value);

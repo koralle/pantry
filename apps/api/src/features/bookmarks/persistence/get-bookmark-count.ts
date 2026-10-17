@@ -4,7 +4,7 @@ import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq, isNull, notExists, sql } from "drizzle-orm";
 
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 
 export type BookmarkCountView = "favorites" | "inbox" | "recent";
 

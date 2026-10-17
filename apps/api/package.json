@@ -21,6 +21,7 @@
     "@pantry/api-contract": "workspace:*",
     "@pantry/db": "workspace:*",
     "better-auth": "catalog:authentication",
+    "drizzle-orm": "catalog:database",
     "hono": "catalog:server",
     "valibot": "catalog:validation"
   },
@@ -33,7 +34,6 @@
     "@tsconfig/strictest": "catalog:typescript",
     "@types/node": "catalog:runtime",
     "@varlock/cloudflare-integration": "catalog:envvars",
-    "drizzle-orm": "catalog:database",
     "drizzle-seed": "catalog:database",
     "testcontainers": "catalog:test",
     "tsx": "catalog:script",

@@ -1,3 +1,4 @@
+import { createBookmarkInputSchema } from "@pantry/api-contract/schemas/bookmark-procedures";
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
@@ -8,11 +9,8 @@ import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import {
-  createBookmarkInputSchema,
-  executeCreateBookmark,
-} from "./create-bookmark";
+import { userIdSchema } from "../../../domain/user-id";
+import { executeCreateBookmark } from "./create-bookmark";
 import type {
   CreateBookmarkCommand,
   InsertBookmark,
