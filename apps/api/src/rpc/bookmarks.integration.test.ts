@@ -1,3 +1,7 @@
+import { isContractProcedure } from "@orpc/contract";
+import type { AnyContractProcedure } from "@orpc/contract";
+import { contract } from "@pantry/api-contract";
+import type { ApiContract } from "@pantry/api-contract";
 import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
@@ -83,48 +87,58 @@ const tagIdsOf = async (db: AppDb, bookmarkId: string): Promise<number[]> =>
 
 const someId = "01a14ade-61b5-7416-af28-6ad04e6fc648";
 
-const procedureNames = [
-  "counts.favorites",
-  "counts.inbox",
-  "counts.recent",
-  "create",
-  "delete",
-  "detail",
-  "editor",
-  "list",
-  "setFavorite",
-  "update",
-] as const;
+/** 契約の router から procedure までの key を `.` でつないだもの（例: `counts.recent`）。 */
+type ProcedurePath<T, Prefix extends string = ""> = {
+  [K in keyof T & string]: T[K] extends AnyContractProcedure
+    ? `${Prefix}${K}`
+    : ProcedurePath<T[K], `${Prefix}${K}.`>;
+}[keyof T & string];
 
-/** 未認証の 401 を、入力検証で落ちない正しい入力で確かめる。 */
-const callEveryProcedure = (
-  client: ApiTestClient
-): Record<(typeof procedureNames)[number], () => Promise<unknown>> => ({
-  "counts.favorites": async () => await client.bookmarks.counts.favorites(),
-  "counts.inbox": async () => await client.bookmarks.counts.inbox(),
-  "counts.recent": async () => await client.bookmarks.counts.recent(),
-  create: async () =>
-    await client.bookmarks.create({
-      note: null,
-      tags: [],
-      title: "t",
-      url: "https://example.com/",
-    }),
-  delete: async () => await client.bookmarks.delete({ id: someId }),
-  detail: async () => await client.bookmarks.detail({ id: someId }),
-  editor: async () => await client.bookmarks.editor({ id: someId }),
-  list: async () => await client.bookmarks.list({}),
-  setFavorite: async () =>
-    await client.bookmarks.setFavorite({ favorite: true, id: someId }),
-  update: async () =>
-    await client.bookmarks.update({
-      id: someId,
-      note: null,
-      tags: [],
-      title: "t",
-      url: "https://example.com/",
-    }),
-});
+type BookmarkProcedureName = ProcedurePath<ApiContract["bookmarks"]>;
+
+const procedurePaths = (router: object, prefix = ""): string[] =>
+  Object.entries(router).flatMap(([key, value]: [string, unknown]) =>
+    isContractProcedure(value)
+      ? [`${prefix}${key}`]
+      : procedurePaths(value as object, `${prefix}${key}.`)
+  );
+
+/** テスト対象は契約から取る。手で並べた一覧だと新しい procedure が 401 / CSRF の検査から漏れる。 */
+const procedureNames = procedurePaths(
+  contract.bookmarks
+).toSorted() as BookmarkProcedureName[];
+
+/**
+ * bookmarks の全 procedure を、入力検証で落ちない正しい入力で呼ぶ。
+ * `satisfies` で契約の procedure と過不足なく一致させ、procedure を足したら型エラーで気付く。
+ */
+const callEveryProcedure = (client: ApiTestClient) =>
+  ({
+    "counts.favorites": async () => await client.bookmarks.counts.favorites(),
+    "counts.inbox": async () => await client.bookmarks.counts.inbox(),
+    "counts.recent": async () => await client.bookmarks.counts.recent(),
+    create: async () =>
+      await client.bookmarks.create({
+        note: null,
+        tags: [],
+        title: "t",
+        url: "https://example.com/",
+      }),
+    delete: async () => await client.bookmarks.delete({ id: someId }),
+    detail: async () => await client.bookmarks.detail({ id: someId }),
+    editor: async () => await client.bookmarks.editor({ id: someId }),
+    list: async () => await client.bookmarks.list({}),
+    setFavorite: async () =>
+      await client.bookmarks.setFavorite({ favorite: true, id: someId }),
+    update: async () =>
+      await client.bookmarks.update({
+        id: someId,
+        note: null,
+        tags: [],
+        title: "t",
+        url: "https://example.com/",
+      }),
+  }) satisfies Record<BookmarkProcedureName, () => Promise<unknown>>;
 
 const notFound = {
   code: "bookmark-not-found",
@@ -137,6 +151,23 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   const as = (user: typeof actor | null) => createTestClient(getDb(), user);
 
   describe("認証と CSRF", () => {
+    it("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
+      expect(
+        Object.keys(callEveryProcedure(as(null))).toSorted()
+      ).toStrictEqual(procedureNames);
+    });
+
+    it.each(procedureNames)(
+      "x-csrf-token の無い bookmarks.%s は認証済みでも 403 で拒否する（CSRF の除外は health / me だけ）",
+      async (name) => {
+        await expect(
+          callEveryProcedure(createTestClient(getDb(), actor, { csrf: false }))[
+            name
+          ]()
+        ).rejects.toMatchObject({ code: "CSRF_TOKEN_MISMATCH", status: 403 });
+      }
+    );
+
     it.each(procedureNames)(
       "未認証の bookmarks.%s は defined な UNAUTHORIZED（401）を返す",
       async (name) => {
