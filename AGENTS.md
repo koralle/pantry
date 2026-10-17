@@ -18,13 +18,18 @@
 
 ## ディレクトリ構造
 
-- `panda/` - Panda CSS の codegen 入力（globalCss・トークン定義。`panda.config.ts` から組み立てる。ADR-0002）
-- `src/` - アプリケーションコード（TanStack Start + Cloudflare Workers）
-- `src/features/` - Server Function と機能単位のUI・ロジック
-- `src/db/` - Drizzle ORM のスキーマとTurso接続
-- `public/` - 静的アセット
+- `apps/web/` - アプリケーション本体（TanStack Start + Cloudflare Workers）。以下の項目はすべて配下。
+  - `panda/` - Panda CSS の codegen 入力（globalCss・トークン定義。`panda.config.ts` から組み立てる。ADR-0002）
+  - `src/` - アプリケーションコード
+  - `src/features/` - Server Function と機能単位のUI・ロジック
+  - `src/db/` - Drizzle ORM のスキーマとTurso接続
+  - `public/` - 静的アセット
+- `docs/` - 設計・方針ドキュメント
+- `.agents/` - エージェント向けルールとスキル
 
 ## 開発コマンド
+
+ルートのコマンドは `pnpm --filter @pantry/web` でアプリへ委譲する。
 
 | コマンド | 説明 |
 | --- | --- |
@@ -34,6 +39,7 @@
 | `pnpm run deploy` | Cloudflare Workers にデプロイ |
 | `pnpm run test` | テスト実行（Vitest。Docker 不要） |
 | `pnpm run test:persistence` | Persistence Integration test（Testcontainers + 実 libSQL） |
+| `pnpm run typecheck` | ルート設定とアプリの型検査 |
 | `pnpm run cf-typegen` | Worker バインディングの型生成 |
 | `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用 |
 | `pnpm run db:seed` | Turso開発DBへテスト／開発データを投入 |
