@@ -3,6 +3,7 @@
  * ブラウザから server-only の getDB / api client を import できないようにする。
  */
 import { createApiServerClient } from "../../api/client.server";
+import { forwardSetCookie } from "../../api/forward-set-cookie.server";
 import { getDB } from "../../db/get-db.server";
 import { getSessionUser } from "../../features/auth/server/get-session-user.server";
 import { getBookmarkCount } from "../../features/bookmarks/persistence/get-bookmark-count";
@@ -33,9 +34,12 @@ export const appRouter = createAppRouter({
     await getBookmarkCount(getDB(), userId, view),
   getBookmarkDetail: async (userId, input) =>
     await getBookmarkDetail(getDB(), userId, input),
-  // session の正本は pantry-api。受けたリクエストの Cookie で `me` を呼ぶ。
+  // session の正本は pantry-api。受けたリクエストの Cookie で `me` を呼び、
+  // session 延長の Set-Cookie はブラウザへのレスポンスへ引き継ぐ。
   getSession: async (headers) =>
-    await getSessionUser(createApiServerClient(headers.get("cookie"))),
+    await getSessionUser(
+      createApiServerClient(headers, { onSetCookie: forwardSetCookie })
+    ),
   insertBookmark: async (input) => await insertBookmark(getDB(), input),
   insertTag: async (input) => await insertTag(getDB(), input),
   listBookmarks: async (input) => await listBookmarks(getDB(), input),

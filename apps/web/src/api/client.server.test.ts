@@ -14,7 +14,15 @@ interface SeenRequest {
   readonly pathname: string;
 }
 
-const createFakeApi = (seen: SeenRequest[]) => {
+const REFRESHED_COOKIE =
+  "better-auth.session_token=valid; Max-Age=604800; Path=/; HttpOnly; SameSite=Lax";
+
+const withCookie = (cookie: string): Headers => new Headers({ cookie });
+
+const createFakeApi = (
+  seen: SeenRequest[],
+  { refresh = false }: { readonly refresh?: boolean } = {}
+) => {
   const os = implement(contract).$context<{ headers: Headers }>();
   const router = os.router({
     health: os.health.handler(() => ({ status: "ok" as const })),
@@ -36,14 +44,22 @@ const createFakeApi = (seen: SeenRequest[]) => {
       context: { headers: request.headers },
       prefix: "/rpc",
     });
-    return matched ? response : new Response("Not Found", { status: 404 });
+    if (!matched) {
+      return new Response("Not Found", { status: 404 });
+    }
+    if (refresh) {
+      response.headers.append("set-cookie", REFRESHED_COOKIE);
+    }
+    return response;
   };
 };
 
 describe("createApiServerClient", () => {
   test("受けた Cookie を api の /rpc へ転送する", async () => {
     const seen: SeenRequest[] = [];
-    const client = createApiServerClient(SESSION_COOKIE, createFakeApi(seen));
+    const client = createApiServerClient(withCookie(SESSION_COOKIE), {
+      apiFetch: createFakeApi(seen),
+    });
 
     await expect(client.health()).resolves.toStrictEqual({ status: "ok" });
     expect(seen).toStrictEqual([
@@ -53,16 +69,69 @@ describe("createApiServerClient", () => {
 
   test("Cookie が無ければ cookie header を付けない", async () => {
     const seen: SeenRequest[] = [];
-    const client = createApiServerClient(null, createFakeApi(seen));
+    const client = createApiServerClient(new Headers(), {
+      apiFetch: createFakeApi(seen),
+    });
 
     await client.health();
     expect(seen).toStrictEqual([{ cookie: null, pathname: "/rpc/health" }]);
+  });
+
+  test("クライアント IP のヘッダーは転送し、それ以外は転送しない", async () => {
+    const forwarded: Headers[] = [];
+    const client = createApiServerClient(
+      new Headers({
+        authorization: "Bearer should-not-leak",
+        "cf-connecting-ip": "203.0.113.7",
+        cookie: SESSION_COOKIE,
+        "x-forwarded-for": "203.0.113.7",
+      }),
+      {
+        apiFetch: async (request) => {
+          forwarded.push(request.headers);
+          return await createFakeApi([])(request);
+        },
+      }
+    );
+
+    await client.health();
+    expect(forwarded[0]?.get("cf-connecting-ip")).toBe("203.0.113.7");
+    expect(forwarded[0]?.get("x-forwarded-for")).toBe("203.0.113.7");
+    expect(forwarded[0]?.get("authorization")).toBeNull();
+  });
+
+  test("api の Set-Cookie を onSetCookie へ渡す", async () => {
+    const received: (readonly string[])[] = [];
+    const client = createApiServerClient(withCookie(SESSION_COOKIE), {
+      apiFetch: createFakeApi([], { refresh: true }),
+      onSetCookie: (cookies) => {
+        received.push(cookies);
+      },
+    });
+
+    await expect(client.me()).resolves.toMatchObject({ id: "user_1" });
+    expect(received).toStrictEqual([[REFRESHED_COOKIE]]);
+  });
+
+  test("Set-Cookie が無ければ onSetCookie を呼ばない", async () => {
+    const received: (readonly string[])[] = [];
+    const client = createApiServerClient(withCookie(SESSION_COOKIE), {
+      apiFetch: createFakeApi([]),
+      onSetCookie: (cookies) => {
+        received.push(cookies);
+      },
+    });
+
+    await client.me();
+    expect(received).toStrictEqual([]);
   });
 });
 
 describe("getSessionUser", () => {
   test("me の結果を SessionUser として返す", async () => {
-    const client = createApiServerClient(SESSION_COOKIE, createFakeApi([]));
+    const client = createApiServerClient(withCookie(SESSION_COOKIE), {
+      apiFetch: createFakeApi([]),
+    });
 
     await expect(getSessionUser(client)).resolves.toStrictEqual({
       email: "koralle@example.com",
@@ -73,18 +142,18 @@ describe("getSessionUser", () => {
 
   test("UNAUTHORIZED は null にする", async () => {
     const client = createApiServerClient(
-      "better-auth.session_token=expired",
-      createFakeApi([])
+      withCookie("better-auth.session_token=expired"),
+      { apiFetch: createFakeApi([]) }
     );
 
     await expect(getSessionUser(client)).resolves.toBeNull();
   });
 
   test("api の障害は未認証にせず投げる", async () => {
-    const client = createApiServerClient(
-      SESSION_COOKIE,
-      async () => await Promise.resolve(new Response("boom", { status: 500 }))
-    );
+    const client = createApiServerClient(withCookie(SESSION_COOKIE), {
+      apiFetch: async () =>
+        await Promise.resolve(new Response("boom", { status: 500 })),
+    });
 
     await expect(getSessionUser(client)).rejects.toThrow();
   });
