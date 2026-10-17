@@ -1,7 +1,5 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { createClient } from "@libsql/client";
+import { migrationsFolder } from "@pantry/db/migrations";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { GenericContainer, Wait } from "testcontainers";
@@ -9,9 +7,6 @@ import type { StartedTestContainer } from "testcontainers";
 import type { TestProject } from "vitest/node";
 
 import { LIBSQL_SERVER_IMAGE } from "./libsql-server-image";
-
-const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
-const migrationsFolder = path.join(repoRoot, "drizzle");
 
 function libsqlHttpUrl(container: StartedTestContainer): string {
   return `http://${container.getHost()}:${container.getMappedPort(8080)}`;

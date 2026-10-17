@@ -1,7 +1,7 @@
+import type { AppDb } from "@pantry/db";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq } from "drizzle-orm";
 
-import type { AppDb } from "../../../db/app-db";
-import { tagsTable } from "../../../db/schema/tag";
 import type { TouchTagInput, TouchTagOutput } from "../application/touch-tag";
 
 /**

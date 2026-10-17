@@ -1,10 +1,10 @@
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { bookmarkTable } from "../../../db/schema/bookmark";
-import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
-import { tagsTable } from "../../../db/schema/tag";
 import type { UserId } from "../../auth/domain/auth-values";
 import { tagIdSchema } from "../../tags/domain/tag-values";
 import type { UpdateBookmarkInput } from "../application/update-bookmark";

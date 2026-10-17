@@ -1,9 +1,9 @@
+import { user } from "@pantry/db/schema/auth-schema";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { tagsTable } from "@pantry/db/schema/tag";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { user } from "../../db/schema/auth-schema";
-import { bookmarkTable } from "../../db/schema/bookmark";
-import { tagsTable } from "../../db/schema/tag";
 import { userIdSchema } from "../../features/auth/domain/auth-values";
 import { decodeBookmarkListCursor } from "../../features/bookmarks/lib/list/bookmark-list-cursor";
 import { BOOKMARK_LIST_PAGE_SIZE } from "../../features/bookmarks/lib/list/bookmark-list-page-size";

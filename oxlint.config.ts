@@ -10,10 +10,11 @@ export default defineConfig({
     ".agents/skills/**",
     ".pnpmfile.cjs",
     "apps/web/postcss.config.cjs",
-    "apps/web/src/db/schema/auth-schema.ts",
     "apps/web/src/routeTree.gen.ts",
     "apps/web/vitest/tanstack-entry-stub.ts",
     "apps/web/worker-configuration.d.ts",
+    "packages/db/.generated/**",
+    "packages/db/src/schema/auth-schema.ts",
   ],
   overrides: [
     {

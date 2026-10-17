@@ -1,8 +1,8 @@
+import type { AppDb } from "@pantry/db";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { and, eq } from "drizzle-orm";
 
-import type { AppDb } from "../../../db/app-db";
-import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
-import { tagsTable } from "../../../db/schema/tag";
 import type {
   DeleteTagInput,
   DeleteTagOutput,

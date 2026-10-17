@@ -1,12 +1,12 @@
 import { createClient } from "@libsql/client";
+import { user } from "@pantry/db/schema/auth-schema";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 
-import { user } from "../../../db/schema/auth-schema";
-import { bookmarkTable } from "../../../db/schema/bookmark";
-import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
-import { tagsTable } from "../../../db/schema/tag";
 import { userIdSchema } from "../../auth/domain/auth-values";
 import type { UserId } from "../../auth/domain/auth-values";
 

@@ -1,9 +1,9 @@
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { eq, sql } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { bookmarkTable } from "../../db/schema/bookmark";
-import { bookmarkTagsTable } from "../../db/schema/bookmark-tag";
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,

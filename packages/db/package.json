@@ -1,0 +1,33 @@
+{
+  "name": "@pantry/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./migrations": "./src/migrations.ts",
+    "./schema/*": "./src/schema/*.ts"
+  },
+  "scripts": {
+    "auth:generate": "varlock run --path ../../apps/web/ -- auth generate --config ../../apps/web/auth.ts --output .generated/auth-schema.ts --yes",
+    "migrate:dev": "varlock run --path ../../apps/web/ -- drizzle-kit migrate",
+    "migrate:prod": "drizzle-kit migrate",
+    "studio:dev": "varlock run --path ../../apps/web/ -- drizzle-kit studio",
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@libsql/client": "catalog:database",
+    "drizzle-orm": "catalog:database",
+    "valibot": "catalog:validation"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "catalog:typescript",
+    "@tursodatabase/database": "catalog:database",
+    "@types/node": "catalog:runtime",
+    "auth": "catalog:authentication",
+    "drizzle-kit": "catalog:database",
+    "typescript": "catalog:typescript",
+    "varlock": "catalog:envvars",
+    "vitest": "catalog:test"
+  }
+}

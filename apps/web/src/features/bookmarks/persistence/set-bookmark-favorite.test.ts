@@ -1,12 +1,12 @@
 import { createClient } from "@libsql/client";
+import type { AppDb } from "@pantry/db";
+import { user } from "@pantry/db/schema/auth-schema";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import type { AppDb } from "../../../db/app-db";
-import { user } from "../../../db/schema/auth-schema";
-import { bookmarkTable } from "../../../db/schema/bookmark";
 import { userIdSchema } from "../../auth/domain/auth-values";
 import type { SetBookmarkFavoriteInput } from "../application/set-bookmark-favorite";
 import { setBookmarkFavorite } from "./set-bookmark-favorite";

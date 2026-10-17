@@ -1,14 +1,14 @@
 import { createClient } from "@libsql/client";
 import type { Client } from "@libsql/client";
+import type { AppDb } from "@pantry/db";
+import { user } from "@pantry/db/schema/auth-schema";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { afterAll, beforeAll, beforeEach, inject } from "vitest";
 
-import type { AppDb } from "../../db/app-db";
-import { user } from "../../db/schema/auth-schema";
-import { bookmarkTable } from "../../db/schema/bookmark";
-import { bookmarkTagsTable } from "../../db/schema/bookmark-tag";
-import { tagsTable } from "../../db/schema/tag";
 import { userIdSchema } from "../../features/auth/domain/auth-values";
 import type { UserId } from "../../features/auth/domain/auth-values";
 
@@ -48,8 +48,8 @@ async function resetPersistenceTables(client: Client): Promise<void> {
  * schema は globalSetup の本番 migration が作ったものを使う。
  */
 export function withPersistenceDb(): PersistenceDb {
-  let client: Client | undefined = undefined;
-  let db: AppDb | undefined = undefined;
+  let client: Client | undefined;
+  let db: AppDb | undefined;
 
   beforeAll(() => {
     client = createClient({ url: inject("libsqlUrl") });

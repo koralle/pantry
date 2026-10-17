@@ -1,11 +1,11 @@
+import * as authSchema from "@pantry/db/schema/auth-schema";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { reset } from "drizzle-seed";
 import { uuidv7 } from "uuidv7";
 
 import { auth, db } from "../auth";
-import * as authSchema from "../src/db/schema/auth-schema";
-import { bookmarkTable } from "../src/db/schema/bookmark";
-import { bookmarkTagsTable } from "../src/db/schema/bookmark-tag";
-import { tagsTable } from "../src/db/schema/tag";
 import { toTagName } from "../src/features/tags/domain/tag-values";
 
 const fullSchema = {

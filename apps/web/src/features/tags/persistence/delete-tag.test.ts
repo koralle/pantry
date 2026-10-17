@@ -1,12 +1,12 @@
 import { createClient } from "@libsql/client";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { bookmarkTable } from "../../../db/schema/bookmark";
-import { bookmarkTagsTable } from "../../../db/schema/bookmark-tag";
-import { tagsTable } from "../../../db/schema/tag";
 import { tagIdSchema } from "../domain/tag-values";
 import { deleteTag } from "./delete-tag";
 import { parseUserId, seedBookmark, seedTag, seedUser } from "./test-helpers";
