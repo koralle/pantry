@@ -1,7 +1,7 @@
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
+import { userIdSchema } from "../../../domain/user-id";
 import { getBookmarkCount } from "./get-bookmark-count";
 import {
   closeMemoryClients,

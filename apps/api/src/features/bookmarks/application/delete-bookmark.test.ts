@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 import { executeDeleteBookmark } from "./delete-bookmark";
 import type { SoftDeleteBookmark } from "./delete-bookmark";
 

@@ -62,9 +62,11 @@ describe(ssrRpcFetch, () => {
     const { router, capturedCookies } = capturingSessionRouter();
     const client = clientThroughSsr(router);
 
-    const result = await client.bookmarks.list({});
+    const result = await client.auth.session();
 
-    expect(result).toStrictEqual({ items: [], nextCursor: null });
+    expect(result).toStrictEqual({
+      user: { email: "user-1@example.com", id: "user-1", name: "koralle" },
+    });
     expect(capturedCookies).toStrictEqual([
       "better-auth.session_token=ssr-cookie",
     ]);
@@ -82,7 +84,7 @@ describe(ssrRpcFetch, () => {
     const { router, capturedHeaders } = capturingSessionRouter();
     const client = clientThroughSsr(router);
 
-    await client.bookmarks.list({});
+    await client.auth.session();
 
     expect(capturedHeaders[0]?.get("cf-connecting-ip")).toBe("203.0.113.7");
     expect(capturedHeaders[0]?.get("x-forwarded-for")).toBe("203.0.113.7");
@@ -96,7 +98,7 @@ describe(ssrRpcFetch, () => {
     const { router, capturedCookies } = capturingSessionRouter();
     const client = clientThroughSsr(router, { cookie: "link-cookie=explicit" });
 
-    await client.bookmarks.list({});
+    await client.auth.session();
 
     expect(capturedCookies).toStrictEqual(["link-cookie=explicit"]);
   });

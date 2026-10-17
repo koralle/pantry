@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../features/auth/domain/auth-values";
+import { userIdSchema } from "../../domain/user-id";
 import { getBookmarkDetail } from "../../features/bookmarks/persistence/get-bookmark-detail";
 import { listBookmarks } from "../../features/bookmarks/persistence/list-bookmarks";
 import { softDeleteBookmark } from "../../features/bookmarks/persistence/soft-delete-bookmark";

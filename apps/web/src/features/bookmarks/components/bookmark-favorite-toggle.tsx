@@ -1,3 +1,4 @@
+import type { BookmarkDetail } from "@pantry/api-contract/schemas/bookmark-procedures";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { Star } from "lucide-react";
@@ -7,7 +8,6 @@ import { orpc } from "../../../rpc/client/query";
 import { starToggle } from "../../../shared/styles/detail";
 import { bookmarkDetailQueryOptions } from "../lib/queries/bookmark-detail-query-options";
 import { refreshAfterBookmarkMutation } from "../lib/queries/refresh-after-bookmark-mutation";
-import type { BookmarkDetail } from "../persistence/get-bookmark-detail";
 
 /**
  * 詳細カード右上のスタートグル。favorite を optimistic に反転し、

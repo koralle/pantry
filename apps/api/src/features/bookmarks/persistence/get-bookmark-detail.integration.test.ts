@@ -9,7 +9,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
+import { userIdSchema } from "../../../domain/user-id";
 import { getBookmarkDetail } from "./get-bookmark-detail";
 
 /**
