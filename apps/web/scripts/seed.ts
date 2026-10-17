@@ -5,8 +5,8 @@ import { tagsTable } from "@pantry/db/schema/tag";
 import { reset } from "drizzle-seed";
 import { uuidv7 } from "uuidv7";
 
-import { auth, db } from "../auth";
 import { toTagName } from "../src/features/tags/domain/tag-values";
+import { auth, db } from "./auth";
 
 const fullSchema = {
   ...authSchema,

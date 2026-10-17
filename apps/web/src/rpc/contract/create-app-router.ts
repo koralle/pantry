@@ -570,6 +570,6 @@ export const createAppRouter = (deps: AppRouterDeps) => {
 
 /**
  * 本番 router の実装モジュールは import しない。
- * 型だけ共有し、client bundle に getDB / getAuth が混ざらないようにする。
+ * 型だけ共有し、client bundle に getDB / api client が混ざらないようにする。
  */
 export type AppRouter = ReturnType<typeof createAppRouter>;

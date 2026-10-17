@@ -1,45 +1,37 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
 const dir = import.meta.dirname;
-const repoRoot = join(dir, "../../..");
+const webRoot = join(dir, "../../..");
 
 async function readFromAuth(path: string): Promise<string> {
   return await readFile(join(dir, path), "utf-8");
 }
 
 describe("passkey plugin wiring", () => {
-  test("Worker auth keeps email+password and adds the passkey plugin", async () => {
-    const source = await readFromAuth("server/get-auth.server.ts");
-
-    expect(source).toContain(
-      "emailAndPassword: {\n      enabled: true,\n    }"
-    );
-    expect(source).toContain("session: {\n      freshAge: 0,\n    }");
-    expect(source).toContain('from "@better-auth/passkey"');
-    expect(source).toContain(
-      "passkey(passkeyPluginOptions(env.BETTER_AUTH_URL))"
-    );
-    expect(source).toContain("admin()");
-  });
-
-  test("Node auth CLI entry matches Worker passkey wiring", async () => {
-    const source = await readFile(join(repoRoot, "auth.ts"), "utf-8");
-
-    expect(source).toContain("emailAndPassword: {\n    enabled: true,\n  }");
-    expect(source).toContain("session: {\n    freshAge: 0,\n  }");
-    expect(source).toContain('from "@better-auth/passkey"');
-    expect(source).toContain(
-      "passkey(passkeyPluginOptions(env.BETTER_AUTH_URL))"
-    );
-  });
-
   test("auth client installs passkeyClient", async () => {
     const source = await readFromAuth("lib/auth-client.ts");
 
     expect(source).toContain('from "@better-auth/passkey/client"');
     expect(source).toContain("passkeyClient()");
+  });
+
+  test("auth client は同一 origin の /api/auth を使う（baseURL を持たない）", async () => {
+    const source = await readFromAuth("lib/auth-client.ts");
+
+    expect(source).not.toContain("baseURL");
+  });
+
+  test("web は Better Auth の server instance を持たない（pantry-api が持つ）", async () => {
+    const removed = [
+      join(webRoot, "auth.ts"),
+      join(dir, "server/get-auth.server.ts"),
+      join(dir, "lib/passkey/plugin-options.ts"),
+    ];
+    for (const path of removed) {
+      await expect(access(path)).rejects.toThrow();
+    }
   });
 });

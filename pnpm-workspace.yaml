@@ -37,7 +37,6 @@ catalogs:
     "@tanstack/react-query-devtools": 5.101.4
     "@tanstack/react-router-devtools": 1.167.1
   envvars:
-    "@t3-oss/env-core": 0.13.11
     "@varlock/cloudflare-integration": 1.5.1
     varlock: 1.18.0
   errors:

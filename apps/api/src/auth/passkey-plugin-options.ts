@@ -7,9 +7,9 @@ const parseBetterAuthUrl = (value: string): URL => {
 };
 
 /**
- * apps/web/src/features/auth/lib/passkey/plugin-options.ts の一時的な複製。
- * PR 3 で web 側の Better Auth を廃止するときに web のコピーを削除し、
- * このファイルを @pantry/api の正本として残す。
+ * passkey の rpID / origin を BETTER_AUTH_URL から導く。ブラウザは web の origin で
+ * WebAuthn を行い、web が Request をそのまま転送するので、BETTER_AUTH_URL は
+ * web の公開 URL と一致させる。
  */
 export const passkeyPluginOptions = (betterAuthUrl: string) => {
   const url = parseBetterAuthUrl(betterAuthUrl);

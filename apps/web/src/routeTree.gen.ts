@@ -16,7 +16,6 @@ import { Route as SignInIndexRouteImport } from './routes/sign-in/index'
 import { Route as ProtectedBookmarksIndexRouteImport } from './routes/_protected/bookmarks/index'
 import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/settings/index'
 import { Route as ProtectedTagsIndexRouteImport } from './routes/_protected/tags/index'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc/$'
 import { Route as ProtectedBookmarksIdIndexRouteImport } from './routes/_protected/bookmarks/$id/index'
 import { Route as ProtectedBookmarksIdEditRouteImport } from './routes/_protected/bookmarks/$id/edit'
@@ -57,11 +56,6 @@ const ProtectedTagsIndexRoute = ProtectedTagsIndexRouteImport.update({
   path: '/tags/',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   id: '/api/rpc/$',
   path: '/api/rpc/$',
@@ -96,7 +90,6 @@ export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/$': typeof ProtectedSplatRoute
   '/sign-in/': typeof SignInIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/bookmarks/': typeof ProtectedBookmarksIndexRoute
   '/settings/': typeof ProtectedSettingsIndexRoute
@@ -110,7 +103,6 @@ export interface FileRoutesByTo {
   '/$': typeof ProtectedSplatRoute
   '/': typeof ProtectedIndexRoute
   '/sign-in': typeof SignInIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/bookmarks': typeof ProtectedBookmarksIndexRoute
   '/settings': typeof ProtectedSettingsIndexRoute
@@ -126,7 +118,6 @@ export interface FileRoutesById {
   '/_protected/$': typeof ProtectedSplatRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/sign-in/': typeof SignInIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/_protected/bookmarks/': typeof ProtectedBookmarksIndexRoute
   '/_protected/settings/': typeof ProtectedSettingsIndexRoute
@@ -142,7 +133,6 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/sign-in/'
-    | '/api/auth/$'
     | '/api/rpc/$'
     | '/bookmarks/'
     | '/settings/'
@@ -156,7 +146,6 @@ export interface FileRouteTypes {
     | '/$'
     | '/'
     | '/sign-in'
-    | '/api/auth/$'
     | '/api/rpc/$'
     | '/bookmarks'
     | '/settings'
@@ -171,7 +160,6 @@ export interface FileRouteTypes {
     | '/_protected/$'
     | '/_protected/'
     | '/sign-in/'
-    | '/api/auth/$'
     | '/api/rpc/$'
     | '/_protected/bookmarks/'
     | '/_protected/settings/'
@@ -185,7 +173,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   ProtectedRoute: typeof ProtectedRouteWithChildren
   SignInIndexRoute: typeof SignInIndexRoute
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiRpcSplatRoute: typeof ApiRpcSplatRoute
 }
 
@@ -239,13 +226,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/tags/'
       preLoaderRoute: typeof ProtectedTagsIndexRouteImport
       parentRoute: typeof ProtectedRoute
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/api/rpc/$': {
       id: '/api/rpc/$'
@@ -316,7 +296,6 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,
   SignInIndexRoute: SignInIndexRoute,
-  ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiRpcSplatRoute: ApiRpcSplatRoute,
 }
 export const routeTree = rootRouteImport

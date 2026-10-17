@@ -2,6 +2,9 @@
   "name": "@pantry/api",
   "private": true,
   "type": "module",
+  "exports": {
+    "./auth": "./src/auth/create-auth.ts"
+  },
   "scripts": {
     "build": "vite build",
     "cf-typegen": "varlock-wrangler types",
