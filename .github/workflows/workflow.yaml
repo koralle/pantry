@@ -47,7 +47,7 @@ jobs:
       - name: Deploy production
         shell: bash
         run: |
-          pnpm exec varlock-wrangler deploy
+          pnpm --filter @pantry/web exec varlock-wrangler deploy
         env:
           APP_ENV: production
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
