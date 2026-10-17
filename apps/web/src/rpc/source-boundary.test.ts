@@ -41,6 +41,8 @@ describe("client bundle boundary", () => {
       "features/auth/functions/get-session.ts",
       "features/auth/functions/ensure-session.ts",
       "features/auth/functions/get-auth.server.ts",
+      "features/auth/server/get-auth.server.ts",
+      "routes/api/auth/$.ts",
       "features/auth/functions/request-session.server.ts",
       "features/tags/functions/fetch-shelf-tags.ts",
       "features/tags/functions/fetch-tags.ts",
@@ -50,7 +52,7 @@ describe("client bundle boundary", () => {
       await expect(access(join(srcDir, path))).rejects.toThrow();
     }
 
-    const moved = ["features/auth/server/get-auth.server.ts"];
+    const moved = ["features/auth/server/get-session-user.server.ts"];
     for (const path of moved) {
       await expect(access(join(srcDir, path))).resolves.toBeUndefined();
     }

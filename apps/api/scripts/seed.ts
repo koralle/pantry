@@ -2,11 +2,11 @@ import * as authSchema from "@pantry/db/schema/auth-schema";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
+import { toTagName } from "@pantry/db/tag-name";
 import { reset } from "drizzle-seed";
 import { uuidv7 } from "uuidv7";
 
-import { auth, db } from "../auth";
-import { toTagName } from "../src/features/tags/domain/tag-values";
+import { auth, db } from "./auth";
 
 const fullSchema = {
   ...authSchema,
@@ -687,6 +687,7 @@ const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
  */
 const assertLocalPortsAgree = (): void => {
   const rawUrl = process.env.TURSO_CONNECTION_URL;
+  // TURSO_PORT は scripts/.env.schema だけが取り込む（Worker の env には無い）。
   const port = process.env["TURSO_PORT"];
   if (rawUrl === undefined || rawUrl === "" || port === undefined) {
     return;

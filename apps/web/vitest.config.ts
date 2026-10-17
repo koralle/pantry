@@ -45,6 +45,24 @@ export default defineConfig({
       {
         plugins: [
           cloudflareTest({
+            // wrangler.jsonc の `API`（pantry-api）はテストでは起動しない。
+            // 経路を通るテストは fetch を注入するので、binding 自体は 503 の stub にする。
+            // 受けたリクエストを x-stub-* ヘッダーで返し、server.ts の振り分けを確かめる。
+            miniflare: {
+              serviceBindings: {
+                API: (request: Request) =>
+                  new Response("pantry-api is not available in tests", {
+                    headers: {
+                      "x-stub-client-ip":
+                        request.headers.get("cf-connecting-ip") ?? "",
+                      "x-stub-cookie": request.headers.get("cookie") ?? "",
+                      "x-stub-method": request.method,
+                      "x-stub-path": new URL(request.url).pathname,
+                    },
+                    status: 503,
+                  }),
+              },
+            },
             wrangler: { configPath: "./wrangler.jsonc" },
           }),
         ],

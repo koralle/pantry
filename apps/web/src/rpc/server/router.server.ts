@@ -1,10 +1,11 @@
 /**
  * 本番配線だけを置く。router 実装本体は `createAppRouter` 側に残し、
- * ブラウザから server-only の getDB / getAuth を import できないようにする。
+ * ブラウザから server-only の getDB / api client を import できないようにする。
  */
+import { createApiServerClient } from "../../api/client.server";
+import { forwardSetCookie } from "../../api/forward-set-cookie.server";
 import { getDB } from "../../db/get-db.server";
-import type { SessionUser } from "../../features/auth/domain/auth-values";
-import { getAuth } from "../../features/auth/server/get-auth.server";
+import { getSessionUser } from "../../features/auth/server/get-session-user.server";
 import { getBookmarkCount } from "../../features/bookmarks/persistence/get-bookmark-count";
 import { getBookmarkDetail } from "../../features/bookmarks/persistence/get-bookmark-detail";
 import { insertBookmark } from "../../features/bookmarks/persistence/insert-bookmark";
@@ -33,18 +34,12 @@ export const appRouter = createAppRouter({
     await getBookmarkCount(getDB(), userId, view),
   getBookmarkDetail: async (userId, input) =>
     await getBookmarkDetail(getDB(), userId, input),
-  getSession: async (headers): Promise<SessionUser | null> => {
-    const session = await getAuth().api.getSession({ headers });
-    if (!session) {
-      return null;
-    }
-
-    return {
-      email: session.user.email,
-      id: session.user.id,
-      name: session.user.name,
-    };
-  },
+  // session の正本は pantry-api。受けたリクエストの Cookie で `me` を呼び、
+  // session 延長の Set-Cookie はブラウザへのレスポンスへ引き継ぐ。
+  getSession: async (headers) =>
+    await getSessionUser(
+      createApiServerClient(headers, { onSetCookie: forwardSetCookie })
+    ),
   insertBookmark: async (input) => await insertBookmark(getDB(), input),
   insertTag: async (input) => await insertTag(getDB(), input),
   listBookmarks: async (input) => await listBookmarks(getDB(), input),

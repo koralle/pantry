@@ -1,3 +1,4 @@
+import { toTagName } from "@pantry/db/tag-name";
 import * as v from "valibot";
 
 export const tagIdSchema = v.pipe(
@@ -9,18 +10,9 @@ export const tagIdSchema = v.pipe(
 
 export type TagId = v.InferOutput<typeof tagIdSchema>;
 
-export interface TagName {
-  readonly display: string;
-  readonly normalized: string;
-}
-
-export const toTagName = (input: string): TagName => {
-  const display = input.trim().normalize("NFC");
-  return {
-    display,
-    normalized: display.toLowerCase(),
-  };
-};
+// 正規化の規則は保存値の定義として packages/db が持つ（seed も同じ関数を使う）。
+export { toTagName } from "@pantry/db/tag-name";
+export type { TagName } from "@pantry/db/tag-name";
 
 export const uniqueNormalizedTagNames = (
   inputs: readonly string[]

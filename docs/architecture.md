@@ -23,14 +23,15 @@
 ## 3. システム構成
 
 - UI/SSR: TanStack Start（`apps/web/src/routes/`、`apps/web/src/router.tsx`）
-- API Worker: Hono + oRPC（`apps/api/src/app.ts`）。contract（`packages/api-contract`）の `/rpc/*` と Better Auth の `/api/auth/*` を提供し、Cloudflare Worker `pantry-api` としてデプロイする。Better Auth の正本構成は `apps/api/src/auth/create-auth.ts`（テーブルは`packages/db`の auth-schema をそのまま使う）。Worker は公開URLを持たず、PR 3 で web から Service Binding を張る。
+- API Worker: Hono + oRPC（`apps/api/src/app.ts`）。contract（`packages/api-contract`）の `/rpc/*` と Better Auth の `/api/auth/*` を提供し、Cloudflare Worker `pantry-api` としてデプロイする。Better Auth の正本構成は `apps/api/src/auth/create-auth.ts`（テーブルは`packages/db`の auth-schema をそのまま使う）。Worker は公開URLを持たず、web の Service Binding（`env.API`）からのみ到達する。
 - API境界: oRPC procedure（`apps/web/src/rpc/contract/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
-- 移行期（PR 2 時点）: ブラウザは引き続き web の`/api/rpc`と web 自身の Better Auth（`apps/web/auth.ts`）へ接続する。web の`/rpc/*`と`/api/auth/*`を`pantry-api`へ委譲するのは PR 3。両者は同じテーブルと`BETTER_AUTH_SECRET`を共有するため、Cookie セッションは互換。
+- web → api の経路: web の Worker entry（`apps/web/src/server.ts`）が`/rpc/*`と`/api/auth/*`を元の Request のまま`env.API.fetch`で`pantry-api`へ転送し、それ以外を TanStack Start が処理する。web は Better Auth の server instance を持たず、SSR / server function は`apps/web/src/api/client.server.ts`（`env.API.fetch` + Cookie 転送）で`me`を呼んで session を得る。ブラウザ用の api client は`apps/web/src/api/client.ts`（同一 origin の`/rpc`）。
+- 移行期: 既存機能（ブックマーク・タグなど）は web の`/api/rpc`と DB の直接読み書きで動き、順次`pantry-api`の contract へ移す。
 - RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`apps/web/src/rpc/client/client.ts`、`apps/web/src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
-- 認証: Better AuthのCookieセッション。procedureは`getSession(headers)`で検証する。
+- 認証: Better AuthのCookieセッション（`pantry-api`がホスト）。web の procedure は`getSession(headers)`で検証し、その実装は api の`me`を呼ぶ。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。スキーマ・マイグレーション・接続ファクトリ（`createDb`）は`packages/db`（`@pantry/db`）に置き、server実装はclient bundleに混ざらない。
-- Worker環境変数: `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
-- 環境変数管理: Varlockの`packages/env/.env.schema`を正本とし、関心ごとのスキーマ（`schemas/.env.db`、`schemas/.env.auth`、`schemas/.env.local-libsql`）を`@import`で束ねる。値は`packages/env/.env.development`に置き、`apps/web`と`packages/db`は自前の`.env.schema`から必要なキーだけを`pick=[...]`で取り込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。
+- Worker環境変数: web は`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`と Service Binding`API`。api は`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
+- 環境変数管理: Varlockの`packages/env/.env.schema`を正本とし、関心ごとのスキーマ（`schemas/.env.db`、`schemas/.env.auth`、`schemas/.env.local-libsql`）を`@import`で束ねる。値は`packages/env/.env.development`に置き、`apps/web`・`apps/api`・`packages/db`は自前の`.env.schema`から必要なキーだけを`pick=[...]`で取り込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。auxiliary worker として起動する api の env は、`apps/web/vite.config.ts`が`apps/api`の schema で読み直して渡す。
 - ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`packages/env/scripts/symlink-env-for-worktree.ts`が`packages/env/.env.development.local`へ生成する。
 - DBマイグレーション: `packages/db`のDrizzle生成物をTursoへ適用する。D1 bindingは使わない。
 

@@ -8,17 +8,30 @@ export type AuthenticatedUser = SessionUser;
 /**
  * リクエストヘッダーからサインイン済みユーザーを解決する port。
  * 未認証は例外ではなく null で返し、procedure 側が `UNAUTHORIZED` へ写す。
+ *
+ * `responseHeaders` を受け取ったら、レスポンスへ載せるべきヘッダー（session を
+ * 延長したときの Set-Cookie など）をそこへ追加する。
  */
 export type Authenticator = (
-  headers: Headers
+  headers: Headers,
+  responseHeaders?: Headers
 ) => Promise<AuthenticatedUser | null>;
 
 /** Better Auth の Cookie セッションを読む authenticator を作る。 */
 export const cookieSessionAuthenticator = (auth: Auth): Authenticator => {
   const authenticate = async (
-    headers: Headers
+    headers: Headers,
+    responseHeaders?: Headers
   ): Promise<AuthenticatedUser | null> => {
-    const session = await auth.api.getSession({ headers });
+    // Better Auth は updateAge を過ぎた session を延長し、Cookie の有効期限も
+    // Set-Cookie で更新する（期限切れなら Cookie を消す）。返さないとブラウザの
+    // Cookie だけが先に切れるため、レスポンスへ引き継ぐ。
+    const { headers: authHeaders, response: session } =
+      await auth.api.getSession({ headers, returnHeaders: true });
+    for (const cookie of authHeaders.getSetCookie()) {
+      responseHeaders?.append("set-cookie", cookie);
+    }
+
     if (session === null) {
       return null;
     }
@@ -41,7 +54,8 @@ export const cookieSessionAuthenticator = (auth: Auth): Authenticator => {
  */
 export const authenticateRequest = async (
   authenticators: readonly Authenticator[],
-  headers: Headers
+  headers: Headers,
+  responseHeaders?: Headers
 ): Promise<AuthenticatedUser | null> => {
   const tryAuthenticator = async (
     index: number
@@ -51,7 +65,7 @@ export const authenticateRequest = async (
       return null;
     }
 
-    const user = await authenticate(headers);
+    const user = await authenticate(headers, responseHeaders);
     if (user !== null) {
       return user;
     }

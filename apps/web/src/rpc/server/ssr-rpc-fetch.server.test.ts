@@ -19,8 +19,10 @@ import { ssrRpcFetch } from "./ssr-rpc-fetch.server";
 
 function capturingSessionRouter() {
   const capturedCookies: (string | null)[] = [];
+  const capturedHeaders: Headers[] = [];
   const getSession = vi.fn(async (headers: Headers) => {
     capturedCookies.push(headers.get("cookie"));
+    capturedHeaders.push(headers);
     return {
       email: "user-1@example.com",
       id: "user-1",
@@ -47,11 +49,11 @@ function capturingSessionRouter() {
     updateTag: async () => ({ kind: "not-found" }),
   });
 
-  return { capturedCookies, router };
+  return { capturedCookies, capturedHeaders, router };
 }
 
 /**
- * RPCLink から ssrRpcFetch へ繋ぎ、SSR 中の Cookie 転送だけを見る。
+ * RPCLink から ssrRpcFetch へ繋ぎ、SSR 中のヘッダー転送だけを見る。
  * HTTP サーバーは立てず、process 内の handler へ流す。
  */
 function clientThroughSsr(router: AppRouter, linkHeaders?: HeadersInit) {
@@ -79,6 +81,25 @@ describe(ssrRpcFetch, () => {
     expect(capturedCookies).toStrictEqual([
       "better-auth.session_token=ssr-cookie",
     ]);
+  });
+
+  test("元リクエストのクライアント IP のヘッダーも転送し、ほかは転送しない", async () => {
+    mocks.getRequestHeaders.mockReturnValue(
+      new Headers({
+        authorization: "Bearer should-not-leak",
+        "cf-connecting-ip": "203.0.113.7",
+        cookie: "better-auth.session_token=ssr-cookie",
+        "x-forwarded-for": "203.0.113.7",
+      })
+    );
+    const { router, capturedHeaders } = capturingSessionRouter();
+    const client = clientThroughSsr(router);
+
+    await client.bookmarks.list({});
+
+    expect(capturedHeaders[0]?.get("cf-connecting-ip")).toBe("203.0.113.7");
+    expect(capturedHeaders[0]?.get("x-forwarded-for")).toBe("203.0.113.7");
+    expect(capturedHeaders[0]?.get("authorization")).toBeNull();
   });
 
   test("link が明示的に載せた cookie は上書きしない", async () => {

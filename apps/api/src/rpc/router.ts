@@ -1,4 +1,5 @@
 import { ORPCError, implement } from "@orpc/server";
+import type { ResponseHeadersPluginContext } from "@orpc/server/plugins";
 import { contract } from "@pantry/api-contract";
 
 import type { Authenticator } from "../auth/session";
@@ -15,9 +16,12 @@ export interface RouterDeps {
  * 未認証を contract の型付きエラー `UNAUTHORIZED`（401）へ写す。
  */
 export const createRouter = (deps: RouterDeps) => {
-  const base = implement(contract).$context<{ headers: Headers }>();
+  const base = implement(contract).$context<
+    { headers: Headers } & ResponseHeadersPluginContext
+  >();
   const requireAuth = base.middleware(async ({ context, next }) => {
-    const user = await deps.authenticate(context.headers);
+    // resHeaders は app.ts の ResponseHeadersPlugin が用意し、HTTP レスポンスへ載せる。
+    const user = await deps.authenticate(context.headers, context.resHeaders);
     if (user === null) {
       // contract の型付きエラーは `me` だけが宣言しているため、router 共有の
       // middleware からは `errors.UNAUTHORIZED()` を型付けできない。

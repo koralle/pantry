@@ -160,9 +160,6 @@ catalogs:
       specifier: 0.5.7
       version: 0.5.7
   envvars:
-    '@t3-oss/env-core':
-      specifier: 0.13.11
-      version: 0.13.11
     '@varlock/cloudflare-integration':
       specifier: 1.5.1
       version: 1.5.1
@@ -430,9 +427,18 @@ importers:
       drizzle-orm:
         specifier: catalog:database
         version: 1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5)
+      drizzle-seed:
+        specifier: catalog:database
+        version: 1.0.0-rc.5-ab785fc(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))
+      tsx:
+        specifier: catalog:script
+        version: 4.23.12
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
+      uuidv7:
+        specifier: catalog:uuid
+        version: 1.2.1
       varlock:
         specifier: catalog:envvars
         version: 1.18.0
@@ -448,9 +454,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@better-auth/drizzle-adapter':
-        specifier: catalog:authentication
-        version: 1.6.27(@better-auth/core@1.6.29(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.6.5))(jose@6.2.8)(kysely@0.28.17)(nanostores@1.4.2))(@better-auth/utils@0.4.2)(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))
       '@better-auth/passkey':
         specifier: catalog:authentication
         version: 1.6.27(@better-auth/core@1.6.29(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.4.0(zod@4.6.5))(jose@6.2.8)(kysely@0.28.17)(nanostores@1.4.2))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(better-auth@1.6.27(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.168.44(esbuild@0.28.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.2)(supports-color@10.2.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)(vitest@5.0.0(@opentelemetry/api@1.9.1)(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))))(better-call@1.4.0(zod@4.6.5))(nanostores@1.4.2)
@@ -472,12 +475,18 @@ importers:
       '@orpc/client':
         specifier: catalog:rpc
         version: 1.15.0(@opentelemetry/api@1.9.1)
+      '@orpc/contract':
+        specifier: catalog:rpc
+        version: 1.15.0(@opentelemetry/api@1.9.1)
       '@orpc/server':
         specifier: catalog:rpc
         version: 1.15.0(@opentelemetry/api@1.9.1)(ws@8.21.2)
       '@orpc/tanstack-query':
         specifier: catalog:rpc
         version: 1.15.0(@opentelemetry/api@1.9.1)(@orpc/client@1.15.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.11)
+      '@pantry/api-contract':
+        specifier: workspace:*
+        version: link:../../packages/api-contract
       '@pantry/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -551,9 +560,6 @@ importers:
       '@storybook/tanstack-react':
         specifier: catalog:storybook
         version: 10.6.2(@tanstack/react-router@1.170.27(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@tanstack/react-start@1.168.44(esbuild@0.28.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.2)(supports-color@10.2.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@tanstack/router-core@1.171.24)(@tanstack/start-client-core@1.170.22)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(storybook@10.6.2(@types/react@19.3.0)(prettier@3.9.6)(react@19.3.0))(supports-color@10.2.2)(typescript@7.0.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
-      '@t3-oss/env-core':
-        specifier: catalog:envvars
-        version: 0.13.11(typescript@7.0.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5)
       '@tanstack/devtools-vite':
         specifier: catalog:debug
         version: 0.8.3(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
@@ -575,9 +581,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: catalog:build
         version: 6.0.5(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
-      drizzle-seed:
-        specifier: catalog:database
-        version: 1.0.0-rc.5-ab785fc(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))
       postcss:
         specifier: catalog:ui
         version: 8.5.26
@@ -593,9 +596,6 @@ importers:
       testcontainers:
         specifier: catalog:test
         version: 12.1.0(supports-color@10.2.2)
-      tsx:
-        specifier: catalog:script
-        version: 4.23.12
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
@@ -3425,23 +3425,6 @@ packages:
 
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
-
-  '@t3-oss/env-core@0.13.11':
-    resolution: {integrity: sha512-sM7GYY+KL7H/Hl0BE0inWfk3nRHZOLhmVn7sHGxaZt9FAR6KqREXAE+6TqKfiavfXmpRxO/OZ2QgKRd+oiBYRQ==}
-    peerDependencies:
-      arktype: ^2.1.0
-      typescript: '>=5.0.0'
-      valibot: ^1.0.0-beta.7 || ^1.0.0
-      zod: ^3.24.0 || ^4.0.0
-    peerDependenciesMeta:
-      arktype:
-        optional: true
-      typescript:
-        optional: true
-      valibot:
-        optional: true
-      zod:
-        optional: true
 
   '@tanstack/devtools-bundler-core@0.1.1':
     resolution: {integrity: sha512-2kowecGXNi/FAnwmJKW3WDZ6XuacHDcz4JsMmx43E21G6ZFmoQFuOJCVuv2bFkQZIR1M7+FVLQF5bdS5MQY62Q==}
@@ -9864,12 +9847,6 @@ snapshots:
   '@swc/helpers@0.5.23':
     dependencies:
       tslib: 2.8.1
-
-  '@t3-oss/env-core@0.13.11(typescript@7.0.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5)':
-    optionalDependencies:
-      typescript: 7.0.2
-      valibot: 1.4.2(typescript@7.0.2)
-      zod: 4.6.5
 
   '@tanstack/devtools-bundler-core@0.1.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)':
     dependencies:

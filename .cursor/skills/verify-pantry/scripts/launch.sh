@@ -6,6 +6,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SKILL_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 ROOT=$(cd "$SKILL_DIR/../../.." && pwd)
 APP="$ROOT/apps/web"
+API="$ROOT/apps/api"
 RUN_DIR="$SKILL_DIR/run"
 ENV_DIR="$SKILL_DIR/env"
 EXPECTED_URL="http://127.0.0.1:18080"
@@ -16,28 +17,58 @@ mkdir -p "$RUN_DIR"
 cd "$APP"
 
 LOCAL_ENV="$APP/.env.local"
+API_LOCAL_ENV="$API/.env.local"
+# seed / create-user read apps/api/scripts/.env.schema (varlock run --path scripts/).
+SCRIPTS_LOCAL_ENV="$API/scripts/.env.local"
 MARKER="# pantry-verify-override"
 
 remove_local_env() {
-  if [[ -f "$LOCAL_ENV" ]] && grep -q "$MARKER" "$LOCAL_ENV"; then
-    rm -f "$LOCAL_ENV"
-  fi
+  for file in "$LOCAL_ENV" "$API_LOCAL_ENV" "$SCRIPTS_LOCAL_ENV"; do
+    if [[ -f "$file" ]] && grep -q "$MARKER" "$file"; then
+      rm -f "$file"
+    fi
+  done
 }
 
-if lsof -nP -iTCP:3000 -sTCP:LISTEN >/dev/null 2>&1; then
-  echo "refusing to launch: port 3000 is in use. stop pnpm dev first so the verification env file cannot retarget it" >&2
-  exit 1
-fi
+# vite dev starts pantry-api as an auxiliary worker that reads apps/api's env, so
+# a running `pnpm dev` (3000) or `pnpm dev:api` (8787) could pick up the override.
+for port in 3000 8787; do
+  if lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+    echo "refusing to launch: port $port is in use. stop pnpm dev / dev:api first so the verification env files cannot retarget it" >&2
+    exit 1
+  fi
+done
 
-if [[ -f "$LOCAL_ENV" ]]; then
-  echo "refusing to launch: $LOCAL_ENV already exists" >&2
-  exit 1
-fi
+for file in "$LOCAL_ENV" "$API_LOCAL_ENV" "$SCRIPTS_LOCAL_ENV"; do
+  if [[ -f "$file" ]]; then
+    echo "refusing to launch: $file already exists" >&2
+    exit 1
+  fi
+done
 
+trap remove_local_env EXIT
+
+# Web reads the database directly; Better Auth runs in pantry-api.
 cat >"$LOCAL_ENV" <<'EOF'
 # pantry-verify-override
 # Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
-TURSO_PROJECT=pantry-verify
+TURSO_CONNECTION_URL=http://127.0.0.1:18080
+TURSO_AUTH_TOKEN=pantry-verify-token
+EOF
+
+cat >"$API_LOCAL_ENV" <<'EOF'
+# pantry-verify-override
+# Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
+TURSO_CONNECTION_URL=http://127.0.0.1:18080
+TURSO_AUTH_TOKEN=pantry-verify-token
+BETTER_AUTH_URL=http://127.0.0.1:4173
+BETTER_AUTH_SECRET=pantry-verify-secret-at-least-32-characters
+EOF
+
+# The scripts schema also picks TURSO_PORT so seed can refuse a mismatched port.
+cat >"$SCRIPTS_LOCAL_ENV" <<'EOF'
+# pantry-verify-override
+# Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
 TURSO_PORT=18080
 TURSO_CONNECTION_URL=http://127.0.0.1:18080
 TURSO_AUTH_TOKEN=pantry-verify-token
@@ -45,14 +76,22 @@ BETTER_AUTH_URL=http://127.0.0.1:4173
 BETTER_AUTH_SECRET=pantry-verify-secret-at-least-32-characters
 EOF
 
-trap remove_local_env EXIT
-
 resolved=$(
   ./node_modules/.bin/varlock run -- \
-    node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
+    node -e 'process.stdout.write(process.env.TURSO_CONNECTION_URL ?? "")'
 )
-if [[ "$resolved" != "$EXPECTED_URL $APP_URL" ]]; then
-  echo "refusing to launch: resolved '$resolved', want $EXPECTED_URL $APP_URL" >&2
+api_resolved=$(
+  cd "$API" &&
+    ./node_modules/.bin/varlock run -- \
+      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
+)
+scripts_resolved=$(
+  cd "$API" &&
+    ./node_modules/.bin/varlock run --path scripts/ -- \
+      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.TURSO_PORT ?? ""))'
+)
+if [[ "$resolved" != "$EXPECTED_URL" || "$api_resolved" != "$EXPECTED_URL $APP_URL" || "$scripts_resolved" != "$EXPECTED_URL 18080" ]]; then
+  echo "refusing to launch: web resolved '$resolved', api resolved '$api_resolved', scripts resolved '$scripts_resolved', want $EXPECTED_URL / $EXPECTED_URL $APP_URL / $EXPECTED_URL 18080" >&2
   exit 1
 fi
 
@@ -72,8 +111,10 @@ curl -sf "$EXPECTED_URL/health" >/dev/null
 (cd "$ROOT/packages/db" &&
   ./node_modules/.bin/varlock run --path ../../apps/web/ -- \
     ./node_modules/.bin/drizzle-kit migrate)
-./node_modules/.bin/varlock run -- \
-  ./node_modules/.bin/tsx scripts/seed.ts
+# seed lives in apps/api (it builds Better Auth with createAuth) and reads the scripts schema.
+(cd "$API" &&
+  ./node_modules/.bin/varlock run --path scripts/ -- \
+    ./node_modules/.bin/tsx scripts/seed.ts)
 
 if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
   echo "refusing to launch: 127.0.0.1:4173 is already in use. run cleanup.sh" >&2
@@ -101,9 +142,17 @@ stop_vite() {
 }
 trap stop_vite INT TERM
 
+# Ready only when the web page renders and the pantry-api auxiliary worker answers
+# /rpc/health through the web origin (Service Binding forwarding).
+api_healthy() {
+  curl -sf -X POST "$APP_URL/rpc/health" \
+    -H 'content-type: application/json' -d '{}' | grep -q '"status":"ok"'
+}
+
 for _ in $(seq 1 90); do
   if grep -q "Local:   http://127.0.0.1:4173/" "$RUN_DIR/vite.log" &&
-    curl -sf "$APP_URL/sign-in" | grep -q "Pantry"; then
+    curl -sf "$APP_URL/sign-in" | grep -q "Pantry" &&
+    api_healthy; then
     echo "ready $APP_URL"
     wait "$vite_pid"
     exit 0

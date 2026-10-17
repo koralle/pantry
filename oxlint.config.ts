@@ -73,7 +73,7 @@ export default defineConfig({
         "**/__mocks__/**/*.ts",
         "apps/web/src/test/**/*.ts",
         "apps/web/src/test/**/*.tsx",
-        "apps/web/scripts/**/*.ts",
+        "apps/api/scripts/**/*.ts",
         "packages/env/scripts/**/*.ts",
       ],
       rules: {
