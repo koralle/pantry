@@ -4,7 +4,8 @@
  * 1. 各マイグレーションフォルダに migration.sql と snapshot.json が揃っている
  * 2. snapshot の prevIds が直前のマイグレーションへ連なっている
  * 3. migration.sql が「直前の snapshot → 当該 snapshot」から drizzle-kit が
- *    生成する SQL と完全に一致する（手書き・手編集の検出）
+ *    生成する SQL と一致する（手書き・手編集の検出。改行コードと末尾の空白だけは無視する）
+ * 5. rename を含まない（Pantry では rename を禁止し、追加 + 削除で表す）
  * 4. `drizzle-kit generate` が新しいマイグレーションを作らない（schema.ts と
  *    最新 snapshot の drift 検出）
  */
@@ -49,8 +50,16 @@ const emptySnapshot: SqliteSnapshot = {
   version: "7",
 };
 
+/** 生のバイト列に対する hash。レガシーの固定値は正規化前の内容で計算する。 */
 const sha256 = (content: string): string =>
   createHash("sha256").update(content).digest("hex");
+
+/** 改行コード（CRLF）と末尾の空白・改行の違いは手編集として扱わない。 */
+const normalizeSql = (sql: string): string =>
+  sql.replaceAll("\r\n", "\n").trimEnd();
+
+const errorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
 const listMigrationFolders = (): string[] =>
   readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
@@ -83,7 +92,7 @@ const checkSqlMatchesSnapshot = async (
 
   if (current.renames.length > 0) {
     return [
-      `${folder}: rename を含む snapshot は再生成で検証できません（renames: ${current.renames.join(", ")}）`,
+      `${folder}: rename は禁止です（renames: ${current.renames.join(", ")}）。列やテーブルの rename は、新しい列・テーブルの追加と古いものの削除（必要ならデータ移行）として表してください`,
     ];
   }
 
@@ -91,11 +100,20 @@ const checkSqlMatchesSnapshot = async (
     path.join(MIGRATIONS_DIR, folder, SQL_FILE),
     "utf-8"
   );
-  const regenerated = (await generateMigration(previous, current)).join(
-    STATEMENT_BREAKPOINT
-  );
+  let regenerated: string;
+  try {
+    regenerated = (await generateMigration(previous, current)).join(
+      STATEMENT_BREAKPOINT
+    );
+  } catch (error) {
+    // 同じテーブルで列の削除と追加が同時に起きると、drizzle-kit は rename かどうかを
+    // 対話で確かめようとして例外を投げる（resolver ... without a HintsHandler）。
+    return [
+      `${folder}: snapshot から SQL を再生成できません（${errorMessage(error)}）。同じテーブルの列の削除と追加を 1 つのマイグレーションにまとめず、別々のマイグレーションに分けてください`,
+    ];
+  }
 
-  if (committed === regenerated) {
+  if (normalizeSql(committed) === normalizeSql(regenerated)) {
     return [];
   }
 
@@ -131,6 +149,12 @@ interface GenerateExplainOutput {
   readonly statements?: readonly unknown[];
 }
 
+/** 未設定だけでなく空文字のときもプレースホルダにする。 */
+const envOrPlaceholder = (key: string, placeholder: string): string => {
+  const value = process.env[key];
+  return value === undefined || value === "" ? placeholder : value;
+};
+
 /** `drizzle-kit generate --explain` はファイルを書かずに、生成されるはずの statement を返す。 */
 const checkSchemaDrift = (): string[] => {
   const result = spawnSync(
@@ -142,17 +166,25 @@ const checkSchemaDrift = (): string[] => {
       env: {
         ...process.env,
         // drizzle.config.ts は接続情報を必須にするが、generate は DB に接続しない。
-        TURSO_AUTH_TOKEN: process.env["TURSO_AUTH_TOKEN"] ?? "unused",
-        TURSO_CONNECTION_URL:
-          process.env["TURSO_CONNECTION_URL"] ?? "http://127.0.0.1:8080",
+        TURSO_AUTH_TOKEN: envOrPlaceholder("TURSO_AUTH_TOKEN", "unused"),
+        TURSO_CONNECTION_URL: envOrPlaceholder(
+          "TURSO_CONNECTION_URL",
+          "http://127.0.0.1:8080"
+        ),
       },
       stdio: ["ignore", "pipe", "pipe"],
     }
   );
 
+  if (result.error !== undefined) {
+    return [
+      `drizzle-kit を起動できません（${errorMessage(result.error)}）\n${result.stdout ?? ""}${result.stderr ?? ""}`,
+    ];
+  }
+
   if (result.status !== 0) {
     return [
-      `drizzle-kit generate --explain が失敗しました (exit ${result.status})\n${result.stdout}${result.stderr}`,
+      `drizzle-kit generate --explain が失敗しました (exit ${result.status}, signal ${result.signal})\n${result.stdout}${result.stderr}`,
     ];
   }
 
