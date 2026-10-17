@@ -18,15 +18,21 @@ export interface CreateAuthOptions {
 /**
  * クライアント IP を読むヘッダー（rate limit のキーと session の ipAddress）。
  *
- * 本番は Cloudflare の edge が必ず上書きする CF-Connecting-IP だけを信用する。
+ * 既定は Cloudflare の edge が必ず上書きする CF-Connecting-IP だけを信用する。
  * X-Forwarded-For はクライアントが自由に付けられるので、本番で読むと IP を偽装して
  * rate limit を回避できてしまう。CF の edge を通らない開発・テストでだけ予備として読む。
+ * 許可リストにしてあるので、APP_ENV が未設定・typo・未知の値でも X-Forwarded-For は読まない。
  * web は Service Binding へ元の Request をそのまま渡すので、どちらも変わらずに届く。
  */
-export const clientIpHeaders = (appEnv: string): string[] =>
-  appEnv === "production"
-    ? ["cf-connecting-ip"]
-    : ["cf-connecting-ip", "x-forwarded-for"];
+const ENVS_TRUSTING_FORWARDED_FOR: ReadonlySet<string> = new Set([
+  "development",
+  "test",
+]);
+
+export const clientIpHeaders = (appEnv: string | undefined): string[] =>
+  appEnv !== undefined && ENVS_TRUSTING_FORWARDED_FOR.has(appEnv)
+    ? ["cf-connecting-ip", "x-forwarded-for"]
+    : ["cf-connecting-ip"];
 
 /**
  * Pantry の正本となる Better Auth 構成。
