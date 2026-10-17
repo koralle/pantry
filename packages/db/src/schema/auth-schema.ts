@@ -4,7 +4,7 @@ import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 export const user = sqliteTable("users", {
   banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
   banReason: text("ban_reason"),
-  banned: integer("banned"),
+  banned: integer("banned", { mode: "boolean" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
