@@ -4,9 +4,17 @@ on:
   pull_request:
     branches:
       - main
+    # edited: base の付け替え（stack の下の PR が merge されたときなど）でも、新しい base
+    # との差分で検査し直す。title / body の編集でも再実行される。
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
+
+# 同じ PR の古い実行は取り消す（push や edited が続いたときに最新の内容だけを検査する）。
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -64,7 +72,7 @@ jobs:
           # PR の base（stack では下の PR のブランチ）との差分を取るため、履歴をすべて取得する。
           fetch-depth: 0
 
-      # 本番に適用済みのマイグレーションは変更・削除・リネームしない。差分は新しいフォルダで追加する。
+      # 本番に適用済みのマイグレーションは中身を一切変えない。差分は新しいフォルダで追加する。
       # base は PR が向いているブランチ（stacked PR では下の PR のブランチ）の先端。
       - name: Forbid changes to existing migrations
         if: github.event_name == 'pull_request'
@@ -72,12 +80,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          changed=$(git diff --name-only --diff-filter=MDR "$BASE_SHA"...HEAD -- packages/db/drizzle)
-          if [[ -n "$changed" ]]; then
-            echo "::error::既存のマイグレーションは変更・削除・リネームできません。変更は新しいマイグレーションとして追加してください。"
-            echo "$changed"
-            exit 1
-          fi
+          .github/scripts/forbid-existing-migration-changes.sh "$BASE_SHA"
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
