@@ -22,7 +22,7 @@ barrel file を避けるため、`schemas` のまとめエクスポートは持�
 
 `tags.*` / `bookmarks.*` は web の `/api/rpc` から機能ごとに移行する（`src/tags.ts` / `src/bookmarks.ts`）。
 
-すべての procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求する（`apps/api` の `SimpleCsrfProtectionHandlerPlugin`。oRPC client は `SimpleCsrfProtectionLinkPlugin` で付ける。無いと 403 `CSRF_TOKEN_MISMATCH`）。
+`health` / `me` 以外の procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求する（`apps/api` の `SimpleCsrfProtectionHandlerPlugin`。oRPC client は `SimpleCsrfProtectionLinkPlugin` で付ける。無いと 403 `CSRF_TOKEN_MISMATCH`）。
 
 ID や branded 型は wire に載せず、primitive だけを返す（`docs/architecture.md` の procedure 契約と同じ方針）。
 

@@ -24,7 +24,7 @@ The Vite plugin loads `apps/web/.env.schema` itself and starts `pantry-api` as a
 3. Runs Drizzle migrations from `packages/db` and `apps/api/scripts/seed.ts` (with the `apps/api` env) against that URL only.
 4. Starts `vite dev --port 4173 --host 127.0.0.1` with the same Varlock overlay. The pid is `.cursor/skills/verify-pantry/run/vite.pid`. The log is `.cursor/skills/verify-pantry/run/vite.log`.
 
-Ready means `http://127.0.0.1:4173/sign-in` returns HTML containing `Pantry` and `POST http://127.0.0.1:4173/rpc/health` (with the `x-csrf-token: orpc` header that pantry-api requires on every procedure) returns the oRPC-wrapped `{"json":{"status":"ok"}}` from `pantry-api` through the Service Binding, not merely that a process is listening. Seed creates the signed-in user `koralle@example.com` / `password` and about 240 bookmarks. Two verification runs cannot share this instance: the container name, port 18080, and port 4173 are fixed. If launch says vite is already running, run cleanup first.
+Ready means `http://127.0.0.1:4173/sign-in` returns HTML containing `Pantry` and `POST http://127.0.0.1:4173/rpc/health` (sent with the `x-csrf-token: orpc` header; pantry-api requires it on every procedure except the side-effect-free `health` / `me`) returns the oRPC-wrapped `{"json":{"status":"ok"}}` from `pantry-api` through the Service Binding, not merely that a process is listening. Seed creates the signed-in user `koralle@example.com` / `password` and about 240 bookmarks. Two verification runs cannot share this instance: the container name, port 18080, and port 4173 are fixed. If launch says vite is already running, run cleanup first.
 
 ## Doctor
 

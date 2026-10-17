@@ -8,6 +8,7 @@ import type { AppDb } from "@pantry/db";
 import { Hono } from "hono";
 
 import type { Authenticator } from "./auth/session";
+import { isCsrfExemptProcedure } from "./rpc/csrf";
 import { createRouter } from "./rpc/router";
 
 /** Hono app が必要とする能力。本番は better-auth、テストは stub を渡す。 */
@@ -32,10 +33,11 @@ const isUnexpectedError = (error: unknown): boolean =>
  * 内部 message や cause は client へ返さない（docs/architecture.md の procedure 契約）。
  * その代わり、想定外の失敗は onError interceptor で server 側にだけ記録する。
  *
- * CSRF 対策として、すべての procedure は `x-csrf-token: orpc` ヘッダーを要求する
+ * CSRF 対策として、procedure は `x-csrf-token: orpc` ヘッダーを要求する
  * （oRPC の SimpleCsrfProtection。web の client は SimpleCsrfProtectionLinkPlugin で付ける）。
  * 別サイトの form や `fetch(..., { mode: "no-cors" })` は独自ヘッダーを付けられず、
  * 付けようとすると CORS の preflight で止まる。無いリクエストは 403 `CSRF_TOKEN_MISMATCH`。
+ * 例外は副作用の無い `health` / `me` だけ（allowlist と理由は rpc/csrf.ts）。
  */
 export const createApp = (deps: AppDeps) => {
   const app = new Hono();
@@ -57,7 +59,9 @@ export const createApp = (deps: AppDeps) => {
       plugins: [
         // authenticator が追加した Set-Cookie（session の延長）をレスポンスへ載せる。
         new ResponseHeadersPlugin(),
-        new SimpleCsrfProtectionHandlerPlugin(),
+        new SimpleCsrfProtectionHandlerPlugin({
+          exclude: ({ path }) => isCsrfExemptProcedure(path),
+        }),
       ],
     }
   );

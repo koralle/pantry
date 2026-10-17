@@ -18,7 +18,7 @@ Pantry の API Worker（Cloudflare Workers、`pantry-api`）。Hono の上で
 
 procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機能>.ts`（`tags` / `bookmarks`）の両方に足す。contract を満たさない実装は型エラーになる。サインインが必要な procedure は contract を `authed` から作り、実装は `kit.requireAuth` を通す（context に `user` と `userId` が入る）。DB は `kit.deps.db()` で受ける。
 
-すべての procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求する（oRPC の `SimpleCsrfProtectionHandlerPlugin`）。無ければ 403 `CSRF_TOKEN_MISMATCH`。web の client は `SimpleCsrfProtectionLinkPlugin` で付ける。curl で叩くときは `-H 'x-csrf-token: orpc'` を付ける。
+procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求する（oRPC の `SimpleCsrfProtectionHandlerPlugin`）。無ければ 403 `CSRF_TOKEN_MISMATCH`。例外は副作用の無い `health` / `me` だけで、ヘッダーを付けない旧 web が deploy の切り替え中も session を確かめられるようにしている（allowlist は `src/rpc/csrf.ts`。書き込みのある procedure を足してはいけない）。web の client は `SimpleCsrfProtectionLinkPlugin` で付ける。curl で叩くときは `-H 'x-csrf-token: orpc'` を付ける。
 
 ### テスト
 

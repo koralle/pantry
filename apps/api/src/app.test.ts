@@ -53,10 +53,34 @@ describe("createApp", () => {
     expect(authenticate).not.toHaveBeenCalled();
   });
 
-  it("x-csrf-token ヘッダーが無い procedure 呼び出しは 403 で拒否し、認証もしない", async () => {
-    const authenticate = vi.fn(async () => null);
+  it("旧 web と同じく x-csrf-token を付けない client でも health / me は使える（deploy 切り替え中の互換）", async () => {
+    const user = {
+      email: "koralle@example.com",
+      id: "user_1",
+      name: "koralle",
+    };
     const app = createApp({
-      authenticate,
+      authenticate: async () => user,
+      db: unusedDb,
+      handleAuthRequest: unusedAuthHandler,
+    });
+    // main の web（CSRF 導入前）の createApiServerClient と同じく plugin を付けない link。
+    const legacyClient = createORPCClient<Client>(
+      new RPCLink({
+        fetch: async (request) => await app.fetch(request),
+        url: rpcUrl,
+      })
+    );
+
+    await expect(legacyClient.health()).resolves.toStrictEqual({
+      status: "ok",
+    });
+    await expect(legacyClient.me()).resolves.toStrictEqual(user);
+  });
+
+  it("ヘッダーなしの me も未認証なら CSRF ではなく 401 を返す", async () => {
+    const app = createApp({
+      authenticate: async () => null,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
     });
@@ -67,30 +91,10 @@ describe("createApp", () => {
       method: "POST",
     });
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(401);
     await expect(response.json()).resolves.toMatchObject({
-      json: { code: "CSRF_TOKEN_MISMATCH", status: 403 },
+      json: { code: "UNAUTHORIZED", status: 401 },
     });
-    expect(authenticate).not.toHaveBeenCalled();
-  });
-
-  it("x-csrf-token の値が違えば 403 で拒否する", async () => {
-    const app = createApp({
-      authenticate: async () => null,
-      db: unusedDb,
-      handleAuthRequest: unusedAuthHandler,
-    });
-
-    const response = await app.request(`${rpcUrl}/health`, {
-      body: JSON.stringify({}),
-      headers: {
-        "content-type": "application/json",
-        "x-csrf-token": "forged",
-      },
-      method: "POST",
-    });
-
-    expect(response.status).toBe(403);
   });
 
   it("me は authenticator が解決したユーザーを返す", async () => {

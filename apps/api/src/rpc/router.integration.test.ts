@@ -34,9 +34,10 @@ describe("router（本番 migration を適用した libSQL）", () => {
     });
   });
 
-  it("x-csrf-token の無い呼び出しは認証済みでも 403 で拒否する", async () => {
-    await expect(
-      createTestClient(getDb(), actor, { csrf: false }).me()
-    ).rejects.toMatchObject({ code: "CSRF_TOKEN_MISMATCH", status: 403 });
+  it("副作用の無い health / me は x-csrf-token なしでも使える（allowlist は rpc/csrf.ts）", async () => {
+    const client = createTestClient(getDb(), actor, { csrf: false });
+
+    await expect(client.health()).resolves.toStrictEqual({ status: "ok" });
+    await expect(client.me()).resolves.toStrictEqual(actor);
   });
 });

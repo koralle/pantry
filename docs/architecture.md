@@ -29,7 +29,7 @@
 - 移行期: 既存機能（ブックマーク・タグなど）は web の`/api/rpc`と DB の直接読み書きで動き、順次`pantry-api`の contract へ移す。
 - RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`apps/web/src/rpc/client/client.ts`、`apps/web/src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
 - web → api への移行中: 画面の client（`AppClient` = web の`AppRouter` + api の`ApiContract`）は oRPC の`DynamicLink`で、`@pantry/api-contract`にある procedure を`pantry-api`（browser は`/rpc`、SSR は Service Binding）へ、それ以外を web の`/api/rpc`へ振り分ける（`apps/web/src/rpc/client/app-client.ts`）。procedure を api の contract へ移すと、画面の呼び出しと Query key を変えずに切り替わる。移した機能の web 側 procedure（`apps/web/src/rpc/contract/<機能>-procedures.ts`）と配線は空にし、最後の PR で`/api/rpc`ごと消す。
-- CSRF: `pantry-api` のすべての procedure は`x-csrf-token: orpc`を要求する（oRPC の`SimpleCsrfProtectionHandlerPlugin`、client は`SimpleCsrfProtectionLinkPlugin`）。Cookie は`SameSite=Lax`だが、同一サイトの別 origin や将来の拡張からの書き込みも独自ヘッダーと CORS preflight で止める。
+- CSRF: `pantry-api` の procedure は`x-csrf-token: orpc`を要求する（副作用の無い`health`/`me`だけは allowlist で除外。旧 web との deploy 互換のため。oRPC の`SimpleCsrfProtectionHandlerPlugin`、client は`SimpleCsrfProtectionLinkPlugin`）。Cookie は`SameSite=Lax`だが、同一サイトの別 origin や将来の拡張からの書き込みも独自ヘッダーと CORS preflight で止める。
 - 認証: Better AuthのCookieセッション（`pantry-api`がホスト）。web の procedure は`getSession(headers)`で検証し、その実装は api の`me`を呼ぶ。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。スキーマ・マイグレーション・接続ファクトリ（`createDb`）は`packages/db`（`@pantry/db`）に置き、server実装はclient bundleに混ざらない。
 - Worker環境変数: web は`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`と Service Binding`API`。api は`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
