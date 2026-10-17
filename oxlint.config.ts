@@ -9,15 +9,15 @@ export default defineConfig({
     ...(core.ignorePatterns ?? []),
     ".agents/skills/**",
     ".pnpmfile.cjs",
-    "postcss.config.cjs",
-    "src/db/schema/auth-schema.ts",
-    "src/routeTree.gen.ts",
-    "vitest/tanstack-entry-stub.ts",
-    "worker-configuration.d.ts",
+    "apps/web/postcss.config.cjs",
+    "apps/web/src/db/schema/auth-schema.ts",
+    "apps/web/src/routeTree.gen.ts",
+    "apps/web/vitest/tanstack-entry-stub.ts",
+    "apps/web/worker-configuration.d.ts",
   ],
   overrides: [
     {
-      files: ["src/routes/**/*.ts", "src/routes/**/*.tsx"],
+      files: ["apps/web/src/routes/**/*.ts", "apps/web/src/routes/**/*.tsx"],
       rules: {
         "func-style": "off",
         "no-use-before-define": "off",
@@ -30,10 +30,10 @@ export default defineConfig({
       files: [
         "**/*.stories.ts",
         "**/*.stories.tsx",
-        "src/stories/**/*.ts",
-        "src/stories/**/*.tsx",
-        "src/storybook/**/*.ts",
-        "src/storybook/**/*.tsx",
+        "apps/web/src/stories/**/*.ts",
+        "apps/web/src/stories/**/*.tsx",
+        "apps/web/src/storybook/**/*.ts",
+        "apps/web/src/storybook/**/*.tsx",
       ],
       rules: {
         "func-style": "off",
@@ -71,9 +71,9 @@ export default defineConfig({
         "**/*.spec.tsx",
         "**/test-helpers.ts",
         "**/__mocks__/**/*.ts",
-        "src/test/**/*.ts",
-        "src/test/**/*.tsx",
-        "scripts/**/*.ts",
+        "apps/web/src/test/**/*.ts",
+        "apps/web/src/test/**/*.tsx",
+        "apps/web/scripts/**/*.ts",
       ],
       rules: {
         "func-style": "off",
@@ -101,13 +101,15 @@ export default defineConfig({
       },
     },
     {
-      files: ["src/storybook/main.ts"],
+      files: ["apps/web/src/storybook/main.ts"],
       rules: {
         "unicorn/prefer-import-meta-properties": "off",
       },
     },
     {
-      files: ["src/features/bookmarks/server/fetch-page-title.server.ts"],
+      files: [
+        "apps/web/src/features/bookmarks/server/fetch-page-title.server.ts",
+      ],
       rules: {
         complexity: "off",
         eqeqeq: "off",

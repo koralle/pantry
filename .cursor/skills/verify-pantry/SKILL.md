@@ -7,7 +7,7 @@ description: Drive the Pantry bookmark manager in a browser against an isolated 
 
 Pantry is a signed-in web app (TanStack Start on Vite, port 4173 for verification). The user-facing surface is the browser. Storybook on port 6006 is a separate surface and is not this skill.
 
-The development database in `.env.development` is `http://127.0.0.1:8080`. Never migrate, seed, or drive that instance. `scripts/seed.ts` calls `drizzle-seed` `reset` and deletes every row in the database it connects to.
+The development database in `apps/web/.env.development` is `http://127.0.0.1:8080`. Never migrate, seed, or drive that instance. `apps/web/scripts/seed.ts` calls `drizzle-seed` `reset` and deletes every row in the database it connects to.
 
 ## Launch
 
@@ -17,11 +17,11 @@ From the repo root, start it in a session that stays open. The script prints `re
 .cursor/skills/verify-pantry/scripts/launch.sh
 ```
 
-The Vite plugin reads `.env.development` itself. `varlock run -p` does not change that, so `launch.sh` writes a temporary `.env.development.local` marked `pantry-verify-override` and `cleanup.sh` deletes that file. Launch refuses if that file already exists, or if something is listening on port 3000, because a running `pnpm dev` could reload the override and leave the development database.
+The Vite plugin reads `apps/web/.env.development` itself. `varlock run -p` does not change that, so `launch.sh` writes a temporary `apps/web/.env.development.local` marked `pantry-verify-override` and `cleanup.sh` deletes that file. Launch refuses if that file already exists, or if something is listening on port 3000, because a running `pnpm dev` could reload the override and leave the development database.
 
 1. Starts Compose project `pantry-verify` (container `pantry-verify-turso`, host port 18080, tmpfs data dir).
 2. Waits until `curl -sf http://127.0.0.1:18080/health` succeeds.
-3. Runs Drizzle migrations and `scripts/seed.ts` against that URL only.
+3. Runs Drizzle migrations and `apps/web/scripts/seed.ts` against that URL only.
 4. Starts `vite dev --port 4173 --host 127.0.0.1` with the same Varlock overlay. The pid is `.cursor/skills/verify-pantry/run/vite.pid`. The log is `.cursor/skills/verify-pantry/run/vite.log`.
 
 Ready means `http://127.0.0.1:4173/sign-in` returns HTML containing `Pantry`, not merely that a process is listening. Seed creates the signed-in user `koralle@example.com` / `password` and about 240 bookmarks. Two verification runs cannot share this instance: the container name, port 18080, and port 4173 are fixed. If launch says vite is already running, run cleanup first.

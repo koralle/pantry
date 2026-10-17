@@ -22,6 +22,9 @@ pre-commit:
         - "**/*.html"
       exclude:
         - ".agents/**"
+        # Wrangler の生成物で Ultracite / Oxfmt の対象外。単独で stage されたときに
+        # `ultracite fix` が無視対象だけを受け取って失敗するのを避ける。
+        - "apps/web/worker-configuration.d.ts"
       run: |
         pnpm run fix -- {staged_files}
       stage_fixed: true
@@ -51,4 +54,4 @@ pre-push:
 post-checkout:
   commands:
     symlink-env-for-worktree:
-      run: pnpm tsx scripts/symlink-env-for-worktree.ts
+      run: pnpm --filter @pantry/web exec tsx scripts/symlink-env-for-worktree.ts

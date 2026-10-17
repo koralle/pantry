@@ -7,8 +7,8 @@ export default defineConfig({
     ...(ultracite.ignorePatterns ?? []),
     ".agents/**",
     "pnpm-lock.yaml",
-    "src/db/schema/auth-schema.ts",
-    "src/routeTree.gen.ts",
-    "worker-configuration.d.ts",
+    "apps/web/src/db/schema/auth-schema.ts",
+    "apps/web/src/routeTree.gen.ts",
+    "apps/web/worker-configuration.d.ts",
   ],
 });

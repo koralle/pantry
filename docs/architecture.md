@@ -22,14 +22,14 @@
 
 ## 3. システム構成
 
-- UI/SSR: TanStack Start（`src/routes/`、`src/router.tsx`）
-- API境界: oRPC procedure（`src/rpc/contract/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
-- RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`src/rpc/client/client.ts`、`src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
+- UI/SSR: TanStack Start（`apps/web/src/routes/`、`apps/web/src/router.tsx`）
+- API境界: oRPC procedure（`apps/web/src/rpc/contract/create-app-router.ts`）。`RPCHandler`が`/api/rpc`で待ち受ける。
+- RPC client: browserは`RPCLink`で`${origin}/api/rpc`へ、SSRは同一processのhandlerへCookieを転送して直接流す（`apps/web/src/rpc/client/client.ts`、`apps/web/src/rpc/server/ssr-rpc-fetch.server.ts`）。両者とも同じ`AppRouter`型とTanStack Query keyを使う。
 - 認証: Better AuthのCookieセッション。procedureは`getSession(headers)`で検証する。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。server実装はclient bundleに混ざらない。
 - Worker環境変数: `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
-- 環境変数管理: Varlockの`.env.schema`を正本として検証し、`.env.development`から読み込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。
-- ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`scripts/symlink-env-for-worktree.ts`が`.env.development.local`へ生成する。
+- 環境変数管理: Varlockの`apps/web/.env.schema`を正本として検証し、`apps/web/.env.development`から読み込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。
+- ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`apps/web/scripts/symlink-env-for-worktree.ts`が`apps/web/.env.development.local`へ生成する。
 - DBマイグレーション: Drizzleの生成物をTursoへ適用する。D1 bindingは使わない。
 
 ## 4. データアクセス境界（oRPC）
@@ -50,7 +50,7 @@
 ### Applicationとquery service
 
 - Mutation（CreateTag、DeleteBookmark等）のApplicationはnarrow function portだけに依存し、Result/判別unionのExpected Errorをdefined errorへ写すのはprocedure側。
-- 単純read（一覧、詳細）はUseCaseを作らず、Drizzleを閉じ込めたquery service（`src/features/*/persistence/`）が`UserId`とvalidation済みinputを受け、画面に要るprojectionだけを返す。timestampはISO文字列、対象なしはnull（procedureが404へ変換）。
+- 単純read（一覧、詳細）はUseCaseを作らず、Drizzleを閉じ込めたquery service（`apps/web/src/features/*/persistence/`）が`UserId`とvalidation済みinputを受け、画面に要るprojectionだけを返す。timestampはISO文字列、対象なしはnull（procedureが404へ変換）。
 
 ### TanStack Query ownership
 
