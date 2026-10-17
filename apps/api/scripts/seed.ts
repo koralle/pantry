@@ -5,8 +5,16 @@ import { tagsTable } from "@pantry/db/schema/tag";
 import { reset } from "drizzle-seed";
 import { uuidv7 } from "uuidv7";
 
-import { toTagName } from "../src/features/tags/domain/tag-values";
 import { auth, db } from "./auth";
+
+/**
+ * タグ名の正規化。apps/web の `toTagName`（features/tags/domain/tag-values.ts）と同じ規則で、
+ * `tags.normalized_name` の一意制約に合わせる。seed は api に置くため web を import しない。
+ */
+const toTagName = (input: string) => {
+  const display = input.trim().normalize("NFC");
+  return { display, normalized: display.toLowerCase() };
+};
 
 const fullSchema = {
   ...authSchema,

@@ -19,7 +19,7 @@ Pantry の環境変数スキーマ（Varlock）を管理する。ランタイム
 | 消費側 | `.env.schema` | 取り込むキー |
 | --- | --- | --- |
 | `apps/web` | `@import(../../packages/env/, pick=[APP_ENV, TURSO_*])` | DB 接続と docker compose 用の `TURSO_PORT` / `TURSO_PROJECT`。Better Auth は `apps/api` にあるので取り込まない |
-| `apps/api` | `@import(../../packages/env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, BETTER_AUTH_*])` | libSQL 接続と Better Auth。`pnpm dev` の auxiliary worker と `db:seed` もこの schema で読む |
+| `apps/api` | `@import(../../packages/env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, BETTER_AUTH_*])` | libSQL 接続と Better Auth。`pnpm dev` の auxiliary worker と `db:seed`（`apps/api/scripts/seed.ts`）もこの schema で読む |
 | `packages/db` | `@import(../env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN])` | `APP_ENV` と libSQL 接続だけ。Better Auth と docker compose 用のキーは取り込まない |
 
 消費側の値ファイル（`apps/web/.env` や `apps/web/.env.local`）は import した値より優先される。`apps/web/.env.local` と `apps/api/.env.local` は検証用スクリプト（`.cursor/skills/verify-pantry/`）が一時的な override として使う。

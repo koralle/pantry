@@ -95,9 +95,10 @@ curl -sf "$EXPECTED_URL/health" >/dev/null
 (cd "$ROOT/packages/db" &&
   ./node_modules/.bin/varlock run --path ../../apps/web/ -- \
     ./node_modules/.bin/drizzle-kit migrate)
-# seed builds Better Auth from @pantry/api/auth, so it reads apps/api's env.
-./node_modules/.bin/varlock run --path ../api/ -- \
-  ./node_modules/.bin/tsx scripts/seed.ts
+# seed lives in apps/api (it builds Better Auth with createAuth) and reads apps/api's env.
+(cd "$API" &&
+  ./node_modules/.bin/varlock run -- \
+    ./node_modules/.bin/tsx scripts/seed.ts)
 
 if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
   echo "refusing to launch: 127.0.0.1:4173 is already in use. run cleanup.sh" >&2

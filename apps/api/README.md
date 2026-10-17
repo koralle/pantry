@@ -33,15 +33,16 @@ procedure の追加は `packages/api-contract/src/contract.ts` と `src/rpc/rout
 
 ## スクリプト
 
-| コマンド              | 内容                                               |
-| --------------------- | -------------------------------------------------- |
-| `pnpm run dev`        | Vite dev + workerd（`http://localhost:8787`）      |
-| `pnpm run build`      | プロダクションビルド                               |
-| `pnpm run preview`    | ビルド成果物を preview                             |
-| `pnpm run deploy`     | 本番ビルド + `varlock-wrangler deploy`             |
+| コマンド | 内容 |
+| --- | --- |
+| `pnpm run dev` | Vite dev + workerd（`http://localhost:8787`） |
+| `pnpm run build` | プロダクションビルド |
+| `pnpm run preview` | ビルド成果物を preview |
+| `pnpm run deploy` | 本番ビルド + `varlock-wrangler deploy` |
 | `pnpm run cf-typegen` | `worker-configuration.d.ts` を生成（varlock 経由） |
-| `pnpm run test`       | Vitest（workers project + node project）           |
-| `pnpm run typecheck`  | `tsc`                                              |
+| `pnpm run db:seed` | 開発DBへ seed（`scripts/seed.ts`。DB を全削除してから投入する。ルートの `pnpm run db:seed` から呼ぶ） |
+| `pnpm run test` | Vitest（workers project + node project） |
+| `pnpm run typecheck` | `tsc` |
 
 ルートからは `pnpm run dev:api` / `pnpm run deploy:api` で呼ぶ。
 

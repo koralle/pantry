@@ -26,6 +26,8 @@ const config: KnipConfig = {
       ],
     },
     "apps/api": {
+      // Maintenance scripts (seed / create-user) run with tsx.
+      entry: ["scripts/**/*.ts"],
       vitest: {
         config: "vitest.config.ts",
       },
@@ -35,10 +37,9 @@ const config: KnipConfig = {
       ],
     },
     "apps/web": {
-      // Maintenance scripts (they build Better Auth from @pantry/api/auth).
       // The tanstack-entry stub is an alias target loaded by the Vitest bundler
       // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
-      entry: ["scripts/**/*.ts", "vitest/tanstack-entry-stub.ts"],
+      entry: ["vitest/tanstack-entry-stub.ts"],
       vitest: {
         config: ["vitest.config.ts", "vitest.persistence.config.ts"],
       },

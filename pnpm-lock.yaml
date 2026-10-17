@@ -427,9 +427,18 @@ importers:
       drizzle-orm:
         specifier: catalog:database
         version: 1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5)
+      drizzle-seed:
+        specifier: catalog:database
+        version: 1.0.0-rc.5-ab785fc(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))
+      tsx:
+        specifier: catalog:script
+        version: 4.23.12
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
+      uuidv7:
+        specifier: catalog:uuid
+        version: 1.2.1
       varlock:
         specifier: catalog:envvars
         version: 1.18.0
@@ -542,9 +551,6 @@ importers:
       '@pandacss/mcp':
         specifier: catalog:ui
         version: 1.12.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@pantry/api':
-        specifier: workspace:*
-        version: link:../api
       '@storybook/addon-docs':
         specifier: catalog:storybook
         version: 10.6.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(storybook@10.6.2(@types/react@19.3.0)(prettier@3.9.6)(react@19.3.0))
@@ -575,9 +581,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: catalog:build
         version: 6.0.5(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
-      drizzle-seed:
-        specifier: catalog:database
-        version: 1.0.0-rc.5-ab785fc(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))
       postcss:
         specifier: catalog:ui
         version: 8.5.26
@@ -593,9 +596,6 @@ importers:
       testcontainers:
         specifier: catalog:test
         version: 12.1.0(supports-color@10.2.2)
-      tsx:
-        specifier: catalog:script
-        version: 4.23.12
       typescript:
         specifier: catalog:typescript
         version: 7.0.2

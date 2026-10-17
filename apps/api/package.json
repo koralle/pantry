@@ -2,12 +2,10 @@
   "name": "@pantry/api",
   "private": true,
   "type": "module",
-  "exports": {
-    "./auth": "./src/auth/create-auth.ts"
-  },
   "scripts": {
     "build": "vite build",
     "cf-typegen": "varlock-wrangler types",
+    "db:seed": "varlock run -- tsx scripts/seed.ts",
     "deploy": "APP_ENV=production pnpm run build && APP_ENV=production varlock-wrangler deploy",
     "dev": "vite dev --port 8787",
     "preview": "pnpm run build && vite preview",
@@ -33,7 +31,10 @@
     "@types/node": "catalog:runtime",
     "@varlock/cloudflare-integration": "catalog:envvars",
     "drizzle-orm": "catalog:database",
+    "drizzle-seed": "catalog:database",
+    "tsx": "catalog:script",
     "typescript": "catalog:typescript",
+    "uuidv7": "catalog:uuid",
     "varlock": "catalog:envvars",
     "vite": "catalog:build",
     "vitest": "catalog:test",
