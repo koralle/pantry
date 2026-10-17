@@ -1,9 +1,9 @@
 local-db-build:
-  @pnpm --filter @pantry/web exec varlock run -- docker compose down 2>/dev/null || true
-  @pnpm --filter @pantry/web exec varlock run -- docker compose up -d
+  @pnpm --filter @pantry/web exec varlock run --path local-libsql/ -- docker compose down 2>/dev/null || true
+  @pnpm --filter @pantry/web exec varlock run --path local-libsql/ -- docker compose up -d
   @for i in $(seq 1 30); do curl -sf "$(pnpm --filter @pantry/web exec varlock printenv TURSO_CONNECTION_URL)/v2" >/dev/null && exit 0; sleep 0.5; done; echo "local turso not ready" >&2; exit 1
   @pnpm run migrate:dev
   @pnpm run db:seed
 
 local-db-clean:
-  @pnpm --filter @pantry/web exec varlock run -- docker compose down 2>/dev/null || true
+  @pnpm --filter @pantry/web exec varlock run --path local-libsql/ -- docker compose down 2>/dev/null || true

@@ -52,8 +52,6 @@ trap remove_local_env EXIT
 cat >"$LOCAL_ENV" <<'EOF'
 # pantry-verify-override
 # Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
-TURSO_PROJECT=pantry-verify
-TURSO_PORT=18080
 TURSO_CONNECTION_URL=http://127.0.0.1:18080
 TURSO_AUTH_TOKEN=pantry-verify-token
 EOF

@@ -10,7 +10,7 @@ Pantry の環境変数スキーマ（Varlock）を管理する。ランタイム
 | --- | --- | --- |
 | `schemas/.env.db` | `TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN` | `@pantry/db`、`@pantry/api`、`@pantry/web` |
 | `schemas/.env.auth` | `BETTER_AUTH_SECRET`、`BETTER_AUTH_URL` | `@pantry/api` |
-| `schemas/.env.local-libsql` | `TURSO_PORT`、`TURSO_PROJECT` | `@pantry/web`（`just local-db-build` の docker compose）、`apps/api/scripts`（seed のポート検査で `TURSO_PORT` だけ） |
+| `schemas/.env.local-libsql` | `TURSO_PORT`、`TURSO_PROJECT` | `apps/web/local-libsql`（`just local-db-build` の docker compose）、`apps/api/scripts`（seed のポート検査で `TURSO_PORT` だけ） |
 
 ## 消費側
 
@@ -18,7 +18,8 @@ Pantry の環境変数スキーマ（Varlock）を管理する。ランタイム
 
 | 消費側 | `.env.schema` | 取り込むキー |
 | --- | --- | --- |
-| `apps/web` | `@import(../../packages/env/, pick=[APP_ENV, TURSO_*])` | DB 接続と docker compose 用の `TURSO_PORT` / `TURSO_PROJECT`。Better Auth は `apps/api` にあるので取り込まない |
+| `apps/web` | `@import(../../packages/env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN])` | Worker 用。DB 接続だけ。docker compose 用のキーも Better Auth（`apps/api` にある）も取り込まない |
+| `apps/web/local-libsql` | `@import(../../../packages/env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_PORT, TURSO_PROJECT])` | `just local-db-build` / `local-db-clean` の docker compose（`varlock run --path local-libsql/`）用。本番の Worker の env には入らない |
 | `apps/api` | `@import(../../packages/env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, BETTER_AUTH_*])` | Worker（本番と `pnpm dev` の auxiliary worker）用。libSQL 接続と Better Auth |
 | `apps/api/scripts` | `@import(../../../packages/env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN, TURSO_PORT, BETTER_AUTH_*])` | seed / create-user（`varlock run --path scripts/`）用。`TURSO_PORT` は seed が接続先ポートとの一致を確かめるためだけに使い、Worker の env には入れない |
 | `packages/db` | `@import(../env/, pick=[APP_ENV, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN])` | `APP_ENV` と libSQL 接続だけ。Better Auth と docker compose 用のキーは取り込まない |
