@@ -13,7 +13,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
+import { userIdSchema } from "../../../domain/user-id";
 import type { UpdateTagInput } from "../application/update-tag";
 import { updateTag } from "./update-tag";
 

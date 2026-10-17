@@ -1,3 +1,4 @@
+import { createTagInputSchema } from "@pantry/api-contract/schemas/tag-procedures";
 import {
   tagIdSchema,
   tagNameSchema,
@@ -5,12 +6,8 @@ import {
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import {
-  createTagInputSchema,
-  executeCreateTag,
-  toCreateTagCommand,
-} from "./create-tag";
+import { userIdSchema } from "../../../domain/user-id";
+import { executeCreateTag, toCreateTagCommand } from "./create-tag";
 import type { InsertTag, InsertTagInput, InsertTagOutput } from "./create-tag";
 
 function parseUserId(value: string) {

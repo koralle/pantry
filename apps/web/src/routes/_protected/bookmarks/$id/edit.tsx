@@ -89,11 +89,19 @@ export const Route = createFileRoute("/_protected/bookmarks/$id/edit")({
   validateSearch: bookmarkDetailSearchSchema,
   loader: async ({ params, context }) => {
     const client = await getRpcClient();
+    const queries = createTanstackQueryUtils(client);
+    // 選択中タグの名前は棚（tags.shelf）から引く。棚は pantry-api 経由で editor より遅れて
+    // 届くことがあるので、SSR でも待ってから描き、hydration の不一致を防ぐ。
+    // 親の /_protected loader と同じ query なので、取得は 1 回にまとまる。
+    // 失敗しても従来どおり画面は出す（棚の失敗は picker 側が扱う）。
+    const shelfReady = context.queryClient
+      .ensureQueryData(queries.tags.shelf.queryOptions({ staleTime: 5000 }))
+      .catch(() => null);
     try {
       // Loader が cache を埋め、component は同じ query key を読む。
       // Server では request headers 付き direct client、browser では rpcClient が使われる。
       await context.queryClient.ensureQueryData(
-        createTanstackQueryUtils(client).bookmarks.editor.queryOptions({
+        queries.bookmarks.editor.queryOptions({
           input: { id: params.id },
           staleTime: editorStaleTime,
         })
@@ -104,6 +112,7 @@ export const Route = createFileRoute("/_protected/bookmarks/$id/edit")({
       }
       throw error;
     }
+    await shelfReady;
 
     return { kind: "ok" as const };
   },

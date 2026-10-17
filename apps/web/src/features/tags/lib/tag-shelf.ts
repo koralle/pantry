@@ -1,23 +1,4 @@
-export interface ShelfTag {
-  id: number;
-  name: string;
-  pinned: boolean;
-  sortOrder: number;
-  color: string | null;
-  lastUsedAt: Date | null;
-  bookmarkCount: number;
-}
-
-/**
- * タグ詳細・編集画面の写像。DB 行の残り（userId、正規化名、監査列）は載せない。
- */
-export interface TagRecord {
-  id: number;
-  name: string;
-  pinned: boolean;
-  sortOrder: number;
-  color: string | null;
-}
+export type { ShelfTag } from "@pantry/api-contract/schemas/tag-procedures";
 
 const compareName = (a: { name: string }, b: { name: string }): number =>
   a.name.localeCompare(b.name);
