@@ -74,6 +74,44 @@ describe("createApp", () => {
     });
   });
 
+  it("procedure の想定外の失敗は reportError に渡し、client には 500 だけを返す", async () => {
+    const failure = new Error("db is down");
+    const reportError = vi.fn();
+    const app = createApp({
+      authenticate: async () => {
+        throw failure;
+      },
+      handleAuthRequest: unusedAuthHandler,
+      reportError,
+    });
+
+    const rejection: unknown = await createClient(app)
+      .me()
+      .catch((error: unknown) => error);
+
+    expect(rejection).toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      status: 500,
+    });
+    expect(rejection).not.toMatchObject({ message: "db is down" });
+    expect(reportError).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledWith(failure);
+  });
+
+  it("4xx の ORPCError は reportError に渡さない", async () => {
+    const reportError = vi.fn();
+    const app = createApp({
+      authenticate: async () => null,
+      handleAuthRequest: unusedAuthHandler,
+      reportError,
+    });
+
+    await expect(createClient(app).me()).rejects.toMatchObject({
+      status: 401,
+    });
+    expect(reportError).not.toHaveBeenCalled();
+  });
+
   it("/api/auth/* のリクエストを handleAuthRequest へ委譲する", async () => {
     const handleAuthRequest = vi.fn(async (request: Request) =>
       Response.json({ url: request.url }, { status: 202 })
