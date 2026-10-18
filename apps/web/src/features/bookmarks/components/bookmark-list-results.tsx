@@ -1,3 +1,4 @@
+import type { BookmarkListItem } from "@pantry/api-contract/schemas/bookmark-procedures";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, CircleAlert, RotateCw } from "lucide-react";
 import { css } from "styled-system/css";
@@ -14,7 +15,6 @@ import { useListKeyboard } from "../hooks/use-list-keyboard";
 import { domainOf } from "../lib/domain-of";
 import { formatRelativeTime } from "../lib/format/format-relative-time";
 import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
-import type { BookmarkListItem } from "../persistence/list-bookmarks";
 import { BookmarkListContent } from "./bookmark-list";
 import type { BookmarkRowProps } from "./bookmark-row";
 

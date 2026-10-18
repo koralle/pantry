@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import type { UserId } from "../../auth/domain/auth-values";
+import type { UserId } from "../../../domain/user-id";
 import type { UpdateBookmarkInput } from "../application/update-bookmark";
 import {
   closeMemoryClients,

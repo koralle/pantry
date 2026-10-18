@@ -10,11 +10,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   actor,
+  contractProcedureNames,
   createTestClient,
+  itRequiresAuthAndCsrf,
   other,
   withMigratedDb,
 } from "../test/rpc-harness";
-import type { ApiTestClient } from "../test/rpc-harness";
+import type { ApiTestClient, ProcedurePath } from "../test/rpc-harness";
 
 const seedTag = async (
   db: AppDb,
@@ -72,7 +74,7 @@ const tagRow = async (db: AppDb, id: number) => {
   return row;
 };
 
-type TagProcedureName = keyof ApiContract["tags"];
+type TagProcedureName = ProcedurePath<ApiContract["tags"]>;
 
 /**
  * 入力を正しくするのは、400 で先に落ちると 401 / CSRF を確かめられないため。
@@ -96,47 +98,16 @@ const callEveryProcedure = (client: ApiTestClient) =>
       }),
   }) satisfies Record<TagProcedureName, () => Promise<unknown>>;
 
-/** テスト対象は契約から取る。手で並べた一覧だと新しい procedure が 401 / CSRF の検査から漏れる。 */
-const procedureNames = Object.keys(
-  contract.tags
-).toSorted() as TagProcedureName[];
-
 describe("tags（本番 migration を適用した libSQL）", () => {
   const { getDb } = withMigratedDb();
 
   describe("認証と CSRF", () => {
-    it("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
-      expect(
-        Object.keys(
-          callEveryProcedure(createTestClient(getDb(), null))
-        ).toSorted()
-      ).toStrictEqual(procedureNames);
+    itRequiresAuthAndCsrf({
+      callEveryProcedure,
+      getDb,
+      namespace: "tags",
+      procedureNames: contractProcedureNames(contract.tags),
     });
-
-    it.each(procedureNames)(
-      "未認証の tags.%s は defined な UNAUTHORIZED（401）を返す",
-      async (name) => {
-        const call = callEveryProcedure(createTestClient(getDb(), null))[name];
-        await expect(call()).rejects.toMatchObject({
-          code: "UNAUTHORIZED",
-          defined: true,
-          status: 401,
-        });
-      }
-    );
-
-    it.each(procedureNames)(
-      "x-csrf-token の無い tags.%s は認証済みでも 403 で拒否する（CSRF の除外は health / me だけ）",
-      async (name) => {
-        const call = callEveryProcedure(
-          createTestClient(getDb(), actor, { csrf: false })
-        )[name];
-        await expect(call()).rejects.toMatchObject({
-          code: "CSRF_TOKEN_MISMATCH",
-          status: 403,
-        });
-      }
-    );
 
     it("x-csrf-token の無い書き込みは 403 で拒否し、行を作らない", async () => {
       const client = createTestClient(getDb(), actor, { csrf: false });

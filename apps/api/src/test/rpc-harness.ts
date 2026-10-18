@@ -3,7 +3,11 @@ import type { Client } from "@libsql/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
-import type { ContractRouterClient } from "@orpc/contract";
+import { isContractProcedure } from "@orpc/contract";
+import type {
+  AnyContractProcedure,
+  ContractRouterClient,
+} from "@orpc/contract";
 import type { ApiContract } from "@pantry/api-contract";
 import type { SessionUser } from "@pantry/api-contract/schemas/session-user";
 import type { AppDb } from "@pantry/db";
@@ -11,7 +15,7 @@ import { migrationsFolder } from "@pantry/db/migrations";
 import { user as usersTable } from "@pantry/db/schema/auth-schema";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { afterAll, beforeAll, beforeEach } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, it } from "vitest";
 
 import { createApp } from "../app";
 
@@ -107,5 +111,72 @@ export const createTestClient = (
       plugins: csrf ? [new SimpleCsrfProtectionLinkPlugin()] : [],
       url: "http://api.test/rpc",
     })
+  );
+};
+
+export type ProcedurePath<T, Prefix extends string = ""> = {
+  [K in keyof T & string]: T[K] extends AnyContractProcedure
+    ? `${Prefix}${K}`
+    : ProcedurePath<T[K], `${Prefix}${K}.`>;
+}[keyof T & string];
+
+const collectProcedurePaths = (router: object, prefix: string): string[] =>
+  Object.entries(router).flatMap(([key, value]: [string, unknown]) =>
+    isContractProcedure(value)
+      ? [`${prefix}${key}`]
+      : collectProcedurePaths(value as object, `${prefix}${key}.`)
+  );
+
+/** 手で並べた一覧だと、新しい procedure が 401 / CSRF の検査から漏れるため契約から取る。 */
+export const contractProcedureNames = <T extends object>(
+  router: T
+): ProcedurePath<T>[] =>
+  collectProcedurePaths(router, "").toSorted() as ProcedurePath<T>[];
+
+/** 機能ごとに書くと、どれかの機能で 401 / CSRF の検査が抜けても気付けないため共通にする。 */
+export const itRequiresAuthAndCsrf = <Name extends string>({
+  callEveryProcedure,
+  getDb,
+  namespace,
+  procedureNames,
+}: {
+  readonly callEveryProcedure: (
+    client: ApiTestClient
+  ) => Record<Name, () => Promise<unknown>>;
+  readonly getDb: () => AppDb;
+  readonly namespace: string;
+  readonly procedureNames: readonly Name[];
+}): void => {
+  it("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
+    expect(
+      Object.keys(
+        callEveryProcedure(createTestClient(getDb(), null))
+      ).toSorted()
+    ).toStrictEqual(procedureNames);
+  });
+
+  it.each(procedureNames)(
+    `未認証の ${namespace}.%s は defined な UNAUTHORIZED（401）を返す`,
+    async (name) => {
+      const call = callEveryProcedure(createTestClient(getDb(), null))[name];
+      await expect(call()).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+        defined: true,
+        status: 401,
+      });
+    }
+  );
+
+  it.each(procedureNames)(
+    `x-csrf-token の無い ${namespace}.%s は認証済みでも 403 で拒否する（CSRF の除外は health / me だけ）`,
+    async (name) => {
+      const call = callEveryProcedure(
+        createTestClient(getDb(), actor, { csrf: false })
+      )[name];
+      await expect(call()).rejects.toMatchObject({
+        code: "CSRF_TOKEN_MISMATCH",
+        status: 403,
+      });
+    }
   );
 };

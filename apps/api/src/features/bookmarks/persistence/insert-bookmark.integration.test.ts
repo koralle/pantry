@@ -20,7 +20,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as v from "valibot";
 import { afterAll, describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
+import { userIdSchema } from "../../../domain/user-id";
 import type { InsertBookmarkInput } from "../application/create-bookmark";
 import { insertBookmark } from "./insert-bookmark";
 

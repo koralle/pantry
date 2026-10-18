@@ -26,22 +26,6 @@ describe("UpdateBookmark oRPC migration source boundary", () => {
     expect(source).not.toContain("@orpc");
   });
 
-  test("Application は Drizzle / AppDb / unexpected-error を import しない", () => {
-    const source = readSource("application/update-bookmark.ts");
-    expect(source).not.toContain("drizzle-orm");
-    expect(source).not.toContain("AppDb");
-    expect(source).not.toContain("unexpected-error");
-    expect(source).not.toContain("@praha/error-factory");
-  });
-
-  test("Persistence adapter は UPDATE OR IGNORE を使い SQLite error を分類しない", () => {
-    const source = readSource("persistence/update-bookmark.ts");
-    expect(source).toContain("UPDATE OR IGNORE");
-    expect(source).not.toContain("SQLITE_CONSTRAINT");
-    expect(source).not.toContain("isSqliteUniqueConstraintError");
-    expect(source).not.toContain("unexpected-error");
-  });
-
   test("移行済みの Server Function と旧 Application ファイルは削除されている", () => {
     const removed = [
       "functions/update-bookmark.ts",
