@@ -3,6 +3,8 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, test, vi } from "vitest";
 
+import { stubAppRouterDeps } from "../contract/test-deps";
+
 const mocks = vi.hoisted(() => ({
   getRequestHeaders: vi.fn<() => Headers>(),
 }));
@@ -12,7 +14,6 @@ vi.mock("@tanstack/react-start/server", () => ({
   getRequestHeaders: () => mocks.getRequestHeaders(),
 }));
 
-import type { TagId } from "../../features/tags/domain/tag-values";
 import { createAppRouter } from "../contract/create-app-router";
 import type { AppRouter } from "../contract/create-app-router";
 import { ssrRpcFetch } from "./ssr-rpc-fetch.server";
@@ -30,23 +31,9 @@ function capturingSessionRouter() {
     };
   });
   const router = createAppRouter({
+    ...stubAppRouterDeps(),
     fetchPageTitle: async () => ({ kind: "unavailable" }),
-    findBookmarkEditor: async () => null,
-    findTagById: async () => null,
-    getBookmarkDetail: async () => null,
-    getBookmarkCount: async () => 0,
     getSession,
-    insertBookmark: async () => ({ kind: "duplicate-url" }),
-    insertTag: async () => ({ id: 1 as TagId, kind: "created" }),
-    listBookmarks: async () => ({ items: [], nextCursor: null }),
-    listShelfTags: async () => [],
-    listTags: async () => [],
-    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
-    softDeleteBookmark: async () => ({ kind: "bookmark-not-found" }),
-    deleteTag: async () => ({ kind: "deleted" }) as const,
-    touchTag: async () => ({ kind: "touched" }),
-    updateBookmark: async () => ({ kind: "bookmark-not-found" }),
-    updateTag: async () => ({ kind: "not-found" }),
   });
 
   return { capturedCookies, capturedHeaders, router };

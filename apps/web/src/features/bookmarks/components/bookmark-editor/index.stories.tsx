@@ -1,3 +1,10 @@
+import {
+  bookmarkIdSchema,
+  bookmarkNoteSchema,
+  bookmarkTitleSchema,
+  bookmarkUrlSchema,
+} from "@pantry/api-contract/schemas/bookmark-values";
+import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import { expect, fn, userEvent, within } from "storybook/test";
 import type { Mock } from "storybook/test";
 import { styled } from "styled-system/jsx";
@@ -5,13 +12,6 @@ import { uuidv7 } from "uuidv7";
 import * as v from "valibot";
 
 import preview from "../../../../storybook/preview";
-import { tagIdSchema } from "../../../tags/domain/tag-values";
-import {
-  bookmarkIdSchema,
-  bookmarkNoteSchema,
-  bookmarkTitleSchema,
-  bookmarkUrlSchema,
-} from "../../domain/bookmark-values";
 import { BookmarkEditor } from "./index";
 import type { BookmarkEditorData, BookmarkTitleFetchAction } from "./index";
 

@@ -1,4 +1,5 @@
-import { uniqueNormalizedTagNames } from "../../tags/domain/tag-values";
+import { uniqueNormalizedTagNames } from "@pantry/api-contract/schemas/tag-values";
+
 import type {
   BookmarkDetailSearch,
   BookmarkSearchSchema,

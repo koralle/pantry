@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/client";
+import { toTagName } from "@pantry/api-contract/schemas/tag-values";
 
-import { toTagName } from "../../../tags/domain/tag-values";
 import { getCreateTagErrorMessage } from "../../../tags/lib/get-create-tag-error-message";
 import { resolveCreateTagConflict } from "../../components/bookmark-tag-picker/lib";
 import type { NamedTag } from "../../components/bookmark-tag-picker/lib";

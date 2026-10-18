@@ -29,7 +29,7 @@ const config: KnipConfig = {
       // Maintenance scripts (seed / create-user) run with tsx.
       entry: ["scripts/**/*.ts"],
       vitest: {
-        config: "vitest.config.ts",
+        config: ["vitest.config.ts", "vitest.persistence.config.ts"],
       },
       ignoreDependencies: [
         // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
@@ -37,6 +37,9 @@ const config: KnipConfig = {
       ],
     },
     "apps/web": {
+      // web → api の移行中、tags / bookmarks の PR がどちらも merge されると getDB の利用者が
+      // いなくなる。web の DB 依存は最後の PR でまとめて消すので、それまでは未使用でも残す。
+      ignore: ["src/db/get-db.server.ts"],
       // The tanstack-entry stub is an alias target loaded by the Vitest bundler
       // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
       entry: ["vitest/tanstack-entry-stub.ts"],

@@ -1,3 +1,4 @@
+import { bookmarkIdSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
@@ -10,7 +11,6 @@ import type {
   InsertBookmarkInput,
   InsertBookmarkOutput,
 } from "../application/create-bookmark";
-import { bookmarkIdSchema } from "../domain/bookmark-values";
 
 /**
  * 衝突と所有権の正本は DB 制約。

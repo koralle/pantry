@@ -1,10 +1,9 @@
-import * as v from "valibot";
-
 import {
   bookmarkNoteSchema,
   bookmarkTitleSchema,
   bookmarkUrlSchema,
-} from "../../../domain/bookmark-values";
+} from "@pantry/api-contract/schemas/bookmark-values";
+import * as v from "valibot";
 
 export const bookmarkFormSchema = v.object({
   note: bookmarkNoteSchema,

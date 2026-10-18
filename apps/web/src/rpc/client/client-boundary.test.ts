@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 
+import { stubAppRouterDeps } from "../contract/test-deps";
+
 describe("server direct RPC client", () => {
   // Client.server 経由の初回は react-start/server の graph ごと読むため、
   // Workerd 上の初回呼び出しは既定の 5 秒に収まらないことがある。
@@ -9,28 +11,12 @@ describe("server direct RPC client", () => {
 
     let receivedCookie: string | null = null;
     const router = createAppRouter({
+      ...stubAppRouterDeps(),
       fetchPageTitle: async () => ({ kind: "unavailable" }),
-      findBookmarkEditor: async () => null,
-      findTagById: async () => null,
-      getBookmarkDetail: async () => null,
-      getBookmarkCount: async () => 0,
       getSession: async (headers) => {
         receivedCookie = headers.get("cookie");
         return { email: "koralle@example.com", id: "user-1", name: "koralle" };
       },
-      insertBookmark: async () => ({ kind: "duplicate-url" }),
-      insertTag: async () => ({ id: 1 as never, kind: "created" }),
-      listBookmarks: async () => ({ items: [], nextCursor: null }),
-      listShelfTags: async () => [],
-      listTags: async () => [],
-      setBookmarkFavorite: async () => ({
-        kind: "bookmark-not-found" as const,
-      }),
-      softDeleteBookmark: async () => ({ id: "", kind: "bookmark-not-found" }),
-      deleteTag: async () => ({ kind: "deleted" }) as const,
-      touchTag: async () => ({ kind: "touched" }),
-      updateBookmark: async () => ({ kind: "bookmark-not-found" }),
-      updateTag: async () => ({ kind: "not-found" }),
     });
 
     const client = createServerRpcClient(

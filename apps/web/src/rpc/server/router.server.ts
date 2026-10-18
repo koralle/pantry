@@ -1,54 +1,23 @@
 /**
- * 本番配線だけを置く。router 実装本体は `createAppRouter` 側に残し、
- * ブラウザから server-only の getDB / api client を import できないようにする。
+ * router 実装と本番配線を分けるのは、ブラウザから server-only の getDB / api client を
+ * import できないようにするため。
  */
 import { createApiServerClient } from "../../api/client.server";
 import { forwardSetCookie } from "../../api/forward-set-cookie.server";
-import { getDB } from "../../db/get-db.server";
 import { getSessionUser } from "../../features/auth/server/get-session-user.server";
-import { getBookmarkCount } from "../../features/bookmarks/persistence/get-bookmark-count";
-import { getBookmarkDetail } from "../../features/bookmarks/persistence/get-bookmark-detail";
-import { insertBookmark } from "../../features/bookmarks/persistence/insert-bookmark";
-import { listBookmarks } from "../../features/bookmarks/persistence/list-bookmarks";
-import { selectBookmarkEditor } from "../../features/bookmarks/persistence/select-bookmark-editor";
-import { setBookmarkFavorite } from "../../features/bookmarks/persistence/set-bookmark-favorite";
-import { softDeleteBookmark } from "../../features/bookmarks/persistence/soft-delete-bookmark";
-import { updateBookmark } from "../../features/bookmarks/persistence/update-bookmark";
 import { fetchPageTitle } from "../../features/bookmarks/server/fetch-page-title.server";
-import { deleteTag } from "../../features/tags/persistence/delete-tag";
-import { insertTag } from "../../features/tags/persistence/insert-tag";
-import { selectShelfTags } from "../../features/tags/persistence/select-shelf-tags";
-import { selectTagById } from "../../features/tags/persistence/select-tag-by-id";
-import { selectTags } from "../../features/tags/persistence/select-tags";
-import { touchTag } from "../../features/tags/persistence/touch-tag";
-import { updateTag } from "../../features/tags/persistence/update-tag";
 import { createAppRouter } from "../contract/create-app-router";
+import { bookmarksDeps } from "./bookmark-deps.server";
+import { tagsDeps } from "./tag-deps.server";
 
 export const appRouter = createAppRouter({
+  ...bookmarksDeps,
+  ...tagsDeps,
   fetchPageTitle: async (url) => await fetchPageTitle(url),
-  findBookmarkEditor: async (userId, id) =>
-    await selectBookmarkEditor(getDB(), userId, id),
-  deleteTag: async (input) => await deleteTag(getDB(), input),
-  findTagById: async (userId, id) => await selectTagById(getDB(), userId, id),
-  getBookmarkCount: async (userId, view) =>
-    await getBookmarkCount(getDB(), userId, view),
-  getBookmarkDetail: async (userId, input) =>
-    await getBookmarkDetail(getDB(), userId, input),
   // session の正本は pantry-api。受けたリクエストの Cookie で `me` を呼び、
   // session 延長の Set-Cookie はブラウザへのレスポンスへ引き継ぐ。
   getSession: async (headers) =>
     await getSessionUser(
       createApiServerClient(headers, { onSetCookie: forwardSetCookie })
     ),
-  insertBookmark: async (input) => await insertBookmark(getDB(), input),
-  insertTag: async (input) => await insertTag(getDB(), input),
-  listBookmarks: async (input) => await listBookmarks(getDB(), input),
-  listShelfTags: async (userId) => await selectShelfTags(getDB(), userId),
-  listTags: async (userId, page) => await selectTags(getDB(), userId, page),
-  setBookmarkFavorite: async (input) =>
-    await setBookmarkFavorite(getDB(), input),
-  softDeleteBookmark: async (input) => await softDeleteBookmark(getDB(), input),
-  touchTag: async (input) => await touchTag(getDB(), input),
-  updateBookmark: async (input) => await updateBookmark(getDB(), input),
-  updateTag: async (input) => await updateTag(getDB(), input),
 });

@@ -1,6 +1,7 @@
 import { createClient } from "@libsql/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
 import type { ContractRouterClient } from "@orpc/contract";
 import { contract } from "@pantry/api-contract";
 import type { AppDb } from "@pantry/db";
@@ -47,10 +48,15 @@ const createRpcClient = (app: App, cookie?: string): Client => {
 
       return await app.fetch(new Request(request, { headers }));
     },
+    plugins: [new SimpleCsrfProtectionLinkPlugin()],
     url: `${baseURL}/rpc`,
   });
 
   return createORPCClient<Client>(link);
+};
+
+const unusedDb = (): never => {
+  throw new Error("db is not used in this test");
 };
 
 const createTestApp = (): App =>
@@ -61,6 +67,7 @@ const createTestApp = (): App =>
         headers,
         responseHeaders
       ),
+    db: () => db,
     handleAuthRequest: auth.handler,
   });
 
@@ -245,6 +252,7 @@ describe("createAuth", () => {
     });
     const app = createApp({
       authenticate: async () => null,
+      db: unusedDb,
       handleAuthRequest: productionAuth.handler,
     });
     const { user } = await productionAuth.api.signUpEmail({
@@ -287,6 +295,7 @@ describe("createAuth", () => {
           responses.push(response.clone());
           return response;
         },
+        plugins: [new SimpleCsrfProtectionLinkPlugin()],
         url: `${baseURL}/rpc`,
       })
     );

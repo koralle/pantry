@@ -1,3 +1,4 @@
+import { bookmarkUrlSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useMemo } from "react";
@@ -16,7 +17,6 @@ import type {
   QuickAddCreateResult,
   QuickAddScreenProps,
 } from "../../../../features/bookmarks/components/quick-add";
-import { bookmarkUrlSchema } from "../../../../features/bookmarks/domain/bookmark-values";
 import { mapCreateBookmarkFailure } from "../../../../features/bookmarks/lib/errors/get-create-bookmark-error-message";
 import { bookmarkTitleFetchAction } from "../../../../features/bookmarks/lib/queries/bookmark-title-fetch-action";
 import { refreshAfterBookmarkMutation } from "../../../../features/bookmarks/lib/queries/refresh-after-bookmark-mutation";

@@ -1,0 +1,43 @@
+import { user as users } from "@pantry/db/schema/auth-schema";
+import { describe, expect, it } from "vitest";
+
+import {
+  actor,
+  createTestClient,
+  other,
+  withMigratedDb,
+} from "../test/rpc-harness";
+
+describe("router（本番 migration を適用した libSQL）", () => {
+  const { getDb } = withMigratedDb();
+
+  it("テストごとに actor と other だけが入った DB から始まる", async () => {
+    const rows = await getDb()
+      .select({ id: users.id })
+      .from(users)
+      .orderBy(users.id);
+
+    expect(rows.map((row) => row.id)).toStrictEqual([actor.id, other.id]);
+  });
+
+  it("me は認証済みユーザーを返す", async () => {
+    await expect(createTestClient(getDb(), actor).me()).resolves.toStrictEqual(
+      actor
+    );
+  });
+
+  it("未認証の me は defined な UNAUTHORIZED（401）を返す", async () => {
+    await expect(createTestClient(getDb(), null).me()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+      defined: true,
+      status: 401,
+    });
+  });
+
+  it("副作用の無い health / me は x-csrf-token なしでも使える（allowlist は rpc/csrf.ts）", async () => {
+    const client = createTestClient(getDb(), actor, { csrf: false });
+
+    await expect(client.health()).resolves.toStrictEqual({ status: "ok" });
+    await expect(client.me()).resolves.toStrictEqual(actor);
+  });
+});

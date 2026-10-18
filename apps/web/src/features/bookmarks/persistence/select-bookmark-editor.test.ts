@@ -1,7 +1,7 @@
+import { bookmarkIdSchema } from "@pantry/api-contract/schemas/bookmark-values";
 import * as v from "valibot";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { bookmarkIdSchema } from "../domain/bookmark-values";
 import { selectBookmarkEditor } from "./select-bookmark-editor";
 import {
   closeMemoryClients,

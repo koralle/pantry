@@ -1,27 +1,29 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import type { RouterClient } from "@orpc/server";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
+import { createApiServerLink } from "../../api/client.server";
+import { forwardSetCookie } from "../../api/forward-set-cookie.server";
 import type { AppRouter } from "../contract/create-app-router";
 import { handleRpcRequest } from "../server/handle-request.server";
+import { createAppLink } from "./app-client";
+import type { AppClient } from "./app-client";
 
-/**
- * SSR 用の direct client。link の fetch を process 内の handler へ繋ぐため
- * ネットワークを経路せず、request headers（Cookie）だけを procedure へ渡す。
- * URL は prefix 判定のためで、実際には fetch されない。
- */
+/** web link の URL は prefix 判定のためだけにあり、実際には fetch されない。 */
 export const createServerRpcClient = (
   headersProvider: () => Headers,
   router?: AppRouter
-): RouterClient<AppRouter> => {
-  const link = new RPCLink({
+): AppClient => {
+  const webLink = new RPCLink({
     fetch: async (request) => await handleRpcRequest(request, router),
     headers: headersProvider,
     url: "http://pantry.internal/api/rpc",
   });
+  const apiLink = createApiServerLink(headersProvider, {
+    onSetCookie: forwardSetCookie,
+  });
 
-  return createORPCClient(link);
+  return createORPCClient(createAppLink({ api: apiLink, web: webLink }));
 };
 
 /**

@@ -6,6 +6,8 @@ import { defineConfig } from "vitest/config";
  * Node project へ逃がす（apps/web の vitest.config.ts と同じ構成）。
  */
 const anyIntegrationTests = "src/**/*.integration.test.ts";
+/** Docker（testcontainers）が要るので通常の test では回さない。 */
+const persistenceTests = "src/test/persistence/**";
 
 export default defineConfig({
   test: {
@@ -25,6 +27,7 @@ export default defineConfig({
       {
         test: {
           environment: "node",
+          exclude: [persistenceTests],
           include: [anyIntegrationTests],
           name: "node",
         },

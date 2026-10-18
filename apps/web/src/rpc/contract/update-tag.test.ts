@@ -1,35 +1,26 @@
 import { createORPCClient, ORPCError } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
+import type { TagId } from "@pantry/api-contract/schemas/tag-values";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
 import type { InsertTag } from "../../features/tags/application/create-tag";
 import type { UpdateTag } from "../../features/tags/application/update-tag";
-import type { TagId } from "../../features/tags/domain/tag-values";
 import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 const input = { color: null, id: 7, name: "Work", pinned: false, sortOrder: 0 };
 const insertTag: InsertTag = async () => ({ kind: "name-conflict" });
 
 const readDeps = {
-  fetchPageTitle: async () => ({ kind: "unavailable" }) as const,
-  findBookmarkEditor: async (): Promise<null> => null,
   findTagById: async () => null,
-  getBookmarkDetail: async (): Promise<null> => null,
-  getBookmarkCount: async () => 0,
-  insertBookmark: async () => ({ kind: "duplicate-url" }) as const,
-  listBookmarks: async () => ({ items: [], nextCursor: null }),
   listShelfTags: async () => [],
   listTags: async () => [],
-  setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
-  softDeleteBookmark: async () =>
-    ({ id: "", kind: "bookmark-not-found" }) as const,
   deleteTag: async () => ({ kind: "deleted" }) as const,
   touchTag: async () => ({ kind: "touched" }) as const,
-  updateBookmark: async () => ({ kind: "bookmark-not-found" }) as const,
 };
 
 function authenticatedRouter(updateTag: UpdateTag, getSession = vi.fn()) {
@@ -39,6 +30,7 @@ function authenticatedRouter(updateTag: UpdateTag, getSession = vi.fn()) {
     name: "koralle",
   });
   return createAppRouter({
+    ...stubAppRouterDeps(),
     getSession,
     insertTag,
     updateTag,
@@ -96,6 +88,7 @@ describe("UpdateTag RPC", () => {
 
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     const router = createAppRouter({
+      ...stubAppRouterDeps(),
       getSession: async () => null,
       insertTag,
       updateTag: async () => ({ kind: "not-found" }),
@@ -122,6 +115,7 @@ describe("UpdateTag RPC", () => {
       };
     });
     const router = createAppRouter({
+      ...stubAppRouterDeps(),
       getSession,
       insertTag,
       updateTag: async () => ({ id: 7 as never, kind: "updated" }),

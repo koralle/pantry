@@ -43,5 +43,6 @@ export default createApp({
       headers,
       responseHeaders
     ),
+  db: getDb,
   handleAuthRequest: async (request) => await getAuth().handler(request),
 });

@@ -2,24 +2,18 @@ import type { ORPCError } from "@orpc/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
+import type { TagId } from "@pantry/api-contract/schemas/tag-values";
 import { describe, expect, expectTypeOf, test, vi } from "vitest";
 
-import type {
-  SessionUser,
-  UserId,
-} from "../../features/auth/domain/auth-values";
-import type { InsertBookmarkOutput } from "../../features/bookmarks/application/create-bookmark";
-import type { FetchPageTitleOutput } from "../../features/bookmarks/application/fetch-page-title";
-import type { UpdateBookmarkOutput } from "../../features/bookmarks/application/update-bookmark";
-import type { BookmarkCountView } from "../../features/bookmarks/persistence/get-bookmark-count";
+import type { SessionUser } from "../../features/auth/domain/auth-values";
 import type { InsertTagOutput } from "../../features/tags/application/create-tag";
 import type { TouchTagOutput } from "../../features/tags/application/touch-tag";
 import type { UpdateTagOutput } from "../../features/tags/application/update-tag";
-import type { TagId } from "../../features/tags/domain/tag-values";
 import type { ShelfTag } from "../../features/tags/lib/tag-shelf";
 import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
+import { stubAppRouterDeps } from "./test-deps";
 
 const userId = "user-1";
 
@@ -33,36 +27,17 @@ type ReadDeps = Parameters<typeof createAppRouter>[0];
 
 function baseDeps(): ReadDeps {
   return {
-    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({
-      kind: "unavailable",
-    })),
-    findBookmarkEditor: vi.fn(async () => null),
+    ...stubAppRouterDeps(),
     findTagById: vi.fn(async () => null),
-    getBookmarkDetail: vi.fn(async () => null),
-    getBookmarkCount: async () => 0,
     getSession: vi.fn(async () => sessionUser),
-    insertBookmark: vi.fn(async (): Promise<InsertBookmarkOutput> => ({
-      kind: "duplicate-url",
-    })),
     insertTag: vi.fn(async (): Promise<InsertTagOutput> => ({
       id: 1 as never,
       kind: "created",
     })),
-    listBookmarks: vi.fn(async () => ({ items: [], nextCursor: null })),
     listShelfTags: vi.fn(async () => [] satisfies ShelfTag[]),
     listTags: vi.fn(async () => []),
-    setBookmarkFavorite: async () => ({ kind: "bookmark-not-found" as const }),
-    softDeleteBookmark: vi.fn(
-      async (): Promise<{ kind: "bookmark-not-found"; id: string }> => ({
-        id: "",
-        kind: "bookmark-not-found",
-      })
-    ),
     deleteTag: async () => ({ kind: "deleted" }) as const,
     touchTag: vi.fn(async (): Promise<TouchTagOutput> => ({ kind: "touched" })),
-    updateBookmark: vi.fn(async (): Promise<UpdateBookmarkOutput> => ({
-      kind: "bookmark-not-found",
-    })),
     updateTag: vi.fn(async (): Promise<UpdateTagOutput> => ({
       kind: "not-found",
     })),
@@ -118,44 +93,6 @@ async function rejection(
   expect(caught).toBeInstanceOf(Error);
   return caught as ORPCError<string, unknown>;
 }
-
-describe("auth.session RPC", () => {
-  test("未認証は null を返す（401 にしない）", async () => {
-    const router = authenticatedRouter({ getSession: async () => null });
-    const { client, getResponse } = createTestClient(router);
-
-    await expect(client.auth.session()).resolves.toBeNull();
-    expect(getResponse().status).toBe(200);
-  });
-
-  test("user の projection は id・name・email のみ", async () => {
-    const router = authenticatedRouter();
-    const { client } = createTestClient(router);
-
-    await expect(client.auth.session()).resolves.toStrictEqual({
-      user: {
-        email: "koralle@example.com",
-        id: userId,
-        name: "koralle",
-      },
-    });
-  });
-
-  test("Cookie ヘッダーが public procedure の getSession へ届く", async () => {
-    const getSession = vi.fn(async (headers: Headers) => {
-      expect(headers.get("cookie")).toBe("better-auth.session_token=abc");
-      return sessionUser;
-    });
-    const router = authenticatedRouter({ getSession });
-    const { client } = createTestClient(router, {
-      cookie: "better-auth.session_token=abc",
-    });
-
-    await client.auth.session();
-
-    expect(getSession).toHaveBeenCalledOnce();
-  });
-});
 
 describe("tags.shelf RPC", () => {
   test("未認証は 401 UNAUTHORIZED を返す", async () => {
@@ -295,29 +232,5 @@ describe("tags.byId RPC", () => {
       sortOrder: number;
       color: string | null;
     }>();
-  });
-});
-
-describe("bookmarks.counts RPC", () => {
-  test("view ごとに独立した procedure が、対応する view の件数を返す", async () => {
-    const counts: Record<BookmarkCountView, number> = {
-      favorites: 6,
-      inbox: 3,
-      recent: 128,
-    };
-    const getBookmarkCount = vi.fn(
-      async (_userId: UserId, view: BookmarkCountView) => counts[view]
-    );
-    const { client } = createTestClient(
-      authenticatedRouter({ getBookmarkCount })
-    );
-
-    await expect(client.bookmarks.counts.recent()).resolves.toBe(128);
-    await expect(client.bookmarks.counts.inbox()).resolves.toBe(3);
-    await expect(client.bookmarks.counts.favorites()).resolves.toBe(6);
-
-    expect(getBookmarkCount).toHaveBeenNthCalledWith(1, userId, "recent");
-    expect(getBookmarkCount).toHaveBeenNthCalledWith(2, userId, "inbox");
-    expect(getBookmarkCount).toHaveBeenNthCalledWith(3, userId, "favorites");
   });
 });

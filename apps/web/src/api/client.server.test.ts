@@ -23,7 +23,10 @@ const createFakeApi = (
   seen: SeenRequest[],
   { refresh = false }: { readonly refresh?: boolean } = {}
 ) => {
-  const os = implement(contract).$context<{ headers: Headers }>();
+  // 機能の procedure は契約ごとに増えるので、追従しなくて済むよう health / me に絞る。
+  const os = implement({ health: contract.health, me: contract.me }).$context<{
+    headers: Headers;
+  }>();
   const router = os.router({
     health: os.health.handler(() => ({ status: "ok" as const })),
     me: os.me.handler(({ context }) => {
@@ -98,6 +101,19 @@ describe("createApiServerClient", () => {
     expect(forwarded[0]?.get("cf-connecting-ip")).toBe("203.0.113.7");
     expect(forwarded[0]?.get("x-forwarded-for")).toBe("203.0.113.7");
     expect(forwarded[0]?.get("authorization")).toBeNull();
+  });
+
+  test("api が要求する x-csrf-token を付ける", async () => {
+    const forwarded: Headers[] = [];
+    const client = createApiServerClient(withCookie(SESSION_COOKIE), {
+      apiFetch: async (request) => {
+        forwarded.push(request.headers);
+        return await createFakeApi([])(request);
+      },
+    });
+
+    await client.health();
+    expect(forwarded[0]?.get("x-csrf-token")).toBe("orpc");
   });
 
   test("api の Set-Cookie を onSetCookie へ渡す", async () => {

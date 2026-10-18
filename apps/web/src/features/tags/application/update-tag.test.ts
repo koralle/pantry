@@ -1,8 +1,11 @@
+import {
+  tagIdSchema,
+  tagNameSchema,
+} from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
 import { userIdSchema } from "../../auth/domain/auth-values";
-import { tagIdSchema, tagNameSchema } from "../domain/tag-values";
 import {
   executeUpdateTag,
   toUpdateTagCommand,
