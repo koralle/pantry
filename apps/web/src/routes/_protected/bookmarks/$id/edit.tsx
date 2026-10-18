@@ -90,10 +90,9 @@ export const Route = createFileRoute("/_protected/bookmarks/$id/edit")({
   loader: async ({ params, context }) => {
     const client = await getRpcClient();
     const queries = createTanstackQueryUtils(client);
-    // 選択中タグの名前は棚（tags.shelf）から引く。棚は pantry-api 経由で editor より遅れて
-    // 届くことがあるので、SSR でも待ってから描き、hydration の不一致を防ぐ。
-    // 親の /_protected loader と同じ query なので、取得は 1 回にまとまる。
-    // 失敗しても従来どおり画面は出す（棚の失敗は picker 側が扱う）。
+    // 棚（tags.shelf）は pantry-api 経由で editor より遅れて届くことがあり、待たないと
+    // SSR と hydration で選択中タグの名前が食い違う。親の /_protected loader と同じ query
+    // なので待っても取得は増えない。棚の失敗は picker 側が扱うので、ここでは画面を止めない。
     const shelfReady = context.queryClient
       .ensureQueryData(queries.tags.shelf.queryOptions({ staleTime: 5000 }))
       .catch(() => null);

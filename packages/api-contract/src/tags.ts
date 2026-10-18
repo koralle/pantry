@@ -20,10 +20,6 @@ const tagNameAlreadyExists = {
   "tag-name-already-exists": { status: 409 },
 } as const;
 
-/**
- * `tags.*`。どれもサインインが必要で、他ユーザーのタグは存在しないものとして扱う
- * （取得・更新・削除・touch は `tag-not-found`）。
- */
 export const tagsContract = {
   byId: authed
     .errors(tagNotFound)
@@ -33,7 +29,6 @@ export const tagsContract = {
     .errors(tagNameAlreadyExists)
     .input(createTagInputSchema)
     .output(tagIdOutputSchema),
-  /** 削除は紐付け解除込み。 */
   delete: authed
     .errors(tagNotFound)
     .input(deleteTagInputSchema)
@@ -47,7 +42,6 @@ export const tagsContract = {
     .errors(tagNotFound)
     .input(touchTagInputSchema)
     .output(touchTagOutputSchema),
-  /** full-replace。名前の衝突は `tag-name-already-exists`。 */
   update: authed
     .errors({ ...tagNameAlreadyExists, ...tagNotFound })
     .input(updateTagInputSchema)

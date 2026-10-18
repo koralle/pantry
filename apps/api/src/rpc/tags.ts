@@ -19,10 +19,6 @@ import { touchTag } from "../features/tags/persistence/touch-tag";
 import { updateTag } from "../features/tags/persistence/update-tag";
 import type { RouterKit } from "./base";
 
-/**
- * `tags.*` の実装。どの procedure も requireAuth の `userId` で所有者を絞り込み、
- * 他ユーザーのタグは存在しないもの（`tag-not-found`）として扱う。
- */
 export const createTagsRouter = ({ deps, impl, requireAuth }: RouterKit) => ({
   byId: impl.tags.byId
     .use(requireAuth)

@@ -75,8 +75,8 @@ const tagRow = async (db: AppDb, id: number) => {
 type TagProcedureName = keyof ApiContract["tags"];
 
 /**
- * tags の全 procedure を、入力検証で落ちない正しい入力で呼ぶ。
- * `satisfies` で契約の key と過不足なく一致させ、procedure を足したら型エラーで気付く。
+ * 入力を正しくするのは、400 で先に落ちると 401 / CSRF を確かめられないため。
+ * `satisfies` は、procedure を足したときに型エラーで気付くため。
  */
 const callEveryProcedure = (client: ApiTestClient) =>
   ({
@@ -288,7 +288,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
         })
       ).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
       await expect(
-        // full-replace 契約を外から崩す呼び出しを再現する
+        // full-replace 契約を外から崩す呼び出しを再現するため型を外す
         client.tags.update({ id, name: "work" } as never)
       ).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
     });
