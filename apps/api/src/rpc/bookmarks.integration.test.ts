@@ -1,5 +1,3 @@
-import { isContractProcedure } from "@orpc/contract";
-import type { AnyContractProcedure } from "@orpc/contract";
 import { contract } from "@pantry/api-contract";
 import type { ApiContract } from "@pantry/api-contract";
 import type { AppDb } from "@pantry/db";
@@ -13,11 +11,13 @@ import { describe, expect, it } from "vitest";
 import { BOOKMARK_LIST_PAGE_SIZE } from "../features/bookmarks/lib/bookmark-list-page-size";
 import {
   actor,
+  contractProcedureNames,
   createTestClient,
+  itRequiresAuthAndCsrf,
   other,
   withMigratedDb,
 } from "../test/rpc-harness";
-import type { ApiTestClient } from "../test/rpc-harness";
+import type { ApiTestClient, ProcedurePath } from "../test/rpc-harness";
 
 const seedTag = async (
   db: AppDb,
@@ -87,25 +87,7 @@ const tagIdsOf = async (db: AppDb, bookmarkId: string): Promise<number[]> =>
 
 const someId = "01a14ade-61b5-7416-af28-6ad04e6fc648";
 
-type ProcedurePath<T, Prefix extends string = ""> = {
-  [K in keyof T & string]: T[K] extends AnyContractProcedure
-    ? `${Prefix}${K}`
-    : ProcedurePath<T[K], `${Prefix}${K}.`>;
-}[keyof T & string];
-
 type BookmarkProcedureName = ProcedurePath<ApiContract["bookmarks"]>;
-
-const procedurePaths = (router: object, prefix = ""): string[] =>
-  Object.entries(router).flatMap(([key, value]: [string, unknown]) =>
-    isContractProcedure(value)
-      ? [`${prefix}${key}`]
-      : procedurePaths(value as object, `${prefix}${key}.`)
-  );
-
-/** テスト対象は契約から取る。手で並べた一覧だと新しい procedure が 401 / CSRF の検査から漏れる。 */
-const procedureNames = procedurePaths(
-  contract.bookmarks
-).toSorted() as BookmarkProcedureName[];
 
 /**
  * 入力を正しくするのは、400 で先に落ちると 401 / CSRF を確かめられないため。
@@ -150,35 +132,12 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   const as = (user: typeof actor | null) => createTestClient(getDb(), user);
 
   describe("認証と CSRF", () => {
-    it("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
-      expect(
-        Object.keys(callEveryProcedure(as(null))).toSorted()
-      ).toStrictEqual(procedureNames);
+    itRequiresAuthAndCsrf({
+      callEveryProcedure,
+      getDb,
+      namespace: "bookmarks",
+      procedureNames: contractProcedureNames(contract.bookmarks),
     });
-
-    it.each(procedureNames)(
-      "x-csrf-token の無い bookmarks.%s は認証済みでも 403 で拒否する（CSRF の除外は health / me だけ）",
-      async (name) => {
-        await expect(
-          callEveryProcedure(createTestClient(getDb(), actor, { csrf: false }))[
-            name
-          ]()
-        ).rejects.toMatchObject({ code: "CSRF_TOKEN_MISMATCH", status: 403 });
-      }
-    );
-
-    it.each(procedureNames)(
-      "未認証の bookmarks.%s は defined な UNAUTHORIZED（401）を返す",
-      async (name) => {
-        await expect(
-          callEveryProcedure(as(null))[name]()
-        ).rejects.toMatchObject({
-          code: "UNAUTHORIZED",
-          defined: true,
-          status: 401,
-        });
-      }
-    );
 
     it("x-csrf-token の無い書き込みは 403 で拒否し、行を作らない", async () => {
       await expect(
