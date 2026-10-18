@@ -13,11 +13,6 @@ import { softDeleteBookmark } from "../features/bookmarks/persistence/soft-delet
 import { updateBookmark } from "../features/bookmarks/persistence/update-bookmark";
 import type { RouterKit } from "./base";
 
-/**
- * `bookmarks.*` の実装（`title` は web に残る）。どの procedure も requireAuth の `userId` で
- * 所有者を絞り込み、他ユーザーや削除済みの bookmark は `bookmark-not-found` として扱う。
- * 想定外の失敗は包み直さず 500 に抜ける。
- */
 export const createBookmarksRouter = ({
   deps,
   impl,
@@ -73,7 +68,6 @@ export const createBookmarksRouter = ({
         }
         return { id: result.id };
       }),
-    /** Query service の対象なし null は、ここでだけ 404 defined error へ変換する。 */
     detail: bookmarks.detail
       .use(requireAuth)
       .handler(async ({ context, errors, input }) => {

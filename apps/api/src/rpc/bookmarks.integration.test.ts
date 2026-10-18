@@ -87,7 +87,6 @@ const tagIdsOf = async (db: AppDb, bookmarkId: string): Promise<number[]> =>
 
 const someId = "01a14ade-61b5-7416-af28-6ad04e6fc648";
 
-/** 契約の router から procedure までの key を `.` でつないだもの（例: `counts.recent`）。 */
 type ProcedurePath<T, Prefix extends string = ""> = {
   [K in keyof T & string]: T[K] extends AnyContractProcedure
     ? `${Prefix}${K}`
@@ -109,8 +108,8 @@ const procedureNames = procedurePaths(
 ).toSorted() as BookmarkProcedureName[];
 
 /**
- * bookmarks の全 procedure を、入力検証で落ちない正しい入力で呼ぶ。
- * `satisfies` で契約の procedure と過不足なく一致させ、procedure を足したら型エラーで気付く。
+ * 入力を正しくするのは、400 で先に落ちると 401 / CSRF を確かめられないため。
+ * `satisfies` は、procedure を足したときに型エラーで気付くため。
  */
 const callEveryProcedure = (client: ApiTestClient) =>
   ({

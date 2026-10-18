@@ -9,7 +9,6 @@ function readSource(relativePath: string): string {
   return readFileSync(join(featureDir, relativePath), "utf-8");
 }
 
-/** web から移した UpdateBookmark の境界（apps/web の orpc-update.source.test.ts から引き継ぎ）。 */
 describe("UpdateBookmark source boundary", () => {
   test("Application は Drizzle / AppDb / unexpected-error を import しない", () => {
     const source = readSource("application/update-bookmark.ts");
