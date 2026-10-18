@@ -6,7 +6,7 @@ import { defineConfig } from "vitest/config";
  * Node project へ逃がす（apps/web の vitest.config.ts と同じ構成）。
  */
 const anyIntegrationTests = "src/**/*.integration.test.ts";
-/** 実際の libSQL server（testcontainers）を使うテストは vitest.persistence.config.ts で回す。 */
+/** Docker（testcontainers）が要るので通常の test では回さない。 */
 const persistenceTests = "src/test/persistence/**";
 
 export default defineConfig({

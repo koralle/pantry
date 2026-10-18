@@ -25,7 +25,6 @@ import type {
 } from "../../features/bookmarks/persistence/list-bookmarks";
 import type { ProcedureKit } from "./procedure-kit";
 
-/** 編集画面に必要な projection。branded な型は wire output に残さない。 */
 export interface BookmarkEditorOutput {
   readonly id: string;
   readonly url: string;
@@ -39,7 +38,6 @@ type FindBookmarkEditor = (
   id: string
 ) => Promise<BookmarkEditorOutput | null>;
 
-/** ブックマークの procedure が使う service。本番は router.server.ts が Drizzle の実装を渡す。 */
 export interface BookmarksDeps {
   readonly insertBookmark: InsertBookmark;
   readonly updateBookmark: UpdateBookmark;
@@ -59,17 +57,16 @@ export interface BookmarksDeps {
   readonly softDeleteBookmark: SoftDeleteBookmark;
 }
 
-/** HTTP 上の CreateBookmark 成功形。branded `BookmarkId` は wire output に残さない。 */
+/** client へ branded `BookmarkId` を出すと、画面が Domain の組み立てを知っていることになるため plain な型にする。 */
 export interface CreateBookmarkOutput {
   readonly id: string;
 }
 
-/** HTTP 上の UpdateBookmark 成功形。Application の branded `BookmarkId` は載せない。 */
 export interface UpdateBookmarkOutput {
   readonly id: string;
 }
 
-/** `bookmarks.*` の procedure（`title` は外部 fetch なので create-app-router.ts に残す）。 */
+/** `title` は外部 fetch なので、ここ（api へ移す側）に含めない。 */
 export const createBookmarkProcedures = (
   { base, requireAuth }: ProcedureKit,
   deps: BookmarksDeps
@@ -172,7 +169,6 @@ export const createBookmarkProcedures = (
     tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),
     view: v.optional(v.picklist(["recent", "inbox", "favorites"])),
   });
-  /** Id は wire 上では UUID 文字列。空文字や任意文字列をここで拒否する。 */
   const bookmarkIdInputSchema = v.object({ id: v.pipe(v.string(), v.uuid()) });
 
   const listBookmarks = base
@@ -188,7 +184,6 @@ export const createBookmarkProcedures = (
         })
     );
 
-  /** レールの view ごとに独立した procedure。件数の定義は persistence 側を正本にする。 */
   const bookmarkCount = (view: BookmarkCountView) =>
     base
       .use(requireAuth)
@@ -196,10 +191,6 @@ export const createBookmarkProcedures = (
         async ({ context }) => await deps.getBookmarkCount(context.userId, view)
       );
 
-  /**
-   * Query service の対象なし null は、ここでだけ 404 defined error へ変換する。
-   * DB 障害や不正な保存済み row は包み直さず 500 に抜ける。
-   */
   const bookmarkDetail = base
     .use(requireAuth)
     .errors({
@@ -220,7 +211,6 @@ export const createBookmarkProcedures = (
       return detail;
     });
 
-  /** 成功なら plain string ID を wire へ返す。Application の判別子はここで消える。 */
   const deleteBookmark = base
     .use(requireAuth)
     .errors({
@@ -243,7 +233,6 @@ export const createBookmarkProcedures = (
       return { id: result.id };
     });
 
-  /** 成功なら plain string ID を wire へ返す。favorite はトグル先を input が持つ。 */
   const setFavorite = base
     .use(requireAuth)
     .errors({

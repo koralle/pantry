@@ -55,7 +55,6 @@ const createRpcClient = (app: App, cookie?: string): Client => {
   return createORPCClient<Client>(link);
 };
 
-/** DB を使わない procedure だけを叩くテストの差し込み口。 */
 const unusedDb = (): never => {
   throw new Error("db is not used in this test");
 };

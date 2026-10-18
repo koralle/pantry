@@ -6,12 +6,7 @@ import type { SessionUser } from "../../features/auth/domain/auth-values";
 
 export type GetSession = (headers: Headers) => Promise<SessionUser | null>;
 
-/**
- * 機能ごとの procedure が共有する builder と認証 middleware。
- *
- * 認証失敗は Result に入れない。回復できない拒否は oRPC の `UNAUTHORIZED` として投げる。
- * Application の既知エラーだけ 409 / 404 へ写す。想定外は包み直さず 500 に抜ける。
- */
+/** 認証失敗は回復できない拒否なので、Result に入れず oRPC の `UNAUTHORIZED` として投げる。 */
 export const createProcedureKit = (getSession: GetSession) => {
   const base = os.$context<{ headers: Headers }>().errors({
     UNAUTHORIZED: {

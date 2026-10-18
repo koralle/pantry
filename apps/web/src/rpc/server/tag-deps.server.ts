@@ -8,7 +8,6 @@ import { touchTag } from "../../features/tags/persistence/touch-tag";
 import { updateTag } from "../../features/tags/persistence/update-tag";
 import type { TagsDeps } from "../contract/tag-procedures";
 
-/** タグの procedure の本番配線（Drizzle）。 */
 export const tagsDeps: TagsDeps = {
   deleteTag: async (input) => await deleteTag(getDB(), input),
   findTagById: async (userId, id) => await selectTagById(getDB(), userId, id),

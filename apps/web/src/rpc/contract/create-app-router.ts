@@ -12,12 +12,8 @@ import { createTagProcedures } from "./tag-procedures";
 import type { TagsDeps } from "./tag-procedures";
 
 /**
- * 本番の Better Auth / Drizzle をここに閉じ込めるための差し込み口。
- * RPC テストは session と各 service を差し替え、Turso を立てずに契約だけを叩く。
- *
- * 機能ごとの service は `tag-procedures.ts` / `bookmark-procedures.ts` が持つ。
- * pantry-api へ移した機能は、そのファイルの procedure と service を空にする
- * （このファイルと他の機能のファイルは変えない）。
+ * RPC テストが session と service を差し替え、Turso を立てずに契約だけを叩けるよう注入にする。
+ * 機能の service を機能ごとのファイルへ分けるのは、移行 PR 同士が同じファイルを触らないため。
  */
 export interface AppRouterDeps extends TagsDeps, BookmarksDeps {
   readonly getSession: GetSession;

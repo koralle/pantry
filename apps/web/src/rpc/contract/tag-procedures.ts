@@ -33,7 +33,6 @@ const tagIdInputSchema = v.object({
   id: v.pipe(v.number(), v.integer(), v.minValue(1)),
 });
 
-/** タグの procedure が使う service。本番は router.server.ts が Drizzle の実装を渡す。 */
 export interface TagsDeps {
   readonly insertTag: InsertTag;
   readonly updateTag: UpdateTag;
@@ -50,31 +49,19 @@ export interface TagsDeps {
   ) => Promise<TagRecord | null>;
 }
 
-/**
- * HTTP 上の TouchTag 成功形。Application の branded `TagId` は載せない。
- */
 export interface TouchTagOutput {
   readonly ok: true;
 }
 
-/**
- * HTTP 上の CreateTag 成功形。Application の branded `TagId` は載せない。
- * brand は型システムの印で、JSON には残らない。client へ TagId を出すと、
- * 画面が Domain の組み立てを知っていることになってしまう。
- */
+/** client へ branded `TagId` を出すと、画面が Domain の組み立てを知っていることになるため plain な型にする。 */
 export interface CreateTagOutput {
   readonly id: number;
 }
 
-/**
- * HTTP 上の UpdateTag 成功形。branded `TagId` は載せない。
- * brand は型システムの印で、JSON には残らない。
- */
 export interface UpdateTagOutput {
   readonly id: number;
 }
 
-/** `tags.*` の procedure。 */
 export const createTagProcedures = (
   { base, requireAuth }: ProcedureKit,
   deps: TagsDeps
@@ -165,7 +152,6 @@ export const createTagProcedures = (
       return output;
     });
 
-  /** 成功なら plain number ID を wire へ返す。削除は紐付け解除込み。 */
   const deleteTag = base
     .use(requireAuth)
     .input(deleteTagInputSchema)

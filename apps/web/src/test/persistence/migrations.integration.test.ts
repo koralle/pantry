@@ -3,10 +3,6 @@ import { describe, expect, test } from "vitest";
 
 import { seedUser, withPersistenceDb } from "./migrated-db";
 
-/**
- * 実際の libSQL server（testcontainers）に本番 migration を適用した DB で、
- * 機能の persistence テストが使う前提（テーブルと行の reset）が成り立つことを確かめる。
- */
 describe("本番 migration を適用した libSQL server", () => {
   const persistence = withPersistenceDb();
 

@@ -9,7 +9,6 @@ import { softDeleteBookmark } from "../../features/bookmarks/persistence/soft-de
 import { updateBookmark } from "../../features/bookmarks/persistence/update-bookmark";
 import type { BookmarksDeps } from "../contract/bookmark-procedures";
 
-/** ブックマークの procedure の本番配線（Drizzle）。 */
 export const bookmarksDeps: BookmarksDeps = {
   findBookmarkEditor: async (userId, id) =>
     await selectBookmarkEditor(getDB(), userId, id),

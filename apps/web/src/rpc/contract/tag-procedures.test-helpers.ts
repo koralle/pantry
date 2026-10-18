@@ -1,6 +1,5 @@
 import type { TagsDeps } from "./tag-procedures";
 
-/** タグの service の既定 stub。テストは確かめたい service だけを上書きする。 */
 export const stubTagsDeps = (): TagsDeps => ({
   deleteTag: async () => ({ kind: "deleted" }),
   findTagById: async () => null,

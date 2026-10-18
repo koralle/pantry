@@ -9,14 +9,12 @@ import type { ApiContract } from "@pantry/api-contract";
 import type { AppRouter } from "../contract/create-app-router";
 
 /**
- * 画面から見た oRPC client。web の `/api/rpc`（AppRouter）と `pantry-api`（ApiContract）を
- * ひとつにまとめる。procedure を api へ移しても `orpc.tags.*` などの呼び出しと
- * TanStack Query の key は変わらない。
+ * web の AppRouter と ApiContract をひとつにするのは、procedure を api へ移しても
+ * `orpc.tags.*` などの呼び出しと TanStack Query の key を変えないため。
  */
 export type AppClient = RouterClient<AppRouter> &
   ContractRouterClient<ApiContract>;
 
-/** `path` が `@pantry/api-contract` の procedure なら true。 */
 export const isApiProcedurePath = (path: readonly string[]): boolean => {
   let node: unknown = contract;
   for (const key of path) {
@@ -32,10 +30,7 @@ export const isApiProcedurePath = (path: readonly string[]): boolean => {
   return isContractProcedure(node);
 };
 
-/**
- * api の contract にある procedure は `api` link（pantry-api）へ、それ以外は `web` link
- * （web の `/api/rpc`）へ振り分ける。移行は contract へ procedure を足すだけで切り替わる。
- */
+/** contract で振り分けるのは、移行を contract へ procedure を足すだけで切り替えるため。 */
 export const createAppLink = <T extends ClientContext>(links: {
   readonly api: ClientLink<T> | (() => Promise<ClientLink<T>>);
   readonly web: ClientLink<T>;

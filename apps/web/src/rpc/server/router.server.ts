@@ -1,7 +1,6 @@
 /**
- * 本番配線だけを置く。router 実装本体は `createAppRouter` 側に残し、
- * ブラウザから server-only の getDB / api client を import できないようにする。
- * 機能ごとの配線は `tag-deps.server.ts` / `bookmark-deps.server.ts` に置く。
+ * router 実装と本番配線を分けるのは、ブラウザから server-only の getDB / api client を
+ * import できないようにするため。
  */
 import { createApiServerClient } from "../../api/client.server";
 import { forwardSetCookie } from "../../api/forward-set-cookie.server";

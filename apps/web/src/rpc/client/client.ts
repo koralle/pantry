@@ -28,7 +28,6 @@ const redirectToSignIn = (): void => {
   window.location.replace(signIn);
 };
 
-/** web の `/api/rpc` と pantry-api のどちらの UNAUTHORIZED でも sign-in へ戻す。 */
 const redirectOnUnauthorized = (error: unknown): void => {
   if (
     error instanceof ORPCError &&
@@ -59,9 +58,8 @@ const browserApiLink = createApiBrowserLink({
 });
 
 /**
- * pantry-api への link。browser は同一 origin の `/rpc`（Worker entry が Service Binding へ転送）、
- * SSR は Service Binding を直接呼び、元リクエストの Cookie / クライアント IP を転送して
- * api の Set-Cookie をブラウザへのレスポンスへ引き継ぐ。
+ * server と client で link を分けるのは、SSR には同一 origin の `/rpc` が無く、
+ * api の Set-Cookie（session の延長）もブラウザへのレスポンスへ引き継ぐ必要があるため。
  */
 const apiLink = createIsomorphicFn()
   .server(async (): Promise<ClientLink<Record<never, never>>> => {
@@ -73,7 +71,6 @@ const apiLink = createIsomorphicFn()
       await Promise.resolve(browserApiLink)
   );
 
-/** Browser と SSR の両方で同じ契約（web の AppRouter + api の contract）を使う runtime client。 */
 export const rpcClient: AppClient = createORPCClient(
   createAppLink({ api: apiLink, web: webLink })
 );

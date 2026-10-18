@@ -7,12 +7,7 @@ import type { ApiContract } from "@pantry/api-contract";
 /** `packages/api-contract` から導出した `pantry-api` の client 型。 */
 export type ApiClient = ContractRouterClient<ApiContract>;
 
-/**
- * ブラウザから `pantry-api` を呼ぶ link。同一 origin の `/rpc` へ普通に fetch し、
- * web の Worker entry が Service Binding で api へ転送する。Cookie はブラウザが付ける。
- * api は CSRF 対策で `x-csrf-token` を要求するので、SimpleCsrfProtectionLinkPlugin で付ける。
- * SSR からは使わない（SSR は `client.server.ts` の link を使う）。
- */
+/** CSRF plugin は、api が CSRF 対策で `x-csrf-token` を要求するため。 */
 export const createApiBrowserLink = (
   options: Pick<ConstructorParameters<typeof RPCLink>[0], "interceptors"> = {}
 ) =>
@@ -25,7 +20,6 @@ export const createApiBrowserLink = (
     plugins: [new SimpleCsrfProtectionLinkPlugin()],
   });
 
-/** ブラウザ用の `pantry-api` client。 */
 export const apiBrowserClient: ApiClient = createORPCClient(
   createApiBrowserLink()
 );

@@ -43,10 +43,6 @@ async function resetPersistenceTables(client: Client): Promise<void> {
   await client.executeMultiple(statements.join(";\n"));
 }
 
-/**
- * 共有 libSQL へ接続し、各テスト前に行を空にする。
- * schema は globalSetup の本番 migration が作ったものを使う。
- */
 export function withPersistenceDb(): PersistenceDb {
   let client: Client | undefined;
   let db: AppDb | undefined;

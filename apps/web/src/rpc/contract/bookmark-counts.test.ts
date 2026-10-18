@@ -54,10 +54,7 @@ function authenticatedRouter(deps: Partial<ReadDeps> = {}) {
   return createAppRouter(merged);
 }
 
-/**
- * 本物の RPCLink を、process 内の handleRpcRequest へ繋ぐ。
- * HTTP サーバーや Turso を立てず、クライアント契約とステータスだけを見るため。
- */
+/** HTTP サーバーや Turso を立てず、クライアント契約とステータスだけを見るため process 内の handler へ繋ぐ。 */
 function createTestClient(router: AppRouter, headers?: HeadersInit) {
   let lastResponse: Response | undefined;
   let lastBodyText: string | undefined;

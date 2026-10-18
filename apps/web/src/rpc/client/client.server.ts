@@ -9,12 +9,7 @@ import { handleRpcRequest } from "../server/handle-request.server";
 import { createAppLink } from "./app-client";
 import type { AppClient } from "./app-client";
 
-/**
- * SSR 用の direct client。web の procedure は link の fetch を process 内の handler へ繋ぐため
- * ネットワークを経由せず、request headers（Cookie）だけを procedure へ渡す。
- * URL は prefix 判定のためで、実際には fetch されない。
- * pantry-api の procedure は Service Binding へ同じ headers を転送する。
- */
+/** web link の URL は prefix 判定のためだけにあり、実際には fetch されない。 */
 export const createServerRpcClient = (
   headersProvider: () => Headers,
   router?: AppRouter

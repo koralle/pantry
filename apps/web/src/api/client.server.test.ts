@@ -23,7 +23,7 @@ const createFakeApi = (
   seen: SeenRequest[],
   { refresh = false }: { readonly refresh?: boolean } = {}
 ) => {
-  // 機能の procedure は契約ごとに増えるので、ここでは health / me だけを実装する。
+  // 機能の procedure は契約ごとに増えるので、追従しなくて済むよう health / me に絞る。
   const os = implement({ health: contract.health, me: contract.me }).$context<{
     headers: Headers;
   }>();

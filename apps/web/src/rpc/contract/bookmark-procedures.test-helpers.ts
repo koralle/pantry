@@ -1,6 +1,5 @@
 import type { BookmarksDeps } from "./bookmark-procedures";
 
-/** ブックマークの service の既定 stub。テストは確かめたい service だけを上書きする。 */
 export const stubBookmarksDeps = (): BookmarksDeps => ({
   findBookmarkEditor: async () => null,
   getBookmarkCount: async () => 0,
