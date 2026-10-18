@@ -1,23 +1,9 @@
-import { tagNameSchema } from "@pantry/api-contract/schemas/tag-values";
+import type { CreateTagInput } from "@pantry/api-contract/schemas/tag-procedures";
 import type { TagId, TagName } from "@pantry/api-contract/schemas/tag-values";
-import * as v from "valibot";
 
-import { err, ok } from "../../../shared/domain/result";
-import type { Result } from "../../../shared/domain/result";
-import type { UserId } from "../../auth/domain/auth-values";
-
-/**
- * HTTP 直前の形。省略項目はここでは default を埋めない。
- * 未送信と「明示的な false / 0 / null」を同じにすると、呼び出し側の意図が消える。
- */
-export const createTagInputSchema = v.object({
-  color: v.optional(v.nullable(v.string())),
-  name: tagNameSchema,
-  pinned: v.optional(v.boolean()),
-  sortOrder: v.optional(v.number()),
-});
-
-export type CreateTagInput = v.InferOutput<typeof createTagInputSchema>;
+import type { UserId } from "../../../domain/user-id";
+import { err, ok } from "../../../shared/result";
+import type { Result } from "../../../shared/result";
 
 /**
  * Application が扱う確定済みコマンド。

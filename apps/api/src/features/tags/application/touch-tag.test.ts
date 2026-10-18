@@ -1,9 +1,10 @@
+import { touchTagInputSchema } from "@pantry/api-contract/schemas/tag-procedures";
 import { tagIdSchema } from "@pantry/api-contract/schemas/tag-values";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import { executeTouchTag, touchTagInputSchema } from "./touch-tag";
+import { userIdSchema } from "../../../domain/user-id";
+import { executeTouchTag } from "./touch-tag";
 import type { TouchTag, TouchTagInput, TouchTagOutput } from "./touch-tag";
 
 function parseUserId(value: string) {

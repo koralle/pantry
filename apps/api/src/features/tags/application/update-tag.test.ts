@@ -1,3 +1,4 @@
+import { updateTagInputSchema } from "@pantry/api-contract/schemas/tag-procedures";
 import {
   tagIdSchema,
   tagNameSchema,
@@ -5,12 +6,8 @@ import {
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../auth/domain/auth-values";
-import {
-  executeUpdateTag,
-  toUpdateTagCommand,
-  updateTagInputSchema,
-} from "./update-tag";
+import { userIdSchema } from "../../../domain/user-id";
+import { executeUpdateTag, toUpdateTagCommand } from "./update-tag";
 import type { UpdateTag, UpdateTagInput, UpdateTagOutput } from "./update-tag";
 
 function parseInput(input: unknown) {
