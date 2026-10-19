@@ -7,7 +7,7 @@ describe("apiBrowserClient", () => {
     vi.unstubAllGlobals();
   });
 
-  test("同一 origin の /rpc へ fetch する", async () => {
+  test("同一 origin の /rpc へ fetch し、api を戻しても動くよう x-csrf-token を付ける", async () => {
     const requests: Request[] = [];
     vi.stubGlobal("location", new URL("https://pantry.example.com/bookmarks"));
     vi.stubGlobal("fetch", async (request: Request) => {

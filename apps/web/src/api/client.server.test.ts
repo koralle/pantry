@@ -103,7 +103,7 @@ describe("createApiServerClient", () => {
     expect(forwarded[0]?.get("authorization")).toBeNull();
   });
 
-  test("api が要求する x-csrf-token を付ける", async () => {
+  test("api を戻しても動くよう x-csrf-token を付け続ける", async () => {
     const forwarded: Headers[] = [];
     const client = createApiServerClient(withCookie(SESSION_COOKIE), {
       apiFetch: async (request) => {
