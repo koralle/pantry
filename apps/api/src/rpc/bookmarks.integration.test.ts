@@ -19,6 +19,7 @@ import {
   itRequiresAuthAndCsrf,
   other,
   rawRpcRequest,
+  sameOriginHeaderSets,
   withMigratedDb,
 } from "../test/rpc-harness";
 import type { ApiTestClient, ProcedurePath } from "../test/rpc-harness";
@@ -173,6 +174,29 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
         ).resolves.toStrictEqual([]);
       }
     );
+
+    it("Pantry と同じ Origin からなら form と同じ content-type でも bookmarks.create で行を作る", async () => {
+      const app = createTestApp(getDb(), async () => actor);
+      for (const [index, headers] of sameOriginHeaderSets.entries()) {
+        const response = await app.fetch(
+          rawRpcRequest({
+            body: {
+              note: null,
+              tags: [],
+              title: "t",
+              url: `https://example.com/${index}`,
+            },
+            contentType: undefined,
+            headers,
+            path: "bookmarks/create",
+          })
+        );
+        expect(response.status, JSON.stringify(headers)).toBe(200);
+      }
+      await expect(
+        getDb().select({ url: bookmarkTable.url }).from(bookmarkTable)
+      ).resolves.toHaveLength(sameOriginHeaderSets.length);
+    });
   });
 
   describe("create", () => {

@@ -127,10 +127,7 @@ export const createTestClient = (
   );
 };
 
-/**
- * 別サイトの `<form>` / `fetch(..., { mode: "no-cors" })` が付けられる content-type。
- * content-type 無しも含めるのは、RPCHandler がそれを JSON として読むため。
- */
+/** content-type 無しも含めるのは、RPCHandler がそれを JSON として読むため。 */
 export const formLikeContentTypes = [
   "application/x-www-form-urlencoded",
   "multipart/form-data; boundary=pantry",
@@ -140,7 +137,12 @@ export const formLikeContentTypes = [
 
 type FormLikeContentType = (typeof formLikeContentTypes)[number];
 
-/** same-site を含めるのは、`*.workers.dev` の兄弟 Worker が same-site になるため。 */
+/**
+ * same-site を含めるのは、`*.workers.dev` の兄弟 Worker が same-site になるため。
+ * `null` を含めるのは、sandbox iframe などからの送信は Origin が `null` になるため。
+ * 信頼する Origin の大文字・既定ポート・scheme 違い・末尾 `/` を含めるのは、ブラウザは正規化済みの
+ * Origin しか送らず、正規化して通すと別物まで通るため。
+ */
 export const crossSiteHeaderSets: readonly Readonly<Record<string, string>>[] =
   [
     { origin: "https://evil.example" },
@@ -151,7 +153,31 @@ export const crossSiteHeaderSets: readonly Readonly<Record<string, string>>[] =
       origin: "https://sibling.mkhd7930.workers.dev",
       "sec-fetch-site": "same-site",
     },
+    { origin: "null" },
+    { origin: "null", "sec-fetch-site": "cross-site" },
+    { origin: testTrustedOrigin.toUpperCase() },
+    { origin: `${testTrustedOrigin}:80` },
+    { origin: `${testTrustedOrigin}:443` },
+    { origin: testTrustedOrigin.replace("http:", "https:") },
+    { origin: `${testTrustedOrigin}/` },
   ];
+
+/** Sec-Fetch-Site を送らない古いブラウザでも、Pantry 自身の画面からの送信は通すため Origin 単独も含める。 */
+export const sameOriginHeaderSets: readonly Readonly<Record<string, string>>[] =
+  [
+    { "sec-fetch-site": "same-origin" },
+    { origin: testTrustedOrigin },
+    { origin: testTrustedOrigin, "sec-fetch-site": "same-origin" },
+  ];
+
+const nonPostMethods = [
+  "GET",
+  "HEAD",
+  "OPTIONS",
+  "PUT",
+  "PATCH",
+  "DELETE",
+] as const;
 
 /** body を bytes で渡すのは、文字列だと `fetch` が text/plain を自動で付けてしまうため。 */
 export const rawRpcRequest = ({
@@ -263,6 +289,65 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
         const response = await app.fetch(request(headers));
         expect(response.status, JSON.stringify(headers)).toBe(403);
       }
+      expect(authenticate).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(procedureNames)(
+    `Pantry と同じ Origin から content-type 無しで送られた ${namespace}.%s は CSRF で拒まず procedure に届く`,
+    async (name) => {
+      for (const headers of sameOriginHeaderSets) {
+        const authenticate = vi.fn<Authenticator>(async () => actor);
+        const app = createTestApp(getDb(), authenticate);
+        const statuses: number[] = [];
+        const client = createORPCClient<ApiTestClient>(
+          new RPCLink({
+            fetch: async (request) => {
+              const rewritten = new Headers(request.headers);
+              rewritten.delete("content-type");
+              for (const [key, value] of Object.entries(headers)) {
+                rewritten.set(key, value);
+              }
+              const response = await app.fetch(
+                new Request(request.url, {
+                  body: await request.arrayBuffer(),
+                  headers: rewritten,
+                  method: request.method,
+                })
+              );
+              statuses.push(response.status);
+              return response;
+            },
+            url: testRpcUrl,
+          })
+        );
+
+        const call = callEveryProcedure(client)[name];
+        await call().catch(() => {
+          // 404 などの業務エラーは構わず、CSRF の 403 かどうかだけを見る。
+        });
+        expect(statuses, JSON.stringify(headers)).not.toContain(403);
+        expect(authenticate, JSON.stringify(headers)).toHaveBeenCalled();
+      }
+    }
+  );
+
+  it.each(
+    procedureNames.flatMap((name) =>
+      nonPostMethods.map((method) => ({ method, name }))
+    )
+  )(
+    `$method の ${namespace}.$name は procedure に届かず 405（Allow: POST）`,
+    async ({ method, name }) => {
+      const authenticate = vi.fn<Authenticator>(async () => actor);
+      const app = createTestApp(getDb(), authenticate);
+      const response = await app.fetch(
+        new Request(`${testRpcUrl}/${namespace}/${name.replaceAll(".", "/")}`, {
+          method,
+        })
+      );
+      expect(response.status).toBe(405);
+      expect(response.headers.get("allow")).toBe("POST");
       expect(authenticate).not.toHaveBeenCalled();
     }
   );
