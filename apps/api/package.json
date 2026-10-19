@@ -12,6 +12,7 @@
     "preview": "pnpm run build && vite preview",
     "test": "vitest run",
     "test:persistence": "vitest run --config vitest.persistence.config.ts",
+    "transit": "node --eval \"process.exit(0)\"",
     "typecheck": "tsc"
   },
   "dependencies": {

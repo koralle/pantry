@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "transit": "node --eval \"process.exit(0)\"",
     "typecheck": "tsc"
   },
   "dependencies": {

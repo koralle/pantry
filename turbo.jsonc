@@ -1,0 +1,128 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "agentGuidance": false,
+  "envMode": "strict",
+  "cacheMaxSize": "1GB",
+  // Leave cacheDir unset. A relative cacheDir stops git worktrees from sharing the local cache.
+  "remoteCache": {
+    "enabled": false,
+  },
+  "futureFlags": {
+    "affectedUsingTaskInputs": true,
+    "githubActionsRemoteBaseRefFallback": true,
+  },
+  "tasks": {
+    // Absent on purpose. Caching one of these would store a live write, start a second dev server, or restore a worker types header that embeds a temp path.
+    // dev, dev:api, deploy, deploy:api, preview, storybook, build-storybook, studio:dev, panda:mcp,
+    // fix, cf-typegen, migrate:dev, migrate:prod, db:seed, test:persistence.
+
+    // Workspace-dependency edge. A db or api-contract source change misses web and api caches without waiting on their typecheck.
+    "transit": {
+      "dependsOn": ["^transit"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+    },
+
+    // Schemas sit outside workspace dependencies. Secret dotenv files stay out of the hash.
+    "//#varlock-inputs": {
+      "inputs": [
+        "$TURBO_ROOT$/packages/env/.env.schema",
+        "$TURBO_ROOT$/packages/env/schemas/**",
+        "$TURBO_ROOT$/apps/web/.env.schema",
+        "$TURBO_ROOT$/apps/api/.env.schema",
+        "$TURBO_ROOT$/packages/db/.env.schema",
+        "$TURBO_ROOT$/packages/env/.env.development.local",
+      ],
+      "outputs": [],
+    },
+
+    // check:root and knip:root depend on this list instead of copying it. Generated trees, install trees, and dotenv files stay out.
+    "//#repo-source": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/apps/**",
+        "$TURBO_ROOT$/packages/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/styled-system/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.env",
+        "!$TURBO_ROOT$/**/.env.*",
+        "!$TURBO_ROOT$/packages/env/schemas/**",
+      ],
+      "outputs": [],
+    },
+
+    "panda:codegen": {
+      "inputs": ["panda.config.ts", "panda/**", "src/**/*.{ts,tsx}"],
+      "outputs": ["styled-system/**"],
+    },
+
+    // Package keys restate dependsOn, env, outputs, and inputs. A package entry replaces those fields.
+    "build": {
+      "dependsOn": ["transit", "//#varlock-inputs"],
+      "env": ["APP_ENV", "TURSO_CONNECTION_URL"],
+      "passThroughEnv": ["TURSO_AUTH_TOKEN"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+    },
+    "@pantry/api#build": {
+      "dependsOn": ["transit", "//#varlock-inputs"],
+      "env": ["APP_ENV", "TURSO_CONNECTION_URL", "BETTER_AUTH_URL"],
+      "passThroughEnv": ["TURSO_AUTH_TOKEN", "BETTER_AUTH_SECRET"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/pantry_api/**"],
+    },
+    // routeTree.gen.ts is a web build output so a cache hit restores the file CI diffs.
+    // worker-configuration.d.ts is not an output on web or api. The generated header embeds a temp path, and a restore must not replace the committed file.
+    "@pantry/web#build": {
+      "dependsOn": ["transit", "panda:codegen", "//#varlock-inputs"],
+      "env": ["APP_ENV", "TURSO_CONNECTION_URL"],
+      "passThroughEnv": ["TURSO_AUTH_TOKEN"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/ssr/**", "dist/client/**", "src/routeTree.gen.ts"],
+    },
+
+    "test": {
+      "dependsOn": ["transit"],
+      "outputs": [],
+    },
+    "@pantry/web#test": {
+      "dependsOn": ["transit", "panda:codegen"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+    },
+
+    "typecheck": {
+      "dependsOn": ["transit"],
+      "outputs": [],
+    },
+    "@pantry/web#typecheck": {
+      "dependsOn": ["transit", "panda:codegen"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+    },
+    "//#typecheck:root": {
+      "outputs": [],
+    },
+
+    "//#check:root": {
+      "dependsOn": ["@pantry/web#panda:codegen", "//#repo-source"],
+      "outputs": [],
+    },
+    "//#knip:root": {
+      "dependsOn": ["@pantry/web#panda:codegen", "//#repo-source"],
+      "outputs": [],
+    },
+    "//#lint:markup:root": {
+      "inputs": [
+        "$TURBO_ROOT$/.markuplintrc",
+        "$TURBO_ROOT$/apps/**/*.{jsx,tsx}",
+        "$TURBO_ROOT$/packages/**/*.{jsx,tsx}",
+      ],
+      "outputs": [],
+    },
+  },
+}

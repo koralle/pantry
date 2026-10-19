@@ -36,6 +36,7 @@
     "oxfmt": "catalog:format",
     "oxlint": "catalog:lint",
     "oxlint-tsgolint": "catalog:lint",
+    "turbo": "catalog:build",
     "typescript": "catalog:typescript",
     "ultracite": "catalog:lint"
   },
