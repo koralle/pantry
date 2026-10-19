@@ -7,7 +7,7 @@ import type { ApiContract } from "@pantry/api-contract";
 /** `packages/api-contract` から導出した `pantry-api` の client 型。 */
 export type ApiClient = ContractRouterClient<ApiContract>;
 
-/** CSRF plugin は、api が CSRF 対策で `x-csrf-token` を要求するため。 */
+/** CSRF plugin を残すのは、api を `x-csrf-token` 必須だった版へ戻しても壊れないようにするため。 */
 export const createApiBrowserLink = (
   options: Pick<ConstructorParameters<typeof RPCLink>[0], "interceptors"> = {}
 ) =>

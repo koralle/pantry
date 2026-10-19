@@ -11,6 +11,7 @@ type App = ReturnType<typeof createApp>;
 type Client = ContractRouterClient<typeof contract>;
 
 const rpcUrl = "http://api.test/rpc";
+const trustedOrigin = () => "http://pantry.test";
 
 const createClient = (app: App, cookie?: string): Client => {
   const link = new RPCLink({
@@ -24,7 +25,6 @@ const createClient = (app: App, cookie?: string): Client => {
 
       return await app.fetch(new Request(request, { headers }));
     },
-    plugins: [new SimpleCsrfProtectionLinkPlugin()],
     url: rpcUrl,
   });
 
@@ -44,6 +44,7 @@ describe("createApp", () => {
       authenticate,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
     });
 
     await expect(createClient(app).health()).resolves.toStrictEqual({
@@ -52,7 +53,7 @@ describe("createApp", () => {
     expect(authenticate).not.toHaveBeenCalled();
   });
 
-  it("旧 web と同じく x-csrf-token を付けない client でも health / me は使える（deploy 切り替え中の互換）", async () => {
+  it("x-csrf-token を付ける今の web の client も通す", async () => {
     const user = {
       email: "koralle@example.com",
       id: "user_1",
@@ -62,26 +63,28 @@ describe("createApp", () => {
       authenticate: async () => user,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
     });
-    // 旧 web（CSRF 導入前）はヘッダーを付けない。
-    const legacyClient = createORPCClient<Client>(
+    const currentWebClient = createORPCClient<Client>(
       new RPCLink({
         fetch: async (request) => await app.fetch(request),
+        plugins: [new SimpleCsrfProtectionLinkPlugin()],
         url: rpcUrl,
       })
     );
 
-    await expect(legacyClient.health()).resolves.toStrictEqual({
+    await expect(currentWebClient.health()).resolves.toStrictEqual({
       status: "ok",
     });
-    await expect(legacyClient.me()).resolves.toStrictEqual(user);
+    await expect(currentWebClient.me()).resolves.toStrictEqual(user);
   });
 
-  it("ヘッダーなしの me も未認証なら CSRF ではなく 401 を返す", async () => {
+  it("Origin の無い JSON（SSR）の未認証 me は CSRF ではなく 401 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
     });
 
     const response = await app.request(`${rpcUrl}/me`, {
@@ -105,6 +108,7 @@ describe("createApp", () => {
       }),
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
     });
 
     await expect(createClient(app).me()).resolves.toStrictEqual({
@@ -119,6 +123,7 @@ describe("createApp", () => {
       authenticate: async () => null,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
     });
 
     await expect(createClient(app).me()).rejects.toMatchObject({
@@ -137,6 +142,7 @@ describe("createApp", () => {
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
       reportError,
+      trustedOrigin,
     });
 
     const rejection: unknown = await createClient(app)
@@ -159,6 +165,7 @@ describe("createApp", () => {
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
       reportError,
+      trustedOrigin,
     });
 
     await expect(createClient(app).me()).rejects.toMatchObject({
@@ -175,6 +182,7 @@ describe("createApp", () => {
       authenticate: async () => null,
       db: unusedDb,
       handleAuthRequest,
+      trustedOrigin,
     });
 
     const response = await app.request(
@@ -188,11 +196,114 @@ describe("createApp", () => {
     expect(handleAuthRequest).toHaveBeenCalledTimes(1);
   });
 
+  it("別サイトの form は HTTPException のまま 403 の plain text で返し、500 にも記録にもしない", async () => {
+    const reportError = vi.fn();
+    const app = createApp({
+      authenticate: async () => null,
+      db: unusedDb,
+      handleAuthRequest: unusedAuthHandler,
+      reportError,
+      trustedOrigin,
+    });
+
+    const response = await app.request(`${rpcUrl}/me`, {
+      body: "json=%7B%7D",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        origin: "https://evil.example",
+        "sec-fetch-site": "cross-site",
+      },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.text()).resolves.toBe("Forbidden");
+    expect(reportError).not.toHaveBeenCalled();
+  });
+
+  it("CSRF の検査は /rpc だけに掛け、/api/auth/* は better-auth に任せる", async () => {
+    const handleAuthRequest = vi.fn(async () => new Response("auth"));
+    const app = createApp({
+      authenticate: async () => null,
+      db: unusedDb,
+      handleAuthRequest,
+      trustedOrigin,
+    });
+
+    const response = await app.request("http://api.test/api/auth/sign-out", {
+      body: "x=1",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        origin: "https://evil.example",
+        "sec-fetch-site": "cross-site",
+      },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(200);
+    expect(handleAuthRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("信頼する Origin を決められなければ、JSON でも /rpc を 500 で閉じ続け、記録は 1 度だけにする（fail closed）", async () => {
+    const failure = new Error("BETTER_AUTH_URL is not set");
+    const authenticate = vi.fn(async () => null);
+    const reportError = vi.fn();
+    const failingTrustedOrigin = vi.fn((): string => {
+      throw failure;
+    });
+    const app = createApp({
+      authenticate,
+      db: unusedDb,
+      handleAuthRequest: unusedAuthHandler,
+      reportError,
+      trustedOrigin: failingTrustedOrigin,
+    });
+
+    for (const path of ["health", "me", "health"]) {
+      const response = await app.request(`${rpcUrl}/${path}`, {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
+
+      expect(response.status).toBe(500);
+      await expect(response.text()).resolves.not.toContain("BETTER_AUTH_URL");
+    }
+    expect(failingTrustedOrigin).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledWith(failure);
+    expect(authenticate).not.toHaveBeenCalled();
+  });
+
+  it.each(["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "DELETE"])(
+    "%s /rpc/me は procedure に届かず 405（Allow: POST）を返す",
+    async (method) => {
+      const authenticate = vi.fn(async () => ({
+        email: "koralle@example.com",
+        id: "user_1",
+        name: "koralle",
+      }));
+      const app = createApp({
+        authenticate,
+        db: unusedDb,
+        handleAuthRequest: unusedAuthHandler,
+        trustedOrigin,
+      });
+
+      const response = await app.request(`${rpcUrl}/me`, { method });
+
+      expect(response.status).toBe(405);
+      expect(response.headers.get("allow")).toBe("POST");
+      expect(authenticate).not.toHaveBeenCalled();
+    }
+  );
+
   it("未知の path は 404 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
     });
 
     const response = await app.request("http://api.test/unknown");

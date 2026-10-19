@@ -1,7 +1,6 @@
 import { createClient } from "@libsql/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
 import type { ContractRouterClient } from "@orpc/contract";
 import { contract } from "@pantry/api-contract";
 import type { AppDb } from "@pantry/db";
@@ -16,6 +15,7 @@ import { migrate } from "drizzle-orm/libsql/migrator";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createApp } from "../app";
+import { trustedOriginOf } from "../trusted-origin";
 import type { Auth } from "./create-auth";
 import { createAuth } from "./create-auth";
 import { authenticateRequest, cookieSessionAuthenticator } from "./session";
@@ -48,7 +48,6 @@ const createRpcClient = (app: App, cookie?: string): Client => {
 
       return await app.fetch(new Request(request, { headers }));
     },
-    plugins: [new SimpleCsrfProtectionLinkPlugin()],
     url: `${baseURL}/rpc`,
   });
 
@@ -69,6 +68,7 @@ const createTestApp = (): App =>
       ),
     db: () => db,
     handleAuthRequest: auth.handler,
+    trustedOrigin: () => trustedOriginOf(baseURL),
   });
 
 const createSessionCookie = (response: Response): string => {
@@ -254,6 +254,7 @@ describe("createAuth", () => {
       authenticate: async () => null,
       db: unusedDb,
       handleAuthRequest: productionAuth.handler,
+      trustedOrigin: () => trustedOriginOf(baseURL),
     });
     const { user } = await productionAuth.api.signUpEmail({
       body: { email: "prod-xff@example.com", name: "prod", password },
@@ -295,7 +296,6 @@ describe("createAuth", () => {
           responses.push(response.clone());
           return response;
         },
-        plugins: [new SimpleCsrfProtectionLinkPlugin()],
         url: `${baseURL}/rpc`,
       })
     );

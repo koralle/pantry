@@ -46,7 +46,7 @@ const pickForwardedHeaders = (incoming: Headers): Record<string, string> =>
 
 /**
  * `incoming` を呼び出し毎に解決するのは、SSR では request ごとに headers が変わるため。
- * CSRF plugin は、api が CSRF 対策で `x-csrf-token` を要求するため。
+ * CSRF plugin を残すのは、api を `x-csrf-token` 必須だった版へ戻しても壊れないようにするため。
  */
 export const createApiServerLink = (
   incoming: () => Headers,

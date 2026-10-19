@@ -34,8 +34,8 @@ describe("router（本番 migration を適用した libSQL）", () => {
     });
   });
 
-  it("副作用の無い health / me は x-csrf-token なしでも使える（allowlist は rpc/csrf.ts）", async () => {
-    const client = createTestClient(getDb(), actor, { csrf: false });
+  it("x-csrf-token を付けない旧 web の client でも health / me を使える", async () => {
+    const client = createTestClient(getDb(), actor);
 
     await expect(client.health()).resolves.toStrictEqual({ status: "ok" });
     await expect(client.me()).resolves.toStrictEqual(actor);

@@ -11,9 +11,14 @@ import { describe, expect, it } from "vitest";
 import {
   actor,
   contractProcedureNames,
+  createTestApp,
   createTestClient,
+  crossSiteHeaderSets,
+  formLikeContentTypes,
   itRequiresAuthAndCsrf,
   other,
+  rawRpcRequest,
+  testTrustedOrigin,
   withMigratedDb,
 } from "../test/rpc-harness";
 import type { ApiTestClient, ProcedurePath } from "../test/rpc-harness";
@@ -109,14 +114,59 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       procedureNames: contractProcedureNames(contract.tags),
     });
 
-    it("x-csrf-token の無い書き込みは 403 で拒否し、行を作らない", async () => {
-      const client = createTestClient(getDb(), actor, { csrf: false });
-      await expect(client.tags.create({ name: "work" })).rejects.toMatchObject({
-        code: "CSRF_TOKEN_MISMATCH",
-        status: 403,
-      });
-      await expect(getDb().select().from(tagsTable)).resolves.toStrictEqual([]);
-    });
+    it.each(
+      formLikeContentTypes.map((contentType) => ({
+        contentType,
+        label: contentType ?? "（なし）",
+      }))
+    )(
+      "別サイトから content-type $label で送られた tags.create は 403 で、行を作らない",
+      async ({ contentType }) => {
+        const app = createTestApp(getDb(), async () => actor);
+        for (const headers of crossSiteHeaderSets) {
+          const response = await app.fetch(
+            rawRpcRequest({
+              body: { name: "work" },
+              contentType,
+              headers,
+              path: "tags/create",
+            })
+          );
+          expect(response.status, JSON.stringify(headers)).toBe(403);
+        }
+        await expect(getDb().select().from(tagsTable)).resolves.toStrictEqual(
+          []
+        );
+      }
+    );
+
+    it.each([
+      {
+        headers: { "sec-fetch-site": "same-origin" },
+        label: "Sec-Fetch-Site: same-origin",
+      },
+      {
+        headers: { origin: testTrustedOrigin },
+        label: "Sec-Fetch-Site の無い Pantry の Origin",
+      },
+    ])(
+      "$label からなら form と同じ content-type でも tags.create を通す",
+      async ({ headers }) => {
+        const app = createTestApp(getDb(), async () => actor);
+        const response = await app.fetch(
+          rawRpcRequest({
+            body: { name: "work" },
+            contentType: undefined,
+            headers,
+            path: "tags/create",
+          })
+        );
+        expect(response.status).toBe(200);
+        await expect(
+          getDb().select({ name: tagsTable.name }).from(tagsTable)
+        ).resolves.toStrictEqual([{ name: "work" }]);
+      }
+    );
 
     it("DB の想定外の失敗は 500 にし、内部の message を返さない", async () => {
       const brokenDb = new Proxy({} as AppDb, {
