@@ -12,10 +12,6 @@
     "githubActionsRemoteBaseRefFallback": true,
   },
   "tasks": {
-    // Absent on purpose. Caching one of these would store a live write, start a second dev server, or restore a worker types header that embeds a temp path.
-    // dev, dev:api, deploy, deploy:api, preview, storybook, build-storybook, studio:dev, panda:mcp,
-    // fix, cf-typegen, migrate:dev, migrate:prod, db:seed, test:persistence.
-
     // Workspace-dependency edge. A db or api-contract source change misses web and api caches without waiting on their typecheck.
     "transit": {
       "dependsOn": ["^transit"],
@@ -36,7 +32,6 @@
       "outputs": [],
     },
 
-    // check:root and knip:root depend on this list instead of copying it. Generated trees, install trees, and dotenv files stay out.
     "//#repo-source": {
       "inputs": [
         "$TURBO_DEFAULT$",
@@ -75,7 +70,6 @@
       "inputs": ["$TURBO_DEFAULT$"],
       "outputs": ["dist/pantry_api/**"],
     },
-    // routeTree.gen.ts is a web build output so a cache hit restores the file CI diffs.
     // worker-configuration.d.ts is not an output on web or api. The generated header embeds a temp path, and a restore must not replace the committed file.
     "@pantry/web#build": {
       "dependsOn": ["transit", "panda:codegen", "//#varlock-inputs"],

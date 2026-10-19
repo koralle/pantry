@@ -9,7 +9,6 @@ runs:
       uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
       with:
         path: .turbo/cache
-        # Parallel jobs would overwrite one archive if the key were only the SHA.
         key: turbo-${{ runner.os }}-${{ github.job }}-${{ github.sha }}
         restore-keys: |
           turbo-${{ runner.os }}-${{ github.job }}-
