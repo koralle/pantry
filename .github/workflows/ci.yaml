@@ -27,14 +27,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # --affected compares against the PR base. Depth 1 marks every task changed.
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Check with Ultracite
         shell: bash
         run: |
-          pnpm run check
+          pnpm run check -- --affected
 
   markuplint:
     runs-on: ubuntu-24.04
@@ -42,14 +48,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # --affected compares against the PR base. Depth 1 marks every task changed.
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Lint markup with markuplint
         shell: bash
         run: |
-          pnpm markuplint "**/*.{tsx,jsx}" --format=github
+          pnpm run lint:markup -- --affected -- --format=github
 
   typecheck:
     runs-on: ubuntu-24.04
@@ -57,14 +69,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # --affected compares against the PR base. Depth 1 marks every task changed.
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Typecheck
         shell: bash
         run: |
-          pnpm run typecheck
+          pnpm run typecheck -- --affected
 
   migrations:
     runs-on: ubuntu-24.04
@@ -109,14 +127,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # --affected compares against the PR base. Depth 1 marks every task changed.
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Knip
         shell: bash
         run: |
-          pnpm run knip --reporter github-actions
+          pnpm run knip -- --affected -- --reporter github-actions
 
   build:
     runs-on: ubuntu-24.04
@@ -124,14 +148,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # --affected compares against the PR base. Depth 1 marks every task changed.
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Build
         shell: bash
         run: |
-          pnpm run build
+          pnpm run build -- --affected
         env:
           # Placeholder values so varlock can validate the schema during CI builds.
           TURSO_CONNECTION_URL: http://127.0.0.1:8080
@@ -139,20 +169,31 @@ jobs:
           BETTER_AUTH_SECRET: ci-placeholder-secret-at-least-32chars
           BETTER_AUTH_URL: http://localhost:3000
 
+      - name: Diff generated sources
+        shell: bash
+        run: |
+          git diff --exit-code -- apps/web/src/routeTree.gen.ts apps/web/worker-configuration.d.ts apps/api/worker-configuration.d.ts
+
   test:
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # --affected compares against the PR base. Depth 1 marks every task changed.
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Test
         shell: bash
         run: |
-          pnpm run test
+          pnpm run test -- --affected
 
   persistence-integration:
     runs-on: ubuntu-24.04

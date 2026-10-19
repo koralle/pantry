@@ -25,6 +25,9 @@ jobs:
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
+      - name: Cache Turborepo
+        uses: ./.github/composite-actions/turbo-cache
+
       - name: Build
         shell: bash
         run: |
@@ -35,6 +38,11 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+
+      - name: Diff generated sources
+        shell: bash
+        run: |
+          git diff --exit-code -- apps/web/src/routeTree.gen.ts apps/web/worker-configuration.d.ts apps/api/worker-configuration.d.ts
 
       - name: Migrate production database
         shell: bash
