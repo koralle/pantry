@@ -59,6 +59,8 @@
 | `pnpm run fix` | Ultracite の自動修正 |
 | `pnpm run lint:markup` | HTML/JSX のアクセシビリティ・マークアップ検査（markuplint） |
 
+`build`、`test`、`typecheck`、`check`、`knip`、`lint:markup`、`panda:codegen` は Turborepo が実行する。同じ入力の2回目はキャッシュに当たる。PR の CI は `--affected` を付ける。ローカルで同じ絞り込みをするときは `pnpm run test -- --affected`。`dev`、deploy、migrate、seed、`test:persistence`、`fix`、`cf-typegen` はキャッシュしない。
+
 ## 設計方針
 
 T.B.D
