@@ -75,9 +75,9 @@ catalogs:
   server:
     hono: 4.13.13
   test:
-    "@cloudflare/vitest-plugin": 1.4.4
-    testcontainers: 12.1.0
-    vitest: 5.0.0
+    "@cloudflare/vitest-plugin": 1.4.5
+    testcontainers: 12.2.1
+    vitest: 5.0.5
   typescript:
     "@tsconfig/strictest": 2.0.8
     typescript: 7.0.2
@@ -116,9 +116,15 @@ minimumReleaseAgeExclude:
   - "@better-auth/telemetry@1.6.16"
   - better-auth@1.6.16
   - ultracite@7.11.0
-  - "@cloudflare/vitest-plugin@1.4.4"
-  - miniflare@5.20261012.1-beta
-  - wrangler@4.151.1
+  - "@cloudflare/vitest-plugin@1.4.5"
+  - miniflare@5.20261012.1-beta || 5.20261019.0-beta
+  - wrangler@4.151.1 || 4.151.2
+  - "@cloudflare/workerd-darwin-64@1.20261019.1"
+  - "@cloudflare/workerd-darwin-arm64@1.20261019.1"
+  - "@cloudflare/workerd-linux-64@1.20261019.1"
+  - "@cloudflare/workerd-linux-arm64@1.20261019.1"
+  - "@cloudflare/workerd-windows-64@1.20261019.1"
+  - workerd@1.20261019.1
 
 overrides:
   "@babel/core>semver": 7.8.0
