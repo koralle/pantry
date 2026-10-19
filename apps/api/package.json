@@ -10,8 +10,8 @@
     "deploy": "APP_ENV=production pnpm run build && APP_ENV=production varlock-wrangler deploy",
     "dev": "vite dev --port 8787",
     "preview": "pnpm run build && vite preview",
-    "test": "vitest run",
-    "test:persistence": "vitest run --config vitest.persistence.config.ts",
+    "test": "vitest run --project workers --project node",
+    "test:db": "vitest run --project db",
     "typecheck": "tsc"
   },
   "dependencies": {

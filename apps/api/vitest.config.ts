@@ -6,8 +6,16 @@ import { defineConfig } from "vitest/config";
  * Node project へ逃がす（apps/web の vitest.config.ts と同じ構成）。
  */
 const anyIntegrationTests = "src/**/*.integration.test.ts";
-/** Docker（testcontainers）が要るので通常の test では回さない。 */
-const persistenceTests = "src/test/persistence/**";
+
+/**
+ * DB の semantics（制約・transaction・soft delete・cursor pagination）を確かめるテスト。
+ * Testcontainers で起動した libSQL に本番 migration を適用し、1 つの DB を共有する。
+ * file 間で同じ行を見ないよう、db project は直列に実行する。
+ */
+const dbTests = [
+  "src/test/db/**/*.integration.test.ts",
+  "src/features/**/db/**/*.integration.test.ts",
+];
 
 export default defineConfig({
   test: {
@@ -27,9 +35,20 @@ export default defineConfig({
       {
         test: {
           environment: "node",
-          exclude: [persistenceTests],
+          exclude: dbTests,
           include: [anyIntegrationTests],
           name: "node",
+        },
+      },
+      {
+        test: {
+          environment: "node",
+          fileParallelism: false,
+          globalSetup: ["./src/test/db/global-setup.ts"],
+          hookTimeout: 120_000,
+          include: dbTests,
+          name: "db",
+          testTimeout: 30_000,
         },
       },
     ],

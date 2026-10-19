@@ -154,7 +154,7 @@ jobs:
         run: |
           pnpm run test
 
-  persistence-integration:
+  db-integration:
     runs-on: ubuntu-24.04
 
     steps:
@@ -164,7 +164,7 @@ jobs:
       - name: Setup
         uses: ./.github/composite-actions/cache-and-install
 
-      - name: Persistence Integration tests
+      - name: DB integration tests
         shell: bash
         run: |
-          pnpm run test:persistence
+          pnpm run test:db

@@ -10,13 +10,13 @@ import {
   executeUpdateTag,
   toUpdateTagCommand,
 } from "../features/tags/application/update-tag";
-import { deleteTag } from "../features/tags/persistence/delete-tag";
-import { insertTag } from "../features/tags/persistence/insert-tag";
-import { selectShelfTags } from "../features/tags/persistence/select-shelf-tags";
-import { selectTagById } from "../features/tags/persistence/select-tag-by-id";
-import { selectTags } from "../features/tags/persistence/select-tags";
-import { touchTag } from "../features/tags/persistence/touch-tag";
-import { updateTag } from "../features/tags/persistence/update-tag";
+import { deleteTag } from "../features/tags/db/delete-tag";
+import { insertTag } from "../features/tags/db/insert-tag";
+import { selectShelfTags } from "../features/tags/db/select-shelf-tags";
+import { selectTagById } from "../features/tags/db/select-tag-by-id";
+import { selectTags } from "../features/tags/db/select-tags";
+import { touchTag } from "../features/tags/db/touch-tag";
+import { updateTag } from "../features/tags/db/update-tag";
 import type { RouterKit } from "./base";
 
 export const createTagsRouter = ({ deps, impl, requireAuth }: RouterKit) => ({

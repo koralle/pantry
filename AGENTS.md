@@ -48,7 +48,7 @@
 | `pnpm run deploy` | Cloudflare Workers にデプロイ（`@pantry/web`） |
 | `pnpm run deploy:api` | API Worker（`pantry-api`）にデプロイ（`@pantry/api`） |
 | `pnpm run test` | テスト実行（Vitest。Docker 不要） |
-| `pnpm run test:persistence` | Persistence Integration test（Testcontainers + 実 libSQL） |
+| `pnpm run test:db` | DB Integration test（Testcontainers + 実 libSQL） |
 | `pnpm run typecheck` | ルート設定とアプリの型検査 |
 | `pnpm run cf-typegen` | Worker バインディングの型生成（全アプリ。`worker-configuration.d.ts`） |
 | `pnpm run migrate:dev` | Turso開発DBへDrizzleマイグレーション適用（`@pantry/db`） |

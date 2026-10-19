@@ -2,15 +2,15 @@ import { executeCreateBookmark } from "../features/bookmarks/application/create-
 import { executeDeleteBookmark } from "../features/bookmarks/application/delete-bookmark";
 import { executeSetBookmarkFavorite } from "../features/bookmarks/application/set-bookmark-favorite";
 import { executeUpdateBookmark } from "../features/bookmarks/application/update-bookmark";
-import { getBookmarkCount } from "../features/bookmarks/persistence/get-bookmark-count";
-import type { BookmarkCountView } from "../features/bookmarks/persistence/get-bookmark-count";
-import { getBookmarkDetail } from "../features/bookmarks/persistence/get-bookmark-detail";
-import { insertBookmark } from "../features/bookmarks/persistence/insert-bookmark";
-import { listBookmarks } from "../features/bookmarks/persistence/list-bookmarks";
-import { selectBookmarkEditor } from "../features/bookmarks/persistence/select-bookmark-editor";
-import { setBookmarkFavorite } from "../features/bookmarks/persistence/set-bookmark-favorite";
-import { softDeleteBookmark } from "../features/bookmarks/persistence/soft-delete-bookmark";
-import { updateBookmark } from "../features/bookmarks/persistence/update-bookmark";
+import { getBookmarkCount } from "../features/bookmarks/db/get-bookmark-count";
+import type { BookmarkCountView } from "../features/bookmarks/db/get-bookmark-count";
+import { getBookmarkDetail } from "../features/bookmarks/db/get-bookmark-detail";
+import { insertBookmark } from "../features/bookmarks/db/insert-bookmark";
+import { listBookmarks } from "../features/bookmarks/db/list-bookmarks";
+import { selectBookmarkEditor } from "../features/bookmarks/db/select-bookmark-editor";
+import { setBookmarkFavorite } from "../features/bookmarks/db/set-bookmark-favorite";
+import { softDeleteBookmark } from "../features/bookmarks/db/soft-delete-bookmark";
+import { updateBookmark } from "../features/bookmarks/db/update-bookmark";
 import type { RouterKit } from "./base";
 
 export const createBookmarksRouter = ({
