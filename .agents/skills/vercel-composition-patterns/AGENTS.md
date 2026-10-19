@@ -62,7 +62,7 @@ function Composer({
   isDMThread,
   dmId,
   isEditing,
-  isForwarding
+  isForwarding,
 }: Props) {
   return (
     <form>
@@ -73,7 +73,13 @@ function Composer({
       ) : isThread ? (
         <AlsoSendToChannelField id={channelId} />
       ) : null}
-      {isEditing ? <EditActions /> : isForwarding ? <ForwardActions /> : <DefaultActions />}
+      {isEditing ? (
+        <EditActions />
+      ) : isForwarding ? (
+        <ForwardActions />
+      ) : (
+        <DefaultActions />
+      )}
       <Footer onSubmit={onSubmit} />
     </form>
   )
@@ -154,7 +160,7 @@ function Composer({
   renderActions,
   showAttachments,
   showFormatting,
-  showEmojis
+  showEmojis,
 }: Props) {
   return (
     <form>
@@ -181,7 +187,11 @@ function Composer({
 const ComposerContext = createContext<ComposerContextValue | null>(null)
 
 function ComposerProvider({ children, state, actions, meta }: ProviderProps) {
-  return <ComposerContext value={{ state, actions, meta }}>{children}</ComposerContext>
+  return (
+    <ComposerContext value={{ state, actions, meta }}>
+      {children}
+    </ComposerContext>
+  )
 }
 
 function ComposerFrame({ children }: { children: React.ReactNode }) {
@@ -192,7 +202,7 @@ function ComposerInput() {
   const {
     state,
     actions: { update },
-    meta: { inputRef }
+    meta: { inputRef },
   } = use(ComposerContext)
   return (
     <TextInput
@@ -205,7 +215,7 @@ function ComposerInput() {
 
 function ComposerSubmit() {
   const {
-    actions: { submit }
+    actions: { submit },
   } = use(ComposerContext)
   return <Button onPress={submit}>Send</Button>
 }
@@ -220,17 +230,14 @@ const Composer = {
   Footer: ComposerFooter,
   Attachments: ComposerAttachments,
   Formatting: ComposerFormatting,
-  Emojis: ComposerEmojis
+  Emojis: ComposerEmojis,
 }
 ```
 
 **Usage:**
 
 ```tsx
-<Composer.Provider
-  state={state}
-  actions={actions}
-  meta={meta}>
+<Composer.Provider state={state} actions={actions} meta={meta}>
   <Composer.Frame>
     <Composer.Header />
     <Composer.Input />
@@ -289,7 +296,7 @@ function ChannelComposer({ channelId }: { channelId: string }) {
 // Provider handles all state management details
 function ChannelProvider({
   channelId,
-  children
+  children,
 }: {
   channelId: string
   children: React.ReactNode
@@ -301,7 +308,8 @@ function ChannelProvider({
     <Composer.Provider
       state={state}
       actions={{ update, submit }}
-      meta={{ inputRef }}>
+      meta={{ inputRef }}
+    >
       {children}
     </Composer.Provider>
   )
@@ -341,7 +349,8 @@ function ForwardMessageProvider({ children }) {
   return (
     <Composer.Provider
       state={state}
-      actions={{ update: setState, submit: forwardMessage }}>
+      actions={{ update: setState, submit: forwardMessage }}
+    >
       {children}
     </Composer.Provider>
   )
@@ -352,9 +361,7 @@ function ChannelProvider({ channelId, children }) {
   const { state, update, submit } = useGlobalChannel(channelId)
 
   return (
-    <Composer.Provider
-      state={state}
-      actions={{ update, submit }}>
+    <Composer.Provider state={state} actions={{ update, submit }}>
       {children}
     </Composer.Provider>
   )
@@ -387,12 +394,7 @@ dependency-injectable.
 function ComposerInput() {
   // Tightly coupled to a specific hook
   const { input, setInput } = useChannelComposerState()
-  return (
-    <TextInput
-      value={input}
-      onChangeText={setInput}
-    />
-  )
+  return <TextInput value={input} onChangeText={setInput} />
 }
 ```
 
@@ -431,7 +433,7 @@ function ComposerInput() {
   const {
     state,
     actions: { update },
-    meta
+    meta,
   } = use(ComposerContext)
 
   // This component works with ANY provider that implements the interface
@@ -459,8 +461,9 @@ function ForwardMessageProvider({ children }: { children: React.ReactNode }) {
       value={{
         state,
         actions: { update: setState, submit },
-        meta: { inputRef }
-      }}>
+        meta: { inputRef },
+      }}
+    >
       {children}
     </ComposerContext>
   )
@@ -476,8 +479,9 @@ function ChannelProvider({ channelId, children }: Props) {
       value={{
         state,
         actions: { update, submit },
-        meta: { inputRef }
-      }}>
+        meta: { inputRef },
+      }}
+    >
       {children}
     </ComposerContext>
   )
@@ -536,7 +540,7 @@ function ForwardMessageDialog() {
 // This button lives OUTSIDE Composer.Frame but can still submit based on its context!
 function ForwardButton() {
   const {
-    actions: { submit }
+    actions: { submit },
   } = use(ComposerContext)
   return <Button onPress={submit}>Forward</Button>
 }
@@ -544,12 +548,7 @@ function ForwardButton() {
 // This preview lives OUTSIDE Composer.Frame but can read composer's state!
 function MessagePreview() {
   const { state } = use(ComposerContext)
-  return (
-    <Preview
-      message={state.input}
-      attachments={state.attachments}
-    />
-  )
+  return <Preview message={state.input} attachments={state.attachments} />
 }
 ```
 
@@ -656,7 +655,8 @@ function ForwardMessageProvider({ children }: { children: React.ReactNode }) {
     <Composer.Provider
       state={state}
       actions={{ update: setState, submit: forwardMessage }}
-      meta={{ inputRef }}>
+      meta={{ inputRef }}
+    >
       {children}
     </Composer.Provider>
   )
@@ -821,7 +821,7 @@ signatures.
 function Composer({
   renderHeader,
   renderFooter,
-  renderActions
+  renderActions,
 }: {
   renderHeader?: () => React.ReactNode
   renderFooter?: () => React.ReactNode
@@ -883,12 +883,7 @@ return (
 // Render props work well when you need to pass data back
 <List
   data={items}
-  renderItem={({ item, index }) => (
-    <Item
-      item={item}
-      index={index}
-    />
-  )}
+  renderItem={({ item, index }) => <Item item={item} index={index} />}
 />
 ```
 
@@ -916,12 +911,7 @@ In React 19, `ref` is now a regular prop (no `forwardRef` wrapper needed), and `
 
 ```tsx
 const ComposerInput = forwardRef<TextInput, Props>((props, ref) => {
-  return (
-    <TextInput
-      ref={ref}
-      {...props}
-    />
-  )
+  return <TextInput ref={ref} {...props} />
 })
 ```
 
@@ -929,12 +919,7 @@ const ComposerInput = forwardRef<TextInput, Props>((props, ref) => {
 
 ```tsx
 function ComposerInput({ ref, ...props }: Props & { ref?: React.Ref<TextInput> }) {
-  return (
-    <TextInput
-      ref={ref}
-      {...props}
-    />
-  )
+  return <TextInput ref={ref} {...props} />
 }
 ```
 
