@@ -19,7 +19,7 @@ describe("UpdateBookmark source boundary", () => {
   });
 
   test("Persistence adapter は UPDATE OR IGNORE を使い SQLite error を分類しない", () => {
-    const source = readSource("persistence/update-bookmark.ts");
+    const source = readSource("persistence/update-bookmark/index.ts");
     expect(source).toContain("UPDATE OR IGNORE");
     expect(source).not.toContain("SQLITE_CONSTRAINT");
     expect(source).not.toContain("isSqliteUniqueConstraintError");
