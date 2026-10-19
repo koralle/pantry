@@ -8,13 +8,15 @@ import { defineConfig } from "vitest/config";
 const anyIntegrationTests = "src/**/*.integration.test.ts";
 
 /**
- * DB の semantics（制約・transaction・soft delete・cursor pagination）を確かめるテスト。
+ * DB の semantics（制約・transaction・soft delete・cursor pagination）と、
+ * /rpc の procedure behaviour を確かめるテスト。
  * Testcontainers で起動した libSQL に本番 migration を適用し、1 つの DB を共有する。
  * file 間で同じ行を見ないよう、db project は直列に実行する。
  */
 const dbTests = [
   "src/test/db/**/*.integration.test.ts",
   "src/features/**/db/**/*.integration.test.ts",
+  "src/rpc/**/*.integration.test.ts",
 ];
 
 export default defineConfig({

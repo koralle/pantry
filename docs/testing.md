@@ -27,7 +27,7 @@ UI のブラウザ検証の正本は Storybook の Story と `play` 関数とす
 
 ## 2.2 DB Integration（実 libSQL）
 
-DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、soft delete、user ownership、transaction 整合性）は、Testcontainers で起動した libSQL に本番 migration を適用して検証する。DB adapter の単体テスト（`apps/api/src/features/**/db/**/*.integration.test.ts`）と、複数 adapter を跨ぐシナリオ（`apps/api/src/test/db/`）は同じコンテナ・同じ schema を共有する。
+DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、soft delete、user ownership、transaction 整合性）は、Testcontainers で起動した libSQL に本番 migration を適用して検証する。DB adapter の単体テスト（`apps/api/src/features/**/db/**/*.integration.test.ts`）、複数 adapter を跨ぐシナリオ（`apps/api/src/test/db/`）、`/rpc` の procedure behaviour（`apps/api/src/rpc/**/*.integration.test.ts`）は同じコンテナ・同じ schema を共有する。
 
 - 実行: `pnpm run test:db`（Docker が必要）
 - 設定は `apps/api/vitest.config.ts` の `db` project に統合し、コンテナは project の globalSetup で 1 つだけ起動する
