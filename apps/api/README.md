@@ -18,11 +18,11 @@ Pantry の API Worker（Cloudflare Workers、`pantry-api`）。Hono の上で
 
 procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機能>.ts`（`tags` / `bookmarks`）の両方に足す。contract を満たさない実装は型エラーになる。サインインが必要な procedure は contract を `authed` から作り、実装は `kit.requireAuth` を通す（context に `user` と `userId` が入る）。DB は `kit.deps.db()` で受ける。
 
-procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求する（oRPC の `SimpleCsrfProtectionHandlerPlugin`）。無ければ 403 `CSRF_TOKEN_MISMATCH`。例外は副作用の無い `health` / `me` だけで、ヘッダーを付けない旧 web が deploy の切り替え中も session を確かめられるようにしている（allowlist は `src/rpc/csrf.ts`。書き込みのある procedure を足してはいけない）。web の client は `SimpleCsrfProtectionLinkPlugin` で付ける。curl で叩くときは `-H 'x-csrf-token: orpc'` を付ける。
+`/rpc/*` は CSRF 対策として Hono の `csrf()` を通す（`src/app.ts`）。form として送れる content-type（`application/x-www-form-urlencoded` / `multipart/form-data` / `text/plain` / content-type なし）の POST は、`Sec-Fetch-Site: same-origin` か `Origin` が `BETTER_AUTH_URL` の Origin のときだけ通し、それ以外は 403（plain text の `Forbidden`）。`same-site` は許さない（`*.workers.dev` の兄弟 Worker が same-site になるため）。`application/json` は CORS preflight が要るので検査しない（SSR の Service Binding 経由の呼び出しもこれ）。`BETTER_AUTH_URL` が無い・不正なら `/rpc` は 500 で閉じる。`x-csrf-token` ヘッダーはもう要らない（web の client は api を戻せるよう当面付け続ける）。`/api/auth/*` には掛けない（better-auth が trustedOrigins で検査する）。
 
 ### テスト
 
-- `src/test/rpc-harness.ts`: 本番 migration を適用した libSQL（`file::memory:`）と、`actor` / `other` / 未認証を切り替えて `/rpc` を叩く client。procedure の behaviour テスト（所有者の分離・401・403）は `*.integration.test.ts`（Node project）でこれを使う。
+- `src/test/rpc-harness.ts`: 本番 migration を適用した libSQL（`file::memory:`）と、`actor` / `other` / 未認証を切り替えて `/rpc` を叩く client。procedure の behaviour テスト（所有者の分離・401・別サイトからの form の 403）は `*.integration.test.ts`（Node project）でこれを使う。
 - `pnpm --filter @pantry/api run test:persistence`: 実際の libSQL server（testcontainers、Docker が必要）に migration を適用した persistence テスト（`src/test/persistence/`）。CI の `persistence-integration` job が root の `pnpm run test:persistence` で web と一緒に回す。
 
 ## 環境変数
@@ -34,7 +34,7 @@ procedure は CSRF 対策として `x-csrf-token: orpc` ヘッダーを要求す
 | `APP_ENV` | 読み込む env ファイルの切替 |
 | `TURSO_CONNECTION_URL` / `TURSO_AUTH_TOKEN` | libSQL 接続 |
 | `BETTER_AUTH_SECRET` | セッション Cookie の署名（32文字以上） |
-| `BETTER_AUTH_URL` | Better Auth の baseURL。パスキーの rpID / origin もここから導出する |
+| `BETTER_AUTH_URL` | Better Auth の baseURL。パスキーの rpID / origin と、`/rpc` の CSRF 検査で信頼する Origin もここから導出する |
 
 値は `packages/env/` 直下の env ファイルに置く（worktree では `packages/env/scripts/symlink-env-for-worktree.ts` が生成する）。`apps/api/.env.<env>` は varlock の `@currentEnv` 経由では読まれないため置かない（packages/env/README.md 参照）。
 

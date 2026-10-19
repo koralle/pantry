@@ -41,7 +41,7 @@ fi
 
 curl -sf "$EXPECTED_URL/health" >/dev/null
 curl -sf "$APP_URL/sign-in" | grep -q "Pantry"
-if ! curl -sf -X POST "$APP_URL/rpc/health" -H 'content-type: application/json' -H 'x-csrf-token: orpc' -d '{}' |
+if ! curl -sf -X POST "$APP_URL/rpc/health" -H 'content-type: application/json' -d '{}' |
   grep -q '"status":"ok"'; then
   echo "doctor fail: $APP_URL/rpc/health did not reach pantry-api" >&2
   exit 1
