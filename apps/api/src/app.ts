@@ -59,41 +59,54 @@ export const createApp = (deps: AppDeps) => {
     async (c) => await deps.handleAuthRequest(c.req.raw)
   );
 
-  let rpcCsrf: MiddlewareHandler | undefined;
+  let rpcCsrf: MiddlewareHandler | "unavailable" | undefined;
   /**
-   * RPCHandler は content-type の無い body を JSON、multipart を RPC の payload として読むため、
-   * 別サイトの form / `no-cors` fetch がそのまま procedure に届いてしまうため。
+   * POST に限るのは、`csrf()` が GET / HEAD / OPTIONS を検査しないのに RPCHandler はそれらでも
+   * procedure を呼ぶため（oRPC の client は POST しか送らない）。
    *
+   * `csrf()` を掛けるのは、RPCHandler が content-type の無い body を JSON、multipart を RPC の
+   * payload として読み、別サイトの form / `no-cors` fetch がそのまま procedure に届くため。
    * `same-site` を許さないのは、`*.workers.dev` の兄弟 Worker が same-site になり cookie も届くため。
    * `/api/auth/*` に掛けないのは、better-auth が trustedOrigins でより厳しく検査しているため。
+   *
+   * Origin を決められないとき 500 にするのは、確かめられないまま procedure を動かさない（fail closed）ため。
+   * 失敗も覚えるのは、壊れた設定を request ごとに記録し続けないため。
    */
-  app.use("/rpc/*", async (c, next) => {
-    if (rpcCsrf === undefined) {
-      try {
-        rpcCsrf = csrf({ origin: deps.trustedOrigin() });
-      } catch (error) {
-        // Origin を確かめられないまま procedure を動かさない（fail closed）。
-        reportError(error);
+  app.post(
+    "/rpc/*",
+    async (c, next) => {
+      if (rpcCsrf === undefined) {
+        try {
+          rpcCsrf = csrf({ origin: deps.trustedOrigin() });
+        } catch (error) {
+          rpcCsrf = "unavailable";
+          reportError(error);
+        }
+      }
+      if (rpcCsrf === "unavailable") {
         return c.text("Internal Server Error", 500);
       }
+      return await rpcCsrf(c, next);
+    },
+    async (c) => {
+      const { matched, response } = await rpcHandler.handle(c.req.raw, {
+        context: {
+          headers: c.req.raw.headers,
+        },
+        prefix: "/rpc",
+      });
+
+      if (!matched) {
+        return await c.notFound();
+      }
+
+      return c.newResponse(response.body, response);
     }
-    return await rpcCsrf(c, next);
-  });
+  );
 
-  app.use("/rpc/*", async (c) => {
-    const { matched, response } = await rpcHandler.handle(c.req.raw, {
-      context: {
-        headers: c.req.raw.headers,
-      },
-      prefix: "/rpc",
-    });
-
-    if (!matched) {
-      return await c.notFound();
-    }
-
-    return c.newResponse(response.body, response);
-  });
+  app.all("/rpc/*", (c) =>
+    c.text("Method Not Allowed", 405, { Allow: "POST" })
+  );
 
   return app;
 };

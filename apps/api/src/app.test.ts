@@ -53,7 +53,7 @@ describe("createApp", () => {
     expect(authenticate).not.toHaveBeenCalled();
   });
 
-  it("x-csrf-token を付ける今の web の client でも health / me を使える（api を戻すときの互換）", async () => {
+  it("x-csrf-token を付ける今の web の client も通す", async () => {
     const user = {
       email: "koralle@example.com",
       id: "user_1",
@@ -244,31 +244,59 @@ describe("createApp", () => {
     expect(handleAuthRequest).toHaveBeenCalledTimes(1);
   });
 
-  it("信頼する Origin を決められなければ、JSON でも /rpc を 500 で閉じて記録する（fail closed）", async () => {
+  it("信頼する Origin を決められなければ、JSON でも /rpc を 500 で閉じ続け、記録は 1 度だけにする（fail closed）", async () => {
     const failure = new Error("BETTER_AUTH_URL is not set");
     const authenticate = vi.fn(async () => null);
     const reportError = vi.fn();
+    const failingTrustedOrigin = vi.fn((): string => {
+      throw failure;
+    });
     const app = createApp({
       authenticate,
       db: unusedDb,
       handleAuthRequest: unusedAuthHandler,
       reportError,
-      trustedOrigin: () => {
-        throw failure;
-      },
+      trustedOrigin: failingTrustedOrigin,
     });
 
-    const response = await app.request(`${rpcUrl}/health`, {
-      body: JSON.stringify({}),
-      headers: { "content-type": "application/json" },
-      method: "POST",
-    });
+    for (const path of ["health", "me", "health"]) {
+      const response = await app.request(`${rpcUrl}/${path}`, {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      });
 
-    expect(response.status).toBe(500);
-    await expect(response.text()).resolves.not.toContain("BETTER_AUTH_URL");
+      expect(response.status).toBe(500);
+      await expect(response.text()).resolves.not.toContain("BETTER_AUTH_URL");
+    }
+    expect(failingTrustedOrigin).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledTimes(1);
     expect(reportError).toHaveBeenCalledWith(failure);
     expect(authenticate).not.toHaveBeenCalled();
   });
+
+  it.each(["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "DELETE"])(
+    "%s /rpc/me は procedure に届かず 405（Allow: POST）を返す",
+    async (method) => {
+      const authenticate = vi.fn(async () => ({
+        email: "koralle@example.com",
+        id: "user_1",
+        name: "koralle",
+      }));
+      const app = createApp({
+        authenticate,
+        db: unusedDb,
+        handleAuthRequest: unusedAuthHandler,
+        trustedOrigin,
+      });
+
+      const response = await app.request(`${rpcUrl}/me`, { method });
+
+      expect(response.status).toBe(405);
+      expect(response.headers.get("allow")).toBe("POST");
+      expect(authenticate).not.toHaveBeenCalled();
+    }
+  );
 
   it("未知の path は 404 を返す", async () => {
     const app = createApp({
