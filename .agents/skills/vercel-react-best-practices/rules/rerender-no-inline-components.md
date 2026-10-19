@@ -68,21 +68,14 @@ function Stats({ followers, posts }: { followers: number; posts: number }) {
 function UserProfile({ user, theme }) {
   return (
     <div>
-      <Avatar
-        src={user.avatarUrl}
-        theme={theme}
-      />
-      <Stats
-        followers={user.followers}
-        posts={user.posts}
-      />
+      <Avatar src={user.avatarUrl} theme={theme} />
+      <Stats followers={user.followers} posts={user.posts} />
     </div>
   )
 }
 ```
 
 **Symptoms of this bug:**
-
 - Input fields lose focus on every keystroke
 - Animations restart unexpectedly
 - `useEffect` cleanup/setup runs on every parent render
