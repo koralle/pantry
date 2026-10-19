@@ -9,6 +9,7 @@ import {
   authenticateRequest,
   cookieSessionAuthenticator,
 } from "./auth/session";
+import { trustedOriginOf } from "./trusted-origin";
 
 let cachedDb: AppDb | undefined;
 let cachedAuth: Auth | undefined;
@@ -45,4 +46,6 @@ export default createApp({
     ),
   db: getDb,
   handleAuthRequest: async (request) => await getAuth().handler(request),
+  // better-auth の trustedOrigins と同じ Origin を信頼し、2 つの設定がずれないようにする。
+  trustedOrigin: () => trustedOriginOf(env.BETTER_AUTH_URL),
 });

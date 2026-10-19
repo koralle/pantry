@@ -12,9 +12,13 @@ import { BOOKMARK_LIST_PAGE_SIZE } from "../features/bookmarks/lib/bookmark-list
 import {
   actor,
   contractProcedureNames,
+  createTestApp,
   createTestClient,
+  crossSiteHeaderSets,
+  formLikeContentTypes,
   itRequiresAuthAndCsrf,
   other,
+  rawRpcRequest,
   withMigratedDb,
 } from "../test/rpc-harness";
 import type { ApiTestClient, ProcedurePath } from "../test/rpc-harness";
@@ -139,19 +143,36 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       procedureNames: contractProcedureNames(contract.bookmarks),
     });
 
-    it("x-csrf-token の無い書き込みは 403 で拒否し、行を作らない", async () => {
-      await expect(
-        createTestClient(getDb(), actor, { csrf: false }).bookmarks.create({
-          note: null,
-          tags: [],
-          title: "t",
-          url: "https://example.com/",
-        })
-      ).rejects.toMatchObject({ code: "CSRF_TOKEN_MISMATCH", status: 403 });
-      await expect(getDb().select().from(bookmarkTable)).resolves.toStrictEqual(
-        []
-      );
-    });
+    it.each(
+      formLikeContentTypes.map((contentType) => ({
+        contentType,
+        label: contentType ?? "（なし）",
+      }))
+    )(
+      "別サイトから content-type $label で送られた bookmarks.create は 403 で、行を作らない",
+      async ({ contentType }) => {
+        const app = createTestApp(getDb(), async () => actor);
+        for (const headers of crossSiteHeaderSets) {
+          const response = await app.fetch(
+            rawRpcRequest({
+              body: {
+                note: null,
+                tags: [],
+                title: "t",
+                url: "https://example.com/",
+              },
+              contentType,
+              headers,
+              path: "bookmarks/create",
+            })
+          );
+          expect(response.status, JSON.stringify(headers)).toBe(403);
+        }
+        await expect(
+          getDb().select().from(bookmarkTable)
+        ).resolves.toStrictEqual([]);
+      }
+    );
   });
 
   describe("create", () => {

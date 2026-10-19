@@ -2,7 +2,6 @@ import { createClient } from "@libsql/client";
 import type { Client } from "@libsql/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
 import { isContractProcedure } from "@orpc/contract";
 import type {
   AnyContractProcedure,
@@ -15,9 +14,10 @@ import { migrationsFolder } from "@pantry/db/migrations";
 import { user as usersTable } from "@pantry/db/schema/auth-schema";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { afterAll, beforeAll, beforeEach, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 
 import { createApp } from "../app";
+import type { Authenticator } from "../auth/session";
 
 export const actor: SessionUser = {
   email: "actor@example.com",
@@ -90,28 +90,91 @@ export const withMigratedDb = (): { readonly getDb: () => AppDb } => {
 const unusedAuthHandler = async (): Promise<Response> =>
   new Response("unused", { status: 500 });
 
-/** 本番と同じ条件で確かめるため、既定で `x-csrf-token` を付ける。 */
-export const createTestClient = (
+/** api の URL と別にするのは、本番でも Origin を request の URL ではなく設定から決めるため。 */
+export const testTrustedOrigin = "http://pantry.test";
+
+const testRpcUrl = "http://api.test/rpc";
+
+export const createTestApp = (
   db: AppDb,
-  as: SessionUser | null,
-  { csrf = true }: { readonly csrf?: boolean } = {}
-): ApiTestClient => {
-  const app = createApp({
-    authenticate: async () => as,
+  authenticate: Authenticator
+): ReturnType<typeof createApp> =>
+  createApp({
+    authenticate,
     db: () => db,
     handleAuthRequest: unusedAuthHandler,
     reportError: () => {
       // テストは失敗を client 側の 500 で確かめるので、ログに出さない。
     },
+    trustedOrigin: () => testTrustedOrigin,
   });
+
+/**
+ * `x-csrf-token` も Origin も付けない JSON の client にするのは、SSR と旧 web の送り方で
+ * 全 procedure が通ることを既定で確かめるため。
+ */
+export const createTestClient = (
+  db: AppDb,
+  as: SessionUser | null
+): ApiTestClient => {
+  const app = createTestApp(db, async () => as);
 
   return createORPCClient<ApiTestClient>(
     new RPCLink({
       fetch: async (request) => await app.fetch(request),
-      plugins: csrf ? [new SimpleCsrfProtectionLinkPlugin()] : [],
-      url: "http://api.test/rpc",
+      url: testRpcUrl,
     })
   );
+};
+
+/**
+ * 別サイトの `<form>` / `fetch(..., { mode: "no-cors" })` が付けられる content-type。
+ * content-type 無しも含めるのは、RPCHandler がそれを JSON として読むため。
+ */
+export const formLikeContentTypes = [
+  "application/x-www-form-urlencoded",
+  "multipart/form-data; boundary=pantry",
+  "text/plain",
+  undefined,
+] as const;
+
+type FormLikeContentType = (typeof formLikeContentTypes)[number];
+
+/** same-site を含めるのは、`*.workers.dev` の兄弟 Worker が same-site になるため。 */
+export const crossSiteHeaderSets: readonly Readonly<Record<string, string>>[] =
+  [
+    { origin: "https://evil.example" },
+    { "sec-fetch-site": "cross-site" },
+    { origin: "https://evil.example", "sec-fetch-site": "cross-site" },
+    { "sec-fetch-site": "same-site" },
+    {
+      origin: "https://sibling.mkhd7930.workers.dev",
+      "sec-fetch-site": "same-site",
+    },
+  ];
+
+/** body を bytes で渡すのは、文字列だと `fetch` が text/plain を自動で付けてしまうため。 */
+export const rawRpcRequest = ({
+  body,
+  contentType,
+  headers = {},
+  path,
+}: {
+  readonly body: unknown;
+  readonly contentType: FormLikeContentType;
+  readonly headers?: Readonly<Record<string, string>>;
+  readonly path: string;
+}): Request => {
+  const request = new Request(`${testRpcUrl}/${path}`, {
+    body: new TextEncoder().encode(JSON.stringify({ json: body })),
+    headers: {
+      ...headers,
+      ...(contentType === undefined ? {} : { "content-type": contentType }),
+    },
+    method: "POST",
+  });
+  expect(request.headers.get("content-type")).toBe(contentType ?? null);
+  return request;
 };
 
 export type ProcedurePath<T, Prefix extends string = ""> = {
@@ -168,15 +231,39 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
   );
 
   it.each(procedureNames)(
-    `x-csrf-token の無い ${namespace}.%s は認証済みでも 403 で拒否する（CSRF の除外は health / me だけ）`,
+    `x-csrf-token を付けない（SSR / 旧 web の）${namespace}.%s は CSRF で 403 にならない`,
     async (name) => {
-      const call = callEveryProcedure(
-        createTestClient(getDb(), actor, { csrf: false })
-      )[name];
-      await expect(call()).rejects.toMatchObject({
-        code: "CSRF_TOKEN_MISMATCH",
-        status: 403,
-      });
+      const call = callEveryProcedure(createTestClient(getDb(), actor))[name];
+      const outcome: unknown = await call().catch((error: unknown) => error);
+      expect(outcome).not.toMatchObject({ status: 403 });
+    }
+  );
+
+  it.each(
+    procedureNames.flatMap((name) =>
+      formLikeContentTypes.map((contentType) => ({
+        contentType: contentType ?? "（なし）",
+        name,
+        request: (headers: Readonly<Record<string, string>>) =>
+          rawRpcRequest({
+            body: {},
+            contentType,
+            headers,
+            path: `${namespace}/${name.replaceAll(".", "/")}`,
+          }),
+      }))
+    )
+  )(
+    `別サイトから content-type $contentType で送られた ${namespace}.$name は認証済みでも procedure に届かず 403`,
+    async ({ request }) => {
+      const authenticate = vi.fn<Authenticator>(async () => actor);
+      const app = createTestApp(getDb(), authenticate);
+
+      for (const headers of crossSiteHeaderSets) {
+        const response = await app.fetch(request(headers));
+        expect(response.status, JSON.stringify(headers)).toBe(403);
+      }
+      expect(authenticate).not.toHaveBeenCalled();
     }
   );
 };
