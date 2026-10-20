@@ -11,6 +11,9 @@
     "test": "vitest run",
     "typecheck": "tsc"
   },
+  "dependencies": {
+    "@internationalized/date": "catalog:date"
+  },
   "devDependencies": {
     "@pantry/forge": "workspace:*",
     "@types/node": "catalog:runtime",

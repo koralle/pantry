@@ -142,6 +142,10 @@ catalogs:
     drizzle-seed:
       specifier: 1.0.0-rc.5-ab785fc
       version: 1.0.0-rc.5-ab785fc
+  date:
+    '@internationalized/date':
+      specifier: 3.12.4
+      version: 3.12.4
   debug:
     '@tanstack/devtools-vite':
       specifier: 0.8.3
@@ -737,6 +741,10 @@ importers:
         version: 7.0.2
 
   packages/utils:
+    dependencies:
+      '@internationalized/date':
+        specifier: catalog:date
+        version: 3.12.4
     devDependencies:
       '@pantry/forge':
         specifier: workspace:*

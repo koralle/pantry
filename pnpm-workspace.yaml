@@ -31,6 +31,8 @@ catalogs:
     drizzle-orm: 1.0.0-rc.5-169397b
     drizzle-kit: 1.0.0-rc.5-ab785fc
     drizzle-seed: 1.0.0-rc.5-ab785fc
+  date:
+    "@internationalized/date": 3.12.4
   debug:
     "@tanstack/devtools-vite": 0.8.3
     "@tanstack/react-devtools": 0.10.10

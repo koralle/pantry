@@ -30,4 +30,16 @@ describe(formatRelativeTime, () => {
     expect(formatRelativeTime("2026-08-25T12:00:00.000Z", now)).toBe("3 日前");
     expect(formatRelativeTime("2026-08-27T12:00:00.000Z", now)).toBe("昨日");
   });
+
+  test("counts calendar months instead of fixed millisecond spans", () => {
+    expect(formatRelativeTime("2026-07-20T12:00:00.000Z", now)).toBe("先月");
+    expect(formatRelativeTime("2024-08-28T12:00:00.000Z", now)).toBe("2 年前");
+  });
+});
+
+describe("invalid input", () => {
+  test("returns the raw value instead of throwing", () => {
+    expect(formatDate("not a timestamp")).toBe("not a timestamp");
+    expect(formatRelativeTime("not a timestamp")).toBe("not a timestamp");
+  });
 });
