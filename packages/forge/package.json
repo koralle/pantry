@@ -4,6 +4,7 @@
   "description": "Shared toolchain configs for the pantry monorepo",
   "type": "module",
   "exports": {
+    "./oxfmt": "./src/oxfmt.ts",
     "./oxlint": "./src/oxlint.ts",
     "./tsconfig/base.json": "./tsconfig/base.json",
     "./tsconfig/node.json": "./tsconfig/node.json"
@@ -13,6 +14,7 @@
   },
   "dependencies": {
     "@tsconfig/strictest": "catalog:typescript",
+    "oxfmt": "catalog:format",
     "oxlint": "catalog:lint",
     "ultracite": "catalog:lint"
   },
