@@ -1,0 +1,8 @@
+{
+  "name": "@pantry/tsconfig",
+  "private": true,
+  "description": "Shared TypeScript configuration presets for the pantry monorepo",
+  "dependencies": {
+    "@tsconfig/strictest": "catalog:typescript"
+  }
+}

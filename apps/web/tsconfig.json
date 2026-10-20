@@ -1,17 +1,10 @@
 {
-  "extends": "@tsconfig/strictest/tsconfig.json",
+  "extends": "@pantry/tsconfig/base.json",
   "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
-    "target": "es2022",
-    "module": "preserve",
     "lib": ["es2024", "dom", "dom.iterable"],
     "jsx": "react-jsx",
     "types": ["./worker-configuration.d.ts", "node", "vite/client"],
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-
-    "noEmit": true,
     "paths": {
       "styled-system/*": ["./styled-system/*"]
     }

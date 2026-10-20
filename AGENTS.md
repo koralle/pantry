@@ -32,6 +32,7 @@
 - `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
 - `packages/env/` - `@pantry/env`。Varlock の env スキーマを関心ごとに分割して管理し、値ファイルと worktree 用スクリプトを置く
 - `packages/test-support/` - `@pantry/test-support`。テスト用に libSQL server の image と Testcontainers の起動設定を `@pantry/test-support/libsql` として共有する
+- `packages/tsconfig/` - `@pantry/tsconfig`。各パッケージの `tsconfig.json` が `extends` する共通プリセット（`base.json`、Node 向け `node.json`）
 - `docs/` - 設計・方針ドキュメント
 - `.agents/` - エージェント向けルールとスキル
 

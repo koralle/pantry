@@ -1,11 +1,4 @@
 {
-  "extends": "@tsconfig/strictest/tsconfig.json",
-  "include": ["*.ts"],
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "preserve",
-    "lib": ["es2024"],
-    "moduleResolution": "bundler",
-    "noEmit": true
-  }
+  "extends": "@pantry/tsconfig/base.json",
+  "include": ["*.ts"]
 }

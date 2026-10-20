@@ -32,7 +32,7 @@
     "@orpc/client": "catalog:rpc",
     "@orpc/contract": "catalog:rpc",
     "@pantry/test-support": "workspace:*",
-    "@tsconfig/strictest": "catalog:typescript",
+    "@pantry/tsconfig": "workspace:*",
     "@types/node": "catalog:runtime",
     "@varlock/cloudflare-integration": "catalog:envvars",
     "drizzle-seed": "catalog:database",
