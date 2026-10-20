@@ -1,30 +1,25 @@
-import { tagNameSchema } from "@pantry/api-contract/schemas/tag-values";
 import type { AppDb } from "@pantry/db";
 import { tagsTable } from "@pantry/db/schema/tag";
-import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../../../domain/user-id";
-import { seedUser, withPersistenceDb } from "../../../../test/db/migrated-db";
+import {
+  parseTagId,
+  parseTagName,
+  parseUserId,
+  seedUser,
+  withTestDb,
+} from "../../../../test/db/migrated-db";
 import type { InsertTagInput } from "../../application/create-tag";
 import type { TouchTagInput } from "../../application/touch-tag";
 import { insertTag } from "../insert-tag";
 import { touchTag } from "./index";
 
-const persistence = withPersistenceDb();
-
-function parseUserId(value: string) {
-  return v.parse(userIdSchema, value);
-}
-
-function parseName(value: string) {
-  return v.parse(tagNameSchema, value);
-}
+const testDb = withTestDb();
 
 async function createOwnedTag(db: AppDb, userId: string, name: string) {
   const input: InsertTagInput = {
     color: null,
-    name: parseName(name),
+    name: parseTagName(name),
     pinned: false,
     sortOrder: 0,
     userId: parseUserId(userId),
@@ -38,14 +33,14 @@ async function createOwnedTag(db: AppDb, userId: string, name: string) {
 
 function touchInput(userId: string, id: number): TouchTagInput {
   return {
-    id: v.parse(v.pipe(v.number(), v.brand("TagId")), id),
+    id: parseTagId(id),
     userId: parseUserId(userId),
   };
 }
 
 describe(touchTag, () => {
   test("actor のタグの lastUsedAt を更新し touched を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const id = await createOwnedTag(db, "user-a", "Work");
 
@@ -64,7 +59,7 @@ describe(touchTag, () => {
   });
 
   test("別ユーザーのタグは更新せず not-found を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const id = await createOwnedTag(db, "user-b", "Work");
@@ -79,7 +74,7 @@ describe(touchTag, () => {
   });
 
   test("存在しない id は not-found を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     const result = await touchTag(db, touchInput("user-a", 999));
@@ -88,7 +83,7 @@ describe(touchTag, () => {
   });
 
   test("同一タグへの並行 touch は両方 touched になり、行は1件のまま", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const id = await createOwnedTag(db, "user-a", "Work");
 

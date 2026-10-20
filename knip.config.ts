@@ -44,7 +44,7 @@ const config: KnipConfig = {
       // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
       entry: ["vitest/tanstack-entry-stub.ts"],
       vitest: {
-        config: ["vitest.config.ts", "vitest.db.config.ts"],
+        config: ["vitest.config.ts"],
       },
       storybook: {
         config: ["src/storybook/main.ts"],
@@ -60,6 +60,8 @@ const config: KnipConfig = {
         "react-scan",
         // Self-hosted typeface loaded via @import in src/index.css
         "@fontsource/noto-sans-jp",
+        // web → api の移行中。getDB の利用者がいなくなる最後の PR で @pantry/db ごと消す。
+        "@pantry/db",
       ],
     },
     "packages/api-contract": {

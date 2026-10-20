@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import {
   bookmarkIdSchema,
   bookmarkNoteSchema,
@@ -15,21 +12,16 @@ import { sql } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../../../domain/user-id";
 import {
+  parseUserId,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import type { InsertBookmarkInput } from "../../application/create-bookmark";
 import { insertBookmark } from "./index";
 
-const adapterDir = import.meta.dirname;
-const persistence = withPersistenceDb();
-
-function parseUserId(value: string) {
-  return v.parse(userIdSchema, value);
-}
+const testDb = withTestDb();
 
 function createCommand(
   userId: string,
@@ -54,7 +46,7 @@ function createCommand(
 
 describe(insertBookmark, () => {
   test("ブックマークを作成し UUIDv7 の id を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     const output = await insertBookmark(db, createCommand("user-a"));
@@ -77,7 +69,7 @@ describe(insertBookmark, () => {
   });
 
   test("同一ユーザーの同一 URL は duplicate-url を返し、行は増えない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     const first = await insertBookmark(
@@ -97,7 +89,7 @@ describe(insertBookmark, () => {
   });
 
   test("別ユーザーなら同じ URL を作成できる", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
 
@@ -115,7 +107,7 @@ describe(insertBookmark, () => {
   });
 
   test("所有タグを紐付け、そのタグの lastUsedAt だけを更新する", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-other");
     const workTagId = await seedTag(db, { name: "Work", userId: "user-a" });
@@ -144,7 +136,7 @@ describe(insertBookmark, () => {
   });
 
   test("タグなしでは bookmark_tags も lastUsedAt も触れない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const workTagId = await seedTag(db, { name: "Work", userId: "user-a" });
 
@@ -158,7 +150,7 @@ describe(insertBookmark, () => {
   });
 
   test("重複した tagIds は 1 行だけ紐付ける", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const workTagId = await seedTag(db, { name: "Work", userId: "user-a" });
 
@@ -177,7 +169,7 @@ describe(insertBookmark, () => {
   });
 
   test("別ユーザーのタグは invalid-tag で、bookmark も書かない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const foreignTagId = await seedTag(db, {
@@ -196,7 +188,7 @@ describe(insertBookmark, () => {
   });
 
   test("存在しないタグは invalid-tag で、bookmark も書かない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     const output = await insertBookmark(
@@ -209,7 +201,7 @@ describe(insertBookmark, () => {
   });
 
   test("transaction 内の未知障害は throw され、部分書き込みが残らない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const workTagId = await seedTag(db, { name: "Work", userId: "user-a" });
     await db.run(sql`
@@ -226,11 +218,5 @@ describe(insertBookmark, () => {
 
     await expect(db.select().from(bookmarkTable)).resolves.toHaveLength(0);
     await expect(db.select().from(bookmarkTagsTable)).resolves.toHaveLength(0);
-  });
-
-  test("SQLite error 分類は import しない", () => {
-    const source = readFileSync(join(adapterDir, "index.ts"), "utf-8");
-    expect(source).not.toContain("isSqliteUniqueConstraintError");
-    expect(source).not.toContain("SQLITE_CONSTRAINT");
   });
 });

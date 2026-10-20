@@ -4,15 +4,15 @@ import {
   parseUserId,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { selectTags } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 describe(selectTags, () => {
   test("limit と offset を適用する", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedTag(db, { name: "alpha", userId: "user-a" });
     await seedTag(db, { name: "beta", userId: "user-a" });
@@ -27,7 +27,7 @@ describe(selectTags, () => {
   });
 
   test("行は id と name だけの写像で、本人の行だけを返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const alphaId = await seedTag(db, { name: "Alpha", userId: "user-a" });

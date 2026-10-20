@@ -5,9 +5,9 @@ import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { eq } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
 import { describe, expect, it } from "vitest";
 
+import { seedBookmark, seedTag } from "../test/db/migrated-db";
 import {
   actor,
   contractProcedureNames,
@@ -22,57 +22,6 @@ import {
   withMigratedDb,
 } from "../test/rpc-harness";
 import type { ApiTestClient, ProcedurePath } from "../test/rpc-harness";
-
-const seedTag = async (
-  db: AppDb,
-  input: {
-    readonly userId: string;
-    readonly name: string;
-    readonly pinned?: boolean;
-    readonly sortOrder?: number;
-    readonly color?: string | null;
-  }
-): Promise<number> => {
-  const [row] = await db
-    .insert(tagsTable)
-    .values({
-      color: input.color ?? null,
-      name: input.name,
-      normalizedName: input.name.toLowerCase(),
-      pinned: input.pinned ?? false,
-      sortOrder: input.sortOrder ?? 0,
-      userId: input.userId,
-    })
-    .returning({ id: tagsTable.id });
-  if (row === undefined) {
-    throw new Error("seedTag failed");
-  }
-  return row.id;
-};
-
-const seedBookmark = async (
-  db: AppDb,
-  input: {
-    readonly userId: string;
-    readonly tagIds: readonly number[];
-    readonly deleted?: boolean;
-  }
-): Promise<string> => {
-  const id = uuidv7();
-  await db.insert(bookmarkTable).values({
-    deletedAt: input.deleted === true ? new Date() : null,
-    id,
-    title: id,
-    url: `https://example.com/${id}`,
-    userId: input.userId,
-  });
-  if (input.tagIds.length > 0) {
-    await db
-      .insert(bookmarkTagsTable)
-      .values(input.tagIds.map((tagId) => ({ bookmarkId: id, tagId })));
-  }
-  return id;
-};
 
 const tagRow = async (db: AppDb, id: number) => {
   const [row] = await db.select().from(tagsTable).where(eq(tagsTable.id, id));

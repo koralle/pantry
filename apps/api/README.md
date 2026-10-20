@@ -23,7 +23,7 @@ procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機
 ### テスト
 
 - `src/test/rpc-harness.ts`: Testcontainers の libSQL（`db` project の globalSetup が起動）と、`actor` / `other` / 未認証を切り替えて `/rpc` を叩く client。procedure の behaviour テスト（所有者の分離・401・別サイトからの form の 403）は `src/rpc/**/*.integration.test.ts`（`db` project）でこれを使う。
-- `pnpm --filter @pantry/api run test:db`: 実際の libSQL server（testcontainers、Docker が必要）に本番 migration を適用した DB テスト。`src/features/**/db/` の adapter、`src/test/db/` の横断シナリオ、`src/rpc/**` の procedure behaviour を同じコンテナで回す。CI の `db-integration` job が root の `pnpm run test:db` で web と一緒に回す。
+- `pnpm --filter @pantry/api run test:db`: 実際の libSQL server（testcontainers、Docker が必要）に本番 migration を適用した DB テスト。`src/features/**/db/` の adapter、`src/test/db/` の横断シナリオ、`src/rpc/**` の procedure behaviour、`src/auth/**` の Cookie セッションを同じコンテナで回す。CI の `db-integration` job が root の `pnpm run test:db` で回す。
 
 ## 環境変数
 
@@ -62,8 +62,8 @@ procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機
 テストは 3 構成。設定はすべて `vitest.config.ts` に集約している。
 
 - `workers` project（`src/**/*.test.ts`）: `@cloudflare/vitest-plugin` で workerd 上で実行。`createApp` に stub を差し込み、oRPC client / Hono の `app.request` でルートを検証する。
-- `node` project（`src/**/*.integration.test.ts` のうち `db` project 以外）: 実 libSQL（`file::memory:?cache=shared`）+ `@pantry/db/migrations` で本物の `createAuth` を組み立て、Cookie セッションが通ることを検証する。
-- `db` project（`src/**/db/**` と `src/rpc/**` の `*.integration.test.ts`）: Testcontainers の libSQL server に本番 migration を適用し、DB adapter の DB semantics と `/rpc` の procedure behaviour（`src/test/rpc-harness.ts`）を検証する。プロジェクトの globalSetup でコンテナを 1 つ起動し、直列に実行する。
+- `node` project（`src/**/*.integration.test.ts` のうち `db` project 以外）: `node:fs` を使う静的なソース境界検査（`src/test/source-boundary.integration.test.ts`）。
+- `db` project（`src/**/db/**`、`src/rpc/**`、`src/auth/**` の `*.integration.test.ts`）: Testcontainers の libSQL server に本番 migration を適用し、DB adapter の DB semantics、`/rpc` の procedure behaviour（`src/test/rpc-harness.ts`）、Better Auth の Cookie セッションを検証する。プロジェクトの globalSetup でコンテナを 1 つ起動し、直列に実行する。
 
 ## web からの経路
 

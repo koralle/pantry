@@ -14,7 +14,6 @@
     "preview": "pnpm run build && vite preview",
     "storybook": "storybook dev -p 6006 -c src/storybook",
     "test": "vitest run",
-    "test:db": "vitest run --config vitest.db.config.ts",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -66,7 +65,6 @@
     "react-scan": "catalog:",
     "storybook": "catalog:storybook",
     "storybook-device-viewports": "catalog:storybook",
-    "testcontainers": "catalog:test",
     "typescript": "catalog:typescript",
     "varlock": "catalog:envvars",
     "vite": "catalog:build",

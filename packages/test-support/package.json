@@ -1,0 +1,19 @@
+{
+  "name": "@pantry/test-support",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./libsql": "./src/libsql/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "testcontainers": "catalog:test"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "catalog:typescript",
+    "@types/node": "catalog:runtime",
+    "typescript": "catalog:typescript"
+  }
+}

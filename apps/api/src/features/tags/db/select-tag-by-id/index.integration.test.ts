@@ -4,15 +4,15 @@ import {
   parseUserId,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { selectTagById } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 describe(selectTagById, () => {
   test("本人のタグなら画面 projection を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const id = await seedTag(db, {
       color: "#c45c26",
@@ -34,7 +34,7 @@ describe(selectTagById, () => {
   });
 
   test("他人のタグは null を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const id = await seedTag(db, { name: "secret", userId: "user-b" });
@@ -45,7 +45,7 @@ describe(selectTagById, () => {
   });
 
   test("存在しない id は null を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     await expect(

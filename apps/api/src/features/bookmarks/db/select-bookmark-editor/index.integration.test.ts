@@ -4,21 +4,24 @@ import { describe, expect, test } from "vitest";
 
 import {
   attachTag,
+  parseUserId,
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { selectBookmarkEditor } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 const actorId = "user-a";
 const targetId = "019fae92-3bb0-78cd-b488-65ce0e26a939";
+const deletedId = "019fae92-3bb0-78cd-b488-65ce0e26a940";
+const foreignId = "019fae92-3bb0-78cd-b488-65ce0e26a941";
 
 describe(selectBookmarkEditor, () => {
   test("actor が所有する未削除 bookmark の編集用 projection を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, actorId);
     await seedBookmark(db, {
       id: targetId,
@@ -32,7 +35,7 @@ describe(selectBookmarkEditor, () => {
 
     const record = await selectBookmarkEditor(
       db,
-      v.parse(v.string(), actorId) as never,
+      parseUserId(actorId),
       targetId
     );
 
@@ -45,32 +48,35 @@ describe(selectBookmarkEditor, () => {
     });
   });
 
-  test("対象なしは null を返す", async () => {
-    const db = persistence.getDb();
+  test("対象なし・削除済み・他ユーザーの bookmark は null を返す", async () => {
+    const db = testDb.getDb();
     await seedUser(db, actorId);
-
-    await expect(
-      selectBookmarkEditor(db, actorId as never, targetId)
-    ).resolves.toBeNull();
-  });
-
-  test("削除済み bookmark も null を返す", async () => {
-    const db = persistence.getDb();
-    await seedUser(db, actorId);
+    await seedUser(db, "user-b");
     await seedBookmark(db, {
       deletedAt: new Date(),
-      id: targetId,
+      id: deletedId,
       url: "https://example.com/gone",
       userId: actorId,
     });
+    await seedBookmark(db, {
+      id: foreignId,
+      url: "https://example.com/theirs",
+      userId: "user-b",
+    });
 
     await expect(
-      selectBookmarkEditor(db, actorId as never, targetId)
+      selectBookmarkEditor(db, parseUserId(actorId), targetId)
+    ).resolves.toBeNull();
+    await expect(
+      selectBookmarkEditor(db, parseUserId(actorId), deletedId)
+    ).resolves.toBeNull();
+    await expect(
+      selectBookmarkEditor(db, parseUserId(actorId), foreignId)
     ).resolves.toBeNull();
   });
 
   test("他ユーザーの tag は tagIds に含めない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, actorId);
     await seedUser(db, "user-b");
     await seedBookmark(db, {
@@ -86,24 +92,10 @@ describe(selectBookmarkEditor, () => {
 
     const record = await selectBookmarkEditor(
       db,
-      v.parse(v.string(), actorId) as never,
+      parseUserId(actorId),
       targetId
     );
 
     expect(record?.tagIds).toStrictEqual([ownTag]);
-  });
-
-  test("別 user の bookmark も null を返す", async () => {
-    const db = persistence.getDb();
-    await seedUser(db, "user-b");
-    await seedBookmark(db, {
-      id: targetId,
-      url: "https://example.com/theirs",
-      userId: "user-b",
-    });
-
-    await expect(
-      selectBookmarkEditor(db, actorId as never, targetId)
-    ).resolves.toBeNull();
   });
 });

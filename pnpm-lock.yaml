@@ -421,6 +421,9 @@ importers:
       '@orpc/contract':
         specifier: catalog:rpc
         version: 1.15.0(@opentelemetry/api@1.9.1)
+      '@pantry/test-support':
+        specifier: workspace:*
+        version: link:../../packages/test-support
       '@tsconfig/strictest':
         specifier: catalog:typescript
         version: 2.0.8
@@ -433,9 +436,6 @@ importers:
       drizzle-seed:
         specifier: catalog:database
         version: 1.0.0-rc.5-ab785fc(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))
-      testcontainers:
-        specifier: catalog:test
-        version: 12.2.1(supports-color@10.2.2)
       tsx:
         specifier: catalog:script
         version: 4.23.12
@@ -599,9 +599,6 @@ importers:
       storybook-device-viewports:
         specifier: catalog:storybook
         version: 0.1.2(@types/react@19.3.0)(prettier@3.9.6)(react@19.3.0)
-      testcontainers:
-        specifier: catalog:test
-        version: 12.2.1(supports-color@10.2.2)
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
@@ -694,6 +691,22 @@ importers:
       tsx:
         specifier: catalog:script
         version: 4.23.12
+      typescript:
+        specifier: catalog:typescript
+        version: 7.0.2
+
+  packages/test-support:
+    dependencies:
+      testcontainers:
+        specifier: catalog:test
+        version: 12.2.1(supports-color@10.2.2)
+    devDependencies:
+      '@tsconfig/strictest':
+        specifier: catalog:typescript
+        version: 2.0.8
+      '@types/node':
+        specifier: catalog:runtime
+        version: 25.9.5
       typescript:
         specifier: catalog:typescript
         version: 7.0.2

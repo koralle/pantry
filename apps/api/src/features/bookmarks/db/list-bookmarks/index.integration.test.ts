@@ -10,13 +10,13 @@ import {
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { BOOKMARK_LIST_PAGE_SIZE } from "../../lib/bookmark-list-page-size";
 import type { BookmarkListQuery } from "./index";
 import { listBookmarks } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 function query(
   userId: string,
@@ -33,7 +33,7 @@ const newer = new Date("2026-08-10T00:00:00.000Z");
 
 describe(listBookmarks, () => {
   test("自分の未削除ブックマークを新着順とタグ付きで返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const readingId = await seedTag(db, {
       name: "reading",
@@ -73,7 +73,7 @@ describe(listBookmarks, () => {
   });
 
   test("削除済みと他人のブックマークは返さない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     await seedBookmark(db, {
@@ -95,7 +95,7 @@ describe(listBookmarks, () => {
   });
 
   test("タグは全て持つブックマークだけを返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const readingId = await seedTag(db, {
       name: "reading",
@@ -121,7 +121,7 @@ describe(listBookmarks, () => {
   });
 
   test("tagNames は正規化して照合する", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const readingId = await seedTag(db, {
       name: "reading",
@@ -143,7 +143,7 @@ describe(listBookmarks, () => {
   });
 
   test("21件以上あるとき初回は先頭20件と nextCursor を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 1);
 
@@ -158,7 +158,7 @@ describe(listBookmarks, () => {
   });
 
   test("続きは cursor で取り、offset なしで欠落・重複しない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 5);
 
@@ -181,7 +181,7 @@ describe(listBookmarks, () => {
   });
 
   test("ちょうど20件のときは nextCursor がなく空の追加取得を要求しない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE);
 
@@ -192,7 +192,7 @@ describe(listBookmarks, () => {
   });
 
   test("同一 createdAt でも id の補助並びでページ境界の欠落・重複がない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const ids = idsFrom(0, BOOKMARK_LIST_PAGE_SIZE + 3);
     for (const id of ids) {
@@ -220,7 +220,7 @@ describe(listBookmarks, () => {
   });
 
   test("cursor があっても現在のタグ条件と所有者境界を迂回しない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const readingId = await seedTag(db, {
@@ -265,7 +265,7 @@ describe(listBookmarks, () => {
   });
 
   test("nextCursor は末尾の位置を表す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await insertSequentialBookmarks(db, "user-a", BOOKMARK_LIST_PAGE_SIZE + 1);
 
@@ -279,7 +279,7 @@ describe(listBookmarks, () => {
   });
 
   test("projection に不要な列（userId, deletedAt）を載せない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedBookmark(db, { id: "b-1", title: "最小", userId: "user-a" });
 

@@ -32,6 +32,7 @@
 - `packages/api-contract/` - `@pantry/api-contract`。oRPC の contract（procedure の input / output / 型付きエラー）だけを持ち、実装は `apps/api` が持つ
 - `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
 - `packages/env/` - `@pantry/env`。Varlock の env スキーマを関心ごとに分割して管理し、値ファイルと worktree 用スクリプトを置く
+- `packages/test-support/` - `@pantry/test-support`。テスト用に libSQL server の image と Testcontainers の起動設定を `@pantry/test-support/libsql` として共有する
 - `docs/` - 設計・方針ドキュメント
 - `.agents/` - エージェント向けルールとスキル
 

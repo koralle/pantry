@@ -5,15 +5,15 @@ import {
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { selectShelfTags } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 describe(selectShelfTags, () => {
   test("本人のタグだけを bookmarkCount 付きで返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const workId = await seedTag(db, {
@@ -51,7 +51,7 @@ describe(selectShelfTags, () => {
   });
 
   test("他ユーザーのブックマークは bookmarkCount に含めない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const workId = await seedTag(db, { name: "work", userId: "user-a" });
@@ -65,7 +65,7 @@ describe(selectShelfTags, () => {
   });
 
   test("削除済みブックマークは bookmarkCount に含めない", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const readingId = await seedTag(db, { name: "reading", userId: "user-a" });
     await seedBookmark(db, {
@@ -87,7 +87,7 @@ describe(selectShelfTags, () => {
   });
 
   test("lastUsedAt を Date として返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const lastUsedAt = new Date("2026-08-01T00:00:00.000Z");
     await seedTag(db, { lastUsedAt, name: "recent", userId: "user-a" });

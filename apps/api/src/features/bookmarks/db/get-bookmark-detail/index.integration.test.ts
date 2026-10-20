@@ -1,28 +1,23 @@
-import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import { userIdSchema } from "../../../../domain/user-id";
 import {
   attachTag,
+  parseUserId,
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { getBookmarkDetail } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 const createdAt = new Date("2026-08-01T00:00:00.000Z");
 const updatedAt = new Date("2026-08-02T00:00:00.000Z");
 
-function actor(userId: string) {
-  return v.parse(userIdSchema, userId);
-}
-
 describe(getBookmarkDetail, () => {
   test("自分の未削除ブックマークを tagNames 付きで返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedTag(db, { name: "work", userId: "user-a" });
     const readingId = await seedTag(db, {
@@ -39,7 +34,9 @@ describe(getBookmarkDetail, () => {
     });
     await attachTag(db, "b-1", readingId);
 
-    const detail = await getBookmarkDetail(db, actor("user-a"), { id: "b-1" });
+    const detail = await getBookmarkDetail(db, parseUserId("user-a"), {
+      id: "b-1",
+    });
 
     expect(detail).toStrictEqual({
       createdAt: new Date("2026-08-01T00:00:00.000Z").toISOString(),
@@ -54,7 +51,7 @@ describe(getBookmarkDetail, () => {
   });
 
   test("tagNames はタグ名の昇順で返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const workId = await seedTag(db, { name: "work", userId: "user-a" });
     const readingId = await seedTag(db, {
@@ -65,24 +62,28 @@ describe(getBookmarkDetail, () => {
     await attachTag(db, "b-1", workId);
     await attachTag(db, "b-1", readingId);
 
-    const detail = await getBookmarkDetail(db, actor("user-a"), { id: "b-1" });
+    const detail = await getBookmarkDetail(db, parseUserId("user-a"), {
+      id: "b-1",
+    });
 
     expect(detail?.tagNames).toStrictEqual(["reading", "work"]);
   });
 
   test("他人のブックマークは null を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     await seedBookmark(db, { id: "b-1", userId: "user-a" });
 
-    const detail = await getBookmarkDetail(db, actor("user-b"), { id: "b-1" });
+    const detail = await getBookmarkDetail(db, parseUserId("user-b"), {
+      id: "b-1",
+    });
 
     expect(detail).toBeNull();
   });
 
   test("削除済みブックマークは null を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedBookmark(db, {
       deletedAt: new Date("2026-08-03T00:00:00.000Z"),
@@ -90,16 +91,18 @@ describe(getBookmarkDetail, () => {
       userId: "user-a",
     });
 
-    const detail = await getBookmarkDetail(db, actor("user-a"), { id: "b-1" });
+    const detail = await getBookmarkDetail(db, parseUserId("user-a"), {
+      id: "b-1",
+    });
 
     expect(detail).toBeNull();
   });
 
   test("存在しない id は null を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
-    const detail = await getBookmarkDetail(db, actor("user-a"), {
+    const detail = await getBookmarkDetail(db, parseUserId("user-a"), {
       id: "missing",
     });
 
