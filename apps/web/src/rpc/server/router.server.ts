@@ -1,5 +1,5 @@
 /**
- * router 実装と本番配線を分けるのは、ブラウザから server-only の getDB / api client を
+ * router 実装と本番配線を分けるのは、ブラウザから server-only の api client を
  * import できないようにするため。
  */
 import { createApiServerClient } from "../../api/client.server";

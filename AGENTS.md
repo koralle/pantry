@@ -27,7 +27,6 @@
   - `src/server.ts` - Worker entry。`/rpc/*` と `/api/auth/*` を Service Binding（`env.API`）で `pantry-api` へ転送し、それ以外を TanStack Start へ渡す
   - `src/api/` - `pantry-api` の oRPC client（ブラウザ用 `client.ts`、SSR 用 `client.server.ts`）
   - `src/features/` - Server Function と機能単位のUI・ロジック
-  - `src/db/` - Worker からのDB取得（`getDB` のみ。接続とスキーマは `packages/db`）
   - `public/` - 静的アセット
 - `packages/api-contract/` - `@pantry/api-contract`。oRPC の contract（procedure の input / output / 型付きエラー）だけを持ち、実装は `apps/api` が持つ
 - `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
