@@ -14,7 +14,6 @@
     "preview": "pnpm run build && vite preview",
     "storybook": "storybook dev -p 6006 -c src/storybook",
     "test": "vitest run",
-    "test:db": "vitest run --config vitest.db.config.ts",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -52,7 +51,6 @@
     "@cloudflare/vitest-plugin": "catalog:test",
     "@pandacss/dev": "catalog:ui",
     "@pandacss/mcp": "catalog:ui",
-    "@pantry/test-support": "workspace:*",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/builder-vite": "catalog:storybook",
     "@storybook/tanstack-react": "catalog:storybook",

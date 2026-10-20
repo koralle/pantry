@@ -23,7 +23,7 @@ procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機
 ### テスト
 
 - `src/test/rpc-harness.ts`: Testcontainers の libSQL（`db` project の globalSetup が起動）と、`actor` / `other` / 未認証を切り替えて `/rpc` を叩く client。procedure の behaviour テスト（所有者の分離・401・別サイトからの form の 403）は `src/rpc/**/*.integration.test.ts`（`db` project）でこれを使う。
-- `pnpm --filter @pantry/api run test:db`: 実際の libSQL server（testcontainers、Docker が必要）に本番 migration を適用した DB テスト。`src/features/**/db/` の adapter、`src/test/db/` の横断シナリオ、`src/rpc/**` の procedure behaviour、`src/auth/**` の Cookie セッションを同じコンテナで回す。CI の `db-integration` job が root の `pnpm run test:db` で web と一緒に回す。
+- `pnpm --filter @pantry/api run test:db`: 実際の libSQL server（testcontainers、Docker が必要）に本番 migration を適用した DB テスト。`src/features/**/db/` の adapter、`src/test/db/` の横断シナリオ、`src/rpc/**` の procedure behaviour、`src/auth/**` の Cookie セッションを同じコンテナで回す。CI の `db-integration` job が root の `pnpm run test:db` で回す。
 
 ## 環境変数
 

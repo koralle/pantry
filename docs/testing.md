@@ -31,7 +31,8 @@ DB 固有の semantics（cursor pagination、タグ AND/OR、検索 escape、sof
 
 - 実行: `pnpm run test:db`（Docker が必要）
 - 設定は `apps/api/vitest.config.ts` の `db` project に統合し、コンテナは project の globalSetup で 1 つだけ起動する
-- libSQL server の image と Testcontainers の起動設定は `packages/test-support/` の `@pantry/test-support/libsql` が共有する
+- libSQL server の image と Testcontainers の起動設定は `packages/test-support/` の `@pantry/test-support/libsql` が提供する
+- `apps/web` の DB adapter は api へ移設済みで、`db` project は `apps/api` のみに置く
 - テスト file 間で同じ行を見ないよう直列実行し、各テストの前にデータとテスト作成の trigger を消す
 - 通常の `pnpm test`（`workers` / `node` project）からは分離しており、Docker を起動しない
 - 外部 Turso には接続しない

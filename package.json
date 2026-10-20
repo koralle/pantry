@@ -23,7 +23,7 @@
     "storybook": "pnpm --filter @pantry/web run storybook",
     "studio:dev": "pnpm --filter @pantry/db run studio:dev",
     "test": "pnpm -r run test",
-    "test:db": "pnpm --filter @pantry/web --filter @pantry/api run test:db",
+    "test:db": "pnpm --filter @pantry/api run test:db",
     "typecheck": "tsc && pnpm -r run typecheck"
   },
   "devDependencies": {
