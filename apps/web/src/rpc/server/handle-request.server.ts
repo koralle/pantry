@@ -15,7 +15,7 @@ const getProductionRouter = async (): Promise<AppRouter> => {
  * `handler.handle()` が返した Response をそのまま出す。
  * 自前の JSON で包むと、Set-Cookie や oRPC のステータス契約が途中で消える。
  * router を省略した場合だけ本番 router を動的 import し、
- * このモジュールを import する client 側コードに getDB / api client を混ぜない。
+ * このモジュールを import する client 側コードに api client を混ぜない。
  */
 export const handleRpcRequest = async (
   request: Request,

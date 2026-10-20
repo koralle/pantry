@@ -37,9 +37,6 @@ const config: KnipConfig = {
       ],
     },
     "apps/web": {
-      // web → api の移行中、tags / bookmarks の PR がどちらも merge されると getDB の利用者が
-      // いなくなる。web の DB 依存は最後の PR でまとめて消すので、それまでは未使用でも残す。
-      ignore: ["src/db/get-db.server.ts"],
       // The tanstack-entry stub is an alias target loaded by the Vitest bundler
       // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
       entry: ["vitest/tanstack-entry-stub.ts"],
@@ -60,8 +57,6 @@ const config: KnipConfig = {
         "react-scan",
         // Self-hosted typeface loaded via @import in src/index.css
         "@fontsource/noto-sans-jp",
-        // web → api の移行中。getDB の利用者がいなくなる最後の PR で @pantry/db ごと消す。
-        "@pantry/db",
       ],
     },
     "packages/api-contract": {

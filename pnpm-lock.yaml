@@ -493,9 +493,6 @@ importers:
       '@pantry/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract
-      '@pantry/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@praha/error-factory':
         specifier: catalog:errors
         version: 1.4.1
