@@ -393,6 +393,9 @@ importers:
       '@pantry/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@pantry/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       better-auth:
         specifier: catalog:authentication
         version: 1.6.27(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.168.44(esbuild@0.28.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.2)(supports-color@10.2.2)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(drizzle-orm@1.0.0-rc.5-169397b(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@tursodatabase/database-common@0.7.2)(@tursodatabase/database@0.7.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(solid-js@1.9.14)(vitest@5.0.5(@opentelemetry/api@1.9.1)(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))
@@ -493,6 +496,9 @@ importers:
       '@pantry/api-contract':
         specifier: workspace:*
         version: link:../../packages/api-contract
+      '@pantry/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@praha/error-factory':
         specifier: catalog:errors
         version: 1.4.1
@@ -729,6 +735,21 @@ importers:
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
+
+  packages/utils:
+    devDependencies:
+      '@pantry/forge':
+        specifier: workspace:*
+        version: link:../forge
+      '@types/node':
+        specifier: catalog:runtime
+        version: 25.9.5
+      typescript:
+        specifier: catalog:typescript
+        version: 7.0.2
+      vitest:
+        specifier: catalog:test
+        version: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@25.9.5)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
 
 packages:
 

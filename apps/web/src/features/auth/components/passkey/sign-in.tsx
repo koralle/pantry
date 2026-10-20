@@ -1,9 +1,9 @@
+import type { Result } from "@pantry/utils/result";
 import { CircleAlert, KeyRound } from "lucide-react";
 import { useState, useTransition } from "react";
 import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
-import type { Result } from "../../../../shared/domain/result";
 import {
   formSummary,
   formSummaryIcon,

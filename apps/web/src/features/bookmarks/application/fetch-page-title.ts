@@ -1,8 +1,7 @@
 import { bookmarkUrlSchema } from "@pantry/api-contract/schemas/bookmark-values";
+import { err, ok } from "@pantry/utils/result";
+import type { Result } from "@pantry/utils/result";
 import * as v from "valibot";
-
-import { err, ok } from "../../../shared/domain/result";
-import type { Result } from "../../../shared/domain/result";
 
 export const fetchPageTitleInputSchema = v.object({
   url: bookmarkUrlSchema,

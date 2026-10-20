@@ -1,9 +1,9 @@
 import type { CreateTagInput } from "@pantry/api-contract/schemas/tag-procedures";
 import type { TagId, TagName } from "@pantry/api-contract/schemas/tag-values";
+import { err, ok } from "@pantry/utils/result";
+import type { Result } from "@pantry/utils/result";
 
 import type { UserId } from "../../../domain/user-id";
-import { err, ok } from "../../../shared/result";
-import type { Result } from "../../../shared/result";
 
 /**
  * Application が扱う確定済みコマンド。

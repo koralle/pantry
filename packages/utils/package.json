@@ -1,0 +1,18 @@
+{
+  "name": "@pantry/utils",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./result": "./src/result.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@pantry/forge": "workspace:*",
+    "@types/node": "catalog:runtime",
+    "typescript": "catalog:typescript",
+    "vitest": "catalog:test"
+  }
+}

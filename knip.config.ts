@@ -70,13 +70,17 @@ const config: KnipConfig = {
       },
     },
     "packages/env": {
-      // lefthook.yaml の post-checkout から `pnpm exec tsx` で呼ぶ。
       // lefthook の解析を切っているため entry として明示する。
       entry: ["scripts/symlink-env-for-worktree.ts"],
       ignoreDependencies: [
         // lefthook から `pnpm exec tsx` で実行する script runner
         "tsx",
       ],
+    },
+    "packages/utils": {
+      vitest: {
+        config: "vitest.config.ts",
+      },
     },
   },
 };

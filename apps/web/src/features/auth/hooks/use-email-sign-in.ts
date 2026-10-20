@@ -1,7 +1,7 @@
+import { err, ok } from "@pantry/utils/result";
+import type { Result } from "@pantry/utils/result";
 import { useRouter } from "@tanstack/react-router";
 
-import { err, ok } from "../../../shared/domain/result";
-import type { Result } from "../../../shared/domain/result";
 import { authClient } from "../lib/auth-client";
 import { SignInError } from "../lib/sign-in-error";
 import type { SignInSchema } from "../lib/sign-in-schema";
