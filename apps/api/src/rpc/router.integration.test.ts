@@ -1,5 +1,5 @@
 import { user as users } from "@pantry/db/schema/auth-schema";
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import {
   actor,
@@ -11,7 +11,7 @@ import {
 describe("router（本番 migration を適用した libSQL）", () => {
   const { getDb } = withMigratedDb();
 
-  it("テストごとに actor と other だけが入った DB から始まる", async () => {
+  test("テストごとに actor と other だけが入った DB から始まる", async () => {
     const rows = await getDb()
       .select({ id: users.id })
       .from(users)
@@ -20,13 +20,13 @@ describe("router（本番 migration を適用した libSQL）", () => {
     expect(rows.map((row) => row.id)).toStrictEqual([actor.id, other.id]);
   });
 
-  it("me は認証済みユーザーを返す", async () => {
+  test("me は認証済みユーザーを返す", async () => {
     await expect(createTestClient(getDb(), actor).me()).resolves.toStrictEqual(
       actor
     );
   });
 
-  it("未認証の me は defined な UNAUTHORIZED（401）を返す", async () => {
+  test("未認証の me は defined な UNAUTHORIZED（401）を返す", async () => {
     await expect(createTestClient(getDb(), null).me()).rejects.toMatchObject({
       code: "UNAUTHORIZED",
       defined: true,
@@ -34,7 +34,7 @@ describe("router（本番 migration を適用した libSQL）", () => {
     });
   });
 
-  it("x-csrf-token を付けない旧 web の client でも health / me を使える", async () => {
+  test("x-csrf-token を付けない旧 web の client でも health / me を使える", async () => {
     const client = createTestClient(getDb(), actor);
 
     await expect(client.health()).resolves.toStrictEqual({ status: "ok" });

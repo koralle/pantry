@@ -5,7 +5,7 @@ import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
 import { eq } from "drizzle-orm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { seedBookmark, seedTag } from "../test/db/migrated-db";
 import {
@@ -63,7 +63,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       procedureNames: contractProcedureNames(contract.tags),
     });
 
-    it.each(
+    test.each(
       formLikeContentTypes.map((contentType) => ({
         contentType,
         label: contentType ?? "（なし）",
@@ -89,7 +89,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       }
     );
 
-    it.each([
+    test.each([
       {
         headers: { "sec-fetch-site": "same-origin" },
         label: "Sec-Fetch-Site: same-origin",
@@ -117,7 +117,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       }
     );
 
-    it("DB の想定外の失敗は 500 にし、内部の message を返さない", async () => {
+    test("DB の想定外の失敗は 500 にし、内部の message を返さない", async () => {
       const brokenDb = new Proxy({} as AppDb, {
         get: () => {
           throw new Error("secret db failure");
@@ -136,7 +136,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("create", () => {
-    it("作成したタグの plain な id を返し、既定値で保存する", async () => {
+    test("作成したタグの plain な id を返し、既定値で保存する", async () => {
       const created = await createTestClient(getDb(), actor).tags.create({
         name: "  Work  ",
       });
@@ -152,7 +152,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("正規化して同じ名前は defined な 409 tag-name-already-exists", async () => {
+    test("正規化して同じ名前は defined な 409 tag-name-already-exists", async () => {
       await seedTag(getDb(), { name: "Work", userId: actor.id });
 
       await expect(
@@ -164,7 +164,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("他ユーザーと同じ名前は衝突しない", async () => {
+    test("他ユーザーと同じ名前は衝突しない", async () => {
       await seedTag(getDb(), { name: "work", userId: other.id });
 
       await expect(
@@ -172,7 +172,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       ).resolves.toStrictEqual({ id: expect.any(Number) });
     });
 
-    it("空の名前は 400 BAD_REQUEST で、行を作らない", async () => {
+    test("空の名前は 400 BAD_REQUEST で、行を作らない", async () => {
       await expect(
         createTestClient(getDb(), actor).tags.create({ name: "   " })
       ).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
@@ -181,7 +181,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("update", () => {
-    it("全項目を置き換えて plain な id を返す", async () => {
+    test("全項目を置き換えて plain な id を返す", async () => {
       const id = await seedTag(getDb(), { name: "work", userId: actor.id });
 
       await expect(
@@ -202,7 +202,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("自分の別タグと同じ名前は 409 tag-name-already-exists", async () => {
+    test("自分の別タグと同じ名前は 409 tag-name-already-exists", async () => {
       await seedTag(getDb(), { name: "home", userId: actor.id });
       const id = await seedTag(getDb(), { name: "work", userId: actor.id });
 
@@ -221,7 +221,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("他ユーザーのタグは 404 tag-not-found で、変更しない", async () => {
+    test("他ユーザーのタグは 404 tag-not-found で、変更しない", async () => {
       const id = await seedTag(getDb(), { name: "secret", userId: other.id });
 
       await expect(
@@ -244,7 +244,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("不正な色や欠けた項目は 400 BAD_REQUEST", async () => {
+    test("不正な色や欠けた項目は 400 BAD_REQUEST", async () => {
       const id = await seedTag(getDb(), { name: "work", userId: actor.id });
       const client = createTestClient(getDb(), actor);
 
@@ -265,7 +265,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("delete", () => {
-    it("自分のタグを紐付けごと消し、bookmark は残す", async () => {
+    test("自分のタグを紐付けごと消し、bookmark は残す", async () => {
       const id = await seedTag(getDb(), { name: "work", userId: actor.id });
       const bookmarkId = await seedBookmark(getDb(), {
         tagIds: [id],
@@ -290,7 +290,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       ).resolves.toStrictEqual([{ id: bookmarkId }]);
     });
 
-    it("他ユーザーのタグは 404 tag-not-found で、消さない", async () => {
+    test("他ユーザーのタグは 404 tag-not-found で、消さない", async () => {
       const id = await seedTag(getDb(), { name: "secret", userId: other.id });
 
       await expect(
@@ -303,7 +303,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       expect(await tagRow(getDb(), id)).toMatchObject({ userId: other.id });
     });
 
-    it("不正な id は 400 BAD_REQUEST", async () => {
+    test("不正な id は 400 BAD_REQUEST", async () => {
       await expect(
         createTestClient(getDb(), actor).tags.delete({ id: 0 })
       ).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
@@ -311,7 +311,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("touch", () => {
-    it("自分のタグの lastUsedAt を更新して { ok: true } を返す", async () => {
+    test("自分のタグの lastUsedAt を更新して { ok: true } を返す", async () => {
       const id = await seedTag(getDb(), { name: "work", userId: actor.id });
 
       await expect(
@@ -320,7 +320,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       expect((await tagRow(getDb(), id))?.lastUsedAt).toBeInstanceOf(Date);
     });
 
-    it("他ユーザーのタグは 404 tag-not-found で、更新しない", async () => {
+    test("他ユーザーのタグは 404 tag-not-found で、更新しない", async () => {
       const id = await seedTag(getDb(), { name: "secret", userId: other.id });
 
       await expect(
@@ -335,7 +335,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("byId", () => {
-    it("自分のタグは画面用の projection だけを返す", async () => {
+    test("自分のタグは画面用の projection だけを返す", async () => {
       const id = await seedTag(getDb(), {
         color: "#00ff00",
         name: "work",
@@ -355,7 +355,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("他ユーザーのタグは 404 tag-not-found", async () => {
+    test("他ユーザーのタグは 404 tag-not-found", async () => {
       const id = await seedTag(getDb(), { name: "secret", userId: other.id });
 
       await expect(
@@ -367,7 +367,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("不正な id は 400 BAD_REQUEST", async () => {
+    test("不正な id は 400 BAD_REQUEST", async () => {
       await expect(
         createTestClient(getDb(), actor).tags.byId({ id: 1.5 })
       ).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
@@ -375,7 +375,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("list", () => {
-    it("自分のタグだけを id 順に offset で分割して返す", async () => {
+    test("自分のタグだけを id 順に offset で分割して返す", async () => {
       const a = await seedTag(getDb(), { name: "a", userId: actor.id });
       await seedTag(getDb(), { name: "secret", userId: other.id });
       const b = await seedTag(getDb(), { name: "b", userId: actor.id });
@@ -392,7 +392,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       ).resolves.toStrictEqual([{ id: b, name: "b" }]);
     });
 
-    it("上限 50 を超える limit や負の offset は 400 BAD_REQUEST", async () => {
+    test("上限 50 を超える limit や負の offset は 400 BAD_REQUEST", async () => {
       const client = createTestClient(getDb(), actor);
 
       await expect(client.tags.list({ limit: 51 })).rejects.toMatchObject({
@@ -407,7 +407,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
   });
 
   describe("shelf", () => {
-    it("自分のタグだけを、削除済みと他人の bookmark を除いた件数つきで返す", async () => {
+    test("自分のタグだけを、削除済みと他人の bookmark を除いた件数つきで返す", async () => {
       const work = await seedTag(getDb(), {
         color: "#123456",
         name: "work",

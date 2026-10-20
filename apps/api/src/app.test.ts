@@ -3,7 +3,7 @@ import { RPCLink } from "@orpc/client/fetch";
 import { SimpleCsrfProtectionLinkPlugin } from "@orpc/client/plugins";
 import type { ContractRouterClient } from "@orpc/contract";
 import { contract } from "@pantry/api-contract";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { createApp } from "./app";
 
@@ -38,7 +38,7 @@ const unusedDb = (): never => {
 const unusedAuthHandler = async () => new Response("unused");
 
 describe("createApp", () => {
-  it("health は認証なしで ok を返す", async () => {
+  test("health は認証なしで ok を返す", async () => {
     const authenticate = vi.fn(async () => null);
     const app = createApp({
       authenticate,
@@ -53,7 +53,7 @@ describe("createApp", () => {
     expect(authenticate).not.toHaveBeenCalled();
   });
 
-  it("x-csrf-token を付ける今の web の client も通す", async () => {
+  test("x-csrf-token を付ける今の web の client も通す", async () => {
     const user = {
       email: "koralle@example.com",
       id: "user_1",
@@ -79,7 +79,7 @@ describe("createApp", () => {
     await expect(currentWebClient.me()).resolves.toStrictEqual(user);
   });
 
-  it("Origin の無い JSON（SSR）の未認証 me は CSRF ではなく 401 を返す", async () => {
+  test("Origin の無い JSON（SSR）の未認証 me は CSRF ではなく 401 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
       db: unusedDb,
@@ -99,7 +99,7 @@ describe("createApp", () => {
     });
   });
 
-  it("me は authenticator が解決したユーザーを返す", async () => {
+  test("me は authenticator が解決したユーザーを返す", async () => {
     const app = createApp({
       authenticate: async () => ({
         email: "koralle@example.com",
@@ -118,7 +118,7 @@ describe("createApp", () => {
     });
   });
 
-  it("me はユーザーが解決できなければ 401 を返す", async () => {
+  test("me はユーザーが解決できなければ 401 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
       db: unusedDb,
@@ -132,7 +132,7 @@ describe("createApp", () => {
     });
   });
 
-  it("procedure の想定外の失敗は reportError に渡し、client には 500 だけを返す", async () => {
+  test("procedure の想定外の失敗は reportError に渡し、client には 500 だけを返す", async () => {
     const failure = new Error("db is down");
     const reportError = vi.fn();
     const app = createApp({
@@ -158,7 +158,7 @@ describe("createApp", () => {
     expect(reportError).toHaveBeenCalledWith(failure);
   });
 
-  it("4xx の ORPCError は reportError に渡さない", async () => {
+  test("4xx の ORPCError は reportError に渡さない", async () => {
     const reportError = vi.fn();
     const app = createApp({
       authenticate: async () => null,
@@ -174,7 +174,7 @@ describe("createApp", () => {
     expect(reportError).not.toHaveBeenCalled();
   });
 
-  it("/api/auth/* のリクエストを handleAuthRequest へ委譲する", async () => {
+  test("/api/auth/* のリクエストを handleAuthRequest へ委譲する", async () => {
     const handleAuthRequest = vi.fn(async (request: Request) =>
       Response.json({ url: request.url }, { status: 202 })
     );
@@ -196,7 +196,7 @@ describe("createApp", () => {
     expect(handleAuthRequest).toHaveBeenCalledTimes(1);
   });
 
-  it("別サイトの form は HTTPException のまま 403 の plain text で返し、500 にも記録にもしない", async () => {
+  test("別サイトの form は HTTPException のまま 403 の plain text で返し、500 にも記録にもしない", async () => {
     const reportError = vi.fn();
     const app = createApp({
       authenticate: async () => null,
@@ -221,7 +221,7 @@ describe("createApp", () => {
     expect(reportError).not.toHaveBeenCalled();
   });
 
-  it("CSRF の検査は /rpc だけに掛け、/api/auth/* は better-auth に任せる", async () => {
+  test("CSRF の検査は /rpc だけに掛け、/api/auth/* は better-auth に任せる", async () => {
     const handleAuthRequest = vi.fn(async () => new Response("auth"));
     const app = createApp({
       authenticate: async () => null,
@@ -244,7 +244,7 @@ describe("createApp", () => {
     expect(handleAuthRequest).toHaveBeenCalledTimes(1);
   });
 
-  it("信頼する Origin を決められなければ、JSON でも /rpc を 500 で閉じ続け、記録は 1 度だけにする（fail closed）", async () => {
+  test("信頼する Origin を決められなければ、JSON でも /rpc を 500 で閉じ続け、記録は 1 度だけにする（fail closed）", async () => {
     const failure = new Error("BETTER_AUTH_URL is not set");
     const authenticate = vi.fn(async () => null);
     const reportError = vi.fn();
@@ -275,7 +275,7 @@ describe("createApp", () => {
     expect(authenticate).not.toHaveBeenCalled();
   });
 
-  it.each(["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "DELETE"])(
+  test.each(["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "DELETE"])(
     "%s /rpc/me は procedure に届かず 405（Allow: POST）を返す",
     async (method) => {
       const authenticate = vi.fn(async () => ({
@@ -298,7 +298,7 @@ describe("createApp", () => {
     }
   );
 
-  it("未知の path は 404 を返す", async () => {
+  test("未知の path は 404 を返す", async () => {
     const app = createApp({
       authenticate: async () => null,
       db: unusedDb,

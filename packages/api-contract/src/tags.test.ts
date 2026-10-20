@@ -1,12 +1,12 @@
 import * as v from "valibot";
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { offsetPaginationQuerySchema } from "./schemas/pagination";
 import { updateTagInputSchema } from "./schemas/tag-procedures";
 import { tagsContract } from "./tags";
 
 describe("tagsContract", () => {
-  it("web の /api/rpc と同じ procedure を公開する", () => {
+  test("web の /api/rpc と同じ procedure を公開する", () => {
     expect(Object.keys(tagsContract).toSorted()).toStrictEqual([
       "byId",
       "create",
@@ -18,7 +18,7 @@ describe("tagsContract", () => {
     ]);
   });
 
-  it("どの procedure も UNAUTHORIZED（401）を宣言する", () => {
+  test("どの procedure も UNAUTHORIZED（401）を宣言する", () => {
     for (const procedure of Object.values(tagsContract)) {
       expect(procedure["~orpc"].errorMap).toMatchObject({
         UNAUTHORIZED: { status: 401 },
@@ -26,7 +26,7 @@ describe("tagsContract", () => {
     }
   });
 
-  it("画面が分岐する業務エラーの status を web と揃える", () => {
+  test("画面が分岐する業務エラーの status を web と揃える", () => {
     expect(tagsContract.create["~orpc"].errorMap).toMatchObject({
       "tag-name-already-exists": { status: 409 },
     });
@@ -51,7 +51,7 @@ describe("updateTagInputSchema", () => {
     sortOrder: -1.5,
   };
 
-  it("#RGB / #RRGGBB / null の色と、負数や小数の sortOrder を受ける", () => {
+  test("#RGB / #RRGGBB / null の色と、負数や小数の sortOrder を受ける", () => {
     expect(v.safeParse(updateTagInputSchema, valid).success).toBe(true);
     expect(
       v.safeParse(updateTagInputSchema, { ...valid, color: "#AABBCC" }).success
@@ -61,7 +61,7 @@ describe("updateTagInputSchema", () => {
     ).toBe(true);
   });
 
-  it("色の書式違いと欠けた項目は拒否する", () => {
+  test("色の書式違いと欠けた項目は拒否する", () => {
     expect(
       v.safeParse(updateTagInputSchema, { ...valid, color: "red" }).success
     ).toBe(false);
@@ -73,7 +73,7 @@ describe("updateTagInputSchema", () => {
 });
 
 describe("offsetPaginationQuerySchema", () => {
-  it("省略は limit 50 / offset 0、文字列の数値も受ける", () => {
+  test("省略は limit 50 / offset 0、文字列の数値も受ける", () => {
     expect(v.parse(offsetPaginationQuerySchema, {})).toStrictEqual({
       limit: 50,
       offset: 0,
@@ -83,7 +83,7 @@ describe("offsetPaginationQuerySchema", () => {
     ).toStrictEqual({ limit: 10, offset: 5 });
   });
 
-  it("50 を超える limit を拒否する", () => {
+  test("50 を超える limit を拒否する", () => {
     expect(
       v.safeParse(offsetPaginationQuerySchema, { limit: 51 }).success
     ).toBe(false);

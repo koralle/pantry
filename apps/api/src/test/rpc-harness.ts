@@ -9,7 +9,7 @@ import type { ApiContract } from "@pantry/api-contract";
 import type { SessionUser } from "@pantry/api-contract/schemas/session-user";
 import type { AppDb } from "@pantry/db";
 import { user as usersTable } from "@pantry/db/schema/auth-schema";
-import { beforeEach, expect, it, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 
 import { createApp } from "../app";
 import type { Authenticator } from "../auth/session";
@@ -192,7 +192,7 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
   readonly namespace: string;
   readonly procedureNames: readonly Name[];
 }): void => {
-  it("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
+  test("401 / CSRF の検査は契約の全 procedure を過不足なく呼ぶ", () => {
     expect(
       Object.keys(
         callEveryProcedure(createTestClient(getDb(), null))
@@ -200,7 +200,7 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
     ).toStrictEqual(procedureNames);
   });
 
-  it.each(procedureNames)(
+  test.each(procedureNames)(
     `未認証の ${namespace}.%s は defined な UNAUTHORIZED（401）を返す`,
     async (name) => {
       const call = callEveryProcedure(createTestClient(getDb(), null))[name];
@@ -212,7 +212,7 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
     }
   );
 
-  it.each(procedureNames)(
+  test.each(procedureNames)(
     `x-csrf-token を付けない（SSR / 旧 web の）${namespace}.%s は CSRF で 403 にならない`,
     async (name) => {
       const call = callEveryProcedure(createTestClient(getDb(), actor))[name];
@@ -221,7 +221,7 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
     }
   );
 
-  it.each(
+  test.each(
     procedureNames.flatMap((name) =>
       formLikeContentTypes.map((contentType) => ({
         contentType: contentType ?? "（なし）",
@@ -249,7 +249,7 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
     }
   );
 
-  it.each(procedureNames)(
+  test.each(procedureNames)(
     `Pantry と同じ Origin から content-type 無しで送られた ${namespace}.%s は CSRF で拒まず procedure に届く`,
     async (name) => {
       for (const headers of sameOriginHeaderSets) {
@@ -288,7 +288,7 @@ export const itRequiresAuthAndCsrf = <Name extends string>({
     }
   );
 
-  it.each(
+  test.each(
     procedureNames.flatMap((name) =>
       nonPostMethods.map((method) => ({ method, name }))
     )

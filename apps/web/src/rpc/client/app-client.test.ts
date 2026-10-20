@@ -1,6 +1,6 @@
 import { createORPCClient } from "@orpc/client";
 import type { ClientLink } from "@orpc/client";
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { createAppLink, isApiProcedurePath } from "./app-client";
 import type { AppClient } from "./app-client";
@@ -14,18 +14,18 @@ const recordingLink = (name: string, calls: string[]): ClientLink<object> => ({
 });
 
 describe("isApiProcedurePath", () => {
-  it("api-contract の procedure だけを api 行きと判定する", () => {
+  test("api-contract の procedure だけを api 行きと判定する", () => {
     expect(isApiProcedurePath(["health"])).toBe(true);
     expect(isApiProcedurePath(["me"])).toBe(true);
     expect(isApiProcedurePath(["bookmarks", "list"])).toBe(true);
     expect(isApiProcedurePath(["bookmarks", "counts", "recent"])).toBe(true);
   });
 
-  it("bookmarks の中でも web に残した title は web 行き", () => {
+  test("bookmarks の中でも web に残した title は web 行き", () => {
     expect(isApiProcedurePath(["bookmarks", "title"])).toBe(false);
   });
 
-  it("contract に無い path・router の途中・prototype の key は web 行き", () => {
+  test("contract に無い path・router の途中・prototype の key は web 行き", () => {
     expect(isApiProcedurePath(["auth", "session"])).toBe(false);
     expect(isApiProcedurePath(["tags"])).toBe(false);
     expect(isApiProcedurePath(["bookmarks", "counts"])).toBe(false);
@@ -36,7 +36,7 @@ describe("isApiProcedurePath", () => {
 });
 
 describe("createAppLink", () => {
-  it("contract の procedure は api link、残りは web link へ送る", async () => {
+  test("contract の procedure は api link、残りは web link へ送る", async () => {
     const calls: string[] = [];
     const client: AppClient = createORPCClient(
       createAppLink({
@@ -60,7 +60,7 @@ describe("createAppLink", () => {
     ]);
   });
 
-  it("api link を遅延生成する場合も api 行きの呼び出しでだけ解決する", async () => {
+  test("api link を遅延生成する場合も api 行きの呼び出しでだけ解決する", async () => {
     const calls: string[] = [];
     let resolved = 0;
     const client: AppClient = createORPCClient(

@@ -1,11 +1,11 @@
 import * as v from "valibot";
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { bookmarksContract } from "./bookmarks";
 import { bookmarkListInputSchema } from "./schemas/bookmark-procedures";
 
 describe("bookmarksContract", () => {
-  it("web の /api/rpc と同じ procedure を公開する（title は web に残る）", () => {
+  test("web の /api/rpc と同じ procedure を公開する（title は web に残る）", () => {
     expect(Object.keys(bookmarksContract).toSorted()).toStrictEqual([
       "counts",
       "create",
@@ -23,7 +23,7 @@ describe("bookmarksContract", () => {
     ]);
   });
 
-  it("画面が分岐する業務エラーの status を web と揃える", () => {
+  test("画面が分岐する業務エラーの status を web と揃える", () => {
     expect(bookmarksContract.create["~orpc"].errorMap).toMatchObject({
       UNAUTHORIZED: { status: 401 },
       "duplicate-url": { status: 409 },
@@ -44,7 +44,7 @@ describe("bookmarksContract", () => {
 });
 
 describe("bookmarkListInputSchema", () => {
-  it("cursor は createdAtMs:UUID の形だけを受ける", () => {
+  test("cursor は createdAtMs:UUID の形だけを受ける", () => {
     expect(
       v.safeParse(bookmarkListInputSchema, {
         cursor: "1767225600000:01a14ade-61b5-7416-af28-6ad04e6fc648",
@@ -55,7 +55,7 @@ describe("bookmarkListInputSchema", () => {
     ).toBe(false);
   });
 
-  it("tagNames は 20 件まで、view は recent / inbox / favorites だけ", () => {
+  test("tagNames は 20 件まで、view は recent / inbox / favorites だけ", () => {
     expect(
       v.safeParse(bookmarkListInputSchema, {
         tagNames: Array.from({ length: 21 }, (_, index) => `t${index}`),
