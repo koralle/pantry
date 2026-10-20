@@ -48,11 +48,15 @@ pre-commit:
 pre-push:
   commands:
     betterleaks:
-      run: betterleaks git . --no-banner -v
+      # pre-push の stdin（local/remote の ref と sha）を読み、
+      # push する commit だけを走査する。全履歴の既知 fixture で止めない。
+      use_stdin: true
+      run: ./scripts/betterleaks-pre-push.sh
     knip:
       run: pnpm run knip
 
 post-checkout:
   commands:
     symlink-env-for-worktree:
-      run: pnpm --filter @pantry/env exec tsx scripts/symlink-env-for-worktree.ts
+      run: |
+        pnpm --filter @pantry/env exec tsx scripts/symlink-env-for-worktree.ts
