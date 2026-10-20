@@ -4,7 +4,7 @@ import type { AppDb } from "@pantry/db";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { asc, eq } from "drizzle-orm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { BOOKMARK_LIST_PAGE_SIZE } from "../features/bookmarks/lib/bookmark-list-page-size";
 import { seedBookmark, seedTag } from "../test/db/migrated-db";
@@ -94,7 +94,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       procedureNames: contractProcedureNames(contract.bookmarks),
     });
 
-    it.each(
+    test.each(
       formLikeContentTypes.map((contentType) => ({
         contentType,
         label: contentType ?? "（なし）",
@@ -125,7 +125,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       }
     );
 
-    it("Pantry と同じ Origin からなら form と同じ content-type でも bookmarks.create で行を作る", async () => {
+    test("Pantry と同じ Origin からなら form と同じ content-type でも bookmarks.create で行を作る", async () => {
       const app = createTestApp(getDb(), async () => actor);
       for (const [index, headers] of sameOriginHeaderSets.entries()) {
         const response = await app.fetch(
@@ -150,7 +150,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   });
 
   describe("create", () => {
-    it("自分のタグ付きで保存し、plain な id を返す", async () => {
+    test("自分のタグ付きで保存し、plain な id を返す", async () => {
       const tag = await seedTag(getDb(), { name: "work", userId: actor.id });
 
       const created = await as(actor).bookmarks.create({
@@ -171,7 +171,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       expect(await tagIdsOf(getDb(), created.id)).toStrictEqual([tag]);
     });
 
-    it("他ユーザーのタグは 409 invalid-tag で、行を作らない", async () => {
+    test("他ユーザーのタグは 409 invalid-tag で、行を作らない", async () => {
       const foreign = await seedTag(getDb(), {
         name: "secret",
         userId: other.id,
@@ -194,7 +194,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       );
     });
 
-    it("自分の同じ URL は 409 duplicate-url、他ユーザーの同じ URL は保存できる", async () => {
+    test("自分の同じ URL は 409 duplicate-url、他ユーザーの同じ URL は保存できる", async () => {
       await seedBookmark(getDb(), {
         url: "https://example.com/a",
         userId: actor.id,
@@ -217,7 +217,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       ).resolves.toStrictEqual({ id: expect.any(String) });
     });
 
-    it("http(s) 以外の URL や空のタイトルは 400 BAD_REQUEST", async () => {
+    test("http(s) 以外の URL や空のタイトルは 400 BAD_REQUEST", async () => {
       const client = as(actor);
 
       await expect(
@@ -240,7 +240,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   });
 
   describe("update", () => {
-    it("URL・タイトル・メモ・タグを丸ごと置き換える", async () => {
+    test("URL・タイトル・メモ・タグを丸ごと置き換える", async () => {
       const oldTag = await seedTag(getDb(), { name: "old", userId: actor.id });
       const newTag = await seedTag(getDb(), { name: "new", userId: actor.id });
       const id = await seedBookmark(getDb(), {
@@ -265,7 +265,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       expect(await tagIdsOf(getDb(), id)).toStrictEqual([newTag]);
     });
 
-    it("他ユーザーの bookmark は 404 で、変更しない", async () => {
+    test("他ユーザーの bookmark は 404 で、変更しない", async () => {
       const id = await seedBookmark(getDb(), {
         title: "secret",
         userId: other.id,
@@ -286,7 +286,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("他ユーザーのタグや重複したタグは 409 invalid-tag で、タグを変えない", async () => {
+    test("他ユーザーのタグや重複したタグは 409 invalid-tag で、タグを変えない", async () => {
       const own = await seedTag(getDb(), { name: "own", userId: actor.id });
       const foreign = await seedTag(getDb(), {
         name: "secret",
@@ -312,7 +312,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       expect(await tagIdsOf(getDb(), id)).toStrictEqual([own]);
     });
 
-    it("自分の別 bookmark と同じ URL は 409 duplicate-url", async () => {
+    test("自分の別 bookmark と同じ URL は 409 duplicate-url", async () => {
       await seedBookmark(getDb(), {
         url: "https://example.com/taken",
         userId: actor.id,
@@ -332,7 +332,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   });
 
   describe("editor / detail", () => {
-    it("editor は projection を返し、他ユーザーの bookmark は 404", async () => {
+    test("editor は projection を返し、他ユーザーの bookmark は 404", async () => {
       const tag = await seedTag(getDb(), { name: "work", userId: actor.id });
       const id = await seedBookmark(getDb(), {
         tagIds: [tag],
@@ -349,7 +349,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       ).rejects.toMatchObject(notFound);
     });
 
-    it("detail は projection を返し、他ユーザーは 404、UUID 以外は 400", async () => {
+    test("detail は projection を返し、他ユーザーは 404、UUID 以外は 400", async () => {
       const tag = await seedTag(getDb(), { name: "work", userId: actor.id });
       const id = await seedBookmark(getDb(), {
         tagIds: [tag],
@@ -371,7 +371,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   });
 
   describe("list", () => {
-    it("自分の未削除の bookmark だけを新しい順に返す", async () => {
+    test("自分の未削除の bookmark だけを新しい順に返す", async () => {
       const older = await seedBookmark(getDb(), {
         createdAt: new Date("2026-01-01T00:00:00Z"),
         userId: actor.id,
@@ -389,7 +389,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       expect(page.items.map((item) => item.id)).toStrictEqual([newer, older]);
     });
 
-    it("nextCursor で続きを重複なく読める", async () => {
+    test("nextCursor で続きを重複なく読める", async () => {
       const ids: string[] = [];
       for (let index = 0; index <= BOOKMARK_LIST_PAGE_SIZE; index += 1) {
         ids.push(
@@ -414,7 +414,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       ).toStrictEqual(ids.toReversed());
     });
 
-    it("view で絞り込む", async () => {
+    test("view で絞り込む", async () => {
       const work = await seedTag(getDb(), { name: "work", userId: actor.id });
       await seedBookmark(getDb(), { tagIds: [work], userId: actor.id });
       const favorite = await seedBookmark(getDb(), {
@@ -433,7 +433,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       await expect(idsOf({ view: "inbox" })).resolves.toStrictEqual([favorite]);
     });
 
-    it("壊れた cursor は 400 BAD_REQUEST", async () => {
+    test("壊れた cursor は 400 BAD_REQUEST", async () => {
       await expect(
         as(actor).bookmarks.list({ cursor: "broken" })
       ).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
@@ -441,7 +441,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   });
 
   describe("counts", () => {
-    it("自分の未削除の件数を view ごとに返す", async () => {
+    test("自分の未削除の件数を view ごとに返す", async () => {
       const tag = await seedTag(getDb(), { name: "work", userId: actor.id });
       await seedBookmark(getDb(), { tagIds: [tag], userId: actor.id });
       await seedBookmark(getDb(), { favorite: true, userId: actor.id });
@@ -456,7 +456,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
   });
 
   describe("delete / setFavorite", () => {
-    it("delete は自分の bookmark を soft delete し、二度目は 404", async () => {
+    test("delete は自分の bookmark を soft delete し、二度目は 404", async () => {
       const id = await seedBookmark(getDb(), { userId: actor.id });
       const client = as(actor);
 
@@ -469,7 +469,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       );
     });
 
-    it("他ユーザーの bookmark は delete / setFavorite とも 404 で、変更しない", async () => {
+    test("他ユーザーの bookmark は delete / setFavorite とも 404 で、変更しない", async () => {
       const id = await seedBookmark(getDb(), { userId: other.id });
       const client = as(actor);
 
@@ -485,7 +485,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       });
     });
 
-    it("setFavorite は指定した値へ切り替える", async () => {
+    test("setFavorite は指定した値へ切り替える", async () => {
       const id = await seedBookmark(getDb(), { userId: actor.id });
       const client = as(actor);
 

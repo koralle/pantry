@@ -22,6 +22,35 @@ const oxlintConfig = defineConfig({
   extends: [core, react, tanstack],
   overrides: [
     {
+      // テストは `test()` に統一する（`it()` は禁止）。
+      // Oxlint に `vitest/consistent-test-it` が無いため、同名の jest ルールを使う。
+      // jest プラグインを有効にすると他の jest ルールも既定カテゴリで有効になり、
+      // vitest 用テストと衝突するため明示的に off にする。
+      files: [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/test-helpers.ts",
+        "**/*.test-helpers.ts",
+        "**/src/test/**/*.ts",
+        "**/src/test/**/*.tsx",
+      ],
+      plugins: ["jest"],
+      rules: {
+        "jest/consistent-test-it": [
+          "error",
+          { fn: "test", withinDescribe: "test" },
+        ],
+        "jest/expect-expect": "off",
+        "jest/no-conditional-expect": "off",
+        "jest/require-to-throw-message": "off",
+        "jest/valid-describe-callback": "off",
+        "jest/valid-expect": "off",
+        "jest/valid-title": "off",
+      },
+    },
+    {
       // テスト・メンテナンススクリプト向けの緩和。
       // `extends` する側のディレクトリに依存しない glob にする。
       files: [

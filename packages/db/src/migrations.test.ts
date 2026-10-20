@@ -1,7 +1,7 @@
-import { expect, it } from "vitest";
+import { expect, test } from "vitest";
 
 import { migrationsFolder } from "./migrations";
 
-it("migrationsFolder は packages/db/drizzle を指す", () => {
+test("migrationsFolder は packages/db/drizzle を指す", () => {
   expect(migrationsFolder).toMatch(/packages[/\\]db[/\\]drizzle$/u);
 });

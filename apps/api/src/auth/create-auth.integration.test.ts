@@ -7,7 +7,7 @@ import {
   user as usersTable,
 } from "@pantry/db/schema/auth-schema";
 import { eq } from "drizzle-orm";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 
 import { createApp } from "../app";
 import { withTestDb } from "../test/db/migrated-db";
@@ -93,7 +93,7 @@ beforeAll(() => {
 });
 
 describe("createAuth", () => {
-  it("メール・パスワードのサインインを Better Auth の HTTP ルートで受ける", async () => {
+  test("メール・パスワードのサインインを Better Auth の HTTP ルートで受ける", async () => {
     const signUpResponse = await auth.api.signUpEmail({
       asResponse: true,
       body: {
@@ -138,7 +138,7 @@ describe("createAuth", () => {
     });
   });
 
-  it("admin が banUser したユーザーは、既存の Cookie でも me が 401 になる", async () => {
+  test("admin が banUser したユーザーは、既存の Cookie でも me が 401 になる", async () => {
     const app = createTestApp();
     const { user: target } = await auth.api.signUpEmail({
       body: { email: "banned@example.com", name: "banned", password },
@@ -172,7 +172,7 @@ describe("createAuth", () => {
     );
   });
 
-  it("サインイン時のクライアント IP は CF-Connecting-IP から記録する", async () => {
+  test("サインイン時のクライアント IP は CF-Connecting-IP から記録する", async () => {
     const app = createTestApp();
     const { user } = await auth.api.signUpEmail({
       body: { email: "ip@example.com", name: "ip", password },
@@ -201,7 +201,7 @@ describe("createAuth", () => {
     ).toStrictEqual(["203.0.113.7"]);
   });
 
-  it("CF-Connecting-IP が無ければ単一値の X-Forwarded-For を使う", async () => {
+  test("CF-Connecting-IP が無ければ単一値の X-Forwarded-For を使う", async () => {
     const app = createTestApp();
     const { user } = await auth.api.signUpEmail({
       body: { email: "xff@example.com", name: "xff", password },
@@ -227,7 +227,7 @@ describe("createAuth", () => {
     ).toStrictEqual(["198.51.100.23"]);
   });
 
-  it("本番では X-Forwarded-For を信用しない", async () => {
+  test("本番では X-Forwarded-For を信用しない", async () => {
     const productionAuth = createAuth({
       appEnv: "production",
       baseURL,
@@ -263,7 +263,7 @@ describe("createAuth", () => {
     );
   });
 
-  it("me で session が延長されたら Set-Cookie をレスポンスへ載せる", async () => {
+  test("me で session が延長されたら Set-Cookie をレスポンスへ載せる", async () => {
     const app = createTestApp();
     const { user } = await auth.api.signUpEmail({
       body: { email: "refresh@example.com", name: "refresh", password },
@@ -311,7 +311,7 @@ describe("createAuth", () => {
     ).toBeGreaterThan(nearExpiry.getTime());
   });
 
-  it("Cookie セッションが無ければ me は 401 を返す", async () => {
+  test("Cookie セッションが無ければ me は 401 を返す", async () => {
     const app = createTestApp();
 
     await expect(createRpcClient(app).me()).rejects.toMatchObject({
