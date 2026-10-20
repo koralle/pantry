@@ -12,6 +12,14 @@ const aliases = {
   "#tanstack-start-entry": tanstackEntryStub,
   "#tanstack-start-plugin-adapters": tanstackEntryStub,
 } as const;
+
+const pathnameOf = (url: string): string => {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return "";
+  }
+};
 /**
  * Libsql の `:memory:` は workerd で動かない。
  * 画面テストはソースを読むだけだが、workers の exclude を足すと Vitest 既定 exclude が消え、
@@ -55,7 +63,7 @@ export default defineConfig({
                         request.headers.get("cf-connecting-ip") ?? "",
                       "x-stub-cookie": request.headers.get("cookie") ?? "",
                       "x-stub-method": request.method,
-                      "x-stub-path": new URL(request.url).pathname,
+                      "x-stub-path": pathnameOf(request.url),
                     },
                     status: 503,
                   }),
