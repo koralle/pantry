@@ -1,0 +1,82 @@
+import { bookmarkIdSchema } from "@pantry/api-contract/schemas/bookmark-values";
+import type { AppDb } from "@pantry/db";
+import { bookmarkTable } from "@pantry/db/schema/bookmark";
+import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
+import { tagsTable } from "@pantry/db/schema/tag";
+import { and, eq, inArray } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
+import * as v from "valibot";
+
+import type {
+  InsertBookmarkInput,
+  InsertBookmarkOutput,
+} from "../../application/create-bookmark";
+
+/**
+ * 衝突と所有権の正本は DB 制約。
+ * - `(userId, url)` を conflict target に `onConflictDoNothing` で insert し、
+ *   returning が空なら業務上の URL 重複とみなす。事前 SELECT は、
+ *   SELECT と INSERT の隙間に割り込まれて重複を見逃す。
+ * - tag の存在と actor ownership は同一 transaction 内で検証し、
+ *   別 user の tag を関連付けない。
+ * - transaction 内の未知障害は rollback のために throw し、外側でも再 throw する。
+ */
+export const insertBookmark = async (
+  db: AppDb,
+  input: InsertBookmarkInput
+): Promise<InsertBookmarkOutput> =>
+  await db.transaction(async (tx) => {
+    const tagIds = [...new Set(input.tagIds)];
+    if (tagIds.length > 0) {
+      const owned = await tx
+        .select({ id: tagsTable.id })
+        .from(tagsTable)
+        .where(
+          and(
+            eq(tagsTable.userId, input.userId),
+            inArray(tagsTable.id, [...tagIds])
+          )
+        );
+      if (owned.length !== tagIds.length) {
+        return { kind: "invalid-tag" };
+      }
+    }
+
+    const inserted = await tx
+      .insert(bookmarkTable)
+      .values({
+        id: uuidv7(),
+        note: input.note,
+        title: input.title,
+        url: input.url,
+        userId: input.userId,
+      })
+      .onConflictDoNothing({
+        target: [bookmarkTable.userId, bookmarkTable.url],
+      })
+      .returning({ id: bookmarkTable.id });
+    const [created] = inserted;
+    if (created === undefined) {
+      return { kind: "duplicate-url" };
+    }
+
+    if (tagIds.length > 0) {
+      await tx
+        .insert(bookmarkTagsTable)
+        .values(tagIds.map((tagId) => ({ bookmarkId: created.id, tagId })));
+      await tx
+        .update(tagsTable)
+        .set({ lastUsedAt: new Date() })
+        .where(
+          and(
+            eq(tagsTable.userId, input.userId),
+            inArray(tagsTable.id, [...tagIds])
+          )
+        );
+    }
+
+    return {
+      id: v.parse(bookmarkIdSchema, created.id),
+      kind: "created",
+    };
+  });
