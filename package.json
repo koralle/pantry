@@ -29,6 +29,7 @@
   "devDependencies": {
     "@markuplint/jsx-parser": "catalog:lint",
     "@markuplint/react-spec": "catalog:lint",
+    "@pantry/oxlint": "workspace:*",
     "@pantry/tsconfig": "workspace:*",
     "knip": "catalog:lint",
     "lefthook": "catalog:githooks",

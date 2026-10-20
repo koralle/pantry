@@ -1,0 +1,20 @@
+{
+  "name": "@pantry/oxlint",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/base.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "oxlint": "catalog:lint",
+    "ultracite": "catalog:lint"
+  },
+  "devDependencies": {
+    "@pantry/tsconfig": "workspace:*",
+    "@types/node": "catalog:runtime",
+    "typescript": "catalog:typescript"
+  }
+}
