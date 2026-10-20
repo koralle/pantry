@@ -20,6 +20,7 @@
     "@orpc/server": "catalog:rpc",
     "@pantry/api-contract": "workspace:*",
     "@pantry/db": "workspace:*",
+    "@pantry/utils": "workspace:*",
     "better-auth": "catalog:authentication",
     "drizzle-orm": "catalog:database",
     "hono": "catalog:server",

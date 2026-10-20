@@ -1,9 +1,9 @@
+import { formatDate } from "@pantry/utils/date";
 import { KeyRound } from "lucide-react";
 import { useState } from "react";
 
 import { authClient } from "../../lib/auth-client";
 import { passkeyDisplayName } from "../../lib/passkey/display-name";
-import { formatPasskeyCreatedAt } from "../../lib/passkey/format-created-at";
 import { getPasskeyManageErrorMessage } from "../../lib/passkey/messages";
 import {
   passkeyRow,
@@ -88,9 +88,7 @@ export const PasskeyListItem = ({
       </span>
       <div className={passkeyRowBody}>
         <p className={passkeyRowName}>{displayName}</p>
-        <p className={passkeyRowMeta}>
-          登録 {formatPasskeyCreatedAt(passkey.createdAt)}
-        </p>
+        <p className={passkeyRowMeta}>登録 {formatDate(passkey.createdAt)}</p>
       </div>
       <div className={passkeyRowOps}>
         <PasskeyRenameDialog

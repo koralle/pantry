@@ -78,6 +78,11 @@ const config: KnipConfig = {
         "tsx",
       ],
     },
+    "packages/utils": {
+      vitest: {
+        config: "vitest.config.ts",
+      },
+    },
   },
 };
 

@@ -7,6 +7,10 @@ describe("Result", () => {
     expect(ok(42)).toStrictEqual({ ok: true, value: 42 });
   });
 
+  test("ok without a value is a Result<void> success", () => {
+    expect(ok()).toStrictEqual({ ok: true, value: undefined });
+  });
+
   test("err wraps an error", () => {
     expect(err({ code: "bookmark-not-found" })).toStrictEqual({
       error: { code: "bookmark-not-found" },

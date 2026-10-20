@@ -1,4 +1,6 @@
 import type { BookmarkDetail } from "@pantry/api-contract/schemas/bookmark-procedures";
+import { formatDate } from "@pantry/utils/date";
+import { domainOf } from "@pantry/utils/url";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUpRight, Pencil } from "lucide-react";
 
@@ -26,8 +28,6 @@ import {
   buildListBackSearch,
   detailSearchFromList,
 } from "../../navigation/lib/bookmark-search-builders";
-import { domainOf } from "../lib/domain-of";
-import { formatDate } from "../lib/format/format-date-time";
 import { BookmarkDeleteDialog } from "./bookmark-delete-dialog";
 import { BookmarkFavoriteToggle } from "./bookmark-favorite-toggle";
 

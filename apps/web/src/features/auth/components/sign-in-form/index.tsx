@@ -1,5 +1,6 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithValibot } from "@conform-to/valibot";
+import type { Result } from "@pantry/utils/result";
 import { CircleAlert, Lock, LogIn, Mail } from "lucide-react";
 import { startTransition, useActionState } from "react";
 import { cx } from "styled-system/css";
@@ -7,7 +8,6 @@ import { cx } from "styled-system/css";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { StyledInput } from "../../../../shared/components/styled-input";
 import { StyledLabel } from "../../../../shared/components/styled-label";
-import type { Result } from "../../../../shared/domain/result";
 import {
   field,
   fieldError,

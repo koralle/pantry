@@ -1,4 +1,5 @@
 import { bookmarkUrlSchema } from "@pantry/api-contract/schemas/bookmark-values";
+import { domainOf } from "@pantry/utils/url";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpRight,
@@ -112,14 +113,6 @@ type QuickAddPhase =
       readonly url: string;
       readonly tags: readonly NamedTag[];
     };
-
-const domainOf = (url: string): string => {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return url;
-  }
-};
 
 const urlValue = css({
   color: "fg.default",

@@ -1,8 +1,8 @@
 import type { TagId } from "@pantry/api-contract/schemas/tag-values";
+import { err, ok } from "@pantry/utils/result";
+import type { Result } from "@pantry/utils/result";
 
 import type { UserId } from "../../../domain/user-id";
-import { err, ok } from "../../../shared/result";
-import type { Result } from "../../../shared/result";
 
 export interface TouchTagError {
   readonly code: "tag-not-found";

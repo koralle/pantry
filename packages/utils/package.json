@@ -1,0 +1,24 @@
+{
+  "name": "@pantry/utils",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./date": "./src/date.ts",
+    "./relative-time": "./src/relative-time.ts",
+    "./result": "./src/result.ts",
+    "./url": "./src/url.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@internationalized/date": "catalog:date"
+  },
+  "devDependencies": {
+    "@pantry/forge": "workspace:*",
+    "@types/node": "catalog:runtime",
+    "typescript": "catalog:typescript",
+    "vitest": "catalog:test"
+  }
+}

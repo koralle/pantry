@@ -1,7 +1,6 @@
 import type { TagId } from "@pantry/api-contract/schemas/tag-values";
-
-import { err, ok } from "../../../shared/result";
-import type { Result } from "../../../shared/result";
+import { err, ok } from "@pantry/utils/result";
+import type { Result } from "@pantry/utils/result";
 
 export interface DuplicateTagIdError {
   readonly code: "duplicate-tag-id";
