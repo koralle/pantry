@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     "./date": "./src/date.ts",
+    "./relative-time": "./src/relative-time.ts",
     "./result": "./src/result.ts",
     "./url": "./src/url.ts"
   },

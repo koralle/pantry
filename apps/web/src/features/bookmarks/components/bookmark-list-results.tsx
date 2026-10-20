@@ -1,5 +1,5 @@
 import type { BookmarkListItem } from "@pantry/api-contract/schemas/bookmark-procedures";
-import { formatRelativeTime } from "@pantry/utils/date";
+import { formatRelativeTime } from "@pantry/utils/relative-time";
 import { domainOf } from "@pantry/utils/url";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, CircleAlert, RotateCw } from "lucide-react";
