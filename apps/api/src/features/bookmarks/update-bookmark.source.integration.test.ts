@@ -18,8 +18,8 @@ describe("UpdateBookmark source boundary", () => {
     expect(source).not.toContain("@praha/error-factory");
   });
 
-  test("Persistence adapter は UPDATE OR IGNORE を使い SQLite error を分類しない", () => {
-    const source = readSource("persistence/update-bookmark/index.ts");
+  test("DB adapter は UPDATE OR IGNORE を使い SQLite error を分類しない", () => {
+    const source = readSource("db/update-bookmark/index.ts");
     expect(source).toContain("UPDATE OR IGNORE");
     expect(source).not.toContain("SQLITE_CONSTRAINT");
     expect(source).not.toContain("isSqliteUniqueConstraintError");

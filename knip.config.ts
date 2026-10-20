@@ -29,7 +29,7 @@ const config: KnipConfig = {
       // Maintenance scripts (seed / create-user) run with tsx.
       entry: ["scripts/**/*.ts"],
       vitest: {
-        config: ["vitest.config.ts", "vitest.persistence.config.ts"],
+        config: ["vitest.config.ts"],
       },
       ignoreDependencies: [
         // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
@@ -44,7 +44,7 @@ const config: KnipConfig = {
       // (see vitest.config.ts resolve.alias); Knip cannot trace that reference.
       entry: ["vitest/tanstack-entry-stub.ts"],
       vitest: {
-        config: ["vitest.config.ts", "vitest.persistence.config.ts"],
+        config: ["vitest.config.ts", "vitest.db.config.ts"],
       },
       storybook: {
         config: ["src/storybook/main.ts"],

@@ -14,7 +14,7 @@
     "preview": "pnpm run build && vite preview",
     "storybook": "storybook dev -p 6006 -c src/storybook",
     "test": "vitest run",
-    "test:persistence": "vitest run --config vitest.persistence.config.ts",
+    "test:db": "vitest run --config vitest.db.config.ts",
     "typecheck": "tsc"
   },
   "dependencies": {

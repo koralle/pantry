@@ -17,7 +17,7 @@
 - 単純性優先: 日常利用に必要な一連の操作を先に完成させる。
 - oRPC境界: ブラウザとSSRの全データ経路はoRPC契約（`/api/rpc`）を通る。独立したREST API、TypeSpec、OpenAPIは持たない。
 - ユーザー分離: すべてのprocedureは`requireAuth` middlewareを通し、DB操作は認証済みユーザーIDを条件にする。
-- データ一貫性: procedureの入力検証、Applicationのタグ正規化、persistence adapterのトランザクションで守る。
+- データ一貫性: procedureの入力検証、Applicationのタグ正規化、DB adapterのトランザクションで守る。
 - 責務分離: Applicationはtransportと永続化実装をimportしない。必要な能力はnarrow function portとして宣言する。
 
 ## 3. システム構成
@@ -55,7 +55,7 @@
 ### Applicationとquery service
 
 - Mutation（CreateTag、DeleteBookmark等）のApplicationはnarrow function portだけに依存し、Result/判別unionのExpected Errorをdefined errorへ写すのはprocedure側。
-- 単純read（一覧、詳細）はUseCaseを作らず、Drizzleを閉じ込めたquery service（`apps/web/src/features/*/persistence/`）が`UserId`とvalidation済みinputを受け、画面に要るprojectionだけを返す。timestampはISO文字列、対象なしはnull（procedureが404へ変換）。
+- 単純read（一覧、詳細）はUseCaseを作らず、Drizzleを閉じ込めたquery service（`apps/api/src/features/*/db/`）が`UserId`とvalidation済みinputを受け、画面に要るprojectionだけを返す。timestampはISO文字列、対象なしはnull（procedureが404へ変換）。
 
 ### TanStack Query ownership
 

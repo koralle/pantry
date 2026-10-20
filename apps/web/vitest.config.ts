@@ -19,8 +19,6 @@ const aliases = {
  */
 const anyIntegrationTests = "src/**/*.integration.test.ts";
 const nodeTests = [
-  "src/features/tags/persistence/**/*.test.ts",
-  "src/features/bookmarks/persistence/**/*.test.ts",
   "src/routes/_protected/tags/index.test.ts",
   "src/features/tags/hooks/use-touch-tag-last-used.test.ts",
   "src/rpc/source-boundary.test.ts",

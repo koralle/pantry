@@ -1,5 +1,3 @@
-import { createClient } from "@libsql/client";
-import type { Client } from "@libsql/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { isContractProcedure } from "@orpc/contract";
@@ -10,14 +8,12 @@ import type {
 import type { ApiContract } from "@pantry/api-contract";
 import type { SessionUser } from "@pantry/api-contract/schemas/session-user";
 import type { AppDb } from "@pantry/db";
-import { migrationsFolder } from "@pantry/db/migrations";
 import { user as usersTable } from "@pantry/db/schema/auth-schema";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
-import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 
 import { createApp } from "../app";
 import type { Authenticator } from "../auth/session";
+import { withPersistenceDb } from "./db/migrated-db";
 
 export const actor: SessionUser = {
   email: "actor@example.com",
@@ -34,57 +30,17 @@ export const other: SessionUser = {
 export type ApiTestClient = ContractRouterClient<ApiContract>;
 
 /**
- * Libsql の `:memory:` は transaction のたびに接続を張り直して別の DB になるため shared cache にする。
- * test file ごとに別 process なので混ざらない。
+ * db project の globalSetup が起動した libSQL に接続する。
+ * 各テストは actor と other だけが入った状態から始める。
  */
-const memoryUrl = "file::memory:?cache=shared";
-
-const resetRows = async (client: Client): Promise<void> => {
-  const tables = await client.execute(
-    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%'"
-  );
-  const names = tables.rows.flatMap((row) =>
-    typeof row["name"] === "string" ? [row["name"]] : []
-  );
-  await client.executeMultiple(
-    [
-      "PRAGMA foreign_keys = OFF",
-      ...names.map((name) => `DELETE FROM "${name.replaceAll('"', '""')}"`),
-      "PRAGMA foreign_keys = ON",
-    ].join(";\n")
-  );
-};
-
 export const withMigratedDb = (): { readonly getDb: () => AppDb } => {
-  let client: Client | undefined;
-  let db: AppDb | undefined;
-
-  beforeAll(async () => {
-    client = createClient({ url: memoryUrl });
-    db = drizzle({ client });
-    await migrate(db, { migrationsFolder });
-  });
-
-  afterAll(() => {
-    client?.close();
-  });
+  const { getDb } = withPersistenceDb();
 
   beforeEach(async () => {
-    if (client === undefined || db === undefined) {
-      throw new Error("test db is not initialized");
-    }
-    await resetRows(client);
-    await db.insert(usersTable).values([actor, other]);
+    await getDb().insert(usersTable).values([actor, other]);
   });
 
-  return {
-    getDb: () => {
-      if (db === undefined) {
-        throw new Error("test db is not initialized");
-      }
-      return db;
-    },
-  };
+  return { getDb };
 };
 
 const unusedAuthHandler = async (): Promise<Response> =>
