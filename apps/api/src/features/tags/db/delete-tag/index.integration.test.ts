@@ -11,17 +11,17 @@ import {
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { deleteTag } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 const parseTagId = (value: number) => v.parse(tagIdSchema, value);
 
 describe(deleteTag, () => {
   test("本人のタグは紐付けごと消え、ブックマーク本体は残る", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const tagId = await seedTag(db, { name: "reading", userId: "user-a" });
     await seedBookmark(db, { id: "bm-1", tagIds: [tagId], userId: "user-a" });
@@ -40,7 +40,7 @@ describe(deleteTag, () => {
   });
 
   test("他人のタグは not-found で、タグと紐付けは残る", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     const tagId = await seedTag(db, { name: "reading", userId: "user-a" });
@@ -57,7 +57,7 @@ describe(deleteTag, () => {
   });
 
   test("存在しない id は not-found", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     const output = await deleteTag(db, {

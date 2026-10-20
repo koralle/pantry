@@ -62,6 +62,7 @@ const config: KnipConfig = {
         "@fontsource/noto-sans-jp",
       ],
     },
+    "packages/test-support": {},
     "packages/api-contract": {
       vitest: {
         config: "vitest.config.ts",

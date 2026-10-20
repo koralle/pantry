@@ -1,11 +1,17 @@
 import { createClient } from "@libsql/client";
 import type { Client } from "@libsql/client";
+import {
+  tagIdSchema,
+  tagNameSchema,
+} from "@pantry/api-contract/schemas/tag-values";
 import type { AppDb } from "@pantry/db";
 import { user } from "@pantry/db/schema/auth-schema";
 import { bookmarkTable } from "@pantry/db/schema/bookmark";
 import { bookmarkTagsTable } from "@pantry/db/schema/bookmark-tag";
 import { tagsTable } from "@pantry/db/schema/tag";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
+import { uuidv7 } from "uuidv7";
 import * as v from "valibot";
 import { afterAll, beforeAll, beforeEach, inject } from "vitest";
 
@@ -18,7 +24,7 @@ declare module "vitest" {
   }
 }
 
-interface PersistenceDb {
+interface TestDb {
   getDb: () => AppDb;
   getClient: () => Client;
 }
@@ -41,7 +47,7 @@ const namesOf = (
  * 本番 migration が作った schema をそのままに、テストごとにデータだけを空にする。
  * テストが作った trigger も落とすのは、前のテストの仕掛けが次のテストへ漏れないようにするため。
  */
-async function resetPersistenceDatabase(client: Client): Promise<void> {
+async function resetTestDatabase(client: Client): Promise<void> {
   const result = await client.execute(
     "SELECT type, name FROM sqlite_master WHERE type IN ('table', 'trigger') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__drizzle%'"
   );
@@ -64,7 +70,7 @@ async function resetPersistenceDatabase(client: Client): Promise<void> {
   await client.executeMultiple(statements.join(";\n"));
 }
 
-export function withPersistenceDb(): PersistenceDb {
+export function withTestDb(): TestDb {
   let client: Client | undefined;
   let db: AppDb | undefined;
 
@@ -81,21 +87,21 @@ export function withPersistenceDb(): PersistenceDb {
 
   beforeEach(async () => {
     if (client === undefined) {
-      throw new Error("persistence client is not initialized");
+      throw new Error("test db is not initialized");
     }
-    await resetPersistenceDatabase(client);
+    await resetTestDatabase(client);
   });
 
   return {
     getClient: () => {
       if (client === undefined) {
-        throw new Error("persistence client is not initialized");
+        throw new Error("test db is not initialized");
       }
       return client;
     },
     getDb: () => {
       if (db === undefined) {
-        throw new Error("persistence db is not initialized");
+        throw new Error("test db is not initialized");
       }
       return db;
     },
@@ -104,6 +110,14 @@ export function withPersistenceDb(): PersistenceDb {
 
 export function parseUserId(value: string): UserId {
   return v.parse(userIdSchema, value);
+}
+
+export function parseTagId(value: number) {
+  return v.parse(tagIdSchema, value);
+}
+
+export function parseTagName(value: string) {
+  return v.parse(tagNameSchema, value);
 }
 
 export async function seedUser(db: AppDb, id: string): Promise<UserId> {
@@ -148,7 +162,7 @@ export async function seedTag(
 export async function seedBookmark(
   db: AppDb,
   input: {
-    readonly id: string;
+    readonly id?: string;
     readonly userId: string;
     readonly title?: string;
     readonly url?: string;
@@ -156,29 +170,43 @@ export async function seedBookmark(
     readonly favorite?: boolean;
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
+    readonly deleted?: boolean;
     readonly deletedAt?: Date | null;
     readonly tagIds?: readonly number[];
   }
-): Promise<void> {
+): Promise<string> {
+  const id = input.id ?? uuidv7();
+  const createdAt = input.createdAt ?? new Date();
+  const deletedAt =
+    input.deletedAt ?? (input.deleted === true ? new Date() : null);
   await db.insert(bookmarkTable).values({
+    createdAt,
+    deletedAt,
     favorite: input.favorite ?? false,
-    id: input.id,
+    id,
     note: input.note ?? null,
-    title: input.title ?? input.id,
-    url: input.url ?? `https://example.com/${input.id}`,
+    title: input.title ?? id,
+    updatedAt: input.updatedAt ?? createdAt,
+    url: input.url ?? `https://example.com/${id}`,
     userId: input.userId,
-    ...(input.createdAt === undefined ? {} : { createdAt: input.createdAt }),
-    ...(input.updatedAt === undefined ? {} : { updatedAt: input.updatedAt }),
-    ...(input.deletedAt === undefined ? {} : { deletedAt: input.deletedAt }),
   });
   if (input.tagIds !== undefined && input.tagIds.length > 0) {
     await db.insert(bookmarkTagsTable).values(
       input.tagIds.map((tagId) => ({
-        bookmarkId: input.id,
+        bookmarkId: id,
         tagId,
       }))
     );
   }
+  return id;
+}
+
+export async function selectBookmarkRow(db: AppDb, id: string) {
+  const [row] = await db
+    .select()
+    .from(bookmarkTable)
+    .where(eq(bookmarkTable.id, id));
+  return row;
 }
 
 export async function attachTag(
@@ -187,37 +215,6 @@ export async function attachTag(
   tagId: number
 ): Promise<void> {
   await db.insert(bookmarkTagsTable).values({ bookmarkId: id, tagId });
-}
-
-export async function seedBookmarks(
-  db: AppDb,
-  rows: readonly Parameters<typeof seedBookmark>[1][]
-): Promise<void> {
-  if (rows.length === 0) {
-    return;
-  }
-  await db.insert(bookmarkTable).values(
-    rows.map((input) => ({
-      favorite: input.favorite ?? false,
-      id: input.id,
-      note: input.note ?? null,
-      title: input.title ?? input.id,
-      url: input.url ?? `https://example.com/${input.id}`,
-      userId: input.userId,
-      ...(input.createdAt === undefined ? {} : { createdAt: input.createdAt }),
-      ...(input.updatedAt === undefined ? {} : { updatedAt: input.updatedAt }),
-      ...(input.deletedAt === undefined ? {} : { deletedAt: input.deletedAt }),
-    }))
-  );
-  const tagRows = rows.flatMap((input) =>
-    (input.tagIds ?? []).map((tagId) => ({
-      bookmarkId: input.id,
-      tagId,
-    }))
-  );
-  if (tagRows.length > 0) {
-    await db.insert(bookmarkTagsTable).values(tagRows);
-  }
 }
 
 export function bookmarkId(index: number): string {

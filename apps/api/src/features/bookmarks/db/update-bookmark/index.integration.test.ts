@@ -19,12 +19,12 @@ import {
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import type { UpdateBookmarkInput } from "../../application/update-bookmark";
 import { updateBookmark } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 const actorId = "user-a";
 const otherUserId = "user-b";
@@ -57,7 +57,7 @@ function createInput(
 }
 
 async function seedBase(): Promise<AppDb> {
-  const db = persistence.getDb();
+  const db = testDb.getDb();
   await seedUser(db, actorId);
   await seedUser(db, otherUserId);
   await seedBookmark(db, {

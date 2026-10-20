@@ -1,6 +1,3 @@
-import type { AppDb } from "@pantry/db";
-import { bookmarkTable } from "@pantry/db/schema/bookmark";
-import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
@@ -8,22 +5,15 @@ import { userIdSchema } from "../../../../domain/user-id";
 import {
   seedBookmark,
   seedUser,
-  withPersistenceDb,
+  selectBookmarkRow,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import type { SetBookmarkFavoriteInput } from "../../application/set-bookmark-favorite";
 import { setBookmarkFavorite } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 const bookmarkId = "019fae92-3bb0-78cd-b488-65ce0e26a001";
-
-async function selectBookmarkRow(db: AppDb, id: string) {
-  const [row] = await db
-    .select()
-    .from(bookmarkTable)
-    .where(eq(bookmarkTable.id, id));
-  return row;
-}
 
 function command(
   userId: string,
@@ -35,7 +25,7 @@ function command(
 
 describe(setBookmarkFavorite, () => {
   test("所有済み未削除行の favorite を立てて updatedAt を進める", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedBookmark(db, { id: bookmarkId, userId: "user-a" });
     const before = await selectBookmarkRow(db, bookmarkId);
@@ -57,7 +47,7 @@ describe(setBookmarkFavorite, () => {
   });
 
   test("favorite を解除できる", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedBookmark(db, {
       favorite: true,
@@ -76,7 +66,7 @@ describe(setBookmarkFavorite, () => {
   });
 
   test("別ユーザーの行は更新せず bookmark-not-found を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     await seedUser(db, "user-b");
     await seedBookmark(db, { id: bookmarkId, userId: "user-a" });
@@ -92,7 +82,7 @@ describe(setBookmarkFavorite, () => {
   });
 
   test("削除済みの行は更新せず bookmark-not-found を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
     const deletedAt = new Date("2026-08-05T00:00:00.000Z");
     await seedBookmark(db, {
@@ -114,7 +104,7 @@ describe(setBookmarkFavorite, () => {
   });
 
   test("存在しない id は bookmark-not-found を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, "user-a");
 
     const result = await setBookmarkFavorite(

@@ -13,7 +13,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 
 import { createApp } from "../app";
 import type { Authenticator } from "../auth/session";
-import { withPersistenceDb } from "./db/migrated-db";
+import { withTestDb } from "./db/migrated-db";
 
 export const actor: SessionUser = {
   email: "actor@example.com",
@@ -34,7 +34,7 @@ export type ApiTestClient = ContractRouterClient<ApiContract>;
  * 各テストは actor と other だけが入った状態から始める。
  */
 export const withMigratedDb = (): { readonly getDb: () => AppDb } => {
-  const { getDb } = withPersistenceDb();
+  const { getDb } = withTestDb();
 
   beforeEach(async () => {
     await getDb().insert(usersTable).values([actor, other]);

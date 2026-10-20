@@ -1,39 +1,31 @@
-import { createClient } from "@libsql/client";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
 import { contract } from "@pantry/api-contract";
-import type { AppDb } from "@pantry/db";
-import { migrationsFolder } from "@pantry/db/migrations";
 import {
   session as sessionsTable,
   user as usersTable,
 } from "@pantry/db/schema/auth-schema";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { createApp } from "../app";
+import { withTestDb } from "../test/db/migrated-db";
 import { trustedOriginOf } from "../trusted-origin";
 import type { Auth } from "./create-auth";
 import { createAuth } from "./create-auth";
 import { authenticateRequest, cookieSessionAuthenticator } from "./session";
 
-/**
- * Libsql の `:memory:` は transaction のたびに接続を張り直すため、shared cache 付きの
- * `file::memory:` で全接続から同じ DB を見る（apps/web のテストと同じ手法）。
- */
-const memoryUrl = "file::memory:?cache=shared";
 const baseURL = "http://localhost:3000";
 const secret = "test-secret-at-least-32-characters-long";
 const password = "password-1234";
 
+const testDb = withTestDb();
+const getDb = () => testDb.getDb();
+
 type App = ReturnType<typeof createApp>;
 type Client = ContractRouterClient<typeof contract>;
 
-let libsqlClient: ReturnType<typeof createClient>;
-let db: AppDb;
 let auth: Auth;
 
 const createRpcClient = (app: App, cookie?: string): Client => {
@@ -66,7 +58,7 @@ const createTestApp = (): App =>
         headers,
         responseHeaders
       ),
-    db: () => db,
+    db: getDb,
     handleAuthRequest: auth.handler,
     trustedOrigin: () => trustedOriginOf(baseURL),
   });
@@ -96,16 +88,8 @@ const signIn = async (app: App, email: string): Promise<string> => {
   return createSessionCookie(response);
 };
 
-beforeAll(async () => {
-  libsqlClient = createClient({ url: memoryUrl });
-  db = drizzle({ client: libsqlClient });
-  await migrate(db, { migrationsFolder });
-
-  auth = createAuth({ appEnv: "test", baseURL, db, secret });
-});
-
-afterAll(() => {
-  libsqlClient.close();
+beforeAll(() => {
+  auth = createAuth({ appEnv: "test", baseURL, db: getDb(), secret });
 });
 
 describe("createAuth", () => {
@@ -122,10 +106,10 @@ describe("createAuth", () => {
     expect(signUpResponse.status).toBe(200);
 
     // adapter が packages/db の複数形テーブルへ書き込んでいることを、実際のテーブルで確かめる。
-    await expect(db.select().from(usersTable)).resolves.toMatchObject([
+    await expect(getDb().select().from(usersTable)).resolves.toMatchObject([
       { email: "koralle@example.com", name: "koralle" },
     ]);
-    await expect(db.select().from(sessionsTable)).resolves.toHaveLength(1);
+    await expect(getDb().select().from(sessionsTable)).resolves.toHaveLength(1);
 
     const app = createTestApp();
 
@@ -162,7 +146,7 @@ describe("createAuth", () => {
     const { user: admin } = await auth.api.signUpEmail({
       body: { email: "admin@example.com", name: "admin", password },
     });
-    await db
+    await getDb()
       .update(usersTable)
       .set({ role: "admin" })
       .where(eq(usersTable.id, admin.id));
@@ -207,7 +191,7 @@ describe("createAuth", () => {
     expect(response.status).toBe(200);
 
     // rate limit も同じ getIp でキーを作るため、session の ipAddress で解決結果を確かめる。
-    const sessions = await db
+    const sessions = await getDb()
       .select()
       .from(sessionsTable)
       .where(eq(sessionsTable.userId, user.id));
@@ -233,7 +217,7 @@ describe("createAuth", () => {
     });
     expect(response.status).toBe(200);
 
-    const sessions = await db
+    const sessions = await getDb()
       .select()
       .from(sessionsTable)
       .where(eq(sessionsTable.userId, user.id));
@@ -247,7 +231,7 @@ describe("createAuth", () => {
     const productionAuth = createAuth({
       appEnv: "production",
       baseURL,
-      db,
+      db: getDb(),
       secret,
     });
     const app = createApp({
@@ -270,7 +254,7 @@ describe("createAuth", () => {
     });
     expect(response.status).toBe(200);
 
-    const sessions = await db
+    const sessions = await getDb()
       .select()
       .from(sessionsTable)
       .where(eq(sessionsTable.userId, user.id));
@@ -306,7 +290,7 @@ describe("createAuth", () => {
 
     // updateAge（既定 1 日）を過ぎた session にする。
     const nearExpiry = new Date(Date.now() + 60 * 60 * 1000);
-    await db
+    await getDb()
       .update(sessionsTable)
       .set({ expiresAt: nearExpiry })
       .where(eq(sessionsTable.userId, user.id));
@@ -318,7 +302,7 @@ describe("createAuth", () => {
       setCookies.some((value) => value.startsWith("better-auth.session_token="))
     ).toBe(true);
     // Cookie の session（サインインで作ったもの）だけが延長される。
-    const sessions = await db
+    const sessions = await getDb()
       .select()
       .from(sessionsTable)
       .where(eq(sessionsTable.userId, user.id));

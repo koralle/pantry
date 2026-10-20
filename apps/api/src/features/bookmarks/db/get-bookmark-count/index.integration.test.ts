@@ -7,11 +7,11 @@ import {
   seedBookmark,
   seedTag,
   seedUser,
-  withPersistenceDb,
+  withTestDb,
 } from "../../../../test/db/migrated-db";
 import { getBookmarkCount } from "./index";
 
-const persistence = withPersistenceDb();
+const testDb = withTestDb();
 
 const actorId = "user-a";
 const otherId = "user-b";
@@ -20,7 +20,7 @@ const deletedAt = new Date("2026-08-05T00:00:00.000Z");
 
 describe(getBookmarkCount, () => {
   test("recent は未削除の自分の bookmark を数える", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, actorId);
     await seedUser(db, otherId);
     await seedBookmark(db, {
@@ -50,7 +50,7 @@ describe(getBookmarkCount, () => {
   });
 
   test("inbox はタグのない未削除の自分の bookmark を数える", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, actorId);
     await seedBookmark(db, {
       id: "a1",
@@ -75,7 +75,7 @@ describe(getBookmarkCount, () => {
   });
 
   test("favorites は favorite の未削除の自分の bookmark を数える", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, actorId);
     await seedBookmark(db, {
       favorite: true,
@@ -106,7 +106,7 @@ describe(getBookmarkCount, () => {
   });
 
   test("該当なしは 0 を返す", async () => {
-    const db = persistence.getDb();
+    const db = testDb.getDb();
     await seedUser(db, actorId);
 
     await expect(getBookmarkCount(db, userId, "recent")).resolves.toBe(0);
