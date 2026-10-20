@@ -13,9 +13,9 @@ import { eq } from "drizzle-orm";
 import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
-import type { UserId } from "../../../../domain/user-id";
 import {
   attachTag,
+  parseUserId,
   seedBookmark,
   seedTag,
   seedUser,
@@ -33,7 +33,7 @@ const otherBookmarkId = "019fae92-3bb0-78cd-b488-65ce0e26a93a";
 
 function createInput(
   overrides: Partial<{
-    userId: UserId;
+    userId: string;
     bookmarkId: string;
     url: string;
     title: string;
@@ -52,7 +52,7 @@ function createInput(
       bookmarkUrlSchema,
       overrides.url ?? "https://example.com/updated"
     ),
-    userId: (overrides.userId ?? actorId) as UserId,
+    userId: parseUserId(overrides.userId ?? actorId),
   };
 }
 

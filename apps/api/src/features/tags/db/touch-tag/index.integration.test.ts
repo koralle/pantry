@@ -1,9 +1,9 @@
 import type { AppDb } from "@pantry/db";
 import { tagsTable } from "@pantry/db/schema/tag";
-import * as v from "valibot";
 import { describe, expect, test } from "vitest";
 
 import {
+  parseTagId,
   parseTagName,
   parseUserId,
   seedUser,
@@ -33,7 +33,7 @@ async function createOwnedTag(db: AppDb, userId: string, name: string) {
 
 function touchInput(userId: string, id: number): TouchTagInput {
   return {
-    id: v.parse(v.pipe(v.number(), v.brand("TagId")), id),
+    id: parseTagId(id),
     userId: parseUserId(userId),
   };
 }

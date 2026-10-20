@@ -64,7 +64,6 @@ const config: KnipConfig = {
         "@pantry/db",
       ],
     },
-    "packages/test-support": {},
     "packages/api-contract": {
       vitest: {
         config: "vitest.config.ts",
