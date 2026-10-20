@@ -6,8 +6,7 @@
   "exports": {
     "./oxfmt": "./src/oxfmt.ts",
     "./oxlint": "./src/oxlint.ts",
-    "./tsconfig/base.json": "./tsconfig/base.json",
-    "./tsconfig/node.json": "./tsconfig/node.json"
+    "./tsconfig/*.json": "./tsconfig/*.json"
   },
   "scripts": {
     "typecheck": "tsc"

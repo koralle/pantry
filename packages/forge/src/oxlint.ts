@@ -18,7 +18,7 @@ const ignorePatterns = [
   "**/tanstack-entry-stub.ts",
 ];
 
-export const oxlintConfig = defineConfig({
+const oxlintConfig = defineConfig({
   extends: [core, react, tanstack],
   overrides: [
     {
@@ -99,7 +99,10 @@ export const oxlintConfig = defineConfig({
   },
 });
 
-type CreateOxlintConfigOptions = Pick<OxlintConfig, "overrides" | "rules"> & {
+type CreateOxlintConfigOptions = Omit<
+  OxlintConfig,
+  "extends" | "ignorePatterns"
+> & {
   /** リポジトリ固有で追加したい ignore。共通の ignore の後ろに連結される。 */
   ignorePatterns?: string[];
 };
