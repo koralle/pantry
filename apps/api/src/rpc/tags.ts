@@ -19,20 +19,20 @@ import { touchTag } from "../features/tags/db/touch-tag";
 import { updateTag } from "../features/tags/db/update-tag";
 import type { RouterKit } from "./base";
 
-export const createTagsRouter = ({ deps, impl, requireAuth }: RouterKit) => ({
+export const createTagsRouter = ({ impl, requireAuthWithDb }: RouterKit) => ({
   byId: impl.tags.byId
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const record = await selectTagById(deps.db(), context.userId, input.id);
+      const record = await selectTagById(context.db, context.userId, input.id);
       if (record === null) {
         throw errors["tag-not-found"]();
       }
       return record;
     }),
   create: impl.tags.create
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = deps.db();
+      const db = context.db;
       const result = await executeCreateTag({
         command: toCreateTagCommand(input),
         insertTag: async (row) => await insertTag(db, row),
@@ -44,9 +44,9 @@ export const createTagsRouter = ({ deps, impl, requireAuth }: RouterKit) => ({
       return { id: Number(result.value.id) };
     }),
   delete: impl.tags.delete
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = deps.db();
+      const db = context.db;
       const result = await executeDeleteTag({
         deleteTag: async (target) => await deleteTag(db, target),
         id: input.id,
@@ -58,20 +58,20 @@ export const createTagsRouter = ({ deps, impl, requireAuth }: RouterKit) => ({
       return { id: Number(result.value.id) };
     }),
   list: impl.tags.list
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(
       async ({ context, input }) =>
-        await selectTags(deps.db(), context.userId, input)
+        await selectTags(context.db, context.userId, input)
     ),
   shelf: impl.tags.shelf
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(
-      async ({ context }) => await selectShelfTags(deps.db(), context.userId)
+      async ({ context }) => await selectShelfTags(context.db, context.userId)
     ),
   touch: impl.tags.touch
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = deps.db();
+      const db = context.db;
       const result = await executeTouchTag({
         id: input.id,
         touchTag: async (target) => await touchTag(db, target),
@@ -83,9 +83,9 @@ export const createTagsRouter = ({ deps, impl, requireAuth }: RouterKit) => ({
       return { ok: true as const };
     }),
   update: impl.tags.update
-    .use(requireAuth)
+    .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = deps.db();
+      const db = context.db;
       const result = await executeUpdateTag({
         command: toUpdateTagCommand(input),
         updateTag: async (row) => await updateTag(db, row),

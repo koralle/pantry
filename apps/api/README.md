@@ -16,7 +16,7 @@ Pantry の API Worker（Cloudflare Workers、`pantry-api`）。Hono の上で
 | `GET/POST /api/auth/*` | Better Auth の handler へ素通し（`/api/auth/get-session`、`/api/auth/sign-in/email` など） |
 | その他 | 404 |
 
-procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機能>.ts`（`tags` / `bookmarks`）の両方に足す。contract を満たさない実装は型エラーになる。サインインが必要な procedure は contract を `authed` から作り、実装は `kit.requireAuth` を通す（context に `user` と `userId` が入る）。DB は `kit.deps.db()` で受ける。
+procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機能>.ts`（`tags` / `bookmarks`）の両方に足す。contract を満たさない実装は型エラーになる。サインインが必要な procedure は contract を `authed` から作り、実装は `kit.requireAuthWithDb` を通す（context に `user` / `userId` / `db` が入る）。DB を使わない procedure は `kit.requireAuth`（`user` / `userId` のみ）、認証も DB も要らない `health` はどちらも通さない。
 
 `/rpc/*` は POST だけを受け付ける（他のメソッドは procedure に届かず 405、`Allow: POST`。oRPC の client は POST しか送らない）。CSRF 対策として、POST のうち form として送れる content-type（`application/x-www-form-urlencoded` / `multipart/form-data` / `text/plain` / content-type なし）を Hono の `csrf()` で検査し（`src/app.ts`）、`Sec-Fetch-Site: same-origin` か `Origin` が `BETTER_AUTH_URL` の Origin と完全一致するときだけ通す。それ以外は 403（plain text の `Forbidden`）。`same-site` は許さない（`*.workers.dev` の兄弟 Worker が same-site になるため）。`application/json` は CORS preflight が要るので検査しない（SSR の Service Binding 経由の呼び出しもこれ）。`BETTER_AUTH_URL` が無い・不正なら `/rpc` は 500 で閉じる。`x-csrf-token` ヘッダーはもう要らない（web の client は api を戻せるよう当面付け続ける）。`/api/auth/*` には掛けない（better-auth が trustedOrigins で検査する）。
 

@@ -34,13 +34,42 @@ const createRequireAuth = (impl: Implementer, deps: RouterDeps) =>
     });
   });
 
+/**
+ * DB を execution context へ載せる。ここでは生成せず `deps.db()`（isolate 単位のキャッシュ）を
+ * 渡すだけなので、この middleware は接続のライフサイクルを持たない。
+ *
+ * 単体で `.use()` しない。`requireAuthWithDb` が `requireAuth` の**後**に連結する。
+ * 先に置くと、env 不備の 500 が未認証の 401 を覆い隠す。
+ */
+const createWithDb = (impl: Implementer, deps: RouterDeps) =>
+  impl.middleware(
+    async ({ next }) => await next({ context: { db: deps.db() } })
+  );
+
+// `prefer-spread` は配列向けの規則。oRPC の middleware 連結は配列ではなくメソッドで、
+// `.use()` 2 回に崩すと順序（認証 → DB）が型で守られなくなる。
+const createRequireAuthWithDb = (impl: Implementer, deps: RouterDeps) =>
+  // oxlint-disable-next-line prefer-spread
+  createRequireAuth(impl, deps).concat(createWithDb(impl, deps));
+
 export interface RouterKit {
   readonly impl: Implementer;
+  /** 認証だけ。DB を触らない procedure（`me`）向け。 */
   readonly requireAuth: ReturnType<typeof createRequireAuth>;
-  readonly deps: RouterDeps;
+  /**
+   * 認証 + DB。`context.user` / `context.userId` / `context.db` が入る。
+   * 順序を型ではなく構造で固定するため、2 つを `concat` して 1 本にしてある
+   * （逆順の `.use(withDb).use(requireAuth)` は型検査を通ってしまう）。
+   * `health` には付けない。DB を触らない procedure を DB の env に依存させないため。
+   */
+  readonly requireAuthWithDb: ReturnType<typeof createRequireAuthWithDb>;
 }
 
 export const createRouterKit = (deps: RouterDeps): RouterKit => {
   const impl = createImplementer();
-  return { deps, impl, requireAuth: createRequireAuth(impl, deps) };
+  return {
+    impl,
+    requireAuth: createRequireAuth(impl, deps),
+    requireAuthWithDb: createRequireAuthWithDb(impl, deps),
+  };
 };
