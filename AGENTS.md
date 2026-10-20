@@ -32,7 +32,7 @@
 - `packages/db/` - `@pantry/db`。Drizzle ORM のスキーマ、マイグレーション、`drizzle.config.ts`、接続ファクトリ `createDb`
 - `packages/env/` - `@pantry/env`。Varlock の env スキーマを関心ごとに分割して管理し、値ファイルと worktree 用スクリプトを置く
 - `packages/test-support/` - `@pantry/test-support`。テスト用に libSQL server の image と Testcontainers の起動設定を `@pantry/test-support/libsql` として共有する
-- `packages/forge/` - `@pantry/forge`。ツールチェインの共通設定を持つ。`tsconfig/base.json` / `tsconfig/node.json`（各 `tsconfig.json` が `extends`）、`@pantry/forge/oxlint`（Ultracite の core / react / tanstack の拡張、共通ルール、共通 ignorePatterns）、`@pantry/forge/oxfmt`（Ultracite の Oxfmt 設定、共通 ignorePatterns）を export する。各 `oxlint.config.ts` は `extends` し、差分だけを書き足す
+- `packages/forge/` - `@pantry/forge`。ツールチェインの共通設定を持つ。`tsconfig/base.json` / `tsconfig/node.json`（各 `tsconfig.json` が `extends`）、`@pantry/forge/oxlint`（Ultracite の core / react / tanstack の拡張、共通ルール、共通 ignorePatterns）、`@pantry/forge/oxfmt`（Ultracite の Oxfmt 設定、共通 ignorePatterns）を export する。各 `oxlint.config.ts` は `createOxlintConfig()` を呼び、差分だけを渡す（`extends` と共通 `ignorePatterns` は factory が付与）
   - Oxlint はファイルごとに最も近い設定だけを使い、親設定とはマージしない。`apps/web/oxlint.config.ts` を置いた時点で apps/web 配下はルート設定の対象外になるため、全パッケージに効かせたい設定は各 `oxlint.config.ts` ではなく `packages/forge` に置く
 - `docs/` - 設計・方針ドキュメント
 - `.agents/` - エージェント向けルールとスキル
