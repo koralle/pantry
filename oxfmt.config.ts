@@ -1,14 +1,2 @@
-import { defineConfig } from "oxfmt";
-import ultracite from "ultracite/oxfmt";
-
-export default defineConfig({
-  ...ultracite,
-  ignorePatterns: [
-    ...(ultracite.ignorePatterns ?? []),
-    ".agents/**",
-    "pnpm-lock.yaml",
-    "apps/api/worker-configuration.d.ts",
-    "apps/web/src/routeTree.gen.ts",
-    "apps/web/worker-configuration.d.ts",
-  ],
-});
+// 共通設定は @pantry/forge/oxfmt が持つ。
+export { oxfmtConfig as default } from "@pantry/forge/oxfmt";

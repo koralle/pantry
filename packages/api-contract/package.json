@@ -16,7 +16,7 @@
     "valibot": "catalog:validation"
   },
   "devDependencies": {
-    "@tsconfig/strictest": "catalog:typescript",
+    "@pantry/forge": "workspace:*",
     "@types/node": "catalog:runtime",
     "typescript": "catalog:typescript",
     "uuidv7": "catalog:uuid",

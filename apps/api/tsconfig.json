@@ -1,13 +1,7 @@
 {
-  "extends": "@tsconfig/strictest/tsconfig.json",
+  "extends": "@pantry/forge/tsconfig/base.json",
   "include": ["**/*.ts"],
   "compilerOptions": {
-    "target": "es2022",
-    "module": "preserve",
-    "lib": ["es2024"],
-    "types": ["./worker-configuration.d.ts", "node"],
-    "moduleResolution": "bundler",
-
-    "noEmit": true
+    "types": ["./worker-configuration.d.ts", "node"]
   }
 }

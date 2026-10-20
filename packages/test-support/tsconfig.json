@@ -1,13 +1,4 @@
 {
-  "extends": "@tsconfig/strictest/tsconfig.json",
-  "include": ["src/**/*.ts"],
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "preserve",
-    "lib": ["es2024"],
-    "types": ["node"],
-    "moduleResolution": "bundler",
-
-    "noEmit": true
-  }
+  "extends": "@pantry/forge/tsconfig/node.json",
+  "include": ["src/**/*.ts"]
 }
