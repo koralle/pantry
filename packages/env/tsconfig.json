@@ -1,4 +1,4 @@
 {
-  "extends": "@pantry/tsconfig/node.json",
+  "extends": "@pantry/forge/tsconfig/node.json",
   "include": ["**/*.ts"]
 }

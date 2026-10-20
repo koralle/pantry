@@ -1,5 +1,5 @@
 {
-  "extends": "@pantry/tsconfig/base.json",
+  "extends": "@pantry/forge/tsconfig/base.json",
   "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "lib": ["es2024", "dom", "dom.iterable"],

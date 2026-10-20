@@ -1,10 +1,10 @@
-import base, { ignorePatterns } from "@pantry/oxlint";
+import { ignorePatterns, oxlintConfig } from "@pantry/forge/oxlint";
 import { defineConfig } from "oxlint";
 
-// @pantry/oxlint からの差分だけを置く。
+// @pantry/forge/oxlint からの差分だけを置く。
 // パスはこのファイル（apps/web）からの相対で書く。
 export default defineConfig({
-  extends: [base],
+  extends: [oxlintConfig],
   ignorePatterns,
   overrides: [
     {

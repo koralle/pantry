@@ -6,7 +6,7 @@
     "typecheck": "tsc"
   },
   "devDependencies": {
-    "@pantry/tsconfig": "workspace:*",
+    "@pantry/forge": "workspace:*",
     "@types/node": "catalog:runtime",
     "tsx": "catalog:script",
     "typescript": "catalog:typescript"

@@ -1,19 +1,22 @@
 {
-  "name": "@pantry/oxlint",
+  "name": "@pantry/forge",
   "private": true,
+  "description": "Shared toolchain configs for the pantry monorepo",
   "type": "module",
   "exports": {
-    ".": "./src/base.ts"
+    "./oxlint": "./src/oxlint.ts",
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/node.json": "./tsconfig/node.json"
   },
   "scripts": {
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@tsconfig/strictest": "catalog:typescript",
     "oxlint": "catalog:lint",
     "ultracite": "catalog:lint"
   },
   "devDependencies": {
-    "@pantry/tsconfig": "workspace:*",
     "@types/node": "catalog:runtime",
     "typescript": "catalog:typescript"
   }

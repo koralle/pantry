@@ -345,12 +345,9 @@ importers:
       '@markuplint/react-spec':
         specifier: catalog:lint
         version: 4.18.0(supports-color@10.2.2)
-      '@pantry/oxlint':
+      '@pantry/forge':
         specifier: workspace:*
-        version: link:packages/oxlint
-      '@pantry/tsconfig':
-        specifier: workspace:*
-        version: link:packages/tsconfig
+        version: link:packages/forge
       knip:
         specifier: catalog:lint
         version: 6.32.2
@@ -424,12 +421,12 @@ importers:
       '@orpc/contract':
         specifier: catalog:rpc
         version: 1.15.0(@opentelemetry/api@1.9.1)
+      '@pantry/forge':
+        specifier: workspace:*
+        version: link:../../packages/forge
       '@pantry/test-support':
         specifier: workspace:*
         version: link:../../packages/test-support
-      '@pantry/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
       '@types/node':
         specifier: catalog:runtime
         version: 25.9.5
@@ -557,12 +554,9 @@ importers:
       '@pandacss/mcp':
         specifier: catalog:ui
         version: 1.12.0(supports-color@10.2.2)(typescript@7.0.2)
-      '@pantry/oxlint':
+      '@pantry/forge':
         specifier: workspace:*
-        version: link:../../packages/oxlint
-      '@pantry/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
+        version: link:../../packages/forge
       '@storybook/addon-docs':
         specifier: catalog:storybook
         version: 10.6.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(storybook@10.6.2(@types/react@19.3.0)(prettier@3.9.6)(react@19.3.0))
@@ -633,9 +627,9 @@ importers:
         specifier: catalog:validation
         version: 1.4.2(typescript@7.0.2)
     devDependencies:
-      '@pantry/tsconfig':
+      '@pantry/forge':
         specifier: workspace:*
-        version: link:../tsconfig
+        version: link:../forge
       '@types/node':
         specifier: catalog:runtime
         version: 25.9.5
@@ -661,9 +655,9 @@ importers:
         specifier: catalog:validation
         version: 1.4.2(typescript@7.0.2)
     devDependencies:
-      '@pantry/tsconfig':
+      '@pantry/forge':
         specifier: workspace:*
-        version: link:../tsconfig
+        version: link:../forge
       '@tursodatabase/database':
         specifier: catalog:database
         version: 0.7.2
@@ -688,9 +682,9 @@ importers:
 
   packages/env:
     devDependencies:
-      '@pantry/tsconfig':
+      '@pantry/forge':
         specifier: workspace:*
-        version: link:../tsconfig
+        version: link:../forge
       '@types/node':
         specifier: catalog:runtime
         version: 25.9.5
@@ -701,8 +695,11 @@ importers:
         specifier: catalog:typescript
         version: 7.0.2
 
-  packages/oxlint:
+  packages/forge:
     dependencies:
+      '@tsconfig/strictest':
+        specifier: catalog:typescript
+        version: 2.0.8
       oxlint:
         specifier: catalog:lint
         version: 1.81.0(oxlint-tsgolint@7.0.2001)
@@ -710,9 +707,6 @@ importers:
         specifier: catalog:lint
         version: 7.11.0(eslint@10.8.0(jiti@2.7.0)(supports-color@10.2.2))(oxfmt@0.66.0)(oxlint@1.81.0(oxlint-tsgolint@7.0.2001))(prettier@3.9.6)
     devDependencies:
-      '@pantry/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
       '@types/node':
         specifier: catalog:runtime
         version: 25.9.5
@@ -726,21 +720,15 @@ importers:
         specifier: catalog:test
         version: 12.2.1(supports-color@10.2.2)
     devDependencies:
-      '@pantry/tsconfig':
+      '@pantry/forge':
         specifier: workspace:*
-        version: link:../tsconfig
+        version: link:../forge
       '@types/node':
         specifier: catalog:runtime
         version: 25.9.5
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
-
-  packages/tsconfig:
-    dependencies:
-      '@tsconfig/strictest':
-        specifier: catalog:typescript
-        version: 2.0.8
 
 packages:
 

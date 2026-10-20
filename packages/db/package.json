@@ -22,7 +22,7 @@
     "valibot": "catalog:validation"
   },
   "devDependencies": {
-    "@pantry/tsconfig": "workspace:*",
+    "@pantry/forge": "workspace:*",
     "@tursodatabase/database": "catalog:database",
     "@types/node": "catalog:runtime",
     "drizzle-kit": "catalog:database",

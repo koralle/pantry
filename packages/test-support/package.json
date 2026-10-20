@@ -12,7 +12,7 @@
     "testcontainers": "catalog:test"
   },
   "devDependencies": {
-    "@pantry/tsconfig": "workspace:*",
+    "@pantry/forge": "workspace:*",
     "@types/node": "catalog:runtime",
     "typescript": "catalog:typescript"
   }

@@ -17,7 +17,7 @@ export const ignorePatterns = [
   "**/tanstack-entry-stub.ts",
 ];
 
-export default defineConfig({
+export const oxlintConfig = defineConfig({
   extends: [core, react, tanstack],
   overrides: [
     {
