@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./result": "./src/result.ts"
+    "./date": "./src/date.ts",
+    "./result": "./src/result.ts",
+    "./url": "./src/url.ts"
   },
   "scripts": {
     "test": "vitest run",
