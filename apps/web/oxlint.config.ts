@@ -1,11 +1,10 @@
-import { ignorePatterns, oxlintConfig } from "@pantry/forge/oxlint";
-import { defineConfig } from "oxlint";
+import { createOxlintConfig } from "@pantry/forge/oxlint";
 
-// @pantry/forge/oxlint からの差分だけを置く。
+// Oxlint はファイルごとに「最も近い設定」だけを使い、親設定とは自動マージしない。
+// そのためこのファイルは apps/web 配下のルート oxlint.config.ts を置き換える。
+// 全パッケージに効かせたい設定は @pantry/forge/oxlint に置き、ここには差分だけを書く。
 // パスはこのファイル（apps/web）からの相対で書く。
-export default defineConfig({
-  extends: [oxlintConfig],
-  ignorePatterns,
+export default createOxlintConfig({
   overrides: [
     {
       files: ["src/routes/**/*.ts", "src/routes/**/*.tsx"],

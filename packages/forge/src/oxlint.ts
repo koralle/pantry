@@ -1,15 +1,16 @@
 import { defineConfig } from "oxlint";
+import type { OxlintConfig } from "oxlint";
 import core from "ultracite/oxlint/core";
 import react from "ultracite/oxlint/react";
 import tanstack from "ultracite/oxlint/tanstack";
 
 /**
  * Oxlint は `extends` した設定の `ignorePatterns` を継承しない。
- * そのため各設定ファイルでこの配列を spread して渡す。
+ * そのため `createOxlintConfig` がこの配列を必ず設定に含める。
  *
  * パターンは設定ファイルの位置に依存しない glob で定義する。
  */
-export const ignorePatterns = [
+const ignorePatterns = [
   ...(core.ignorePatterns ?? []),
   "**/.agents/skills/**",
   "**/.pnpmfile.cjs",
@@ -97,3 +98,25 @@ export const oxlintConfig = defineConfig({
     "unicorn/no-await-expression-member": "off",
   },
 });
+
+type CreateOxlintConfigOptions = Pick<OxlintConfig, "overrides" | "rules"> & {
+  /** リポジトリ固有で追加したい ignore。共通の ignore の後ろに連結される。 */
+  ignorePatterns?: string[];
+};
+
+/**
+ * パッケージごとの設定を作る。`extends` と共通 `ignorePatterns` を必ず含むため、
+ * 呼び出し側は差分だけを渡せばよい（`ignorePatterns` の再宣言漏れを防ぐ）。
+ *
+ * 注意: 返した設定はネスト設定として親設定を置き換える。
+ * 全パッケージに効かせたい設定はここ（forge）に置くこと。
+ */
+export const createOxlintConfig = ({
+  ignorePatterns: additionalIgnorePatterns = [],
+  ...rest
+}: CreateOxlintConfigOptions = {}) =>
+  defineConfig({
+    extends: [oxlintConfig],
+    ignorePatterns: [...ignorePatterns, ...additionalIgnorePatterns],
+    ...rest,
+  });

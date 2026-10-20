@@ -5,10 +5,7 @@ export const oxfmtConfig = defineConfig({
   ...ultracite,
   ignorePatterns: [
     ...(ultracite.ignorePatterns ?? []),
-    ".agents/**",
-    "pnpm-lock.yaml",
-    "apps/api/worker-configuration.d.ts",
-    "apps/web/src/routeTree.gen.ts",
-    "apps/web/worker-configuration.d.ts",
+    // リポジトリ固有のパスはここに置かない（各リポジトリの oxfmt.config.ts 側で足す）。
+    "**/.agents/**",
   ],
 });
