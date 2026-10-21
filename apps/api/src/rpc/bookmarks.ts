@@ -14,9 +14,8 @@ import { updateBookmark } from "../features/bookmarks/db/update-bookmark";
 import type { RouterKit } from "./base";
 
 export const createBookmarksRouter = ({
-  deps,
   impl,
-  requireAuth,
+  requireAuthWithDb,
 }: RouterKit) => {
   const bookmarks = impl.bookmarks;
   const countOf = (
@@ -24,10 +23,10 @@ export const createBookmarksRouter = ({
     view: BookmarkCountView
   ) =>
     procedure
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(
         async ({ context }) =>
-          await getBookmarkCount(deps.db(), context.userId, view)
+          await getBookmarkCount(context.db, context.userId, view)
       );
 
   return {
@@ -37,9 +36,9 @@ export const createBookmarksRouter = ({
       recent: countOf(bookmarks.counts.recent, "recent"),
     },
     create: bookmarks.create
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = deps.db();
+        const db = context.db;
         const result = await executeCreateBookmark({
           command: input,
           insertBookmark: async (row) => await insertBookmark(db, row),
@@ -54,9 +53,9 @@ export const createBookmarksRouter = ({
         throw errors["invalid-tag"]();
       }),
     delete: bookmarks.delete
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = deps.db();
+        const db = context.db;
         const result = await executeDeleteBookmark({
           command: input,
           softDeleteBookmark: async (target) =>
@@ -69,9 +68,9 @@ export const createBookmarksRouter = ({
         return { id: result.id };
       }),
     detail: bookmarks.detail
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const detail = await getBookmarkDetail(deps.db(), context.userId, {
+        const detail = await getBookmarkDetail(context.db, context.userId, {
           id: input.id,
         });
         if (detail === null) {
@@ -80,10 +79,10 @@ export const createBookmarksRouter = ({
         return detail;
       }),
     editor: bookmarks.editor
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
         const record = await selectBookmarkEditor(
-          deps.db(),
+          context.db,
           context.userId,
           input.id
         );
@@ -92,9 +91,9 @@ export const createBookmarksRouter = ({
         }
         return record;
       }),
-    list: bookmarks.list.use(requireAuth).handler(
+    list: bookmarks.list.use(requireAuthWithDb).handler(
       async ({ context, input }) =>
-        await listBookmarks(deps.db(), {
+        await listBookmarks(context.db, {
           userId: context.userId,
           ...(input.tagNames === undefined ? {} : { tagNames: input.tagNames }),
           ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
@@ -102,9 +101,9 @@ export const createBookmarksRouter = ({
         })
     ),
     setFavorite: bookmarks.setFavorite
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = deps.db();
+        const db = context.db;
         const result = await executeSetBookmarkFavorite({
           command: input,
           setBookmarkFavorite: async (target) =>
@@ -117,9 +116,9 @@ export const createBookmarksRouter = ({
         return { id: result.id };
       }),
     update: bookmarks.update
-      .use(requireAuth)
+      .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = deps.db();
+        const db = context.db;
         const result = await executeUpdateBookmark({
           command: input,
           updateBookmark: async (row) => await updateBookmark(db, row),

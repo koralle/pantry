@@ -99,6 +99,25 @@ describe("createApp", () => {
     });
   });
 
+  test("未認証の procedure は db を解決する前に 401 を返す", async () => {
+    const db = vi.fn(unusedDb);
+    const app = createApp({
+      authenticate: async () => null,
+      db,
+      handleAuthRequest: unusedAuthHandler,
+      trustedOrigin,
+    });
+
+    const response = await app.request(`${rpcUrl}/tags/shelf`, {
+      body: JSON.stringify({}),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(401);
+    expect(db).not.toHaveBeenCalled();
+  });
+
   test("me は authenticator が解決したユーザーを返す", async () => {
     const app = createApp({
       authenticate: async () => ({
