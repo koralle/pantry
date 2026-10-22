@@ -32,8 +32,8 @@
 - CSRF: `pantry-api` の`/rpc/*`は POST だけを受け付け（他のメソッドは 405）、form として送れる content-type（content-type なしを含む）を Hono の`csrf()`で検査して、`Sec-Fetch-Site: same-origin`か`Origin`=`BETTER_AUTH_URL`の Origin のときだけ通す（`apps/api/src/app.ts`）。Cookie は`SameSite=Lax`だが、`*.workers.dev`の兄弟 Worker は same-site で Cookie が届くため`same-site`は許さない。JSON は CORS preflight で止まるので検査しない（SSR は Origin の無い JSON）。`/api/auth/*`は better-auth の trustedOrigins に任せる。web の client は api を戻せるよう当面`x-csrf-token`を付け続ける（`SimpleCsrfProtectionLinkPlugin`、撤去は後続）。
 - 認証: Better AuthのCookieセッション（`pantry-api`がホスト）。web の procedure は`getSession(headers)`で検証し、その実装は api の`me`を呼ぶ。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。スキーマ・マイグレーション・接続ファクトリ（`createDb`）は`packages/db`（`@pantry/db`）に置き、server実装はclient bundleに混ざらない。
-- Worker環境変数: web は`APP_ENV`と Service Binding`API`。api は`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`
-- 環境変数管理: Varlockの`packages/env/.env.schema`を正本とし、関心ごとのスキーマ（`schemas/.env.db`、`schemas/.env.auth`、`schemas/.env.local-libsql`）を`@import`で束ねる。値は`packages/env/.env.development`に置き、`apps/web`・`apps/api`・`packages/db`は自前の`.env.schema`から必要なキーだけを`pick=[...]`で取り込む。`pnpm dev`への注入は`@varlock/cloudflare-integration`が行い、`.dev.vars`は使わない。auxiliary worker として起動する api の env は、`apps/web/vite.config.ts`が`apps/api`の schema で読み直して渡す。
+- Worker環境変数: web は Service Binding`API`のみ。api は`APP_ENV`、`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`（型は`apps/api/src/env.d.ts`）
+- 環境変数管理: `packages/env`（`@pantry/env`）が値ファイルを持ち、`loadDevEnv()`が`.env.development`→`.env.development.local`の順に読む（後のファイルが勝ち、シェルで export した`process.env`はさらに優先）。Node のツール（`drizzle-kit`、seed / create-user）は自前で読み、Worker は`vite.config.ts`が`workerVars()`で`wrangler`の`vars`に渡す。本番の値は GitHub Actions の secrets から`wrangler deploy --var` / `--secrets-file`で渡し、env ファイルは使わない。
 - ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`packages/env/scripts/symlink-env-for-worktree.ts`が`packages/env/.env.development.local`へ生成する。
 - DBマイグレーション: `packages/db`のDrizzle生成物をTursoへ適用する。D1 bindingは使わない。
 

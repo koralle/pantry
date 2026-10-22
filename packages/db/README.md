@@ -26,13 +26,13 @@ barrel file を避けるため `@pantry/db/schema` というまとめエクス�
 
 ## 環境変数
 
-env ファイル（`.env.schema`、`.env.development`、`.env.development.local`）は `packages/env` に置く。`packages/db/.env.schema` は `@import(../env/, pick=[APP_ENV, TURSO_*])` で libSQL 接続に必要なキーだけを取り込み、`migrate:dev` / `studio:dev` は varlock 経由で実行する。
+env ファイル（`.env.development`、`.env.development.local`）は `packages/env` に置く。`drizzle.config.ts` が `@pantry/env` の `loadDevEnv()` を呼ぶので、`migrate:dev` / `studio:dev` は追加のラッパー無しで値を読める。`process.env` に既にある値（CI の secrets）が優先されるため、`migrate:prod` は env ファイルが無い CI でもそのまま動く。
 
 ```json
-"migrate:dev": "varlock run -- drizzle-kit migrate"
+"migrate:dev": "drizzle-kit migrate"
 ```
 
-`.env.development.local` は worktree ごとに `packages/env/scripts/symlink-env-for-worktree.ts` が生成する。`migrate:prod` は varlock を通さず、CI が渡す `TURSO_CONNECTION_URL` / `TURSO_AUTH_TOKEN` をそのまま読む。
+`.env.development.local` は worktree ごとに `packages/env/scripts/symlink-env-for-worktree.ts` が生成する。
 
 ## マイグレーション
 

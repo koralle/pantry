@@ -27,16 +27,18 @@ procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機
 
 ## 環境変数
 
-`packages/env/` の値を `.env.schema` の `@import(..., pick=[...])` で取り込む。Worker runtime では `cloudflare:workers` の `env` binding として読む。
+`packages/env/`（`@pantry/env`）の値を読む。Worker runtime では `cloudflare:workers` の `env` binding として読む。
 
 | キー | 用途 |
 | --- | --- |
-| `APP_ENV` | 読み込む env ファイルの切替 |
+| `APP_ENV` | `development` / `test` のときだけ `x-forwarded-for` を信用する（本番は `cf-connecting-ip` のみ） |
 | `TURSO_CONNECTION_URL` / `TURSO_AUTH_TOKEN` | libSQL 接続 |
 | `BETTER_AUTH_SECRET` | セッション Cookie の署名（32文字以上） |
 | `BETTER_AUTH_URL` | Better Auth の baseURL。パスキーの rpID / origin と、`/rpc` の CSRF 検査で信頼する Origin もここから導出する |
 
-値は `packages/env/` 直下の env ファイルに置く（worktree では `packages/env/scripts/symlink-env-for-worktree.ts` が生成する）。`apps/api/.env.<env>` は varlock の `@currentEnv` 経由では読まれないため置かない（packages/env/README.md 参照）。
+キーの型は `src/env.d.ts` が持つ（`wrangler.jsonc` に `vars` を置かないため、`wrangler types` の生成物には現れない）。
+
+値は `packages/env/` 直下の env ファイルに置く（`.env.development.example` をコピーする。worktree 固有の上書きは `scripts/symlink-env-for-worktree.ts` が `.env.development.local` に生成する）。`pnpm dev` では `vite.config.ts` が `workerVars()` の結果を wrangler の `vars` として渡す。本番の値は CI が `wrangler deploy --var` / `--secrets-file` で渡す。
 
 ## スクリプト
 
@@ -45,9 +47,9 @@ procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機
 | `pnpm run dev` | Vite dev + workerd（`http://localhost:8787`） |
 | `pnpm run build` | プロダクションビルド |
 | `pnpm run preview` | ビルド成果物を preview |
-| `pnpm run deploy` | 本番ビルド + `varlock-wrangler deploy` |
-| `pnpm run cf-typegen` | `worker-configuration.d.ts` を生成（varlock 経由） |
-| `pnpm run db:seed` | 開発DBへ seed（`scripts/seed.ts`。DB を全削除してから投入する。ルートの `pnpm run db:seed` から呼ぶ。env は scripts 専用の `scripts/.env.schema` から読む） |
+| `pnpm run deploy` | 本番ビルド + `wrangler deploy --keep-vars`（値は CI が渡す。手元から実行するなら `wrangler deploy --var` / `--secrets-file` で明示する） |
+| `pnpm run cf-typegen` | `worker-configuration.d.ts` を生成 |
+| `pnpm run db:seed` | 開発DBへ seed（`scripts/seed.ts`。DB を全削除してから投入する。ルートの `pnpm run db:seed` から呼ぶ。env は `packages/env` から `scripts/auth.ts` が読む） |
 | `pnpm run db:create-user` | 開発用ユーザーだけを作る（`scripts/create-user.ts`。既にあれば何もしない） |
 | `pnpm run test` | Vitest（workers project + node project。Docker 不要） |
 | `pnpm run test:db` | `db` project（Testcontainers + 実 libSQL。Docker が必要） |

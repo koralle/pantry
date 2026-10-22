@@ -29,12 +29,6 @@ jobs:
         shell: bash
         run: |
           pnpm run build
-        env:
-          APP_ENV: production
-          TURSO_CONNECTION_URL: ${{ secrets.TURSO_CONNECTION_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
 
       - name: Migrate production database
         shell: bash
@@ -45,12 +39,23 @@ jobs:
           pnpm run migrate:prod
 
       # web は Service Binding で pantry-api を呼ぶので、api を先にデプロイする。
+      # 値は secrets から .env 形式のファイルへ渡す（--var の引用符事故と、
+      # 値がコマンドライン引数に残るのを避ける）。
       - name: Deploy API production
         shell: bash
         run: |
-          pnpm --filter @pantry/api exec varlock-wrangler deploy
+          secrets=$(mktemp)
+          trap 'rm -f "$secrets"' EXIT
+          {
+            printf 'TURSO_CONNECTION_URL=%s\n' "$TURSO_CONNECTION_URL"
+            printf 'TURSO_AUTH_TOKEN=%s\n' "$TURSO_AUTH_TOKEN"
+            printf 'BETTER_AUTH_SECRET=%s\n' "$BETTER_AUTH_SECRET"
+            printf 'BETTER_AUTH_URL=%s\n' "$BETTER_AUTH_URL"
+          } >"$secrets"
+          pnpm --filter @pantry/api exec wrangler deploy \
+            --var APP_ENV:production \
+            --secrets-file "$secrets"
         env:
-          APP_ENV: production
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TURSO_CONNECTION_URL: ${{ secrets.TURSO_CONNECTION_URL }}
@@ -61,10 +66,7 @@ jobs:
       - name: Deploy production
         shell: bash
         run: |
-          pnpm --filter @pantry/web exec varlock-wrangler deploy
+          pnpm --filter @pantry/web exec wrangler deploy
         env:
-          APP_ENV: production
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          TURSO_CONNECTION_URL: ${{ secrets.TURSO_CONNECTION_URL }}
-          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}

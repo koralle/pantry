@@ -8,95 +8,24 @@ ROOT=$(cd "$SKILL_DIR/../../.." && pwd)
 APP="$ROOT/apps/web"
 API="$ROOT/apps/api"
 RUN_DIR="$SKILL_DIR/run"
-ENV_DIR="$SKILL_DIR/env"
-EXPECTED_URL="http://127.0.0.1:18080"
 APP_URL="http://127.0.0.1:4173"
+EXPECTED_URL="http://127.0.0.1:18080"
 
 mkdir -p "$RUN_DIR"
 
 cd "$APP"
 
-LOCAL_ENV="$APP/.env.local"
-API_LOCAL_ENV="$API/.env.local"
-# seed / create-user read apps/api/scripts/.env.schema (varlock run --path scripts/).
-SCRIPTS_LOCAL_ENV="$API/scripts/.env.local"
-MARKER="# pantry-verify-override"
+# Every tool loads packages/env first, but an exported value wins. Exporting the
+# verification values here retargets the whole stack (vite dev workers,
+# drizzle-kit, seed) without touching the development env files.
+set -a
+. "$SKILL_DIR/env/verify.env"
+set +a
 
-remove_local_env() {
-  for file in "$LOCAL_ENV" "$API_LOCAL_ENV" "$SCRIPTS_LOCAL_ENV"; do
-    if [[ -f "$file" ]] && grep -q "$MARKER" "$file"; then
-      rm -f "$file"
-    fi
-  done
-}
-
-# vite dev starts pantry-api as an auxiliary worker that reads apps/api's env, so
-# a running `pnpm dev` (3000) or `pnpm dev:api` (8787) could pick up the override.
-for port in 3000 8787; do
-  if lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
-    echo "refusing to launch: port $port is in use. stop pnpm dev / dev:api first so the verification env files cannot retarget it" >&2
-    exit 1
-  fi
-done
-
-for file in "$LOCAL_ENV" "$API_LOCAL_ENV" "$SCRIPTS_LOCAL_ENV"; do
-  if [[ -f "$file" ]]; then
-    echo "refusing to launch: $file already exists" >&2
-    exit 1
-  fi
-done
-
-trap remove_local_env EXIT
-
-# Web reads the database directly; Better Auth runs in pantry-api.
-cat >"$LOCAL_ENV" <<'EOF'
-# pantry-verify-override
-# Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
-TURSO_CONNECTION_URL=http://127.0.0.1:18080
-TURSO_AUTH_TOKEN=pantry-verify-token
-EOF
-
-cat >"$API_LOCAL_ENV" <<'EOF'
-# pantry-verify-override
-# Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
-TURSO_CONNECTION_URL=http://127.0.0.1:18080
-TURSO_AUTH_TOKEN=pantry-verify-token
-BETTER_AUTH_URL=http://127.0.0.1:4173
-BETTER_AUTH_SECRET=pantry-verify-secret-at-least-32-characters
-EOF
-
-# The scripts schema also picks TURSO_PORT so seed can refuse a mismatched port.
-cat >"$SCRIPTS_LOCAL_ENV" <<'EOF'
-# pantry-verify-override
-# Temporary. cleanup.sh deletes this file. Do not point pnpm dev at it.
-TURSO_PORT=18080
-TURSO_CONNECTION_URL=http://127.0.0.1:18080
-TURSO_AUTH_TOKEN=pantry-verify-token
-BETTER_AUTH_URL=http://127.0.0.1:4173
-BETTER_AUTH_SECRET=pantry-verify-secret-at-least-32-characters
-EOF
-
-resolved=$(
-  ./node_modules/.bin/varlock run -- \
-    node -e 'process.stdout.write(process.env.TURSO_CONNECTION_URL ?? "")'
-)
-api_resolved=$(
-  cd "$API" &&
-    ./node_modules/.bin/varlock run -- \
-      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
-)
-scripts_resolved=$(
-  cd "$API" &&
-    ./node_modules/.bin/varlock run --path scripts/ -- \
-      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.TURSO_PORT ?? ""))'
-)
-if [[ "$resolved" != "$EXPECTED_URL" || "$api_resolved" != "$EXPECTED_URL $APP_URL" || "$scripts_resolved" != "$EXPECTED_URL 18080" ]]; then
-  echo "refusing to launch: web resolved '$resolved', api resolved '$api_resolved', scripts resolved '$scripts_resolved', want $EXPECTED_URL / $EXPECTED_URL $APP_URL / $EXPECTED_URL 18080" >&2
+if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "refusing to launch: 127.0.0.1:4173 is already in use. run cleanup.sh" >&2
   exit 1
 fi
-
-export TURSO_PROJECT=pantry-verify
-export TURSO_PORT=18080
 
 docker compose --project-name pantry-verify up -d
 
@@ -108,18 +37,8 @@ for _ in $(seq 1 60); do
 done
 curl -sf "$EXPECTED_URL/health" >/dev/null
 
-(cd "$ROOT/packages/db" &&
-  ./node_modules/.bin/varlock run --path ../../apps/web/ -- \
-    ./node_modules/.bin/drizzle-kit migrate)
-# seed lives in apps/api (it builds Better Auth with createAuth) and reads the scripts schema.
-(cd "$API" &&
-  ./node_modules/.bin/varlock run --path scripts/ -- \
-    ./node_modules/.bin/tsx scripts/seed.ts)
-
-if lsof -nP -iTCP:4173 -sTCP:LISTEN >/dev/null 2>&1; then
-  echo "refusing to launch: 127.0.0.1:4173 is already in use. run cleanup.sh" >&2
-  exit 1
-fi
+(cd "$ROOT/packages/db" && ./node_modules/.bin/drizzle-kit migrate)
+(cd "$API" && ./node_modules/.bin/tsx scripts/seed.ts)
 
 if [[ -f "$RUN_DIR/vite.pid" ]]; then
   old=$(cat "$RUN_DIR/vite.pid")

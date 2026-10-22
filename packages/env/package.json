@@ -2,13 +2,18 @@
   "name": "@pantry/env",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/env.ts"
+  },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc"
   },
   "devDependencies": {
     "@pantry/forge": "workspace:*",
     "@types/node": "catalog:runtime",
     "tsx": "catalog:script",
-    "typescript": "catalog:typescript"
+    "typescript": "catalog:typescript",
+    "vitest": "catalog:test"
   }
 }

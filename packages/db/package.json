@@ -10,9 +10,9 @@
   },
   "scripts": {
     "check:migrations": "tsx scripts/check-migrations.ts",
-    "migrate:dev": "varlock run -- drizzle-kit migrate",
+    "migrate:dev": "drizzle-kit migrate",
     "migrate:prod": "drizzle-kit migrate",
-    "studio:dev": "varlock run -- drizzle-kit studio",
+    "studio:dev": "drizzle-kit studio",
     "test": "vitest run",
     "typecheck": "tsc"
   },
@@ -22,13 +22,13 @@
     "valibot": "catalog:validation"
   },
   "devDependencies": {
+    "@pantry/env": "workspace:*",
     "@pantry/forge": "workspace:*",
     "@tursodatabase/database": "catalog:database",
     "@types/node": "catalog:runtime",
     "drizzle-kit": "catalog:database",
     "tsx": "catalog:script",
     "typescript": "catalog:typescript",
-    "varlock": "catalog:envvars",
     "vitest": "catalog:test"
   }
 }
