@@ -8,9 +8,9 @@ const ENV_FILES = [".env", ".env.development"] as const;
 const LOCAL_ENV_FILE = ".env.development.local";
 
 /**
- * Varlock (`packages/env/.env.schema`) owns the env files, so both the shared
- * files and the per-worktree overrides live in this package. Resolve it from
- * this script instead of `process.cwd()` so the hook works from any directory.
+ * The env files live in this package, so both the shared values and the
+ * per-worktree overrides resolve from here. Resolve it from this script instead
+ * of `process.cwd()` so the hook works from any directory.
  */
 const ENV_DIR = resolve(import.meta.dirname, "..");
 
@@ -84,10 +84,9 @@ const warnMissingSource = async (
 };
 
 /**
- * Values files that used to live in apps/web. Varlock still reads a
- * consumer-level `.env` (it outranks packages/env/), and the old generated
- * `.env.development.local` can point at another libSQL port, so leftovers make
- * the worktree silently diverge from packages/env/.
+ * Values files that used to live in apps/web. A leftover `apps/web/.env` can
+ * point at another libSQL port, so leftovers make the worktree silently diverge
+ * from packages/env/.
  */
 const isLegacyWorktreeEnvFile = (name: string): boolean =>
   name === ".env" || name.startsWith(".env.development");

@@ -4,38 +4,21 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 SKILL_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
-ROOT=$(cd "$SKILL_DIR/../../.." && pwd)
-APP="$ROOT/apps/web"
 RUN_DIR="$SKILL_DIR/run"
-ENV_DIR="$SKILL_DIR/env"
-EXPECTED_URL="http://127.0.0.1:18080"
-APP_URL="http://127.0.0.1:4173"
 
-cd "$APP"
+set -a
+. "$SKILL_DIR/env/verify.env"
+set +a
+EXPECTED_URL="$TURSO_CONNECTION_URL"
+APP_URL="$BETTER_AUTH_URL"
 
-for local_env in .env.local ../api/.env.local ../api/scripts/.env.local; do
-  if [[ ! -f "$local_env" ]] || ! grep -q "# pantry-verify-override" "$local_env"; then
-    echo "doctor fail: verification env override $local_env is missing" >&2
-    exit 1
-  fi
-done
-
-resolved=$(
-  ./node_modules/.bin/varlock run -- \
-    node -e 'process.stdout.write(process.env.TURSO_CONNECTION_URL ?? "")'
-)
-api_resolved=$(
-  cd ../api &&
-    ./node_modules/.bin/varlock run -- \
-      node -e 'process.stdout.write((process.env.TURSO_CONNECTION_URL ?? "") + " " + (process.env.BETTER_AUTH_URL ?? ""))'
-)
-if [[ "$resolved" != "$EXPECTED_URL" || "$api_resolved" != "$EXPECTED_URL $APP_URL" ]]; then
-  echo "doctor fail: web resolved '$resolved', api resolved '$api_resolved'" >&2
+if ! docker inspect --format '{{.State.Running}}' "${TURSO_PROJECT:-pantry}-turso" | grep -qx true; then
+  echo "doctor fail: container ${TURSO_PROJECT}-turso is not running" >&2
   exit 1
 fi
 
-if ! docker inspect --format '{{.State.Running}}' pantry-verify-turso | grep -qx true; then
-  echo "doctor fail: container pantry-verify-turso is not running" >&2
+if ! docker port "${TURSO_PROJECT}-turso" 8080 | grep -q ":${TURSO_PORT}$"; then
+  echo "doctor fail: container ${TURSO_PROJECT}-turso does not publish $TURSO_PORT" >&2
   exit 1
 fi
 

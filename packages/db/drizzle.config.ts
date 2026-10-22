@@ -1,4 +1,8 @@
+import { loadDevEnv } from "@pantry/env";
 import { defineConfig } from "drizzle-kit";
+
+// Dev values live in packages/env; CI passes them through process.env, which wins.
+loadDevEnv();
 
 const { TURSO_AUTH_TOKEN: authToken, TURSO_CONNECTION_URL: connectionUrl } =
   process.env;
