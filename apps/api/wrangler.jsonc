@@ -7,6 +7,14 @@
   "observability": {
     "enabled": true,
   },
+  "secrets": {
+    "required": [
+      "TURSO_CONNECTION_URL",
+      "TURSO_AUTH_TOKEN",
+      "BETTER_AUTH_SECRET",
+      "BETTER_AUTH_URL",
+    ],
+  },
   // ブラウザは apps/web からのみ到達する。web の Worker entry（apps/web/src/server.ts）が
   // `/rpc/*` と `/api/auth/*` を Service Binding でこの Worker へ渡すため、公開URLは持たない。
   "workers_dev": false,
