@@ -33,7 +33,7 @@
 - 認証: Better AuthのCookieセッション（`pantry-api`がホスト）。web の procedure は`getSession(headers)`で検証し、その実装は api の`me`を呼ぶ。
 - DB: Turso Cloud。Drizzle ORMと`@libsql/client`で接続する。スキーマ・マイグレーション・接続ファクトリ（`createDb`）は`packages/db`（`@pantry/db`）に置き、server実装はclient bundleに混ざらない。
 - Worker環境変数: web は Service Binding`API`のみ。api は`APP_ENV`、`TURSO_CONNECTION_URL`、`TURSO_AUTH_TOKEN`、`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`（型は`apps/api/src/env.d.ts`）
-- 環境変数管理: `packages/env`（`@pantry/env`）が値ファイルを持ち、`loadDevEnv()`が`.env.development`→`.env.development.local`の順に読む（後のファイルが勝ち、シェルで export した`process.env`はさらに優先）。Node のツール（`drizzle-kit`、seed / create-user）は自前で読み、Worker は`vite.config.ts`が`workerVars()`で`wrangler`の`vars`に渡す。本番の値は GitHub Actions の secrets から`wrangler deploy --var` / `--secrets-file`で渡し、env ファイルは使わない。
+- 環境変数管理: `packages/env`（`@pantry/env`）が値ファイルを持ち、`loadDevEnv()`が`.env.development`→`.env.development.local`の順に読む（後のファイルが勝ち、シェルで export した`process.env`はさらに優先）。Node のツール（`drizzle-kit`、seed / create-user）は自前で読み、Worker は`vite.config.ts`が`workerVars()`で`wrangler`の`vars`に渡す。本番の値は GitHub Actions の secrets から wrangler-action の`secrets` / `vars`で渡し、env ファイルは使わない。
 - ローカルlibSQL: git worktreeごとに独立したDockerコンテナを起動する。`TURSO_PORT`と`TURSO_PROJECT`は`packages/env/scripts/symlink-env-for-worktree.ts`が`packages/env/.env.development.local`へ生成する。
 - DBマイグレーション: `packages/db`のDrizzle生成物をTursoへ適用する。D1 bindingは使わない。
 
