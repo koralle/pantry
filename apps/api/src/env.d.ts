@@ -1,15 +1,11 @@
 /**
- * Runtime env of the api Worker. 値は dev では packages/env から
- * `vite.config.ts` の `workerVars()` が vars として渡し、本番では CI が
- * wrangler-action（`secrets` / `vars`）で設定する。wrangler.jsonc に
- * `vars` を置かないため `wrangler types` の生成物には現れず、ここで宣言する。
+ * `APP_ENV` だけをここで宣言する。dev では packages/env から `vite.config.ts` の
+ * `workerVars()` が vars として渡し、本番では CI が wrangler-action の `vars` で
+ * 設定する。`wrangler.jsonc` に `vars` を置かないため `wrangler types` の生成物には
+ * 現れない。secrets の4つは `wrangler.jsonc` の `secrets.required` から生成物に出る。
  */
 declare namespace Cloudflare {
   interface Env {
     APP_ENV: string;
-    TURSO_CONNECTION_URL: string;
-    TURSO_AUTH_TOKEN: string;
-    BETTER_AUTH_SECRET: string;
-    BETTER_AUTH_URL: string;
   }
 }

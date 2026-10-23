@@ -6,7 +6,8 @@ import { parseEnv } from "node:util";
 const ENV_FILES = [".env.development", ".env.development.local"] as const;
 
 /**
- * Vars the api Worker needs in dev (same keys as `apps/api/src/env.d.ts`).
+ * Vars the api Worker needs in dev: `secrets.required` in `apps/api/wrangler.jsonc`
+ * plus `APP_ENV` (a var, so it is not listed there).
  * Only these are handed to wrangler: forwarding all of `process.env` would copy
  * unrelated secrets into the Worker's vars.
  */

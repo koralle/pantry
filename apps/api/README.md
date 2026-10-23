@@ -36,7 +36,7 @@ procedure の追加は `packages/api-contract/src/<機能>.ts` と `src/rpc/<機
 | `BETTER_AUTH_SECRET` | セッション Cookie の署名（32文字以上） |
 | `BETTER_AUTH_URL` | Better Auth の baseURL。パスキーの rpID / origin と、`/rpc` の CSRF 検査で信頼する Origin もここから導出する |
 
-キーの型は `src/env.d.ts` が持つ（`wrangler.jsonc` に `vars` を置かないため、`wrangler types` の生成物には現れない）。
+キーの型は、secrets の4つ（`TURSO_CONNECTION_URL` / `TURSO_AUTH_TOKEN` / `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL`）が `wrangler.jsonc` の `secrets.required` から `wrangler types` の生成物（`worker-configuration.d.ts`）に出る。`APP_ENV` は `vars` を `wrangler.jsonc` に置かないため生成物に現れず、`src/env.d.ts` が持つ。
 
 値は `packages/env/` 直下の env ファイルに置く（`.env.development.example` をコピーする。worktree 固有の上書きは `scripts/symlink-env-for-worktree.ts` が `.env.development.local` に生成する）。`pnpm dev` では `vite.config.ts` が `workerVars()` の結果を wrangler の `vars` として渡す。本番の値は CI が wrangler-action の `secrets` / `vars` で渡す（`.github/workflows/workflow.yaml`）。
 

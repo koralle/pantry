@@ -686,7 +686,7 @@ const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
  * another worktree's database. Remote URLs are not checked.
  */
 const assertLocalPortsAgree = (): void => {
-  const rawUrl = process.env["TURSO_CONNECTION_URL"];
+  const rawUrl = process.env.TURSO_CONNECTION_URL;
   // TURSO_PORT は packages/env の .env.development.local（worktree）が持つ。Worker の env には無い。
   const port = process.env["TURSO_PORT"];
   if (rawUrl === undefined || rawUrl === "" || port === undefined) {
