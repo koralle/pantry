@@ -25,7 +25,7 @@ Pantry のローカル開発用の値を置く。スキーマもコードの大�
 
 `workerVars()` が返すのは api の Worker が必要とするキーだけ（`apps/api/src/env.d.ts` と同じ並び）。`process.env` を丸ごと渡すと無関係な値まで Worker の vars に入るため。
 
-本番の値は GitHub Actions の secrets から `wrangler deploy --var` / `--secrets-file` で渡す（`.github/workflows/workflow.yaml`）。env ファイルは本番では読まない。
+本番の値は GitHub Actions の secrets から wrangler-action の `secrets` / `vars` で渡す（`.github/workflows/workflow.yaml`）。env ファイルは本番では読まない。
 
 ## worktree
 
