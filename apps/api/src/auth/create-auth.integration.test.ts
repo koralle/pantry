@@ -106,6 +106,38 @@ beforeAll(() => {
 });
 
 describe("createAuth", () => {
+  test("未認証の self-sign-up API は production で 400 を返し、ユーザーを作らない", async () => {
+    const productionAuth = createAuth({
+      appEnv: "production",
+      baseURL,
+      db: getDb(),
+      secret,
+    });
+    const app = createApp({
+      authenticate: async () => null,
+      db: unusedDb,
+      handleAuthRequest: productionAuth.handler,
+      trustedOrigin: () => trustedOriginOf(baseURL),
+    });
+    const email = "self-signup@example.com";
+
+    // ブラウザの画面を経由せず、Cookie / Origin / Referer を付けない直接呼び出し。
+    const response = await app.request(`${baseURL}/api/auth/sign-up/email`, {
+      body: JSON.stringify({ email, name: "attacker", password }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "EMAIL_PASSWORD_SIGN_UP_DISABLED",
+    });
+    expect(response.headers.get("set-cookie")).toBeNull();
+    await expect(
+      getDb().select().from(usersTable).where(eq(usersTable.email, email))
+    ).resolves.toHaveLength(0);
+  });
+
   test("メール・パスワードのサインインを Better Auth の HTTP ルートで受ける", async () => {
     await createTestUser({ email: "koralle@example.com", name: "koralle" });
 
