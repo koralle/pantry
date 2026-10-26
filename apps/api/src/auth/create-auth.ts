@@ -60,7 +60,11 @@ export const createAuth = ({
         ...authSchema,
       },
     }),
+    // アカウントは運用者が `apps/api/scripts/create-user.ts` で作る。自己登録は受け付けず、
+    // サインインだけを開ける（docs/architecture.md の「サインアップ画面を提供せず、
+    // Better Auth の自己登録エンドポイントも無効にする」）。
     emailAndPassword: {
+      disableSignUp: true,
       enabled: true,
     },
     plugins: [admin(), passkey(passkeyPluginOptions(baseURL))],
