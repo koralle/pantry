@@ -717,7 +717,9 @@ const main = async (): Promise<void> => {
   await reset(db, fullSchema);
 
   console.log("Creating user...");
-  const { user } = await auth.api.signUpEmail({
+  // 自己登録は HTTP からもサーバー API からも閉じている（create-auth.ts の disableSignUp）ため、
+  // 運用者と同じ `createUser` で作る。
+  const { user } = await auth.api.createUser({
     body: {
       email: TARGET.email,
       name: TARGET.name,

@@ -88,28 +88,63 @@ const signIn = async (app: App, email: string): Promise<string> => {
   return createSessionCookie(response);
 };
 
+/**
+ * 自己登録は HTTP からもサーバー API からも閉じている（create-auth.ts の disableSignUp）ため、
+ * テストのユーザーは運用者と同じ `createUser` で作る。作成したユーザーは HTTP の sign-in で
+ * パスワードどおりにサインインできる（credential account も作られる）。
+ */
+const createTestUser = async ({
+  email,
+  name,
+}: {
+  readonly email: string;
+  readonly name: string;
+}) => (await auth.api.createUser({ body: { email, name, password } })).user;
+
 beforeAll(() => {
   auth = createAuth({ appEnv: "test", baseURL, db: getDb(), secret });
 });
 
 describe("createAuth", () => {
-  test("メール・パスワードのサインインを Better Auth の HTTP ルートで受ける", async () => {
-    const signUpResponse = await auth.api.signUpEmail({
-      asResponse: true,
-      body: {
-        email: "koralle@example.com",
-        name: "koralle",
-        password,
-      },
+  test("未認証の self-sign-up API は production で 400 を返し、ユーザーを作らない", async () => {
+    const productionAuth = createAuth({
+      appEnv: "production",
+      baseURL,
+      db: getDb(),
+      secret,
+    });
+    const app = createApp({
+      authenticate: async () => null,
+      db: unusedDb,
+      handleAuthRequest: productionAuth.handler,
+      trustedOrigin: () => trustedOriginOf(baseURL),
+    });
+    const email = "self-signup@example.com";
+
+    // ブラウザの画面を経由せず、Cookie / Origin / Referer を付けない直接呼び出し。
+    const response = await app.request(`${baseURL}/api/auth/sign-up/email`, {
+      body: JSON.stringify({ email, name: "attacker", password }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
     });
 
-    expect(signUpResponse.status).toBe(200);
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "EMAIL_PASSWORD_SIGN_UP_DISABLED",
+    });
+    expect(response.headers.get("set-cookie")).toBeNull();
+    await expect(
+      getDb().select().from(usersTable).where(eq(usersTable.email, email))
+    ).resolves.toHaveLength(0);
+  });
+
+  test("メール・パスワードのサインインを Better Auth の HTTP ルートで受ける", async () => {
+    await createTestUser({ email: "koralle@example.com", name: "koralle" });
 
     // adapter が packages/db の複数形テーブルへ書き込んでいることを、実際のテーブルで確かめる。
     await expect(getDb().select().from(usersTable)).resolves.toMatchObject([
       { email: "koralle@example.com", name: "koralle" },
     ]);
-    await expect(getDb().select().from(sessionsTable)).resolves.toHaveLength(1);
 
     const app = createTestApp();
 
@@ -130,6 +165,7 @@ describe("createAuth", () => {
     expect(signInResponse.status).toBe(200);
 
     const cookie = createSessionCookie(signInResponse);
+    await expect(getDb().select().from(sessionsTable)).resolves.toHaveLength(1);
 
     await expect(createRpcClient(app, cookie).me()).resolves.toStrictEqual({
       email: "koralle@example.com",
@@ -140,11 +176,13 @@ describe("createAuth", () => {
 
   test("admin が banUser したユーザーは、既存の Cookie でも me が 401 になる", async () => {
     const app = createTestApp();
-    const { user: target } = await auth.api.signUpEmail({
-      body: { email: "banned@example.com", name: "banned", password },
+    const target = await createTestUser({
+      email: "banned@example.com",
+      name: "banned",
     });
-    const { user: admin } = await auth.api.signUpEmail({
-      body: { email: "admin@example.com", name: "admin", password },
+    const admin = await createTestUser({
+      email: "admin@example.com",
+      name: "admin",
     });
     await getDb()
       .update(usersTable)
@@ -174,8 +212,9 @@ describe("createAuth", () => {
 
   test("サインイン時のクライアント IP は CF-Connecting-IP から記録する", async () => {
     const app = createTestApp();
-    const { user } = await auth.api.signUpEmail({
-      body: { email: "ip@example.com", name: "ip", password },
+    const user = await createTestUser({
+      email: "ip@example.com",
+      name: "ip",
     });
 
     const response = await app.request(`${baseURL}/api/auth/sign-in/email`, {
@@ -195,7 +234,7 @@ describe("createAuth", () => {
       .select()
       .from(sessionsTable)
       .where(eq(sessionsTable.userId, user.id));
-    // signUpEmail（HTTP を通さない呼び出し）が作った session は IP を持たない。
+    // createUser は session を作らないため、sign-in で作られた session だけが残る。
     expect(
       sessions.map((session) => session.ipAddress).filter(Boolean)
     ).toStrictEqual(["203.0.113.7"]);
@@ -203,8 +242,9 @@ describe("createAuth", () => {
 
   test("CF-Connecting-IP が無ければ単一値の X-Forwarded-For を使う", async () => {
     const app = createTestApp();
-    const { user } = await auth.api.signUpEmail({
-      body: { email: "xff@example.com", name: "xff", password },
+    const user = await createTestUser({
+      email: "xff@example.com",
+      name: "xff",
     });
 
     const response = await app.request(`${baseURL}/api/auth/sign-in/email`, {
@@ -221,7 +261,7 @@ describe("createAuth", () => {
       .select()
       .from(sessionsTable)
       .where(eq(sessionsTable.userId, user.id));
-    // signUpEmail（HTTP を通さない呼び出し）が作った session は IP を持たない。
+    // createUser は session を作らないため、sign-in で作られた session だけが残る。
     expect(
       sessions.map((session) => session.ipAddress).filter(Boolean)
     ).toStrictEqual(["198.51.100.23"]);
@@ -240,7 +280,7 @@ describe("createAuth", () => {
       handleAuthRequest: productionAuth.handler,
       trustedOrigin: () => trustedOriginOf(baseURL),
     });
-    const { user } = await productionAuth.api.signUpEmail({
+    const { user } = await productionAuth.api.createUser({
       body: { email: "prod-xff@example.com", name: "prod", password },
     });
 
@@ -265,8 +305,9 @@ describe("createAuth", () => {
 
   test("me で session が延長されたら Set-Cookie をレスポンスへ載せる", async () => {
     const app = createTestApp();
-    const { user } = await auth.api.signUpEmail({
-      body: { email: "refresh@example.com", name: "refresh", password },
+    const user = await createTestUser({
+      email: "refresh@example.com",
+      name: "refresh",
     });
     const cookie = await signIn(app, "refresh@example.com");
 
