@@ -1,6 +1,11 @@
 import { createOxlintConfig, vitestPreset } from "@pantry/forge/oxlint";
-import type { OxlintRuleSeverity } from "oxlint-plugin-react-doctor";
+import { reactDoctorExemptions } from "@pantry/forge/react-doctor";
+import type {
+  Capability,
+  OxlintRuleSeverity,
+} from "oxlint-plugin-react-doctor";
 import {
+  REACT_DOCTOR_RULES,
   RECOMMENDED_RULES,
   TANSTACK_QUERY_RULES,
   TANSTACK_START_RULES,
@@ -9,13 +14,65 @@ import landmines from "ultracite/oxlint/landmines";
 import react from "ultracite/oxlint/react";
 import tanstack from "ultracite/oxlint/tanstack";
 
+// react-doctor CLI が package.json から組み立てるのと同じ能力の集合。
+// react:18 / react:19 / react:19.2 は React 19.3 で満たされる階段。
+const capabilities: ReadonlySet<Capability> = new Set([
+  "react",
+  "react-aria",
+  "react:18",
+  "react:19",
+  "react:19.2",
+  "ssr",
+  "tanstack-query",
+  "tanstack-start",
+  "typescript",
+]);
+
+const reactDoctorEntryByKey = new Map(
+  REACT_DOCTOR_RULES.map((entry) => [entry.key, entry])
+);
+
+// Ultracite の react プリセットが既に有効にしている組み込みルール名（接頭辞を落としたもの）。
+const builtInReactRuleNames = new Set(
+  Object.keys(react.rules ?? {}).map((key) => key.slice(key.indexOf("/") + 1))
+);
+
+// Oxlint は rules をそのまま登録するだけで、CLI がやっている requires
+// （そのライブラリが入っている時だけ有効）の判定をしない。宣言した能力で
+// 満たせないルールを落とし、入っていないライブラリ向けのルールを走らせない。
+// 移植版（oxc の react / jsx-a11y / react_perf 由来）は、組み込み側が有効な
+// ものだけ落とす。同じ指摘を 2 回出さないため。
+const isReactDoctorRuleEnabled = (key: string): boolean => {
+  const entry = reactDoctorEntryByKey.get(key);
+  if (entry === undefined) {
+    return false;
+  }
+  const { rule } = entry;
+  if (rule.requires?.some((capability) => !capabilities.has(capability))) {
+    return false;
+  }
+  if (rule.tags?.includes("react-jsx-only") && !capabilities.has("react")) {
+    return false;
+  }
+  if (rule.disabledWhen?.some((capability) => capabilities.has(capability))) {
+    return false;
+  }
+  return !(entry.originallyExternal && builtInReactRuleNames.has(entry.id));
+};
+
 // react-doctor の推奨セットは既定で warning が多い。厳し目なので全件 error にする。
 // tanstack 系は framework が global ではないため推奨セットに入らない。
-// どのプリセットも off を含まないので、キーだけ使って error に置き換える。
 const asErrors = (
   rules: Readonly<Record<string, OxlintRuleSeverity>>
-): Record<string, "error"> =>
-  Object.fromEntries(Object.keys(rules).map((key) => [key, "error"]));
+): Record<string, "error"> => {
+  const enabled: Record<string, "error"> = {};
+  for (const key of Object.keys(rules)) {
+    if (isReactDoctorRuleEnabled(key)) {
+      enabled[key] = "error";
+    }
+  }
+  return enabled;
+};
 
 // Oxlint はファイルごとに「最も近い設定」だけを使い、親設定とは自動マージしない。
 // そのためこのファイルは apps/web 配下のルート oxlint.config.ts を置き換える。
@@ -34,14 +91,7 @@ export default createOxlintConfig({
   // しないと、oxc から移植した react 系ルールが upstream 挙動（誤検知寄り）で動く。
   settings: {
     "react-doctor": {
-      capabilities: [
-        "react",
-        "react-aria",
-        "ssr",
-        "tanstack-query",
-        "tanstack-start",
-        "typescript",
-      ],
+      capabilities: [...capabilities].toSorted(),
       framework: "tanstack-start",
       portedRuleMode: "curated",
     },
@@ -172,23 +222,10 @@ export default createOxlintConfig({
       files: ["src/routes/**/*.test.ts"],
       rules: { "landmines-structure/colocated-tests": "off" },
     },
-    {
-      // renderToString で hook を描画し、描画中に戻り値を受け取るハーネス。
-      // props のコールバックを描画中に呼ぶのは、DOM も effect も使わずに hook を
-      // 検証するための意図的な手段なので、この 2 ファイルだけ除外する。
-      files: [
-        "src/features/auth/hooks/use-email-sign-in.test.tsx",
-        "src/features/auth/hooks/use-passkey-sign-in.test.tsx",
-      ],
-      rules: { "react-doctor/no-prop-callback-in-render": "off" },
-    },
-    {
-      // QuickAddRound は 300 行超で分岐も多い。分割は別作業として切り出す。
-      files: ["src/features/bookmarks/components/quick-add/index.tsx"],
-      rules: {
-        "react-doctor/no-giant-component": "off",
-        "react-doctor/no-high-complexity-react-function": "off",
-      },
-    },
+    // 除外の正本は @pantry/forge/react-doctor（CLI 側の doctor.config.ts も読む）。
+    ...reactDoctorExemptions.map(({ files, rules }) => ({
+      files: [...files],
+      rules: Object.fromEntries(rules.map((rule) => [rule, "off" as const])),
+    })),
   ],
 });
