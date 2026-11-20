@@ -11,9 +11,10 @@ export const qaCard = css({
   borderRadius: "[1rem]",
   borderStyle: "solid",
   borderWidth: "thin",
+  boxShadow: "card",
   inlineSize: "100%",
-  maxInlineSize: "[25rem]",
-  padding: "[1.375rem]",
+  maxInlineSize: "[28rem]",
+  padding: { base: "5", md: "6" },
 });
 
 export const qaHead = css({
@@ -26,18 +27,19 @@ export const qaHead = css({
 export const qaBadge = css({
   alignItems: "center",
   background: "accent.subtle",
-  blockSize: "[1.875rem]",
+  blockSize: "[2rem]",
   borderRadius: "full",
   color: "accent.solid",
   display: "inline-flex",
   flexShrink: "0",
-  inlineSize: "[1.875rem]",
+  inlineSize: "[2rem]",
   justifyContent: "center",
 });
 
 export const qaTitle = css({
-  fontSize: "sm",
-  fontWeight: "extrabold",
+  color: "fg.default",
+  fontSize: "md",
+  fontWeight: "bold",
   margin: "0",
 });
 
@@ -51,8 +53,8 @@ export const qaSub = css({
 export const qaBody = css({
   display: "flex",
   flexDirection: "column",
-  marginBlockStart: "3.5",
-  rowGap: "3",
+  marginBlockStart: "4",
+  rowGap: "3.5",
 });
 
 export const qaFieldGroup = css({
@@ -65,8 +67,8 @@ export const qaFieldGroup = css({
 export const qaFetchRow = css({
   alignItems: "center",
   background: "surface.muted",
-  borderColor: "border.default",
-  borderRadius: "[0.75rem]",
+  borderColor: "border.control",
+  borderRadius: "sheet",
   borderStyle: "dashed",
   borderWidth: "thin",
   color: "fg.muted",
@@ -76,18 +78,21 @@ export const qaFetchRow = css({
   padding: "3",
 });
 
-/** タイトル取得失敗の警告ノート（ amber 系 = inbox トーンを再利用）。 */
+/** タイトル取得失敗の警告ノート（ inbox トーンを再利用）。 */
 export const qaWarnNote = css({
   alignItems: "flex-start",
-  background: "pantry.inboxStart",
-  borderRadius: "[0.5rem]",
-  color: "pantry.inboxSub",
-  columnGap: "1.5",
+  background: "inbox.bgStart",
+  borderColor: "inbox.border",
+  borderRadius: "box",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  color: "inbox.sub",
+  columnGap: "2",
   display: "flex",
   fontSize: "2xs",
   lineHeight: "relaxed",
-  paddingBlock: "2",
-  paddingInline: "2.5",
+  paddingBlock: "2.5",
+  paddingInline: "3",
 });
 
 export const qaWarnNoteIcon = css({
@@ -114,7 +119,7 @@ export const qaBookmark = css({
   alignItems: "center",
   background: "surface.muted",
   borderColor: "border.default",
-  borderRadius: "[0.75rem]",
+  borderRadius: "sheet",
   borderStyle: "solid",
   borderWidth: "thin",
   columnGap: "2.5",
@@ -129,6 +134,7 @@ export const qaBookmarkTx = css({
 });
 
 export const qaBookmarkTitle = css({
+  color: "fg.default",
   fontSize: "xs",
   fontWeight: "bold",
   lineHeight: "snug",
@@ -139,12 +145,20 @@ export const qaBookmarkTitle = css({
 
 export const qaBookmarkMeta = css({
   alignItems: "center",
-  color: "fg.faint",
+  color: "fg.muted",
   columnGap: "2",
   display: "flex",
   fontFamily: "mono",
-  fontSize: "[0.625rem]",
+  fontSize: "2xs",
   marginBlockStart: "0.5",
+});
+
+export const qaTitleEditRow = css({
+  alignItems: "center",
+  columnGap: "2",
+  display: "flex",
+  flex: "1",
+  minInlineSize: "0",
 });
 
 export const qaTagDots = css({

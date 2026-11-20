@@ -39,26 +39,34 @@ export const stateIconMute = css({
   borderColor: "border.default",
   borderStyle: "solid",
   borderWidth: "thin",
-  color: "fg.faint",
+  boxShadow: "surface",
+  color: "fg.muted",
 });
 
 export const stateIconDanger = css({
   background: "danger.surface",
+  borderColor: "danger.border",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  boxShadow: "surface",
   color: "danger.solid",
 });
 
 export const stateTitle = css({
+  color: "fg.default",
   fontSize: "md2",
   fontWeight: "bold",
   margin: "0",
+  textWrap: "balance",
 });
 
 export const stateSub = css({
   color: "fg.muted",
   fontSize: "xs",
-  lineHeight: "body",
+  lineHeight: "relaxed",
   margin: "0",
-  maxInlineSize: "[19rem]",
+  maxInlineSize: "[22rem]",
+  textWrap: "pretty",
 });
 
 export const stateActions = css({

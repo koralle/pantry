@@ -19,41 +19,35 @@ const faviconTile = cva({
   base: {
     alignItems: "center",
     borderRadius: "box",
+    boxShadow: "[inset 0 0 0 1px rgba(0, 0, 0, 0.08)]",
     color: "white",
     display: "inline-flex",
     flexShrink: "0",
     fontWeight: "bold",
     justifyContent: "center",
+    lineHeight: "1",
     userSelect: "none",
   },
   defaultVariants: {
     failed: false,
     size: "sm",
-    tone: "slate",
   },
   variants: {
-    failed: {
-      false: {},
-      true: {
-        background: "surface.muted",
-        color: "fg.muted",
-      },
-    },
     size: {
       sm: {
-        blockSize: "[1.375rem]",
+        blockSize: "[1.5rem]",
         fontSize: "2xs",
-        inlineSize: "[1.375rem]",
+        inlineSize: "[1.5rem]",
       },
       md: {
-        blockSize: "[1.625rem]",
-        fontSize: "[0.6875rem]",
-        inlineSize: "[1.625rem]",
+        blockSize: "[1.75rem]",
+        fontSize: "2xs",
+        inlineSize: "[1.75rem]",
       },
       lg: {
-        blockSize: "[2rem]",
+        blockSize: "[2.25rem]",
         fontSize: "sm",
-        inlineSize: "[2rem]",
+        inlineSize: "[2.25rem]",
       },
     },
     tone: {
@@ -65,6 +59,17 @@ const faviconTile = cva({
       orange: { background: "domain.orange" },
       yellow: { background: "domain.yellow" },
       slate: { background: "domain.slate" },
+    },
+    failed: {
+      false: {},
+      true: {
+        background: "surface.muted",
+        borderColor: "border.default",
+        borderStyle: "solid",
+        borderWidth: "thin",
+        boxShadow: "none",
+        color: "fg.muted",
+      },
     },
   },
 });
@@ -91,12 +96,16 @@ export const FaviconTile = ({
   <span
     aria-hidden
     className={cx(
-      faviconTile({ failed, size, tone: tone ?? toneFor(domain) }),
+      faviconTile({
+        failed,
+        size,
+        tone: failed ? undefined : (tone ?? toneFor(domain)),
+      }),
       className
     )}
   >
     {failed ? (
-      <Globe size={size === "lg" ? 16 : 12} strokeWidth={2} />
+      <Globe size={size === "lg" ? 16 : 13} strokeWidth={2} />
     ) : (
       domain.charAt(0).toUpperCase()
     )}

@@ -13,7 +13,8 @@
     "prepare": "pnpm run panda:codegen",
     "preview": "pnpm run build && vite preview",
     "storybook": "storybook dev -p 6006 -c src/storybook",
-    "test": "vitest run",
+    "test": "vitest run --project workers --project node",
+    "test:browser": "vitest run --project browser",
     "typecheck": "tsrs"
   },
   "dependencies": {
@@ -62,14 +63,17 @@
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@vitejs/plugin-react": "catalog:build",
+    "@vitest/browser-playwright": "catalog:test",
     "eslint-plugin-storybook": "catalog:lint",
     "oxlint-plugin-react-doctor": "catalog:lint",
+    "playwright": "catalog:test",
     "postcss": "catalog:ui",
     "storybook": "catalog:storybook",
     "storybook-device-viewports": "catalog:storybook",
     "typescript": "catalog:typescript",
     "vite": "catalog:build",
     "vitest": "catalog:test",
+    "vitest-browser-react": "catalog:test",
     "wrangler": "catalog:runtime"
   }
 }

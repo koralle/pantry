@@ -3,7 +3,7 @@ import type { HTMLStyledProps } from "styled-system/types";
 
 const RawLabel = styled("label", {
   base: {
-    alignContent: "center",
+    alignItems: "center",
     color: "fg.default",
     display: "inline-flex",
     fontSize: "xs",

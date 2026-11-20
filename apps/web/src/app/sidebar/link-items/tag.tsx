@@ -3,7 +3,11 @@ import { Link, useMatchRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { cx } from "styled-system/css";
 
-import { railItem, railCount } from "../../../features/app-shell/styles";
+import {
+  railCount,
+  railItem,
+  railLabel,
+} from "../../../features/app-shell/styles";
 import type { ShelfTag } from "../../../features/tags/lib/tag-shelf";
 import { orpc } from "../../../rpc/client/query";
 import { TagDot } from "../../../shared/components/tag-chip";
@@ -33,15 +37,16 @@ export const TagLink = ({ tag }: { tag: ShelfTag }) => {
 
   return (
     <Link
-      to="/bookmarks"
+      aria-current={isActive ? "page" : undefined}
       className={railItem({ active: isActive })}
       data-rail-tag
       search={{
         tags: [tag.name],
       }}
+      to="/bookmarks"
     >
       <TagDot color={tag.color} tone={toneFor(tag.name)} />
-      {tag.name}
+      <span className={railLabel}>{tag.name}</span>
       <span className={cx(railCount, "pantry-rail-count")}>
         {tag.bookmarkCount}
       </span>

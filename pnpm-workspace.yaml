@@ -76,8 +76,11 @@ catalogs:
     hono: 4.13.13
   test:
     "@cloudflare/vitest-plugin": 1.4.5
+    "@vitest/browser-playwright": 5.0.5
+    playwright: 1.65.1
     testcontainers: 12.2.1
     vitest: 5.0.5
+    vitest-browser-react: 2.3.0
   typescript:
     "@tsconfig/strictest": 2.0.8
     typescript: 7.0.2

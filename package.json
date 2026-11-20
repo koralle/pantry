@@ -24,6 +24,7 @@
     "storybook": "pnpm --filter @pantry/web run storybook",
     "studio:dev": "pnpm --filter @pantry/db run studio:dev",
     "test": "pnpm -r run test",
+    "test:browser": "pnpm --filter @pantry/web run test:browser",
     "test:db": "pnpm --filter @pantry/api run test:db",
     "typecheck": "tsrs && pnpm -r run typecheck"
   },

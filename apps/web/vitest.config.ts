@@ -1,6 +1,8 @@
 import path from "node:path";
 
 import { cloudflareTest } from "@cloudflare/vitest-plugin";
+import viteReact from "@vitejs/plugin-react";
+import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
 const tanstackEntryStub = path.resolve(
@@ -26,6 +28,7 @@ const pathnameOf = (url: string): string => {
  * `node_modules` まで拾うので、ここへまとめて Node project へ逃がす。
  */
 const anyIntegrationTests = "src/**/*.integration.test.ts";
+const anyBrowserTests = "src/**/*.browser.test.{ts,tsx}";
 const nodeTests = [
   // oxlint の設定を読むので workerd ではなく Node で動かす。
   "oxlint.config.test.ts",
@@ -78,7 +81,7 @@ export default defineConfig({
           alias: aliases,
         },
         test: {
-          exclude: [...nodeTests, anyIntegrationTests],
+          exclude: [...nodeTests, anyIntegrationTests, anyBrowserTests],
           include: ["src/**/*.{test,spec}.ts"],
           name: "workers",
         },
@@ -91,6 +94,25 @@ export default defineConfig({
           environment: "node",
           include: nodeTests,
           name: "node",
+        },
+      },
+      {
+        plugins: [viteReact()],
+        resolve: {
+          alias: {
+            ...aliases,
+            "styled-system": path.resolve(import.meta.dirname, "styled-system"),
+          },
+        },
+        test: {
+          browser: {
+            enabled: true,
+            headless: true,
+            instances: [{ browser: "chromium" }],
+            provider: playwright(),
+          },
+          include: [anyBrowserTests],
+          name: "browser",
         },
       },
     ],

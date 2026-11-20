@@ -64,6 +64,14 @@ export const PasskeyRenameDialog = ({
             <div className={dialogField}>
               <StyledLabel htmlFor={inputId}>表示名</StyledLabel>
               <StyledInput
+                aria-describedby={
+                  errorMessage === null || errorMessage === undefined
+                    ? undefined
+                    : `${inputId}-error`
+                }
+                aria-invalid={
+                  errorMessage !== null && errorMessage !== undefined
+                }
                 id={inputId}
                 value={name}
                 onChange={(event) => {
@@ -74,7 +82,7 @@ export const PasskeyRenameDialog = ({
               />
             </div>
             {errorMessage === null || errorMessage === undefined ? null : (
-              <p className={dialogError} role="alert">
+              <p className={dialogError} id={`${inputId}-error`} role="alert">
                 <CircleAlert aria-hidden size={12} /> {errorMessage}
               </p>
             )}

@@ -58,6 +58,7 @@ const toRowProps = (item: BookmarkListItem): BookmarkRowProps => ({
   starred: item.favorite,
   tags: item.tags.map((tag) => ({ color: tag.color, name: tag.name })),
   title: item.title,
+  url: item.url,
 });
 
 export const BookmarkListResults = ({
@@ -83,6 +84,7 @@ export const BookmarkListResults = ({
   const detailSearch = detailSearchFromList(search);
   const { selectedId } = useListKeyboard({
     cards: search.layout === "cards",
+    detailSearch,
     identity: bookmarkListSearchIdentity(search),
     ids: items.map((item) => item.id),
   });

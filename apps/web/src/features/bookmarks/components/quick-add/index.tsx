@@ -7,6 +7,7 @@ import {
   CircleAlert,
   Link2,
   LoaderCircle,
+  Pencil,
   Plus,
   RotateCw,
   Tag,
@@ -19,10 +20,12 @@ import { css } from "styled-system/css";
 import * as v from "valibot";
 
 import { FaviconTile } from "../../../../shared/components/favicon-tile";
+import { IconButton } from "../../../../shared/components/icon-button";
 import { Kbd } from "../../../../shared/components/kbd";
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { button } from "../../../../shared/components/styled-button/styles";
-import { domainToneVar, toneFor } from "../../../../shared/styles/domain-tone";
+import { TagDot } from "../../../../shared/components/tag-chip";
+import { toneFor } from "../../../../shared/styles/domain-tone";
 import { spinner } from "../../../../shared/styles/feedback";
 import {
   fieldErr,
@@ -61,6 +64,7 @@ import {
   qaTagDot,
   qaTagDots,
   qaTitle,
+  qaTitleEditRow,
   qaWarnNote,
   qaWarnNoteIcon,
 } from "./styles";
@@ -240,6 +244,7 @@ const QuickAddRound = ({
   const [urlDraft, setUrlDraft] = useState(initialUrl ?? "");
   const [urlError, setUrlError] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState(initialTitle ?? "");
+  const [editingTitle, setEditingTitle] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<BookmarkFormServerError | null>(
@@ -325,9 +330,7 @@ const QuickAddRound = ({
     setSaveError(null);
     const { url } = phase;
     // タイトル未取得のまま空欄でも「そのまま登録」できるようドメインへ倒す。
-    const title =
-      (phase.titleFetchFailed ? titleDraft : phase.title).trim() ||
-      domainOf(url);
+    const title = titleDraft.trim() || domainOf(url);
     try {
       const result = await onCreateBookmark({
         note: noteDraft.trim() === "" ? null : noteDraft,
@@ -387,8 +390,10 @@ const QuickAddRound = ({
                     urlError === null ? undefined : `${urlInputId}-error`
                   }
                   aria-invalid={urlError !== null}
+                  autoCapitalize="none"
                   autoComplete="url"
                   className={inputBoxField}
+                  enterKeyHint="done"
                   id={urlInputId}
                   onChange={(event) => {
                     setUrlDraft(event.currentTarget.value);
@@ -397,6 +402,7 @@ const QuickAddRound = ({
                     }
                   }}
                   placeholder="https://…"
+                  spellCheck={false}
                   type="url"
                   value={urlDraft}
                 />
@@ -440,12 +446,10 @@ const QuickAddRound = ({
                 {phase.tags.length === 0 ? null : (
                   <span aria-hidden className={qaTagDots}>
                     {phase.tags.map((tag) => (
-                      <span
+                      <TagDot
                         className={qaTagDot}
                         key={tag.id}
-                        style={{
-                          background: domainToneVar[toneFor(tag.name)],
-                        }}
+                        tone={toneFor(tag.name)}
                       />
                     ))}
                   </span>
@@ -565,10 +569,52 @@ const QuickAddRound = ({
             ) : (
               <div className={qaBookmark}>
                 <FaviconTile domain={domainOf(confirm.url)} size="md" />
-                <div className={qaBookmarkTx}>
-                  <div className={qaBookmarkTitle}>{confirm.title}</div>
-                  <div className={qaBookmarkMeta}>{domainOf(confirm.url)}</div>
-                </div>
+                {editingTitle ? (
+                  <div className={qaTitleEditRow}>
+                    <div className={inputBox()} style={{ flex: "1" }}>
+                      <Input
+                        aria-label="タイトル"
+                        className={inputBoxField}
+                        enterKeyHint="done"
+                        onChange={(event) => {
+                          setTitleDraft(event.currentTarget.value);
+                        }}
+                        placeholder={domainOf(confirm.url)}
+                        type="text"
+                        value={titleDraft}
+                      />
+                    </div>
+                    <IconButton
+                      aria-label="タイトル編集を終了"
+                      onPress={() => {
+                        setEditingTitle(false);
+                      }}
+                      size="sm"
+                    >
+                      <Check aria-hidden size={14} />
+                    </IconButton>
+                  </div>
+                ) : (
+                  <>
+                    <div className={qaBookmarkTx}>
+                      <div className={qaBookmarkTitle}>
+                        {titleDraft.trim() || domainOf(confirm.url)}
+                      </div>
+                      <div className={qaBookmarkMeta}>
+                        {domainOf(confirm.url)}
+                      </div>
+                    </div>
+                    <IconButton
+                      aria-label="タイトルを編集"
+                      onPress={() => {
+                        setEditingTitle(true);
+                      }}
+                      size="sm"
+                    >
+                      <Pencil aria-hidden size={14} />
+                    </IconButton>
+                  </>
+                )}
               </div>
             )}
             <BookmarkTagPicker
@@ -606,6 +652,17 @@ const QuickAddRound = ({
               </p>
             )}
             <div className={qaActions}>
+              <StyledButton
+                isDisabled={busy}
+                onPress={() => {
+                  setEditingTitle(false);
+                  setSaveError(null);
+                  setPhase({ step: "input" });
+                }}
+                type="button"
+              >
+                URLを変更
+              </StyledButton>
               <StyledButton
                 data-primary
                 isDisabled={busy}

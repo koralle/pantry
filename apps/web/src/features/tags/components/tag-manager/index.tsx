@@ -14,7 +14,6 @@
 import { Link } from "@tanstack/react-router";
 import {
   Check,
-  ChevronRight,
   CircleAlert,
   LoaderCircle,
   Pencil,
@@ -60,7 +59,6 @@ import { sortTagsForNav } from "../../lib/tag-shelf";
 import {
   tagDialogLabel,
   tagRow,
-  tagRowChevron,
   tagRowCount,
   tagRowLink,
   tagRowList,
@@ -160,25 +158,20 @@ export const TagManagerScreen = ({
         <div className={tagsHeadRow}>
           <h1 className={tagsTitle}>タグ</h1>
           <span className={tagsCount}>{tags.length} 件</span>
-          <StyledButton
-            className={tagsHeadCreate}
-            onPress={openCreate}
-            size="sm"
-            visual="accent"
-          >
-            <Plus size={14} aria-hidden /> 新規タグ
-          </StyledButton>
-          <IconButton
-            aria-label="新規タグ"
-            className={tagsHeadCreateMobile}
-            onPress={openCreate}
-          >
-            <Plus size={16} aria-hidden />
-          </IconButton>
+          <div className={tagsHeadCreate}>
+            <StyledButton onPress={openCreate} size="sm" visual="accent">
+              <Plus size={14} aria-hidden /> 新規タグ
+            </StyledButton>
+          </div>
+          <div className={tagsHeadCreateMobile}>
+            <IconButton aria-label="新規タグ" onPress={openCreate}>
+              <Plus size={16} aria-hidden />
+            </IconButton>
+          </div>
         </div>
 
-        <div className={tagSearchBox}>
-          <Search aria-hidden className={tagSearchIcon} size={14} />
+        <search className={tagSearchBox}>
+          <Search aria-hidden className={tagSearchIcon} size={15} />
           <input
             aria-label="タグを検索"
             className={tagSearchInput}
@@ -197,10 +190,10 @@ export const TagManagerScreen = ({
               }}
               size="sm"
             >
-              <X aria-hidden size={12} />
+              <X aria-hidden size={14} />
             </IconButton>
           )}
-        </div>
+        </search>
 
         {filtered.length === 0 ? (
           <StateView
@@ -209,9 +202,9 @@ export const TagManagerScreen = ({
             description="検索条件を変えてみてください"
           />
         ) : (
-          <div className={tagRowList}>
+          <ul className={tagRowList}>
             {filtered.map((tag) => (
-              <div className={tagRow} key={tag.id}>
+              <li className={tagRow} key={tag.id}>
                 <Link
                   className={tagRowLink}
                   search={tagShelfSearch(tag.name)}
@@ -220,11 +213,6 @@ export const TagManagerScreen = ({
                   <TagDot color={tag.color} tone={toneFor(tag.name)} />
                   <span className={tagRowName}>{tag.name}</span>
                   <span className={tagRowCount}>{tag.bookmarkCount} 件</span>
-                  <ChevronRight
-                    aria-hidden
-                    className={tagRowChevron}
-                    size={14}
-                  />
                 </Link>
                 <span className={tagRowOps}>
                   <IconButton
@@ -247,9 +235,9 @@ export const TagManagerScreen = ({
                     <Trash2 aria-hidden size={14} />
                   </IconButton>
                 </span>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
@@ -377,15 +365,20 @@ const TagNameForm = ({
           タグ名
         </label>
         <StyledInput
+          aria-describedby={error === null ? undefined : "tag-name-error"}
+          aria-invalid={error !== null}
           id="tag-name-input"
           onChange={(event) => {
             setDraft(event.target.value);
+            if (error !== null) {
+              setError(null);
+            }
           }}
           value={draft}
         />
       </div>
       {error ? (
-        <p className={dialogError} role="alert">
+        <p className={dialogError} id="tag-name-error" role="alert">
           <CircleAlert aria-hidden size={12} /> {error}
         </p>
       ) : null}
@@ -535,9 +528,9 @@ export const TagManagerSkeleton = () => (
           読み込み中…
         </span>
       </div>
-      <div className={tagRowList}>
+      <ul className={tagRowList}>
         {[90, 120, 70, 100].map((width) => (
-          <div className={tagRowSkeleton} key={width}>
+          <li className={tagRowSkeleton} key={width}>
             <span
               className={skeletonBar}
               style={{ blockSize: "0.625rem", inlineSize: "0.625rem" }}
@@ -546,9 +539,9 @@ export const TagManagerSkeleton = () => (
               className={skeletonBar}
               style={{ blockSize: "0.75rem", inlineSize: `${width}px` }}
             />
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   </div>
 );

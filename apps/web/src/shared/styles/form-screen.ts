@@ -6,19 +6,27 @@ export const formWrap = css({
   flex: "1",
   justifyContent: "center",
   minBlockSize: "0",
+  overscrollBehavior: "contain",
   overflowY: "auto",
-  paddingBlock: "7",
-  paddingInline: "5",
+  paddingBlock: { base: "5", md: "8" },
+  paddingInline: { base: "3.5", md: "5" },
 });
 
 export const formCard = cva({
   base: {
     alignSelf: "flex-start",
+    background: "bg.surface",
+    borderColor: "border.default",
+    borderRadius: "[1rem]",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    boxShadow: "card",
     display: "flex",
     flexDirection: "column",
     inlineSize: "100%",
-    maxInlineSize: "[30rem]",
-    rowGap: "3.5",
+    maxInlineSize: "[36rem]",
+    padding: { base: "5", md: "7" },
+    rowGap: "4",
   },
   defaultVariants: {
     busy: false,
@@ -34,9 +42,11 @@ export const formCard = cva({
 });
 
 export const formHeading = css({
-  fontSize: "[1.0625rem]",
+  color: "fg.default",
+  fontSize: "lg",
   fontWeight: "bold",
   letterSpacing: "tight",
+  margin: "0",
 });
 
 export const formFieldset = css({
@@ -46,7 +56,7 @@ export const formFieldset = css({
   margin: "0",
   minInlineSize: "0",
   padding: "0",
-  rowGap: "3.5",
+  rowGap: "4",
 });
 
 export const fieldGroup = css({
@@ -56,27 +66,38 @@ export const fieldGroup = css({
 });
 
 export const flabel = css({
-  color: "fg.muted",
-  fontSize: "2xs",
-  fontWeight: "bold",
-  letterSpacing: "[0.02em]",
+  color: "fg.default",
+  fontSize: "xs",
+  fontWeight: "semibold",
+  letterSpacing: "0",
+});
+
+export const flabelReq = css({
+  color: "danger.solid",
+  marginInlineStart: "0.5",
 });
 
 /** アイコン入りの枠付き入力ボックス。input は枠なしで内側に置く。 */
 export const inputBox = cva({
   base: {
+    "@media (hover: hover) and (pointer: fine)": {
+      "&:hover:not(:focus-within)": {
+        borderColor: "fg.faint",
+      },
+    },
     _focusWithin: {
       borderColor: "accent.solid",
-      boxShadow: "[0_0_0_3px_{colors.accent.subtle}]",
+      boxShadow: "accentRing",
     },
     alignItems: "center",
     background: "bg.surface",
-    borderColor: "border.default",
-    borderRadius: "[0.5625rem]",
+    borderColor: "border.control",
+    borderRadius: "box",
     borderStyle: "solid",
     borderWidth: "thin",
     columnGap: "2",
     display: "flex",
+    minBlockSize: "touch",
     paddingBlock: "2",
     paddingInline: "3",
     transitionDuration: "hover",
@@ -104,7 +125,10 @@ export const inputBoxField = css({
   color: "fg.default",
   flex: "1",
   fontFamily: "inherit",
-  fontSize: "sm",
+  fontSize: "[max(1rem, 0.875rem)]",
+  md: {
+    fontSize: "sm",
+  },
   minInlineSize: "0",
   outline: "none",
   padding: "0",
@@ -139,8 +163,11 @@ export const noteArea = css({
   color: "fg.default",
   flex: "1",
   fontFamily: "inherit",
-  fontSize: "sm",
+  fontSize: "[max(1rem, 0.875rem)]",
   lineHeight: "relaxed",
+  md: {
+    fontSize: "sm",
+  },
   minInlineSize: "0",
   outline: "none",
   padding: "0",
@@ -159,20 +186,25 @@ export const fieldErr = css({
 /** タグチップと入力を一つの枠にまとめたボックス。 */
 export const tagInputBox = cva({
   base: {
+    "@media (hover: hover) and (pointer: fine)": {
+      "&:hover:not(:focus-within)": {
+        borderColor: "fg.faint",
+      },
+    },
     _focusWithin: {
       borderColor: "accent.solid",
-      boxShadow: "[0_0_0_3px_{colors.accent.subtle}]",
+      boxShadow: "accentRing",
     },
     alignItems: "center",
     background: "bg.surface",
-    borderColor: "border.default",
-    borderRadius: "[0.5625rem]",
+    borderColor: "border.control",
+    borderRadius: "box",
     borderStyle: "solid",
     borderWidth: "thin",
     columnGap: "1.5",
     display: "flex",
     flexWrap: "wrap",
-    minBlockSize: "[2.5rem]",
+    minBlockSize: "touch",
     paddingBlock: "1.5",
     paddingInline: "2.5",
     rowGap: "1.5",
@@ -234,21 +266,27 @@ export const tchipName = css({
 });
 
 export const tchipRemove = css({
-  "@media (any-hover: hover)": {
+  "@media (hover: hover) and (pointer: fine)": {
     "&:hover:not(:disabled)": {
       color: "fg.default",
     },
+  },
+  _after: {
+    content: '""',
+    inset: "-8px",
+    position: "absolute",
   },
   alignItems: "center",
   background: "transparent",
   borderRadius: "full",
   borderWidth: "none",
-  color: "fg.faint",
+  color: "fg.muted",
   cursor: "pointer",
   display: "inline-flex",
   flexShrink: "0",
   justifyContent: "center",
   padding: "0",
+  position: "relative",
   blockSize: "[0.9375rem]",
   inlineSize: "[0.9375rem]",
 });

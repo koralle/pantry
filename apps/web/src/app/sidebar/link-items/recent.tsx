@@ -7,9 +7,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { cx } from "styled-system/css";
 
 import {
-  railItem,
-  railIcon,
   railCount,
+  railIcon,
+  railItem,
+  railLabel,
 } from "../../../features/app-shell/styles";
 import { orpc } from "../../../rpc/client/query";
 
@@ -53,16 +54,19 @@ export const RecentBookmarkLink = () => {
     );
   }, [matchRoute, searchParams]);
 
+  const isActive = checkIsActive();
+
   return (
     <Link
-      to="/bookmarks"
+      aria-current={isActive ? "page" : undefined}
+      className={railItem({ active: isActive })}
       search={{
         view: "recent",
       }}
-      className={railItem({ active: checkIsActive() })}
+      to="/bookmarks"
     >
-      <History className={cx(railIcon, "pantry-rail-icon")} />
-      最近保存したもの
+      <History aria-hidden className={cx(railIcon, "pantry-rail-icon")} />
+      <span className={railLabel}>最近保存したもの</span>
       <ErrorBoundary
         fallback={<span className={cx(railCount, "pantry-rail-count")}>0</span>}
       >

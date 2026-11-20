@@ -6,25 +6,25 @@ export const accountPage = css({
   flex: "1",
   flexDirection: "column",
   minBlockSize: "0",
+  overscrollBehavior: "contain",
   overflowY: "auto",
-  paddingBlock: "4",
-  paddingInline: "4",
-  md: {
-    paddingBlock: "6",
-    paddingInline: "6",
-  },
+  paddingBlock: { base: "4", md: "6" },
+  paddingInline: { base: "3.5", md: "6" },
 });
 
 export const accountPageInner = css({
   display: "flex",
   flexDirection: "column",
-  maxInlineSize: "[35rem]",
-  minBlockSize: "0",
+  gap: "4",
   inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[44rem]",
+  minBlockSize: "0",
 });
 
 export const accountTitle = css({
-  fontSize: "[1.0625rem]",
+  color: "fg.default",
+  fontSize: { base: "md", md: "lg" },
   fontWeight: "bold",
   letterSpacing: "tight",
   margin: "0",
@@ -33,29 +33,32 @@ export const accountTitle = css({
 /** mobile 上部の `← 一覧へ戻る`。desktop はレールがあるので出さない。 */
 export const accountBackRow = css({
   display: { base: "flex", md: "none" },
-  marginBlockEnd: "3",
 });
 
-/** モックの `.sec-box` — セクション区切りの上罫線。 */
+/** セクションカード。 */
 export const accountSection = css({
-  borderBlockStartColor: "border.default",
-  borderBlockStartStyle: "solid",
-  borderBlockStartWidth: "thin",
-  marginBlockStart: "4.5",
-  paddingBlockStart: "3.5",
+  background: "bg.surface",
+  borderColor: "border.default",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  boxShadow: "surface",
+  padding: { base: "4.5", md: "6" },
+  "& > dl": {
+    margin: "0",
+  },
 });
 
-/** モックの `.sec-h` — セクション見出し。 */
+/** セクション見出し。 */
 export const accountSectionHeading = css({
-  color: "fg.faint",
-  fontSize: "2xs",
-  fontWeight: "bold",
-  letterSpacing: "[0.06em]",
+  color: "fg.muted",
+  fontSize: "xs",
+  fontWeight: "semibold",
+  letterSpacing: "wide",
   margin: "0",
-  textTransform: "uppercase",
 });
 
-/** 見出しと中身の間隔（`.sec-h` の margin-bottom 相当）。 */
+/** 見出しと中身の間隔。 */
 export const accountSectionBody = css({
   marginBlockStart: "3",
 });
@@ -64,27 +67,39 @@ export const accountSectionBody = css({
 export const accountSectionHeadRow = css({
   alignItems: "center",
   display: "flex",
+  gap: "3",
 });
 
 export const accountSectionHeadAction = css({
   marginInlineStart: "auto",
 });
 
-/** モックの `.kv` — 名前/メールの表示行。 */
+/** 名前/メールの表示行。 */
 export const accountKv = css({
+  borderBlockEndColor: "border.default",
+  borderBlockEndStyle: "solid",
+  borderBlockEndWidth: "thin",
   columnGap: "3.5",
   display: "flex",
+  flexWrap: "wrap",
   fontSize: "sm",
   margin: "0",
-  paddingBlock: "2",
+  paddingBlock: "2.5",
+  "&:first-child": {
+    paddingBlockStart: "0",
+  },
+  "&:last-child": {
+    borderBlockEndWidth: "none",
+    paddingBlockEnd: "0",
+  },
 });
 
 export const accountKvKey = css({
-  color: "fg.faint",
+  color: "fg.muted",
   flexShrink: "0",
-  fontSize: "2xs",
+  fontSize: "xs",
+  fontWeight: "medium",
   inlineSize: "[4.5rem]",
-  paddingBlockStart: "px",
 });
 
 export const accountKvValue = css({
@@ -93,7 +108,7 @@ export const accountKvValue = css({
   overflowWrap: "anywhere",
 });
 
-/** モックの `.pk-row` — パスキー行。 */
+/** パスキー行。 */
 export const passkeyRow = css({
   alignItems: "center",
   borderBlockEndColor: "border.default",
@@ -104,10 +119,14 @@ export const passkeyRow = css({
   fontSize: "sm",
   paddingBlock: "3",
   paddingInline: "1",
+  "&:last-child": {
+    borderBlockEndWidth: "none",
+    paddingBlockEnd: "0",
+  },
 });
 
 export const passkeyRowIcon = css({
-  color: "fg.faint",
+  color: "fg.muted",
   display: "inline-flex",
   flexShrink: "0",
 });
@@ -121,13 +140,14 @@ export const passkeyRowBody = css({
 });
 
 export const passkeyRowName = css({
+  color: "fg.default",
   fontWeight: "semibold",
   margin: "0",
   overflowWrap: "anywhere",
 });
 
 export const passkeyRowMeta = css({
-  color: "fg.faint",
+  color: "fg.muted",
   fontFamily: "mono",
   fontSize: "2xs",
   margin: "0",
@@ -154,7 +174,7 @@ export const passkeyEmptyIcon = css({
   alignItems: "center",
   background: "surface.muted",
   borderRadius: "full",
-  color: "fg.faint",
+  color: "fg.muted",
   display: "inline-flex",
   blockSize: "[2.5rem]",
   inlineSize: "[2.5rem]",
@@ -162,6 +182,7 @@ export const passkeyEmptyIcon = css({
 });
 
 export const passkeyEmptyTitle = css({
+  color: "fg.default",
   fontSize: "sm",
   fontWeight: "semibold",
   margin: "0",

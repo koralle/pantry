@@ -28,7 +28,7 @@ export const BottomTabs = () => {
   const isTagPage = useIsInTagPage();
 
   return (
-    <nav aria-label="ビュー" className={bottomTabs}>
+    <nav aria-label="モバイルナビゲーション" className={bottomTabs}>
       <Link
         aria-current={isRecent ? "page" : undefined}
         className={tabItem({ active: isRecent })}

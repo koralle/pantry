@@ -458,7 +458,8 @@ export const SelectsAndRemovesTags = Default.extend({
     await expect(
       canvas.getByRole("button", { name: "TypeScriptを外す" })
     ).toBeInTheDocument();
-    // タグ選択でピッカーは閉じる
+    // 複数選択のため選択だけでは閉じず、「完了」で閉じる
+    await userEvent.click(body.getByRole("button", { name: "完了" }));
     await expect(
       canvas.getByRole("button", { name: tagTriggerName })
     ).toHaveAttribute("aria-expanded", "false");
@@ -500,12 +501,12 @@ export const SelectsTagOnMobileSheet = Default.extend({
     await expect(searchbox).toHaveFocus();
     const option = await body.findByRole("option", { name: /React/ });
     await userEvent.click(option);
-    // タグ選択でシートは閉じ、チップが付く
-    await expect(triggerButton).toHaveAttribute("aria-expanded", "false");
-    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
     await expect(
       canvas.getByRole("button", { name: "Reactを外す" })
     ).toBeInTheDocument();
+    await userEvent.click(body.getByRole("button", { name: "完了" }));
+    await expect(triggerButton).toHaveAttribute("aria-expanded", "false");
+    await expect(body.queryByRole("dialog")).not.toBeInTheDocument();
   },
 });
 
@@ -624,8 +625,7 @@ export const CreateFailureKeepsDraftAndShowsFieldError = Default.extend({
     const canvas = within(canvasElement);
     const body = await openTagPicker(canvas);
     await userEvent.click(body.getByRole("option", { name: /React/ }));
-    // 選択で閉じるので、失敗を試すため開き直して入力する
-    await openTagPicker(canvas);
+    // 複数選択のためピッカーは開いたまま → 続けて新規タグ入力を試す
     await userEvent.type(
       body.getByRole("searchbox", { name: tagSearchName }),
       "Python"

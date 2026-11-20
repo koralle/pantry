@@ -1,15 +1,28 @@
 import { css } from "styled-system/css";
 
 export const dialogBackdrop = css({
+  backdropFilter: "blur(4px)",
   background: "overlay.backdrop",
   inset: "0",
   position: "fixed",
+  zIndex: "20",
+  "@media (prefers-reduced-motion: no-preference)": {
+    transitionDuration: "modal",
+    transitionProperty: "opacity",
+    transitionTimingFunction: "out",
+    "&[data-entering]": {
+      opacity: "0",
+    },
+    "&[data-exiting]": {
+      opacity: "0",
+      transitionDuration: "modalExit",
+    },
+  },
 });
 
 /**
  * 中央モーダル。子要素は uniform gap ではなく各ブロックの
- * marginBlockStart でリズムを作る（モック: 説明 +6px / フィールド +12px /
- * アクション +14〜16px）。
+ * marginBlockStart でリズムを作る。
  */
 export const dialog = css({
   background: "bg.surface",
@@ -22,14 +35,32 @@ export const dialog = css({
   boxSizing: "border-box",
   inset: "0",
   margin: "auto",
-  maxInlineSize: "20rem",
-  padding: "4.5",
+  maxBlockSize: "calc(100dvh - 2rem)",
+  maxInlineSize: "min(26rem, calc(100vw - 2rem))",
+  overflowY: "auto",
+  overscrollBehavior: "contain",
+  padding: "6",
   position: "fixed",
   width: "dialog-width",
+  "@media (prefers-reduced-motion: no-preference)": {
+    transitionDuration: "modal",
+    transitionProperty: "opacity, transform",
+    transitionTimingFunction: "out",
+    "&[data-entering]": {
+      opacity: "0",
+      transform: "scale(0.96) translateY(0.25rem)",
+    },
+    "&[data-exiting]": {
+      opacity: "0",
+      transform: "scale(0.96) translateY(0.25rem)",
+      transitionDuration: "modalExit",
+    },
+  },
 });
 
 export const dialogTitle = css({
-  fontSize: "xs",
+  color: "fg.default",
+  fontSize: "md",
   fontWeight: "bold",
   lineHeight: "tight",
   margin: "0",
@@ -37,10 +68,10 @@ export const dialogTitle = css({
 
 export const dialogDescription = css({
   color: "fg.muted",
-  fontSize: "2xs",
-  lineHeight: "[1.6]",
+  fontSize: "xs",
+  lineHeight: "body",
   margin: "0",
-  marginBlockStart: "1.5",
+  marginBlockStart: "2",
 });
 
 export const dialogField = css({

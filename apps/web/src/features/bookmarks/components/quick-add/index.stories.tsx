@@ -186,7 +186,7 @@ export const SelectsTags = meta.story({
         canvas.getByRole("button", { name: "Reactを外す" })
       ).toBeInTheDocument();
     });
-    // タグ選択でピッカーは閉じる
+    await userEvent.click(body.getByRole("button", { name: "完了" }));
     await expect(triggerButton).toHaveAttribute("aria-expanded", "false");
     await expect(body.queryByRole("listbox")).not.toBeInTheDocument();
   },

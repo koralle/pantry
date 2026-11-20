@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import type { ShellTag } from "../../../../features/app-shell/lib/shell-nav";
 import { defaultBookmarkSearch } from "../../../../features/navigation/lib/bookmark-search";
+import type { ShelfTag } from "../../../../features/tags/lib/tag-shelf";
+import { orpc } from "../../../../rpc/client/query";
 import type { BookmarkRowProps } from "../bookmark-row";
 import { BookmarkListView } from "./index";
 
@@ -14,6 +17,40 @@ const demoTags: ShellTag[] = [
   { count: 11, id: "6", name: "infra" },
 ];
 
+const shelfTags: ShelfTag[] = demoTags.map((tag, index) => ({
+  bookmarkCount: tag.count,
+  color: null,
+  id: Number(tag.id),
+  lastUsedAt: null,
+  name: tag.name,
+  pinned: index < 2,
+  sortOrder: index,
+}));
+
+const storyQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: Number.POSITIVE_INFINITY,
+    },
+  },
+});
+
+const STORY_FRESH_UNTIL = Date.now() + 86_400_000;
+storyQueryClient.setQueryData(orpc.bookmarks.counts.recent.queryKey(), 128, {
+  updatedAt: STORY_FRESH_UNTIL,
+});
+storyQueryClient.setQueryData(orpc.bookmarks.counts.inbox.queryKey(), 3, {
+  updatedAt: STORY_FRESH_UNTIL,
+});
+storyQueryClient.setQueryData(orpc.bookmarks.counts.favorites.queryKey(), 6, {
+  updatedAt: STORY_FRESH_UNTIL,
+});
+storyQueryClient.setQueryData(orpc.tags.shelf.queryKey(), shelfTags, {
+  updatedAt: STORY_FRESH_UNTIL,
+});
+
 const demoItems: BookmarkRowProps[] = [
   {
     dateLabel: "2h",
@@ -21,6 +58,7 @@ const demoItems: BookmarkRowProps[] = [
     id: "1",
     tags: [{ name: "frontend" }, { name: "tanstack" }],
     title: "TanStack Router の型安全な検索パラメータ",
+    url: "https://tanstack.com/router/latest",
   },
   {
     dateLabel: "1d",
@@ -29,6 +67,7 @@ const demoItems: BookmarkRowProps[] = [
     starred: true,
     tags: [{ name: "css" }, { name: "design" }],
     title: "Panda CSS デザイントークン設計ガイド",
+    url: "https://panda-css.com/docs/theming/tokens",
   },
   {
     dateLabel: "3d",
@@ -36,6 +75,7 @@ const demoItems: BookmarkRowProps[] = [
     id: "3",
     tags: [{ name: "db" }],
     title: "Drizzle ORM マイグレーション入門",
+    url: "https://orm.drizzle.team/docs/migrations",
   },
   {
     dateLabel: "5d",
@@ -44,12 +84,14 @@ const demoItems: BookmarkRowProps[] = [
     id: "4",
     tags: [{ name: "frontend" }, { name: "db" }],
     title: "Valibot スキーマ検証の実践パターン",
+    url: "https://valibot.dev/guides/introduction/",
   },
   {
     dateLabel: "1w",
     domain: "developer.mozilla.org",
     id: "5",
     title: "MDN: aria-describedby の使い方",
+    url: "https://developer.mozilla.org/ja/docs/Web/Accessibility/ARIA/Attributes/aria-describedby",
   },
 ];
 
@@ -61,6 +103,13 @@ const meta = {
     view: "recent",
   },
   component: BookmarkListView,
+  decorators: [
+    (Story) => (
+      <QueryClientProvider client={storyQueryClient}>
+        <Story />
+      </QueryClientProvider>
+    ),
+  ],
   parameters: { layout: "fullscreen" },
   title: "Screens / BookmarkList",
 } satisfies Meta<typeof BookmarkListView>;

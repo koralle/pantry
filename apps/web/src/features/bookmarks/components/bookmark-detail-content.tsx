@@ -4,6 +4,7 @@ import { domainOf } from "@pantry/utils/url";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUpRight, Pencil } from "lucide-react";
 
+import { CopyButton } from "../../../shared/components/copy-button";
 import { FaviconTile } from "../../../shared/components/favicon-tile";
 import { button } from "../../../shared/components/styled-button/styles";
 import { TagChip } from "../../../shared/components/tag-chip";
@@ -16,11 +17,15 @@ import {
   detailDates,
   detailDomain,
   detailNote,
+  detailNoteHeading,
+  detailNoteSection,
   detailPage,
   detailTags,
   detailTitle,
   detailTop,
   detailUrl,
+  detailUrlIcon,
+  detailUrlRow,
   detailWrap,
 } from "../../../shared/styles/detail";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
@@ -43,8 +48,8 @@ export const BookmarkDetailContent = ({
   return (
     <div className={detailPage}>
       <div className={detailBacklinkRow}>
-        <Link to="/bookmarks" search={listSearch} className={backlink}>
-          <ArrowLeft size={13} aria-hidden /> 一覧
+        <Link className={backlink} search={listSearch} to="/bookmarks">
+          <ArrowLeft aria-hidden size={14} /> 一覧
         </Link>
       </div>
 
@@ -61,14 +66,22 @@ export const BookmarkDetailContent = ({
 
           <h1 className={detailTitle}>{bookmark.title}</h1>
 
-          <a
-            className={detailUrl}
-            href={bookmark.url}
-            rel="noreferrer"
-            target="_blank"
-          >
-            <ArrowUpRight aria-hidden size={12} /> {bookmark.url}
-          </a>
+          <div className={detailUrlRow}>
+            <a
+              className={detailUrl}
+              href={bookmark.url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <ArrowUpRight aria-hidden className={detailUrlIcon} size={14} />
+              <span>{bookmark.url}</span>
+            </a>
+            <CopyButton
+              announcement="URLをコピーしました"
+              label="URLをコピー"
+              value={bookmark.url}
+            />
+          </div>
 
           {bookmark.tagNames.length > 0 ? (
             <div className={detailTags}>
@@ -85,7 +98,10 @@ export const BookmarkDetailContent = ({
           ) : null}
 
           {bookmark.note === null ? null : (
-            <p className={detailNote}>{bookmark.note}</p>
+            <section className={detailNoteSection}>
+              <h2 className={detailNoteHeading}>メモ</h2>
+              <p className={detailNote}>{bookmark.note}</p>
+            </section>
           )}
 
           <div className={detailDates}>
@@ -97,10 +113,10 @@ export const BookmarkDetailContent = ({
             <a
               className={button({ visual: "accent" })}
               href={bookmark.url}
-              rel="noreferrer"
+              rel="noopener noreferrer"
               target="_blank"
             >
-              <ArrowUpRight aria-hidden size={13} /> サイトを開く
+              <ArrowUpRight aria-hidden size={14} /> サイトを開く
             </a>
             <Link
               className={button()}
@@ -108,7 +124,7 @@ export const BookmarkDetailContent = ({
               search={detailSearchFromList(listSearch)}
               to="/bookmarks/$id/edit"
             >
-              <Pencil aria-hidden size={13} /> 編集
+              <Pencil aria-hidden size={14} /> 編集
             </Link>
             <span aria-hidden className={detailActsSpacer} />
             <BookmarkDeleteDialog bookmark={bookmark} listSearch={listSearch} />

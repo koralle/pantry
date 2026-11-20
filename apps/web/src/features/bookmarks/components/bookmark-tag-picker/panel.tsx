@@ -1,10 +1,13 @@
 import { toTagName } from "@pantry/api-contract/schemas/tag-values";
 import { Check, Plus } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import { useEffect, useRef } from "react";
 import { ListBox, ListBoxItem, SearchField } from "react-aria-components";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
 import { StyledInput } from "../../../../shared/components/styled-input";
+import { TagDot } from "../../../../shared/components/tag-chip";
+import { toneFor } from "../../../../shared/styles/domain-tone";
 import { srOnly } from "../../../../shared/styles/sr-only";
 import { sortTagsForNav } from "../../../tags/lib/tag-shelf";
 import { canOfferCreateTag, filterTagCandidates } from "./lib";
@@ -44,6 +47,7 @@ export const TagPickerPanel = ({
 }: TagPickerPanelProps) => {
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastCompositionEndAtRef = useRef<number | null>(null);
   const selectedIds = new Set(selectedTags.map((tag) => tag.id));
   const candidates = filterTagCandidates(sortTagsForNav(tagCandidates), query);
   const canCreate = canOfferCreateTag({
@@ -51,6 +55,11 @@ export const TagPickerPanel = ({
     tags: tagCandidates,
     tagsReady,
   });
+
+  const isImeComposing = (event: KeyboardEvent<HTMLInputElement>): boolean =>
+    event.nativeEvent.isComposing ||
+    (lastCompositionEndAtRef.current !== null &&
+      Math.abs(event.timeStamp - lastCompositionEndAtRef.current) < 50);
 
   // ダイアログを開いたら検索欄へフォーカスする。autoFocus 属性は
   // markuplint が許さず、RAC の FocusScope は最初の要素（完了ボタン）を
@@ -86,9 +95,12 @@ export const TagPickerPanel = ({
           ref={inputRef}
           type="search"
           placeholder="タグ名で探す"
+          onCompositionEnd={(event) => {
+            lastCompositionEndAtRef.current = event.timeStamp;
+          }}
           onKeyDown={(event) => {
-            // IME 変換中の Enter/Escape/ArrowDown は変換操作なので素通しする
-            if (event.nativeEvent.isComposing) {
+            // IME 変換中および Safari 確定直後の Enter/Escape/ArrowDown は素通しする
+            if (isImeComposing(event)) {
               return;
             }
             if (event.key === "Enter") {
@@ -144,6 +156,7 @@ export const TagPickerPanel = ({
               ) : (
                 <span aria-hidden className={checkSlot} />
               )}
+              <TagDot tone={toneFor(tag.name)} />
               <span className={candidateName}>{tag.name}</span>
               <span className={selected ? candidateState : srOnly}>
                 {selected ? "選択済み" : "未選択"}

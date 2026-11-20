@@ -6,7 +6,9 @@ export const detailPage = css({
   flex: "1",
   flexDirection: "column",
   minBlockSize: "0",
+  overscrollBehavior: "contain",
   overflowY: "auto",
+  paddingBlockEnd: "6",
 });
 
 /** 中央寄せの状態表示（Loading / Error / 未検出）用の余白いっぱいのコンテナ。 */
@@ -19,56 +21,63 @@ export const detailCenter = css({
 });
 
 export const detailFlashRow = css({
-  display: "flex",
-  justifyContent: "center",
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[42rem]",
   paddingBlockStart: "3",
-  paddingInline: "5",
-  "& > *": {
-    inlineSize: "100%",
-    maxInlineSize: "[35rem]",
-  },
+  paddingInline: { base: "4", md: "6" },
 });
 
 export const detailBacklinkRow = css({
-  paddingBlockStart: "3.5",
-  paddingInline: "5",
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[42rem]",
+  paddingBlockStart: { base: "3", md: "5" },
+  paddingInline: { base: "4", md: "6" },
 });
 
 export const backlink = css({
-  "@media (any-hover: hover)": {
+  "@media (hover: hover) and (pointer: fine)": {
     "&:hover": {
+      background: "surface.muted",
       color: "fg.default",
     },
   },
+  "@media (pointer: coarse)": {
+    minBlockSize: "touch",
+  },
   alignItems: "center",
+  borderRadius: "box",
   color: "fg.muted",
   columnGap: "1.5",
   display: "inline-flex",
   fontSize: "xs",
   fontWeight: "medium",
+  paddingBlock: "1",
+  paddingInline: "2",
+  marginInlineStart: "-2",
   textDecoration: "none",
   transitionDuration: "hover",
-  transitionProperty: "color",
+  transitionProperty: "background-color, color",
 });
 
 export const detailWrap = css({
-  display: "flex",
-  flex: "1",
-  justifyContent: "center",
-  paddingBlock: "6",
-  paddingInline: "5",
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[42rem]",
+  paddingBlock: { base: "3.5", md: "5" },
+  paddingInline: { base: "4", md: "6" },
 });
 
 export const detailCard = css({
-  alignSelf: "flex-start",
   background: "bg.surface",
   borderColor: "border.default",
-  borderRadius: "[1rem]",
+  borderRadius: "sheet",
   borderStyle: "solid",
   borderWidth: "thin",
+  boxShadow: "card",
   inlineSize: "100%",
-  maxInlineSize: "[35rem]",
-  padding: "6",
+  padding: { base: "5", md: "7" },
 });
 
 export const detailTop = css({
@@ -78,7 +87,7 @@ export const detailTop = css({
 });
 
 export const detailDomain = css({
-  color: "fg.faint",
+  color: "fg.muted",
   fontFamily: "mono",
   fontSize: "xs",
   minInlineSize: "0",
@@ -88,18 +97,32 @@ export const detailDomain = css({
 });
 
 export const detailTitle = css({
-  fontSize: "[1.125rem]",
+  color: "fg.default",
+  fontSize: { base: "md", md: "lg" },
   fontWeight: "bold",
   letterSpacing: "tight",
-  lineHeight: "body",
+  lineHeight: "1.35",
+  marginBlockStart: "4",
+  textWrap: "balance",
+});
+
+export const detailUrlRow = css({
+  alignItems: "flex-start",
+  background: "surface.muted",
+  borderColor: "border.default",
+  borderRadius: "box",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  columnGap: "2",
+  display: "flex",
+  justifyContent: "space-between",
   marginBlockStart: "3.5",
-  md: {
-    marginBlockStart: "4",
-  },
+  paddingBlock: "2",
+  paddingInline: "3",
 });
 
 export const detailUrl = css({
-  "@media (any-hover: hover)": {
+  "@media (hover: hover) and (pointer: fine)": {
     "&:hover": {
       textDecoration: "underline",
     },
@@ -107,30 +130,57 @@ export const detailUrl = css({
   alignItems: "flex-start",
   color: "accent.solid",
   columnGap: "1.5",
-  display: "flex",
+  display: "inline-flex",
+  flex: "1",
   fontFamily: "mono",
   fontSize: "xs",
-  lineHeight: "relaxed",
-  marginBlockStart: "2",
+  lineHeight: "body",
+  minInlineSize: "0",
+  paddingBlock: "1",
   textDecoration: "none",
   wordBreak: "break-all",
+});
+
+export const detailUrlIcon = css({
+  flexShrink: "0",
+  marginBlockStart: "0.5",
 });
 
 export const detailTags = css({
   columnGap: "1.5",
   display: "flex",
   flexWrap: "wrap",
-  marginBlockStart: "3.5",
+  marginBlockStart: "4",
   rowGap: "1.5",
+  "& a": {
+    display: "inline-flex",
+    textDecoration: "none",
+  },
+});
+
+export const detailNoteSection = css({
+  marginBlockStart: "5",
+});
+
+export const detailNoteHeading = css({
+  color: "fg.muted",
+  fontSize: "2xs",
+  fontWeight: "semibold",
+  letterSpacing: "wide",
+  margin: "0",
+  marginBlockEnd: "1.5",
 });
 
 export const detailNote = css({
   background: "surface.muted",
+  borderColor: "border.default",
   borderRadius: "box",
+  borderStyle: "solid",
+  borderWidth: "thin",
   color: "fg.default",
   fontSize: "sm",
   lineHeight: "relaxed",
-  marginBlockStart: "3.5",
+  margin: "0",
   paddingBlock: "3",
   paddingInline: "3.5",
   whiteSpace: "pre-wrap",
@@ -140,20 +190,22 @@ export const detailDates = css({
   borderBlockStartColor: "border.default",
   borderBlockStartStyle: "solid",
   borderBlockStartWidth: "thin",
-  color: "fg.faint",
+  color: "fg.muted",
   columnGap: "4",
   display: "flex",
+  flexWrap: "wrap",
   fontFamily: "mono",
   fontSize: "2xs",
-  marginBlockStart: "4",
+  marginBlockStart: "5",
   paddingBlockStart: "3.5",
+  rowGap: "1",
 });
 
 export const detailActs = css({
-  columnGap: "[0.5625rem]",
+  columnGap: "2.5",
   display: "flex",
   flexDirection: "column",
-  marginBlockStart: "4.5",
+  marginBlockStart: "5",
   rowGap: "2.5",
   md: {
     flexDirection: "row",
@@ -177,13 +229,19 @@ export const detailActsSpacer = css({
 /** お気に入りトグル。オフは輪郭スター、オンは塗りの amber。 */
 export const starToggle = cva({
   base: {
-    "@media (any-hover: hover)": {
+    "@media (hover: hover) and (pointer: fine)": {
       "&:hover:not(:disabled)": {
         background: "surface.muted",
       },
     },
-    _active: {
-      scale: "0.92",
+    "@media (pointer: coarse)": {
+      minBlockSize: "touch",
+      minInlineSize: "touch",
+    },
+    "@media (prefers-reduced-motion: no-preference)": {
+      _active: {
+        scale: "0.92",
+      },
     },
     _disabled: {
       cursor: "wait",
@@ -193,7 +251,7 @@ export const starToggle = cva({
     background: "transparent",
     borderRadius: "box",
     borderWidth: "none",
-    color: "fg.faint",
+    color: "fg.muted",
     cursor: "pointer",
     display: "inline-flex",
     flexShrink: "0",
