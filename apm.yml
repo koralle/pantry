@@ -1,0 +1,100 @@
+name: pantry
+version: 1.0.0
+description: Agent skills for pantry
+# .agents/skills に配置する（pi / Claude / Codex などが読む場所）
+targets:
+  - agent-skills
+# ref は上流タグやブランチではなく commit SHA で固定する（更新は `apm update` で明示的に行う）
+dependencies:
+  apm:
+    - git: affaan-m/ecc/skills/frontend-a11y
+      ref: 5eddf1a3ffd311423be2d4ba7d26f7209c91b033 # v2.2.0
+    - git: affaan-m/ecc/skills/react-patterns
+      ref: 5eddf1a3ffd311423be2d4ba7d26f7209c91b033 # v2.2.0
+    - git: affaan-m/ecc/skills/react-testing
+      ref: 5eddf1a3ffd311423be2d4ba7d26f7209c91b033 # v2.2.0
+    - git: better-auth/skills/better-auth/best-practices
+      ref: 20c9e88a5c007461a703f1c213572b073196113e
+    - git: better-auth/skills/better-auth/create-auth
+      ref: 20c9e88a5c007461a703f1c213572b073196113e
+    - git: better-auth/skills/better-auth/emailAndPassword
+      ref: 20c9e88a5c007461a703f1c213572b073196113e
+    - git: better-auth/skills/better-auth/twoFactor
+      ref: 20c9e88a5c007461a703f1c213572b073196113e
+    - git: better-auth/skills/security
+      ref: 20c9e88a5c007461a703f1c213572b073196113e
+    - git: cloudflare/skills/skills/cloudflare
+      ref: 5108325ecceabc899c761e07aa617b09c02445ee
+    - git: cloudflare/skills/skills/web-perf
+      ref: 5108325ecceabc899c761e07aa617b09c02445ee
+    - git: cloudflare/skills/skills/workers-best-practices
+      ref: 5108325ecceabc899c761e07aa617b09c02445ee
+    - git: cloudflare/skills/skills/wrangler
+      ref: 5108325ecceabc899c761e07aa617b09c02445ee
+    # chrome-devtools-mcp の README#Skills に列挙されているスキル
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/a11y-debugging
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/chrome-devtools
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/chrome-devtools-cli
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/cookie-debugging
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/debug-optimize-lcp
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/memory-leak-debugging
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: ChromeDevTools/chrome-devtools-mcp/skills/troubleshooting
+      ref: b1e35e3ab1774664dfc66a2cb813a392535fe160 # v1.13.0
+    - git: emilkowalski/skills/skills/animation-vocabulary
+      ref: 64eb3deb9a5fbfa041faf783e0bc3fd635872e9c
+    - git: emilkowalski/skills/skills/apple-design
+      ref: 64eb3deb9a5fbfa041faf783e0bc3fd635872e9c
+    - git: emilkowalski/skills/skills/emil-design-eng
+      ref: 64eb3deb9a5fbfa041faf783e0bc3fd635872e9c
+    - git: emilkowalski/skills/skills/find-animation-opportunities
+      ref: 64eb3deb9a5fbfa041faf783e0bc3fd635872e9c
+    - git: emilkowalski/skills/skills/improve-animations
+      ref: 64eb3deb9a5fbfa041faf783e0bc3fd635872e9c
+    - git: emilkowalski/skills/skills/review-animations
+      ref: 64eb3deb9a5fbfa041faf783e0bc3fd635872e9c
+    - git: GoogleChrome/modern-web-guidance/skills/modern-web-guidance
+      ref: 64a6d708f5a43f2cd3fde5d4d7db3905ba1bdf65
+    # 画像生成系は taste-skill から imagegen-skills へ分離された
+    - git: Leonxlnx/imagegen-skills/skills/brandkit
+      ref: beb16b0d0f4dae9a6f5cb04ea41e97b93a54ab8e
+    - git: Leonxlnx/imagegen-skills/skills/image-to-code
+      ref: beb16b0d0f4dae9a6f5cb04ea41e97b93a54ab8e
+    - git: Leonxlnx/imagegen-skills/skills/imagegen-frontend-mobile
+      ref: beb16b0d0f4dae9a6f5cb04ea41e97b93a54ab8e
+    - git: Leonxlnx/imagegen-skills/skills/imagegen-frontend-web
+      ref: beb16b0d0f4dae9a6f5cb04ea41e97b93a54ab8e
+    # classic 系は taste-skill-classics へ分離された
+    - git: Leonxlnx/taste-skill-classics/skills/brutalist-skill
+      ref: 5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305
+    - git: Leonxlnx/taste-skill-classics/skills/gpt-tasteskill
+      ref: 5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305
+    - git: Leonxlnx/taste-skill-classics/skills/minimalist-skill
+      ref: 5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305
+    - git: Leonxlnx/taste-skill-classics/skills/soft-skill
+      ref: 5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305
+    - git: Leonxlnx/taste-skill-classics/skills/stitch-skill
+      ref: 5e08c9383dc4ad7fc0df70e1ac8cfa09ec356305
+    - git: Leonxlnx/taste-skill/skills/taste-skill
+      ref: f6b76575f949707b4e3c37cd86cb44b0b98643e8
+    - git: mattpocock/skills/skills/engineering/domain-modeling
+      ref: 6acc160e4e0cd062dbbbd7a1b26ae92855edf07e # v1.2.3
+    - git: mattpocock/skills/skills/engineering/grill-with-docs
+      ref: 6acc160e4e0cd062dbbbd7a1b26ae92855edf07e # v1.2.3
+    - git: open-circle/agent-skills/skills/valibot
+      ref: ea150d8fc3a856801256308b3a83ed79cb3ff3a4
+    - git: vercel-labs/agent-skills/skills/composition-patterns
+      ref: 1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62
+    - git: vercel-labs/agent-skills/skills/react-best-practices
+      ref: 1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62
+    - git: vercel-labs/agent-skills/skills/react-view-transitions
+      ref: 1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62
+    - git: vercel-labs/agent-skills/skills/web-design-guidelines
+      ref: 1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62
+    - git: yusukebe/ax/skills/ax
+      ref: 0ddd8a748ae2401ae344f536f6e8dded890fcdbf # v0.1.25

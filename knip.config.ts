@@ -4,6 +4,8 @@ const config: KnipConfig = {
   tags: ["-lintignore"],
   // Do not parse lefthook.yaml / git hooks for entry scripts and binaries.
   lefthook: false,
+  // エージェントスキル（apm install の生成物）はアプリのコードではない。
+  ignore: [".agents/**"],
   rules: {
     // Existing unused exports/types/catalog noise — ratchets later
     exports: "warn",
