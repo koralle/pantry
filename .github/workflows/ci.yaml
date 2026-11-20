@@ -118,6 +118,24 @@ jobs:
         run: |
           pnpm run knip --reporter github-actions
 
+  doctor:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/composite-actions/cache-and-install
+
+      # 指摘があれば blocking: warning で exit 1 になる。スコア API へは送らない（noScore）。
+      # supply-chain は Socket.dev のスコア次第でコードを変えずに落ちるため CI では外す
+      # （ローカルと osv-scanner / security のワークフローが受け持つ）。
+      - name: React Doctor
+        shell: bash
+        run: |
+          pnpm run doctor --no-supply-chain
+
   build:
     runs-on: ubuntu-24.04
 

@@ -6,6 +6,7 @@
   "exports": {
     "./oxfmt": "./src/oxfmt.ts",
     "./oxlint": "./src/oxlint.ts",
+    "./react-doctor": "./src/react-doctor.ts",
     "./tsconfig/*.json": "./tsconfig/*.json"
   },
   "scripts": {

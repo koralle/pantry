@@ -11,9 +11,6 @@ allowBuilds:
   ssh2: false
   workerd: true
 
-catalog:
-  react-scan: 0.5.7
-
 catalogMode: strict
 
 catalogs:
@@ -61,6 +58,8 @@ catalogs:
     knip: 6.32.2
     markuplint: 4.18.3
     oxlint: 1.94.0
+    oxlint-plugin-react-doctor: 0.9.23
+    react-doctor: 0.9.23
     tsrs: 7.1.0-beta.tsrs3
     ultracite: 8.3.1
   react:

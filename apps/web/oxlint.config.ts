@@ -1,7 +1,104 @@
 import { createOxlintConfig, vitestPreset } from "@pantry/forge/oxlint";
+import { reactDoctorExemptions } from "@pantry/forge/react-doctor";
+import type {
+  Capability,
+  OxlintRuleSeverity,
+} from "oxlint-plugin-react-doctor";
+import {
+  REACT_DOCTOR_RULES,
+  RECOMMENDED_RULES,
+  TANSTACK_QUERY_RULES,
+  TANSTACK_START_RULES,
+} from "oxlint-plugin-react-doctor";
 import landmines from "ultracite/oxlint/landmines";
 import react from "ultracite/oxlint/react";
 import tanstack from "ultracite/oxlint/tanstack";
+
+// react-doctor CLI が package.json から組み立てるのと同じ能力の集合。
+// react:18 / react:19 / react:19.2 は React 19.3 で満たされる階段。
+// shortcut: 依存を足したらここも足す。package.json からの自動導出はしていない。
+const capabilities: ReadonlySet<Capability> = new Set([
+  "react",
+  "react-aria",
+  "react:18",
+  "react:19",
+  "react:19.2",
+  "ssr",
+  "tanstack-query",
+  "tanstack-start",
+  "typescript",
+]);
+
+const reactDoctorEntryByKey = new Map(
+  REACT_DOCTOR_RULES.map((entry) => [entry.key, entry])
+);
+
+// Ultracite の react プリセットのうち、このリポジトリが無効にしているもの。
+// 組み込み側の有効判定にも使う（両方黙る穴を作らないため）。
+const disabledBuiltInReactRules: Readonly<Record<string, OxlintRuleSeverity>> =
+  {
+    "react/set-state-in-effect": "off",
+    "react/todo": "off",
+  };
+
+// oxlint の深刻度は文字列か [深刻度, オプション] の配列で書ける。
+const severityOf = (value: unknown): string => {
+  const head = Array.isArray(value) ? (value as readonly unknown[])[0] : value;
+  return typeof head === "string" ? head : "error";
+};
+
+// Ultracite の react プリセットで実際に有効な組み込みルール名（接頭辞を落としたもの）。
+// プリセットには off の項目も入っているので、値を見ないと「組み込みも react-doctor も
+// 黙る」ルールができる。
+const builtInReactRuleNames = new Set(
+  Object.entries(react.rules ?? {}).flatMap(([key, value]) => {
+    const severity = severityOf(value);
+    if (severity === "off" || severity === "allow") {
+      return [];
+    }
+    if (disabledBuiltInReactRules[key] === "off") {
+      return [];
+    }
+    return [key.slice(key.indexOf("/") + 1)];
+  })
+);
+
+// Oxlint は rules をそのまま登録するだけで、CLI がやっている requires
+// （そのライブラリが入っている時だけ有効）の判定をしない。宣言した能力で
+// 満たせないルールを落とし、入っていないライブラリ向けのルールを走らせない。
+// 移植版（oxc の react / jsx-a11y / react_perf 由来）は、組み込み側が有効な
+// ものだけ落とす。同じ指摘を 2 回出さないため。
+export const isReactDoctorRuleEnabled = (key: string): boolean => {
+  const entry = reactDoctorEntryByKey.get(key);
+  if (entry === undefined) {
+    return false;
+  }
+  const { rule } = entry;
+  if (rule.requires?.some((capability) => !capabilities.has(capability))) {
+    return false;
+  }
+  if (rule.tags?.includes("react-jsx-only") && !capabilities.has("react")) {
+    return false;
+  }
+  if (rule.disabledWhen?.some((capability) => capabilities.has(capability))) {
+    return false;
+  }
+  return !(entry.originallyExternal && builtInReactRuleNames.has(entry.id));
+};
+
+// react-doctor の推奨セットは既定で warning が多い。厳し目なので全件 error にする。
+// tanstack 系は framework が global ではないため推奨セットに入らない。
+const asErrors = (
+  rules: Readonly<Record<string, OxlintRuleSeverity>>
+): Record<string, "error"> => {
+  const enabled: Record<string, "error"> = {};
+  for (const key of Object.keys(rules)) {
+    if (isReactDoctorRuleEnabled(key)) {
+      enabled[key] = "error";
+    }
+  }
+  return enabled;
+};
 
 // Oxlint はファイルごとに「最も近い設定」だけを使い、親設定とは自動マージしない。
 // そのためこのファイルは apps/web 配下のルート oxlint.config.ts を置き換える。
@@ -14,8 +111,21 @@ export default createOxlintConfig({
   jsPlugins: [
     ...(landmines.jsPlugins ?? []),
     { name: "storybook", specifier: "eslint-plugin-storybook" },
+    { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
   ],
+  // react-doctor 本体（CLI）と同じ前提を渡す。`portedRuleMode` を curated に
+  // しないと、oxc から移植した react 系ルールが upstream 挙動（誤検知寄り）で動く。
+  settings: {
+    "react-doctor": {
+      capabilities: [...capabilities].toSorted(),
+      framework: "tanstack-start",
+      portedRuleMode: "curated",
+    },
+  },
   rules: {
+    ...asErrors(RECOMMENDED_RULES),
+    ...asErrors(TANSTACK_START_RULES),
+    ...asErrors(TANSTACK_QUERY_RULES),
     // コメントは「なぜ」を残す規約（.agents/rules/ultracite.md）。差分を語るコメントの検出は要らない。
     "landmines-style/no-comments": "off",
     // 戻り値型は UI と hook の契約として明示する規約。
@@ -138,5 +248,10 @@ export default createOxlintConfig({
       files: ["src/routes/**/*.test.ts"],
       rules: { "landmines-structure/colocated-tests": "off" },
     },
+    // 除外の正本は @pantry/forge/react-doctor（CLI 側の doctor.config.ts も読む）。
+    ...reactDoctorExemptions.map(({ files, rules }) => ({
+      files: [...files],
+      rules: Object.fromEntries(rules.map((rule) => [rule, "off" as const])),
+    })),
   ],
 });

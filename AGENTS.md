@@ -33,7 +33,7 @@
 - `packages/env/` - `@pantry/env`。開発用の値ファイル（`.env.development` / `.env.development.local`）と、それを `process.env` へ読む `loadDevEnv()` / Worker 用の `workerVars()`、worktree 用スクリプトを置く。スキーマは持たない
 - `packages/utils/` - `@pantry/utils`。アプリ横断で使うプリミティブを持つ。`@pantry/utils/result`（`Result` / `ok` / `err`）、`@pantry/utils/date`（ja-JP / Asia-Tokyo 固定の日付整形。`DateFormatter` のみ）、`@pantry/utils/relative-time`（相対時刻。暦加算のため `ZonedDateTime` を使う）、`@pantry/utils/url`（`domainOf`）。ランタイム依存は `@internationalized/date` だけに留める
 - `packages/test-support/` - `@pantry/test-support`。テスト用に libSQL server の image と Testcontainers の起動設定を `@pantry/test-support/libsql` として共有する
-- `packages/forge/` - `@pantry/forge`。ツールチェインの共通設定を持つ。`tsconfig/base.json` / `tsconfig/node.json`（各 `tsconfig.json` が `extends`）、`@pantry/forge/oxlint`（Ultracite の core の拡張、共通ルール、共通 ignorePatterns。react / tanstack は `apps/web/oxlint.config.ts` が持つ）、`@pantry/forge/oxfmt`（Ultracite の Oxfmt 設定、共通 ignorePatterns）を export する。各 `oxlint.config.ts` は `createOxlintConfig()` を呼び、差分だけを渡す（`extends` と共通 `ignorePatterns` は factory が付与）
+- `packages/forge/` - `@pantry/forge`。ツールチェインの共通設定を持つ。`tsconfig/base.json` / `tsconfig/node.json`（各 `tsconfig.json` が `extends`）、`@pantry/forge/oxlint`（Ultracite の core の拡張、共通ルール、共通 ignorePatterns。react / tanstack は `apps/web/oxlint.config.ts` が持つ）、`@pantry/forge/oxfmt`（Ultracite の Oxfmt 設定、共通 ignorePatterns）、`@pantry/forge/react-doctor`（React Doctor の除外リストの正本。oxlint と CLI が同じものを読む）を export する。各 `oxlint.config.ts` は `createOxlintConfig()` を呼び、差分だけを渡す（`extends` と共通 `ignorePatterns` は factory が付与）
   - Oxlint はファイルごとに最も近い設定だけを使い、親設定とはマージしない。`apps/web/oxlint.config.ts` を置いた時点で apps/web 配下はルート設定の対象外になるため、全パッケージに効かせたい設定は各 `oxlint.config.ts` ではなく `packages/forge` に置く
 - `docs/` - 設計・方針ドキュメント
 - `.agents/` - エージェント向けルールとスキル。`skills/` は `apm.yml` を正本とし（`ref` は commit SHA で固定）、`apm install`（apm 0.35.0 以上）で取得する。更新は `apm update` で明示的に行う。手元で書いたスキル（`eli30` / `herdr` / `cognitive-rhythm-writing`）だけは APM の管理外
@@ -58,6 +58,7 @@
 | `pnpm run migrate:prod` | Turso本番DBへDrizzleマイグレーション適用（CI。`@pantry/db`） |
 | `pnpm run studio:dev` | Drizzle Studio を起動（`@pantry/db`） |
 | `pnpm run db:seed` | Turso開発DBへテスト／開発データを投入 |
+| `pnpm run doctor` | React Doctor（React 専用の静的診断。`apps/web` を走査する） |
 | `pnpm run check` | Ultracite（Oxlint + Oxfmt）の検査 |
 | `pnpm run fix` | Ultracite の自動修正 |
 | `pnpm run lint:markup` | HTML/JSX のアクセシビリティ・マークアップ検査（markuplint） |
