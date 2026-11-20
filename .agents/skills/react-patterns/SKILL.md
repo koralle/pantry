@@ -1,13 +1,10 @@
 ---
+name: react-patterns
 description: React 18/19 patterns including hooks discipline, server/client component boundaries, Suspense + error boundaries, form actions, data fetching, state management decision trees, and accessibility-first composition. Use when writing or reviewing React components.
 metadata:
-    github-path: skills/react-patterns
-    github-ref: refs/tags/v2.2.0
-    github-repo: https://github.com/affaan-m/ecc
-    github-tree-sha: eda27679d5af43c3d76ce4653851a46b7d2aee21
-    origin: ECC
-name: react-patterns
+  origin: ECC
 ---
+
 # React Patterns
 
 Idiomatic React 18/19 patterns for building robust, accessible, performant component trees.

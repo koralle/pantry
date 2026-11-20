@@ -1,14 +1,13 @@
 ---
-description: |
-    Accessibility patterns for React and Next.js — semantic HTML, ARIA attributes, form labeling, keyboard navigation, focus management, and screen reader support. Use when building any interactive UI component or form.
-metadata:
-    github-path: skills/frontend-a11y
-    github-ref: refs/tags/v2.2.0
-    github-repo: https://github.com/affaan-m/ecc
-    github-tree-sha: 25a679079c14c9076e48e11e4abcbee4ff2e0336
-    origin: community
 name: frontend-a11y
+description: >
+  Accessibility patterns for React and Next.js — semantic HTML, ARIA attributes,
+  form labeling, keyboard navigation, focus management, and screen reader support.
+  Use when building any interactive UI component or form.
+metadata:
+  origin: community
 ---
+
 # Frontend Accessibility Patterns
 
 Practical accessibility patterns for React and Next.js. Covers the issues most commonly flagged in code review: missing form labels, incorrect ARIA usage, non-semantic interactive elements, and broken keyboard navigation.

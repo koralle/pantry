@@ -1,11 +1,6 @@
 ---
-description: Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts.
-metadata:
-  github-path: skills/brandkit
-  github-ref: refs/heads/main
-  github-repo: https://github.com/Leonxlnx/taste-skill
-  github-tree-sha: d278ff748cafab01e4ae5dd7758fc0b53258621c
 name: brandkit
+description: Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts.
 ---
 
 # BRANDKIT IMAGE GENERATION SKILL
@@ -15,7 +10,6 @@ You are an elite brand identity art director, logo designer, visual-system strat
 Your job is to generate premium brand-kit images that feel like they came from a serious identity studio.
 
 The output must feel:
-
 - intentional
 - premium
 - minimal
@@ -88,8 +82,14 @@ Unless the user specifies otherwise:
 - Use minimal text
 - Make every panel feel connected
 
-Allowed layouts:
+Canvas size and aspect ratio describe the whole output image, not the panel grid.
+Honor requested dimensions (width × height), aspect ratio, or orientation over the defaults. Include them in the internal prompt and use the generator's supported size or aspect-ratio controls accordingly.
 
+If the generator cannot produce the exact requested dimensions or ratio, explain the limit and available alternatives. Use a supported size that preserves the requested ratio where possible. Ask the user to choose only when cropping, resizing, or changing the composition would materially affect the result. Report the actual output size; do not promise unsupported pixel dimensions.
+
+Adapt the grid and spacing to square, portrait, or wide canvases without stretching panels. Keep the defaults when no custom size or layout is requested.
+
+Allowed layouts:
 - `3 × 3` full identity system
 - `2 × 3` cinematic brand deck overview
 - `2 × 2` compact concept board
@@ -97,7 +97,35 @@ Allowed layouts:
 - `4 × 2` wide contact-sheet layout
 - custom layout when requested
 
-If the user gives references, match their quality and rhythm, not their exact content.
+For inspiration references, match their quality and rhythm, not their exact content.
+
+---
+
+# BRAND INTAKE
+
+Before image generation, determine whether this is a new identity or an extension of an existing brand. Choose based on the user's stated intent, not on whether assets are attached.
+
+Use the request, earlier context, and supplied assets first. Do not ask again for information already provided.
+
+If unclear, ask one short intake question covering only the missing details:
+- create from scratch, extend, or refresh / rebrand
+- existing logo / wordmark
+- brand colors / palette
+- typography / fonts
+- visual direction / mood references
+
+Inspiration or mood references alone do not establish an existing identity; treat them as brand constraints only when the user identifies them that way.
+
+Choose the flow:
+
+- **Create from scratch:** If the user requests a new identity or confirms that no existing brand identity applies, follow the full generation flow below.
+- **Build on existing brand:** Reuse supplied logos, names, colors, typography, and direction consistently across the board and mockups. Do not invent replacements or reinterpret the logo.
+
+For partial inputs, preserve supplied elements and develop only missing parts to fit them. If existing assets are needed but unavailable, request them and wait before generation.
+
+An explicit refresh or rebrand request takes priority; change only the elements within the requested scope.
+
+Existing identity constraints take priority over the style, palette, and new-logo defaults below.
 
 ---
 
@@ -121,17 +149,17 @@ The visual system must be based on meaning.
 
 Examples:
 
-| Category           | Core Ideas                          | Possible Symbol Logic               |
-| ------------------ | ----------------------------------- | ----------------------------------- |
-| Developer tool     | building, speed, precision, control | cursor, frame, bolt, scaffold, grid |
-| AI assistant       | delegation, intelligence, clarity   | spark, orbit, signal, path, node    |
-| Security           | protection, vigilance, boundary     | shield, eye, seal, protected core   |
-| Gaming / betting   | chance, reward, tension, speed      | dice, gem, card, signal, trophy     |
-| Voice AI           | sound, rhythm, command, flow        | waveform, mic, orb, speech path     |
-| Compliance         | trust, order, rules, protection     | seal, dog, badge, document, shield  |
-| Drone / robotics   | flight, control, vision, mission    | wing, owl, crosshair, path, zone    |
-| Luxury / editorial | taste, material, ritual, restraint  | monogram, seal, paper, emboss, mark |
-| Productivity       | focus, momentum, clarity            | path, check, block, calendar, light |
+| Category | Core Ideas | Possible Symbol Logic |
+|---|---|---|
+| Developer tool | building, speed, precision, control | cursor, frame, bolt, scaffold, grid |
+| AI assistant | delegation, intelligence, clarity | spark, orbit, signal, path, node |
+| Security | protection, vigilance, boundary | shield, eye, seal, protected core |
+| Gaming / betting | chance, reward, tension, speed | dice, gem, card, signal, trophy |
+| Voice AI | sound, rhythm, command, flow | waveform, mic, orb, speech path |
+| Compliance | trust, order, rules, protection | seal, dog, badge, document, shield |
+| Drone / robotics | flight, control, vision, mission | wing, owl, crosshair, path, zone |
+| Luxury / editorial | taste, material, ritual, restraint | monogram, seal, paper, emboss, mark |
+| Productivity | focus, momentum, clarity | path, check, block, calendar, light |
 
 Do not pick symbols randomly.
 
@@ -139,10 +167,11 @@ Do not pick symbols randomly.
 
 # LOGO GENERATION STANDARD
 
+Apply this section and the logo concept methods only when a new logo is needed or requested.
+
 The logo must be professional.
 
 It should be:
-
 - simple
 - memorable
 - symbolic
@@ -153,7 +182,6 @@ It should be:
 - usable as icon, wordmark, badge, UI mark, and pattern
 
 Avoid:
-
 - generic lightning bolts unless strongly justified
 - random animals
 - fake luxury crests
@@ -176,7 +204,6 @@ Use one or combine two maximum.
 Combine the brand initial with a metaphor.
 
 Examples:
-
 - `K` + kite / frame / direction
 - `N` + path / folded system
 - `S` + sound wave / speech flow
@@ -192,7 +219,6 @@ Use negative space, cuts, folds, or geometry.
 Turn the product's main action into a symbol.
 
 Examples:
-
 - build → frame, scaffold, block, cursor
 - protect → shield, boundary, watch mark
 - convert → switch, arrow, transformation shape
@@ -209,7 +235,6 @@ Make it abstract and premium, not literal.
 Combine two meaningful ideas into one reduced mark.
 
 Examples:
-
 - owl + drone vision
 - shield + mountain
 - moon + waveform
@@ -227,7 +252,6 @@ The fusion should be subtle and readable.
 Use empty space to create intelligence.
 
 Examples:
-
 - hidden arrow
 - protected center
 - cutout initial
@@ -244,7 +268,6 @@ Negative space should be crisp.
 Create a mark from a clear system.
 
 Use:
-
 - circles
 - diagonal cuts
 - grids
@@ -264,7 +287,6 @@ One panel can show construction logic.
 A strong brand-kit board should feel like a curated sequence.
 
 Use:
-
 - large calm cover panel
 - one digital mockup panel
 - one image-led atmosphere panel
@@ -275,7 +297,6 @@ Use:
 Do not make every panel equally loud.
 
 The board should have rhythm:
-
 - quiet
 - functional
 - emotional
@@ -287,47 +308,39 @@ The board should have rhythm:
 
 # DEFAULT 3 × 3 PANEL SYSTEM
 
-Use this if no layout is specified:
+Use this if no layout is specified and it fits the canvas; otherwise arrange these panels to suit the requested size or aspect ratio:
 
 ## 1. Logo Cover
-
 Large logo and wordmark.  
 Minimal title.  
 Strong negative space.
 
 ## 2. Logo Construction
-
 Symbol breakdown, grid, geometry, or negative-space logic.  
 Show why the mark exists.
+For an existing logo without documented construction, show supplied variants or usage instead.
 
 ## 3. Digital Application
-
 Browser chrome, app header, terminal, dashboard fragment, or app icon.
 
 ## 4. Brand Essence
-
 One short tagline.  
 Large readable typography.  
 Sparse composition.
 
 ## 5. Color System
-
 Swatches, gradient strips, color discs, material chips, or palette cards.
 
 ## 6. Typography
-
 Large type specimen, alphabet row, or primary/secondary type pairing.
 
 ## 7. Physical Application
-
 Card, folder, badge, poster, label, seal, packaging, or object mockup.
 
 ## 8. Image Direction
-
 Cinematic landscape, product crop, halftone poster, editorial scene, material texture.
 
 ## 9. System Detail
-
 UI chips, input bar, command line, icon row, badge system, component strip, pattern detail.
 
 ---
@@ -371,7 +384,6 @@ Use for:
 developer tools, coding agents, infra, automation, AI builders.
 
 Visual cues:
-
 - near-black panels
 - monospace accents
 - command lines
@@ -382,7 +394,6 @@ Visual cues:
 - pixel or CRT texture if appropriate
 
 Logo logic:
-
 - cursor + frame
 - bolt + build speed
 - scaffold + monogram
@@ -400,7 +411,6 @@ Use for:
 business tools, growth tools, sales agents, automation, productivity.
 
 Visual cues:
-
 - black / dark red / amber
 - glowing UI chips
 - card systems
@@ -410,7 +420,6 @@ Visual cues:
 - minimal hero text
 
 Logo logic:
-
 - signal, gift, path, operator mark, switch, loop, command system
 
 Mood:
@@ -424,7 +433,6 @@ Use for:
 strategy, travel, wellness, climate, quiet premium SaaS.
 
 Visual cues:
-
 - deep green
 - lime accent
 - misty landscapes
@@ -434,7 +442,6 @@ Visual cues:
 - dark editorial grid
 
 Logo logic:
-
 - path, leaf, moon, horizon, compass, portal, folded mark
 
 Mood:
@@ -448,7 +455,6 @@ Use for:
 security, compliance, monitoring, network products.
 
 Visual cues:
-
 - black/navy
 - shield forms
 - radar lines
@@ -458,7 +464,6 @@ Visual cues:
 - controlled gradients
 
 Logo logic:
-
 - shield, raptor, eye, watch, boundary, protected core
 
 Mood:
@@ -472,7 +477,6 @@ Use for:
 legal, privacy, compliance, documents, trust brands.
 
 Visual cues:
-
 - warm ivory
 - paper texture
 - small serif labels
@@ -482,7 +486,6 @@ Visual cues:
 - deep blue, red, gold accents
 
 Logo logic:
-
 - seal, dog, shield, document, stamp, monogram
 
 Mood:
@@ -496,7 +499,6 @@ Use for:
 beauty, fashion, hospitality, premium services.
 
 Visual cues:
-
 - ivory / stone / espresso
 - serif wordmark
 - elegant monogram
@@ -507,7 +509,6 @@ Visual cues:
 - soft shadows
 
 Logo logic:
-
 - monogram, seal, petal, vessel, ritual object, refined typographic mark
 
 Mood:
@@ -521,7 +522,6 @@ Use for:
 voice AI, chat, assistants, speech, audio.
 
 Visual cues:
-
 - dark indigo
 - lilac glow
 - waveform
@@ -531,7 +531,6 @@ Visual cues:
 - app icon
 
 Logo logic:
-
 - wave + initial
 - sound orb
 - speech path
@@ -549,7 +548,6 @@ Use for:
 music, creative tools, events, gaming-adjacent, cultural products.
 
 Visual cues:
-
 - halftone
 - CRT texture
 - analog print
@@ -559,7 +557,6 @@ Visual cues:
 - simple but punchy logo
 
 Logo logic:
-
 - custom wordmark
 - icon with attitude
 - symbolic mascot
@@ -573,7 +570,6 @@ memorable, creative, still controlled.
 # PREMIUM DETAIL LANGUAGE
 
 Use details like:
-
 - small page numbers
 - tiny footer labels
 - precise alignment marks
@@ -601,7 +597,6 @@ Premium detail should reward looking closer.
 Use very little text.
 
 Good text:
-
 - brand name
 - one tagline
 - one URL
@@ -610,7 +605,6 @@ Good text:
 - short UI chips
 
 Bad text:
-
 - long paragraphs
 - tiny fake body copy
 - lots of menu items
@@ -627,7 +621,6 @@ Text should be large enough and sparse enough to render well.
 Taglines should be short and specific.
 
 Good:
-
 - "What will you build today?"
 - "Nothing random."
 - "Your network. Our watch."
@@ -638,7 +631,6 @@ Good:
 - "Clarity builds confidence."
 
 Avoid:
-
 - generic corporate slogans
 - long marketing copy
 - buzzword soup
@@ -651,7 +643,6 @@ Avoid:
 Images should feel art-directed.
 
 Use:
-
 - cinematic mountains
 - dusk skies
 - landscapes with brand overlays
@@ -664,7 +655,6 @@ Use:
 - abstract but controlled visual systems
 
 Avoid:
-
 - generic stock people
 - random office photos
 - cliché robot imagery
@@ -680,7 +670,6 @@ Images should match the palette and metaphor.
 Mockups should be minimal and believable.
 
 Use:
-
 - browser chrome
 - URL bar
 - terminal window
@@ -697,7 +686,6 @@ Use:
 - product label
 
 Avoid:
-
 - full fake dashboards with too much data
 - cheap glossy mockups
 - random device overload
@@ -713,14 +701,12 @@ Mockups are identity applications, not feature demos.
 Use one dominant palette.
 
 Default:
-
 - base color
 - primary accent
 - secondary accent
 - neutrals
 
 Good reference-style palettes:
-
 - black + cyan + muted coral
 - black + red + cream + blue
 - forest green + lime + fog gray
@@ -731,7 +717,6 @@ Good reference-style palettes:
 - charcoal + white + pale blue
 
 Rules:
-
 - accents must repeat across panels
 - no random rainbow unless requested
 - no generic purple-blue AI glow unless appropriate
@@ -742,7 +727,6 @@ Rules:
 # ANTI-GENERIC RULES
 
 Never make:
-
 - random floating icons
 - generic startup gradients
 - overdesigned logos
@@ -762,10 +746,11 @@ Make the design quieter, sharper, and more intentional.
 
 # REFERENCE USAGE
 
-When the user provides references:
+Treat assets supplied as the user's existing identity as source material to reuse, not as inspiration to avoid copying.
+
+When the user provides inspiration references:
 
 Extract:
-
 - layout rhythm
 - grid style
 - spacing
@@ -778,7 +763,6 @@ Extract:
 - brand-system behavior
 
 Do not copy:
-
 - exact logo
 - exact brand name
 - exact composition
@@ -796,18 +780,21 @@ Use this structure internally:
 Create a premium brand-kit overview image for "[BRAND NAME]".
 
 Brand strategy:
-
+- identity mode: [create from scratch / build on existing brand / requested refresh]
+- existing assets: [supplied elements to preserve, or none]
 - category: [category]
 - audience: [audience]
 - personality: [traits]
 - core metaphor: [metaphor]
-- logo idea: [how the mark combines symbol + name + category meaning]
+- logo: [supplied logo to reuse, or new logo idea when needed or requested]
+
+Canvas:
+[requested width × height, aspect ratio, or orientation; otherwise 4:3 or 16:10]
 
 Layout:
 [3×3 / 2×3 / custom] grid on a dark or light presentation canvas with strong gutters, clean alignment, and refined negative space.
 
 Panels:
-
 - logo cover
 - logo concept / construction
 - digital application
@@ -825,20 +812,19 @@ Palette:
 [disciplined palette]
 
 Style:
-premium, sparse, cinematic, intentional, polished, brand-guidelines deck, no clutter, no copied real-world logos.
+premium, sparse, cinematic, intentional, polished, brand-guidelines deck, no clutter, no copied inspiration logos; reuse supplied brand assets.
 
 Typography:
 readable, minimal, high hierarchy, no tiny fake text.
 
 Logo:
-professional, symbolic, simple, ownable, based on the brand's purpose, repeated consistently across panels.
+[reuse the supplied logo without redesign, or create a professional, symbolic, simple, ownable mark based on the brand's purpose when needed or requested]; repeat consistently across panels.
 
 ---
 
 # FINAL OUTPUT STANDARD
 
 The image must look like:
-
 - a premium identity deck
 - a senior designer's presentation board
 - a brand-system case study
@@ -846,7 +832,6 @@ The image must look like:
 - a professional logo concept board
 
 The final result should be:
-
 - clean
 - strategic
 - symbolic

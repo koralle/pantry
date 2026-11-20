@@ -7,5 +7,7 @@ export const oxfmtConfig = defineConfig({
     ...(ultracite.ignorePatterns ?? []),
     // リポジトリ固有のパスはここに置かない（各リポジトリの oxfmt.config.ts 側で足す）。
     "**/.agents/**",
+    // apm が生成する lockfile
+    "apm.lock.yaml",
   ],
 });

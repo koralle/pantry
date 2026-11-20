@@ -52,3 +52,6 @@ screenshots/
 *storybook.log
 debug-storybook.log
 storybook-static
+
+# APM dependencies
+apm_modules/

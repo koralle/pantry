@@ -1,13 +1,10 @@
 ---
+name: react-testing
 description: React component testing with React Testing Library, Vitest/Jest, MSW for network mocking, accessibility assertions with axe, and the decision boundary between component tests and Playwright/Cypress end-to-end runs. Use when writing or fixing tests for React components, hooks, or pages.
 metadata:
-    github-path: skills/react-testing
-    github-ref: refs/tags/v2.2.0
-    github-repo: https://github.com/affaan-m/ecc
-    github-tree-sha: 36ad005d734fe78115e1969a4e8c2ff973b0a96c
-    origin: ECC
-name: react-testing
+  origin: ECC
 ---
+
 # React Testing
 
 Comprehensive React testing patterns for behavior-focused component tests, custom hook tests, accessibility assertions, and network-level mocking.
