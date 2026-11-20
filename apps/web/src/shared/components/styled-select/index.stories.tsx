@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>;
 export const Default = {
   name: "既定",
   args: {
-    defaultSelectedKey: "newest",
+    defaultValue: "newest",
   },
   render: (args) => (
     <styled.div
@@ -54,7 +54,7 @@ export const Placeholder = {
     ),
     label: "タグを追加",
     placeholder: "選択…",
-    selectedKey: null,
+    value: null,
   },
   render: (args) => (
     <styled.div
@@ -92,7 +92,7 @@ export const Filterable = {
         label="タグを追加"
         placeholder="選択…"
         searchPlaceholder="タグを検索"
-        selectedKey={null}
+        value={null}
       >
         {filterableItems}
       </StyledSelect.Filterable>

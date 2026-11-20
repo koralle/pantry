@@ -305,6 +305,79 @@ export interface BookmarkListContentProps {
   trailing?: ReactNode | undefined;
 }
 
+/** 一覧の空・エラー状態。スクロール領域の中に置く。 */
+const ListStates = ({
+  clearedSearch,
+  emptyVariant,
+  newSearch,
+  onRetry,
+  state,
+}: {
+  readonly clearedSearch: BookmarkSearchSchema | undefined;
+  readonly emptyVariant: "blank" | "filtered" | undefined;
+  readonly newSearch: BookmarkDetailSearch | undefined;
+  readonly onRetry: (() => void) | undefined;
+  readonly state: BookmarkListState;
+}) => (
+  <>
+    {state === "empty" && emptyVariant === "blank" ? (
+      <StateView
+        action={
+          <Link
+            className={button({ size: "sm", visual: "accent" })}
+            search={newSearch ?? defaultBookmarkSearch}
+            to="/bookmarks/new"
+          >
+            <Plus aria-hidden size={13} />
+            最初の1件を登録
+          </Link>
+        }
+        className={stateFill}
+        description="URLをペーストすればタイトルは自動で取り込みます。タグ付けはあとでまとめてできます。"
+        icon={Bookmark}
+        title="まだブックマークがありません"
+      />
+    ) : null}
+    {state === "empty" && emptyVariant === "filtered" ? (
+      <StateView
+        action={
+          <Link
+            className={button({ size: "sm", visual: "accent" })}
+            search={clearedSearch ?? defaultBookmarkSearch}
+            to="/bookmarks"
+          >
+            条件をクリア
+          </Link>
+        }
+        className={stateFill}
+        description="タグを変えると見つかるかもしれません。"
+        icon={Bookmark}
+        title="条件に合うブックマークがありません"
+      />
+    ) : null}
+    {state === "error" ? (
+      <div className={stateFill} role="alert">
+        <StateView
+          action={
+            <button
+              className={button({ size: "sm", visual: "accent" })}
+              onClick={onRetry}
+              type="button"
+            >
+              <RotateCw aria-hidden size={13} />
+              再試行
+            </button>
+          }
+          description="ネットワーク接続を確認して、もう一度お試しください。"
+          icon={WifiOff}
+          title="読み込みに失敗しました"
+          tone="danger"
+        />
+      </div>
+    ) : null}
+  </>
+);
+
 export const BookmarkListContent = ({
   title,
   state,
@@ -320,15 +393,16 @@ export const BookmarkListContent = ({
   trailing,
 }: BookmarkListContentProps) => {
   const cards = listSearch.layout === "cards";
+  const visibleItems = items ?? [];
   let listBody: ReactNode = null;
   if (state === "ideal" || state === "partial") {
     listBody = cards ? (
       <>
-        <BookmarkCardGrid items={items ?? []} selectedId={selectedId} />
-        <BookmarkRows items={items ?? []} mobileOnly selectedId={selectedId} />
+        <BookmarkCardGrid items={visibleItems} selectedId={selectedId} />
+        <BookmarkRows items={visibleItems} mobileOnly selectedId={selectedId} />
       </>
     ) : (
-      <BookmarkRows items={items ?? []} selectedId={selectedId} />
+      <BookmarkRows items={visibleItems} selectedId={selectedId} />
     );
   }
   return (
@@ -362,61 +436,13 @@ export const BookmarkListContent = ({
       <div className={listScroll} data-list-scroll>
         {state === "loading" ? <BookmarkRowsSkeleton /> : null}
         {listBody}
-        {state === "empty" && emptyVariant === "blank" ? (
-          <StateView
-            action={
-              <Link
-                className={button({ size: "sm", visual: "accent" })}
-                search={newSearch ?? defaultBookmarkSearch}
-                to="/bookmarks/new"
-              >
-                <Plus aria-hidden size={13} />
-                最初の1件を登録
-              </Link>
-            }
-            className={stateFill}
-            description="URLをペーストすればタイトルは自動で取り込みます。タグ付けはあとでまとめてできます。"
-            icon={Bookmark}
-            title="まだブックマークがありません"
-          />
-        ) : null}
-        {state === "empty" && emptyVariant === "filtered" ? (
-          <StateView
-            action={
-              <Link
-                className={button({ size: "sm", visual: "accent" })}
-                search={clearedSearch ?? defaultBookmarkSearch}
-                to="/bookmarks"
-              >
-                条件をクリア
-              </Link>
-            }
-            className={stateFill}
-            description="タグを変えると見つかるかもしれません。"
-            icon={Bookmark}
-            title="条件に合うブックマークがありません"
-          />
-        ) : null}
-        {state === "error" ? (
-          <div className={stateFill} role="alert">
-            <StateView
-              action={
-                <button
-                  className={button({ size: "sm", visual: "accent" })}
-                  onClick={onRetry}
-                  type="button"
-                >
-                  <RotateCw aria-hidden size={13} />
-                  再試行
-                </button>
-              }
-              description="ネットワーク接続を確認して、もう一度お試しください。"
-              icon={WifiOff}
-              title="読み込みに失敗しました"
-              tone="danger"
-            />
-          </div>
-        ) : null}
+        <ListStates
+          clearedSearch={clearedSearch}
+          emptyVariant={emptyVariant}
+          newSearch={newSearch}
+          onRetry={onRetry}
+          state={state}
+        />
         {trailing}
       </div>
       <HintBar />

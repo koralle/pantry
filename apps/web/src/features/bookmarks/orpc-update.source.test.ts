@@ -37,11 +37,9 @@ describe("UpdateBookmark oRPC migration source boundary", () => {
       "application/load-bookmark-for-edit.test.ts",
     ];
 
-    for (const relativePath of removed) {
-      expect(
-        existsSync(join(featureDir, relativePath)),
-        relativePath
-      ).toBeFalsy();
-    }
+    const stillPresent = removed.filter((relativePath) =>
+      existsSync(join(featureDir, relativePath))
+    );
+    expect(stillPresent).toStrictEqual([]);
   });
 });

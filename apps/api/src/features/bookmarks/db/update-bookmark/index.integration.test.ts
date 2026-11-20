@@ -248,7 +248,7 @@ describe(updateBookmark, () => {
 
     await expect(
       updateBookmark(db, createInput({ tagIds: [], title: "boom" }))
-    ).rejects.toThrow();
+    ).rejects.toThrow(/boom/u);
 
     const [row] = await db
       .select({ url: bookmarkTable.url })

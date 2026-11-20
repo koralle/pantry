@@ -101,11 +101,11 @@ const createTestUser = async ({
   readonly name: string;
 }) => (await auth.api.createUser({ body: { email, name, password } })).user;
 
-beforeAll(() => {
-  auth = createAuth({ appEnv: "test", baseURL, db: getDb(), secret });
-});
+describe(createAuth, () => {
+  beforeAll(() => {
+    auth = createAuth({ appEnv: "test", baseURL, db: getDb(), secret });
+  });
 
-describe("createAuth", () => {
   test("未認証の self-sign-up API は production で 400 を返し、ユーザーを作らない", async () => {
     const productionAuth = createAuth({
       appEnv: "production",
@@ -341,7 +341,7 @@ describe("createAuth", () => {
     const setCookies = responses.at(-1)?.headers.getSetCookie() ?? [];
     expect(
       setCookies.some((value) => value.startsWith("better-auth.session_token="))
-    ).toBe(true);
+    ).toBeTruthy();
     // Cookie の session（サインインで作ったもの）だけが延長される。
     const sessions = await getDb()
       .select()

@@ -57,7 +57,7 @@ const createFakeApi = (
   };
 };
 
-describe("createApiServerClient", () => {
+describe(createApiServerClient, () => {
   test("受けた Cookie を api の /rpc へ転送する", async () => {
     const seen: SeenRequest[] = [];
     const client = createApiServerClient(withCookie(SESSION_COOKIE), {
@@ -143,7 +143,7 @@ describe("createApiServerClient", () => {
   });
 });
 
-describe("getSessionUser", () => {
+describe(getSessionUser, () => {
   test("me の結果を SessionUser として返す", async () => {
     const client = createApiServerClient(withCookie(SESSION_COOKIE), {
       apiFetch: createFakeApi([]),
@@ -171,6 +171,6 @@ describe("getSessionUser", () => {
         await Promise.resolve(new Response("boom", { status: 500 })),
     });
 
-    await expect(getSessionUser(client)).rejects.toThrow();
+    await expect(getSessionUser(client)).rejects.toBeInstanceOf(Error);
   });
 });

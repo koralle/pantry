@@ -31,7 +31,7 @@ describe("passkey plugin wiring", () => {
       join(dir, "lib/passkey/plugin-options.ts"),
     ];
     for (const path of removed) {
-      await expect(access(path)).rejects.toThrow();
+      await expect(access(path)).rejects.toThrow(/ENOENT/u);
     }
   });
 });

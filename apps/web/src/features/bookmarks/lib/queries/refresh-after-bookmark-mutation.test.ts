@@ -4,10 +4,10 @@ import { refreshAfterBookmarkMutation } from "./refresh-after-bookmark-mutation"
 
 describe(refreshAfterBookmarkMutation, () => {
   test("route の再取得が失敗しても reject せず、操作名をログに残す", async () => {
-    const invalidate = vi.fn(async () => {
+    const invalidate = vi.fn<() => Promise<void>>(async () => {
       throw new Error("loader failed");
     });
-    const removeQueries = vi.fn();
+    const removeQueries = vi.fn<() => void>();
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});

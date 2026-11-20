@@ -111,9 +111,13 @@ describe("bookmark list query ownership", () => {
     );
     expect(hook).toContain("bookmarkListSearchIdentity");
     expect(hook).toContain("[searchIdentity]");
-    expect(hook).not.toContain("searchRef");
-    expect(hook).not.toContain("useRef");
-    expect(hook).not.toContain("bookmarkListSearchEquals");
+    expect(hook).not.toMatch(/searchRef|useRef|bookmarkListSearchEquals/u);
+  });
+
+  test("scroll 位置の復元は search identity に紐づく要素で行う", () => {
+    const hook = readSource(
+      "features/bookmarks/hooks/use-bookmark-list-pagination.ts"
+    );
     expect(hook).toContain("rememberBookmarkListScroll(searchIdentity,");
     expect(hook).toContain("consumeBookmarkListScroll(searchIdentity)");
     expect(hook).toContain('document.querySelector("[data-list-scroll]")');
@@ -130,7 +134,9 @@ describe("bookmark list query ownership", () => {
     const shell = readSource("app/layout.tsx");
     expect(shell).toContain('data-scroll-restoration-id="content"');
     expect(shell).toContain('id="content"');
+  });
 
+  test("ルート遷移の scrollToTop は #content を対象にする", () => {
     const router = readSource("router.tsx");
     expect(router).toContain('scrollToTopSelectors: ["#content"]');
   });

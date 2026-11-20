@@ -1,14 +1,8 @@
-import { CircleAlert, CircleCheck, KeyRound, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import { css, cx } from "styled-system/css";
+import { Plus } from "lucide-react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { css } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
-import { flash } from "../../../../shared/styles/flash";
-import {
-  formSummary,
-  formSummaryIcon,
-  formSummaryText,
-} from "../../../../shared/styles/form";
 import { authClient } from "../../lib/auth-client";
 import {
   getPasskeyManageErrorMessage,
@@ -19,19 +13,18 @@ import {
   accountSectionHeadAction,
   accountSectionHeadRow,
   accountSectionHeading,
-  passkeyEmpty,
-  passkeyEmptyAction,
-  passkeyEmptyIcon,
-  passkeyEmptyNote,
-  passkeyEmptyTitle,
 } from "../../styles";
+import { PasskeyEmpty } from "./empty";
+import { PasskeyFeedback } from "./feedback";
 import { PasskeyListItem } from "./list-item";
 import type { ManagedPasskey } from "./list-item";
 
-const passkeyFeedback = css({
-  fontSize: "xs",
-  marginBlockEnd: "3",
-});
+// WebAuthn は browser でしか生えないため、SSR と client で値を分けて hydration mismatch を避ける。
+const subscribeNothing = () => () => {
+  // 可用性は起動後に変わらないので購読しない。
+};
+const getWebAuthnAvailable = () => isWebAuthnAvailable();
+const getServerWebAuthnAvailable = () => false;
 
 const passkeyLoading = css({
   color: "fg.faint",
@@ -39,56 +32,61 @@ const passkeyLoading = css({
   margin: "0",
 });
 
+interface PasskeyRecord {
+  readonly aaguid?: unknown;
+  readonly createdAt?: unknown;
+  readonly id?: unknown;
+  readonly name?: unknown;
+}
+
+/**
+ * Better Auth の戻り値は `unknown` 相当なので、型はここで絞る。
+ * 型述語にしておくと downstream で `as` を書かずに済む。
+ */
+const isPasskeyRecord = (value: unknown): value is PasskeyRecord =>
+  typeof value === "object" && value !== null;
+
 const toManagedPasskeys = (value: unknown): ManagedPasskey[] => {
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value.flatMap((item) => {
-    if (
-      item === null ||
-      item === undefined ||
-      typeof item !== "object" ||
-      !("id" in item)
-    ) {
+    if (!isPasskeyRecord(item) || !("id" in item)) {
       return [];
     }
 
-    const record = item as {
-      id?: unknown;
-      name?: unknown;
-      aaguid?: unknown;
-      createdAt?: unknown;
-    };
-
-    if (typeof record.id !== "string") {
+    const { createdAt } = item;
+    if (typeof item.id !== "string") {
       return [];
     }
-
-    const { createdAt } = record;
     if (!(createdAt instanceof Date) && typeof createdAt !== "string") {
       return [];
     }
 
     return [
       {
-        aaguid: typeof record.aaguid === "string" ? record.aaguid : null,
+        aaguid: typeof item.aaguid === "string" ? item.aaguid : null,
         createdAt,
-        id: record.id,
-        name: typeof record.name === "string" ? record.name : null,
+        id: item.id,
+        name: typeof item.name === "string" ? item.name : null,
       },
     ];
   });
 };
 
 export const PasskeySettings = () => {
-  const [webAuthnAvailable, setWebAuthnAvailable] = useState(false);
+  const webAuthnAvailable = useSyncExternalStore(
+    subscribeNothing,
+    getWebAuthnAvailable,
+    getServerWebAuthnAvailable
+  );
   const [passkeys, setPasskeys] = useState<ManagedPasskey[] | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 
-  const loadPasskeys = async () => {
+  const loadPasskeys = useCallback(async () => {
     const { data, error } = await authClient.passkey.listUserPasskeys();
     if (error !== null && error !== undefined) {
       setErrorMessage(getPasskeyManageErrorMessage(error));
@@ -96,12 +94,11 @@ export const PasskeySettings = () => {
     }
 
     setPasskeys(toManagedPasskeys(data));
-  };
+  }, []);
 
   useEffect(() => {
-    setWebAuthnAvailable(isWebAuthnAvailable());
     void loadPasskeys();
-  }, []);
+  }, [loadPasskeys]);
 
   const handleMutated = (message: string) => {
     setErrorMessage(null);
@@ -133,14 +130,15 @@ export const PasskeySettings = () => {
     })();
   };
 
+  const isLoaded = passkeys !== null;
+  const hasPasskeys = isLoaded && passkeys.length > 0;
+  const isEmpty = isLoaded && passkeys.length === 0;
+
   return (
     <>
       <div className={accountSectionHeadRow}>
         <h2 className={accountSectionHeading}>パスキー</h2>
-        {webAuthnAvailable &&
-        passkeys !== null &&
-        passkeys !== undefined &&
-        passkeys.length > 0 ? (
+        {webAuthnAvailable && hasPasskeys ? (
           <div className={accountSectionHeadAction}>
             <StyledButton
               isPending={isAdding}
@@ -154,59 +152,24 @@ export const PasskeySettings = () => {
         ) : null}
       </div>
 
-      {errorMessage === null || errorMessage === undefined ? null : (
-        <div
-          className={cx(formSummary, passkeyFeedback)}
-          role="alert"
-          aria-live="polite"
-        >
-          <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
-          <p className={formSummaryText}>{errorMessage}</p>
-        </div>
-      )}
+      <PasskeyFeedback
+        errorMessage={errorMessage}
+        statusMessage={statusMessage}
+      />
 
-      {statusMessage === null || statusMessage === undefined ? null : (
-        <output className={cx(flash, passkeyFeedback)} aria-live="polite">
-          <CircleCheck
-            size={14}
-            aria-hidden
-            className={css({ verticalAlign: "-2px" })}
-          />{" "}
-          {statusMessage}
-        </output>
-      )}
-
-      {(passkeys === null || passkeys === undefined) &&
-      (errorMessage === null || errorMessage === undefined) ? (
+      {isLoaded || errorMessage !== null ? null : (
         <p className={passkeyLoading}>読み込み中…</p>
+      )}
+
+      {isEmpty ? (
+        <PasskeyEmpty
+          isAdding={isAdding}
+          onAdd={handleAdd}
+          webAuthnAvailable={webAuthnAvailable}
+        />
       ) : null}
 
-      {passkeys !== null && passkeys !== undefined && passkeys.length === 0 ? (
-        <div className={passkeyEmpty}>
-          <span className={passkeyEmptyIcon}>
-            <KeyRound size={18} aria-hidden />
-          </span>
-          <p className={passkeyEmptyTitle}>パスキーが未登録です</p>
-          <p className={passkeyEmptyNote}>
-            登録するとパスワードなしでサインインできます。
-          </p>
-          {webAuthnAvailable ? (
-            <div className={passkeyEmptyAction}>
-              <StyledButton
-                isPending={isAdding}
-                onPress={handleAdd}
-                size="sm"
-                visual="accent"
-              >
-                <Plus size={13} aria-hidden />{" "}
-                {isAdding ? "登録中…" : "パスキーを登録"}
-              </StyledButton>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {passkeys !== null && passkeys !== undefined && passkeys.length > 0 ? (
+      {hasPasskeys ? (
         <div>
           {passkeys.map((passkey) => (
             <PasskeyListItem

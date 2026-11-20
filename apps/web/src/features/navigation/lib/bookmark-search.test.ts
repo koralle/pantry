@@ -7,7 +7,7 @@ import {
   bookmarkSearchSchema,
 } from "./bookmark-search";
 
-describe("bookmarkSearchSchema", () => {
+describe("bookmarkSearchSchema の parse", () => {
   test("default values", async () => {
     const result = await v.parseAsync(bookmarkSearchSchema, {});
     expect(result).toStrictEqual({});

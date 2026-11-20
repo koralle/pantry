@@ -32,7 +32,7 @@ export const createTagsRouter = ({ impl, requireAuthWithDb }: RouterKit) => ({
   create: impl.tags.create
     .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = context.db;
+      const { db } = context;
       const result = await executeCreateTag({
         command: toCreateTagCommand(input),
         insertTag: async (row) => await insertTag(db, row),
@@ -46,7 +46,7 @@ export const createTagsRouter = ({ impl, requireAuthWithDb }: RouterKit) => ({
   delete: impl.tags.delete
     .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = context.db;
+      const { db } = context;
       const result = await executeDeleteTag({
         deleteTag: async (target) => await deleteTag(db, target),
         id: input.id,
@@ -71,7 +71,7 @@ export const createTagsRouter = ({ impl, requireAuthWithDb }: RouterKit) => ({
   touch: impl.tags.touch
     .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = context.db;
+      const { db } = context;
       const result = await executeTouchTag({
         id: input.id,
         touchTag: async (target) => await touchTag(db, target),
@@ -85,7 +85,7 @@ export const createTagsRouter = ({ impl, requireAuthWithDb }: RouterKit) => ({
   update: impl.tags.update
     .use(requireAuthWithDb)
     .handler(async ({ context, errors, input }) => {
-      const db = context.db;
+      const { db } = context;
       const result = await executeUpdateTag({
         command: toUpdateTagCommand(input),
         updateTag: async (row) => await updateTag(db, row),

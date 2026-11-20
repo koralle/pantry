@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isApiPath } from "./is-api-path";
 
-describe("isApiPath", () => {
+describe(isApiPath, () => {
   test.each([
     "/rpc/health",
     "/rpc/me",

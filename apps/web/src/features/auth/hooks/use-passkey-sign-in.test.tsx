@@ -9,7 +9,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { usePasskeySignIn } from "./use-passkey-sign-in";
 
-const mocks = vi.hoisted(() => ({ passkey: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  passkey: vi.fn<() => Promise<{ data: unknown; error: unknown }>>(),
+}));
 
 vi.mock("../lib/auth-client", () => ({
   authClient: { signIn: { passkey: mocks.passkey } },
@@ -62,7 +64,7 @@ describe(usePasskeySignIn, () => {
       mocks.passkey.mockResolvedValue({ data: {}, error: null });
       const { signInWithPasskey, navigate } = mountHook(redirect);
 
-      await expect(signInWithPasskey()).resolves.toEqual({
+      await expect(signInWithPasskey()).resolves.toStrictEqual({
         ok: true,
         value: undefined,
       });
@@ -83,7 +85,10 @@ describe(usePasskeySignIn, () => {
       mocks.passkey.mockResolvedValue({ data: null, error });
       const { signInWithPasskey, navigate } = mountHook();
 
-      await expect(signInWithPasskey()).resolves.toEqual({ ok: false, error });
+      await expect(signInWithPasskey()).resolves.toStrictEqual({
+        ok: false,
+        error,
+      });
       expect(navigate).not.toHaveBeenCalled();
     }
   );
@@ -92,7 +97,7 @@ describe(usePasskeySignIn, () => {
     mocks.passkey.mockRejectedValue(new Error("Network"));
     const { signInWithPasskey, navigate } = mountHook();
 
-    await expect(signInWithPasskey()).resolves.toEqual({
+    await expect(signInWithPasskey()).resolves.toStrictEqual({
       ok: false,
       error: {},
     });
@@ -104,7 +109,7 @@ describe(usePasskeySignIn, () => {
     const { signInWithPasskey, navigate } = mountHook();
     navigate.mockRejectedValue(new Error("Navigation"));
 
-    await expect(signInWithPasskey()).resolves.toEqual({
+    await expect(signInWithPasskey()).resolves.toStrictEqual({
       ok: false,
       error: {},
     });

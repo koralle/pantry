@@ -66,7 +66,9 @@ describe("quick add screen", () => {
     expect(screenSource).toContain('"fetching"');
     expect(screenSource).toContain('"confirm"');
     expect(screenSource).toContain('"done"');
-    // 完了はトーストではなく画面内状態
+  });
+
+  test("完了はトーストではなく画面内の導線で示す", () => {
     expect(screenSource).toContain("保存しました");
     expect(screenSource).toContain("続けて登録");
     expect(screenSource).toContain("詳細を見る");
@@ -75,7 +77,7 @@ describe("quick add screen", () => {
 
   test("連続登録は round remount で初期化する（effect で後追いしない）", () => {
     expect(screenSource).toContain("key={round}");
-    expect(screenSource).not.toMatch(/\buseEffect\(/);
+    expect(screenSource).not.toMatch(/\buseEffect\(/u);
   });
 
   test("タグ編集と詳細は一覧条件を引き継ぐ", () => {

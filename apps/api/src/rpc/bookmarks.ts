@@ -17,7 +17,7 @@ export const createBookmarksRouter = ({
   impl,
   requireAuthWithDb,
 }: RouterKit) => {
-  const bookmarks = impl.bookmarks;
+  const { bookmarks } = impl;
   const countOf = (
     procedure: typeof bookmarks.counts.favorites,
     view: BookmarkCountView
@@ -38,7 +38,7 @@ export const createBookmarksRouter = ({
     create: bookmarks.create
       .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = context.db;
+        const { db } = context;
         const result = await executeCreateBookmark({
           command: input,
           insertBookmark: async (row) => await insertBookmark(db, row),
@@ -55,7 +55,7 @@ export const createBookmarksRouter = ({
     delete: bookmarks.delete
       .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = context.db;
+        const { db } = context;
         const result = await executeDeleteBookmark({
           command: input,
           softDeleteBookmark: async (target) =>
@@ -103,7 +103,7 @@ export const createBookmarksRouter = ({
     setFavorite: bookmarks.setFavorite
       .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = context.db;
+        const { db } = context;
         const result = await executeSetBookmarkFavorite({
           command: input,
           setBookmarkFavorite: async (target) =>
@@ -118,7 +118,7 @@ export const createBookmarksRouter = ({
     update: bookmarks.update
       .use(requireAuthWithDb)
       .handler(async ({ context, errors, input }) => {
-        const db = context.db;
+        const { db } = context;
         const result = await executeUpdateBookmark({
           command: input,
           updateBookmark: async (row) => await updateBookmark(db, row),

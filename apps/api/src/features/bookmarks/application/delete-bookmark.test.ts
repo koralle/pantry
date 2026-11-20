@@ -8,7 +8,9 @@ const userId = "user-1" as UserId;
 const bookmarkId = "019fae92-3bb0-78cd-b488-65ce0e26a001";
 
 function stubPort(output: Awaited<ReturnType<SoftDeleteBookmark>>) {
-  const softDeleteBookmark: SoftDeleteBookmark = vi.fn(async () => output);
+  const softDeleteBookmark: SoftDeleteBookmark = vi.fn<SoftDeleteBookmark>(
+    async () => output
+  );
   return { softDeleteBookmark };
 }
 
@@ -42,9 +44,11 @@ describe(executeDeleteBookmark, () => {
   });
 
   test("未知の障害は包み直さず throw する", async () => {
-    const softDeleteBookmark: SoftDeleteBookmark = vi.fn(async () => {
-      throw new Error("disk exploded");
-    });
+    const softDeleteBookmark: SoftDeleteBookmark = vi.fn<SoftDeleteBookmark>(
+      async () => {
+        throw new Error("disk exploded");
+      }
+    );
 
     await expect(
       executeDeleteBookmark({

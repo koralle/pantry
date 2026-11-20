@@ -57,17 +57,21 @@ const browserApiLink = createApiBrowserLink({
   interceptors: [onError(redirectOnUnauthorized)],
 });
 
+/** client context を procedure 側で使わないことを表す空の object 型。 */
+// oxlint-disable-next-line typescript/no-generated-empty-object-type -- 空の client context を表す
+type NoClientContext = Record<never, never>;
+
 /**
  * server と client で link を分けるのは、SSR には同一 origin の `/rpc` が無く、
  * api の Set-Cookie（session の延長）もブラウザへのレスポンスへ引き継ぐ必要があるため。
  */
 const apiLink = createIsomorphicFn()
-  .server(async (): Promise<ClientLink<Record<never, never>>> => {
+  .server(async (): Promise<ClientLink<NoClientContext>> => {
     const { ssrApiLink } = await import("./ssr-api-link.server");
     return ssrApiLink;
   })
   .client(
-    async (): Promise<ClientLink<Record<never, never>>> =>
+    async (): Promise<ClientLink<NoClientContext>> =>
       await Promise.resolve(browserApiLink)
   );
 

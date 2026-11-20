@@ -23,7 +23,7 @@ describe(resolveTursoConnection, () => {
       resolveTursoConnection({
         TURSO_AUTH_TOKEN: "test-token",
       })
-    ).toThrow(/TURSO_CONNECTION_URL/);
+    ).toThrow(/TURSO_CONNECTION_URL/u);
   });
 
   test("throws when TURSO_AUTH_TOKEN is missing", () => {
@@ -31,6 +31,6 @@ describe(resolveTursoConnection, () => {
       resolveTursoConnection({
         TURSO_CONNECTION_URL: "libsql://pantry-production-db.turso.io",
       })
-    ).toThrow(/TURSO_AUTH_TOKEN/);
+    ).toThrow(/TURSO_AUTH_TOKEN/u);
   });
 });

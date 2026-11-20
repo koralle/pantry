@@ -23,10 +23,14 @@ export const toUpdateBookmarkFailureCode = (
     case "UNAUTHORIZED": {
       return null;
     }
-    case "bookmark-not-found":
-    case "duplicate-url":
+    case "bookmark-not-found": {
+      return "bookmark-not-found";
+    }
+    case "duplicate-url": {
+      return "duplicate-url";
+    }
     case "invalid-tag": {
-      return error.code;
+      return "invalid-tag";
     }
     default: {
       return "unexpected";

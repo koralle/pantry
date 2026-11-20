@@ -2,9 +2,11 @@ import { describe, expect, test, vi } from "vitest";
 
 import { fetchPageTitle } from "./fetch-page-title.server";
 
+type FetchLike = NonNullable<Parameters<typeof fetchPageTitle>[1]>;
+
 describe(fetchPageTitle, () => {
   test("extracts title from HTML", async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<FetchLike>(
       async () =>
         new Response("<html><head><title>Example title</title></head></html>", {
           headers: { "content-type": "text/html" },
@@ -63,7 +65,7 @@ describe(fetchPageTitle, () => {
   });
 
   test("returns unavailable on network failure", async () => {
-    const failingFetch = vi.fn(async () => {
+    const failingFetch = vi.fn<FetchLike>(async () => {
       throw new Error("network down");
     });
 
@@ -75,7 +77,7 @@ describe(fetchPageTitle, () => {
   });
 
   test("follows limited redirects and validates each hop", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchMock = vi.fn<FetchLike>(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "https://example.com/start") {
         return new Response(null, {
@@ -99,7 +101,7 @@ describe(fetchPageTitle, () => {
   });
 
   test("rejects redirect to private host as url-not-allowed", async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<FetchLike>(
       async () =>
         new Response(null, {
           headers: { location: "http://127.0.0.1/secret" },
@@ -115,7 +117,7 @@ describe(fetchPageTitle, () => {
   });
 
   test("non-ok status is unavailable", async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<FetchLike>(
       async () =>
         new Response("<title>gone</title>", {
           headers: { "content-type": "text/html" },
@@ -131,7 +133,7 @@ describe(fetchPageTitle, () => {
   });
 
   test("unsupported content type is unavailable", async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<FetchLike>(
       async () =>
         new Response('{"title":"json"}', {
           headers: { "content-type": "application/json" },
@@ -147,7 +149,7 @@ describe(fetchPageTitle, () => {
   });
 
   test("page without title is unavailable", async () => {
-    const fetchMock = vi.fn(
+    const fetchMock = vi.fn<FetchLike>(
       async () =>
         new Response("<html><body>no title here</body></html>", {
           headers: { "content-type": "text/html" },

@@ -23,7 +23,7 @@ function fakeTouchTag(output: TouchTagOutput): TouchTag {
   return async (_input: TouchTagInput) => output;
 }
 
-describe("touchTagInputSchema", () => {
+describe("touchTagInputSchema の parse", () => {
   test("正の整数の id を受け付ける", () => {
     expect(v.parse(touchTagInputSchema, { id: 3 })).toStrictEqual({
       id: parseTagId(3),
@@ -31,8 +31,8 @@ describe("touchTagInputSchema", () => {
   });
 
   test("0 以下や小数の id は拒否する", () => {
-    expect(() => v.parse(touchTagInputSchema, { id: 0 })).toThrow();
-    expect(() => v.parse(touchTagInputSchema, { id: 1.5 })).toThrow();
+    expect(() => v.parse(touchTagInputSchema, { id: 0 })).toThrow(/Invalid/u);
+    expect(() => v.parse(touchTagInputSchema, { id: 1.5 })).toThrow(/Invalid/u);
   });
 });
 

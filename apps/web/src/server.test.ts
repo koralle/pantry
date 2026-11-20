@@ -1,7 +1,11 @@
 import { describe, expect, test, vi } from "vitest";
 
+import server from "./server";
+
 const mocks = vi.hoisted(() => ({
-  appFetch: vi.fn(async () => await Promise.resolve(new Response("web-app"))),
+  appFetch: vi.fn<() => Promise<Response>>(
+    async () => await Promise.resolve(new Response("web-app"))
+  ),
 }));
 
 // TanStack Start の handler は起動せず、web 側に来たことだけを返す。
@@ -9,8 +13,6 @@ vi.mock("@tanstack/react-start/server-entry", () => ({
   createServerEntry: <T>(entry: T): T => entry,
   default: { fetch: mocks.appFetch },
 }));
-
-import server from "./server";
 
 /**
  * `env.API` は vitest.config.ts の stub（503、受けたリクエストを x-stub-* で返す）。
@@ -34,13 +36,19 @@ describe("server entry", () => {
         method: "POST",
       });
 
-      expect(response.status).toBe(503);
-      expect(response.headers.get("x-stub-path")).toBe(path);
-      expect(response.headers.get("x-stub-method")).toBe("POST");
-      expect(response.headers.get("x-stub-cookie")).toBe(
-        "better-auth.session_token=abc"
-      );
-      expect(response.headers.get("x-stub-client-ip")).toBe("203.0.113.7");
+      expect({
+        clientIp: response.headers.get("x-stub-client-ip"),
+        cookie: response.headers.get("x-stub-cookie"),
+        method: response.headers.get("x-stub-method"),
+        path: response.headers.get("x-stub-path"),
+        status: response.status,
+      }).toStrictEqual({
+        clientIp: "203.0.113.7",
+        cookie: "better-auth.session_token=abc",
+        method: "POST",
+        path,
+        status: 503,
+      });
       expect(mocks.appFetch).not.toHaveBeenCalled();
     }
   );
@@ -61,6 +69,6 @@ describe("server entry", () => {
 
     await expect(response.text()).resolves.toBe("web-app");
     expect(response.headers.get("x-stub-path")).toBeNull();
-    expect(mocks.appFetch).toHaveBeenCalledTimes(1);
+    expect(mocks.appFetch).toHaveBeenCalledOnce();
   });
 });

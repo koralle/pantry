@@ -168,11 +168,9 @@ describe(useEmailSignIn, () => {
     expect(result.error).toBeInstanceOf(SignInError);
     expect(result.error).toMatchObject(genericFailure);
     expect(mocks.email).toHaveBeenCalledExactlyOnceWith(credentials);
-    if (navigates) {
-      expect(navigate).toHaveBeenCalledExactlyOnceWith({ to: "/bookmarks" });
-    } else {
-      expect(navigate).not.toHaveBeenCalled();
-    }
+    expect(navigate.mock.calls).toStrictEqual(
+      navigates ? [[{ to: "/bookmarks" }]] : []
+    );
   });
 
   test("認証が完了するまでは遷移しない", async () => {

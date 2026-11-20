@@ -23,10 +23,12 @@ type ReadDeps = Parameters<typeof createAppRouter>[0];
 function baseDeps(): ReadDeps {
   return {
     ...stubAppRouterDeps(),
-    fetchPageTitle: vi.fn(async (): Promise<FetchPageTitleOutput> => ({
-      kind: "unavailable",
-    })),
-    getSession: vi.fn(async () => sessionUser),
+    fetchPageTitle: vi.fn<ReadDeps["fetchPageTitle"]>(
+      async (): Promise<FetchPageTitleOutput> => ({
+        kind: "unavailable",
+      })
+    ),
+    getSession: vi.fn<ReadDeps["getSession"]>(async () => sessionUser),
   };
 }
 
@@ -89,10 +91,12 @@ describe("auth.session RPC", () => {
   });
 
   test("Cookie ヘッダーが public procedure の getSession へ届く", async () => {
-    const getSession = vi.fn(async (headers: Headers) => {
-      expect(headers.get("cookie")).toBe("better-auth.session_token=abc");
-      return sessionUser;
-    });
+    const getSession = vi.fn<ReadDeps["getSession"]>(
+      async (headers: Headers) => {
+        expect(headers.get("cookie")).toBe("better-auth.session_token=abc");
+        return sessionUser;
+      }
+    );
     const router = authenticatedRouter({ getSession });
     const { client } = createTestClient(router, {
       cookie: "better-auth.session_token=abc",

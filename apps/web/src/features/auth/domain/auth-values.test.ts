@@ -4,14 +4,11 @@ import { describe, expect, test } from "vitest";
 
 import { userIdSchema } from "./auth-values";
 
-describe("userIdSchema", () => {
+describe("userIdSchema の parse", () => {
   test("accepts a non-empty user id", () => {
     const id = uuidv7();
     const result = v.safeParse(userIdSchema, id);
-    expect(result.success).toBeTruthy();
-    if (result.success) {
-      expect(result.output).toBe(id);
-    }
+    expect(result.success && result.output).toBe(id);
   });
 
   test("rejects an empty string", () => {

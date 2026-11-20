@@ -15,17 +15,16 @@ import type { AppRouter } from "../contract/create-app-router";
 export type AppClient = RouterClient<AppRouter> &
   ContractRouterClient<ApiContract>;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 export const isApiProcedurePath = (path: readonly string[]): boolean => {
   let node: unknown = contract;
   for (const key of path) {
-    if (
-      typeof node !== "object" ||
-      node === null ||
-      !Object.hasOwn(node, key)
-    ) {
+    if (!isRecord(node) || !Object.hasOwn(node, key)) {
       return false;
     }
-    node = (node as Record<string, unknown>)[key];
+    node = node[key];
   }
   return isContractProcedure(node);
 };

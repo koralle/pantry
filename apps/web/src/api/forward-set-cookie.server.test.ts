@@ -1,13 +1,13 @@
 import { describe, expect, test, vi } from "vitest";
 
+import { forwardSetCookie } from "./forward-set-cookie.server";
+
 const mocks = vi.hoisted(() => ({ responseHeaders: new Headers() }));
 
 // 処理中リクエストのレスポンスヘッダーを差し替える。
 vi.mock("@tanstack/react-start/server", () => ({
   getResponseHeaders: () => mocks.responseHeaders,
 }));
-
-import { forwardSetCookie } from "./forward-set-cookie.server";
 
 const SESSION =
   "better-auth.session_token=valid; Max-Age=604800; Path=/; HttpOnly; SameSite=Lax";

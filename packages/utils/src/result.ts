@@ -10,6 +10,7 @@ export type Result<T, E> =
 
 export const ok = <T = void>(value?: T): Result<T, never> =>
   // SAFETY: omitted value is the Result<void> success payload.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   ({ ok: true, value: value as T });
 
 export const err = <E>(error: E): Result<never, E> => ({ error, ok: false });

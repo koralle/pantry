@@ -78,7 +78,6 @@ export const TagPickerPanel = ({
         value={query}
         onChange={onQueryChange}
         aria-label="タグを検索"
-        onSubmit={() => {}}
       >
         {/* キー処理は SearchField ではなく input に置く。Escape は RAC の
             SearchField が input 側で握って stopPropagation するため、

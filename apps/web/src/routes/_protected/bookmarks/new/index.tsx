@@ -69,7 +69,7 @@ function RouteComponent() {
           tagIds: values.tagIds,
         })
       );
-      id = created.id;
+      ({ id } = created);
     } catch (error: unknown) {
       const formError = mapCreateBookmarkFailure(error);
       if (formError !== null) {

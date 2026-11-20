@@ -21,14 +21,15 @@ export const useBookmarkListPagination = ({
 
   useLayoutEffect(() => {
     const scrollContainer = document.querySelector("[data-list-scroll]");
-    if (!scrollContainer) {
-      return;
+    if (scrollContainer !== null) {
+      scrollContainer.scrollTop =
+        consumeBookmarkListScroll(searchIdentity) ?? 0;
     }
 
-    scrollContainer.scrollTop = consumeBookmarkListScroll(searchIdentity) ?? 0;
-
     return () => {
-      rememberBookmarkListScroll(searchIdentity, scrollContainer.scrollTop);
+      if (scrollContainer !== null) {
+        rememberBookmarkListScroll(searchIdentity, scrollContainer.scrollTop);
+      }
     };
   }, [searchIdentity]);
 

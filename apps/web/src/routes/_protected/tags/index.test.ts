@@ -21,10 +21,13 @@ describe("tags route", () => {
     expect(routeSource).not.toContain("tags.shelf");
   });
 
-  test("create / update / delete を oRPC mutationOptions 経由で所有する", () => {
+  test("create / update / delete を oRPC mutationOptions 経由で送る", () => {
     expect(routeSource).toContain("orpc.tags.create.mutationOptions");
     expect(routeSource).toContain("orpc.tags.update.mutationOptions");
     expect(routeSource).toContain("orpc.tags.delete.mutationOptions");
+  });
+
+  test("mutate 後は一覧の refresh を共通 helper に任せる", () => {
     expect(routeSource).toContain("refreshAfterCreateTag");
     expect(routeSource).toContain("refreshAfterUpdateTag");
     expect(routeSource).toContain("refreshAfterDeleteTag");
@@ -52,7 +55,9 @@ describe("tag manager screen", () => {
     expect(screenSource).toContain('"create"');
     expect(screenSource).toContain('"rename"');
     expect(screenSource).toContain('"delete"');
-    // 削除は紐付け解除を明示する
+  });
+
+  test("削除ダイアログは紐付け解除を明示する", () => {
     expect(screenSource).toContain("ブックマークからも外れます");
   });
 

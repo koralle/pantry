@@ -57,7 +57,7 @@ export const bookmarkListInputSchema = v.object({
       v.string(),
       v.minLength(1),
       v.maxLength(200),
-      v.check((value) => decodeBookmarkListCursor(value) != null)
+      v.check((value) => decodeBookmarkListCursor(value) !== null)
     )
   ),
   tagNames: v.optional(v.pipe(v.array(v.string()), v.maxLength(20))),

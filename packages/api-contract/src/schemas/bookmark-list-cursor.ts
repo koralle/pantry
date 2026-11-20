@@ -7,7 +7,7 @@ export interface BookmarkListCursor {
   readonly id: string;
 }
 
-const CURSOR_PATTERN = /^(?<createdAtMs>\d+):(?<id>.+)$/;
+const CURSOR_PATTERN = /^(?<createdAtMs>\d+):(?<id>.+)$/u;
 
 const parseCursorCreatedAtMs = (value: string | undefined): number | null => {
   if (value === undefined) {

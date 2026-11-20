@@ -1,6 +1,6 @@
-import { stubBookmarksDeps } from "./bookmark-procedures.test-helpers";
+import { stubBookmarksDeps } from "./bookmark-procedures.test-utils";
 import type { AppRouterDeps } from "./create-app-router";
-import { stubTagsDeps } from "./tag-procedures.test-helpers";
+import { stubTagsDeps } from "./tag-procedures.test-utils";
 
 export const stubAppRouterDeps = (): AppRouterDeps => ({
   ...stubBookmarksDeps(),

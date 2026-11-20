@@ -14,8 +14,8 @@ describe("client bundle boundary", () => {
   test("browser client は server 実装を静的に import しない", async () => {
     const source = await readSource("rpc/client/client.ts");
 
-    expect(source).not.toMatch(/from ["']\.\/client\.server["']/);
-    expect(source).not.toMatch(/from ["']@tanstack\/react-start\/server["']/);
+    expect(source).not.toMatch(/from ["']\.\/client\.server["']/u);
+    expect(source).not.toMatch(/from ["']@tanstack\/react-start\/server["']/u);
     expect(source).not.toContain("handle-request.server");
     expect(source).not.toContain("getAuth");
   });
@@ -24,16 +24,16 @@ describe("client bundle boundary", () => {
     const source = await readSource("rpc/client/runtime-client.ts");
 
     expect(source).toContain("createIsomorphicFn");
-    expect(source).toMatch(/await import\(["']\.\/client\.server["']\)/);
-    expect(source).not.toMatch(/from ["']\.\/client\.server["']/);
-    expect(source).not.toMatch(/from ["']@tanstack\/react-start\/server["']/);
+    expect(source).toMatch(/await import\(["']\.\/client\.server["']\)/u);
+    expect(source).not.toMatch(/from ["']\.\/client\.server["']/u);
+    expect(source).not.toMatch(/from ["']@tanstack\/react-start\/server["']/u);
   });
 
   test("RPC route は POST 専用で、GET handler を持たない", async () => {
     const source = await readSource("routes/api/rpc/$.ts");
 
     expect(source).toContain("POST:");
-    expect(source).not.toMatch(/GET:/);
+    expect(source).not.toMatch(/GET:/u);
   });
 
   test("legacy の Server Function と旧位置の helper は存在しない", async () => {
@@ -49,7 +49,7 @@ describe("client bundle boundary", () => {
       "features/tags/functions/get-tag.ts",
     ];
     for (const path of removed) {
-      await expect(access(join(srcDir, path))).rejects.toThrow();
+      await expect(access(join(srcDir, path))).rejects.toThrow(/ENOENT/u);
     }
 
     const moved = ["features/auth/server/get-session-user.server.ts"];

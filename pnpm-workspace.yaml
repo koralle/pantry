@@ -45,7 +45,7 @@ catalogs:
     "@conform-to/react": 1.21.1
     "@conform-to/valibot": 1.21.1
   format:
-    oxfmt: 0.66.0
+    oxfmt: 0.79.0
   framework:
     "@tanstack/react-query": 5.101.4
     "@tanstack/react-router": 1.170.27
@@ -54,13 +54,15 @@ catalogs:
   githooks:
     lefthook: 2.1.10
   lint:
+    "@interfere/landmines": 0.1.1
     "@markuplint/jsx-parser": 4.18.3
     "@markuplint/react-spec": 4.18.0
+    eslint-plugin-storybook: 10.6.7
     knip: 6.32.2
     markuplint: 4.18.3
-    oxlint: 1.81.0
-    oxlint-tsgolint: 7.0.2001
-    ultracite: 7.11.0
+    oxlint: 1.94.0
+    tsrs: 7.1.0-beta.tsrs3
+    ultracite: 8.3.1
   react:
     "@types/react": 19.3.0
     "@types/react-dom": 19.3.0
@@ -114,7 +116,7 @@ minimumReleaseAgeExclude:
   - "@better-auth/prisma-adapter@1.6.16"
   - "@better-auth/telemetry@1.6.16"
   - better-auth@1.6.16
-  - ultracite@7.11.0
+  - ultracite@8.3.1
   - "@cloudflare/vitest-plugin@1.4.5"
   - miniflare@5.20261012.1-beta || 5.20261019.0-beta
   - wrangler@4.151.1 || 4.151.2
@@ -138,3 +140,6 @@ saveExact: true
 strictDepBuilds: true
 
 trustPolicy: no-downgrade
+# tsrs は oxc-project の beta（provenance が無く no-downgrade で止まる）。
+trustPolicyExclude:
+  - "tsrs@7.1.0-beta.tsrs3"

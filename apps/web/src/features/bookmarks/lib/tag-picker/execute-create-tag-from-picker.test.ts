@@ -3,10 +3,12 @@ import { describe, expect, test, vi } from "vitest";
 
 import { executeCreateTagFromPicker } from "./execute-create-tag-from-picker";
 
+type Deps = Parameters<typeof executeCreateTagFromPicker>[0];
+
 describe(executeCreateTagFromPicker, () => {
   test("作成成功なら id と正規化した表示名を返す", async () => {
-    const createTag = vi.fn(async () => ({ id: 9 }));
-    const loadTags = vi.fn(async () => []);
+    const createTag = vi.fn<Deps["createTag"]>(async () => ({ id: 9 }));
+    const loadTags = vi.fn<Deps["loadTags"]>(async () => []);
 
     await expect(
       executeCreateTagFromPicker({
@@ -22,13 +24,15 @@ describe(executeCreateTagFromPicker, () => {
   });
 
   test("同名競合で既存タグを特定できれば重複作成せずそのタグを返す", async () => {
-    const createTag = vi.fn(async () => {
+    const createTag = vi.fn<Deps["createTag"]>(async () => {
       throw new ORPCError("tag-name-already-exists", {
         defined: true,
         status: 409,
       });
     });
-    const loadTags = vi.fn(async () => [{ id: 4, name: "Python" }]);
+    const loadTags = vi.fn<Deps["loadTags"]>(async () => [
+      { id: 4, name: "Python" },
+    ]);
 
     await expect(
       executeCreateTagFromPicker({
@@ -45,13 +49,15 @@ describe(executeCreateTagFromPicker, () => {
   });
 
   test("同名競合でも既存タグを特定できなければ再試行可能な失敗にする", async () => {
-    const createTag = vi.fn(async () => {
+    const createTag = vi.fn<Deps["createTag"]>(async () => {
       throw new ORPCError("tag-name-already-exists", {
         defined: true,
         status: 409,
       });
     });
-    const loadTags = vi.fn(async () => [{ id: 1, name: "React" }]);
+    const loadTags = vi.fn<Deps["loadTags"]>(async () => [
+      { id: 1, name: "React" },
+    ]);
 
     await expect(
       executeCreateTagFromPicker({
@@ -66,7 +72,7 @@ describe(executeCreateTagFromPicker, () => {
   });
 
   test("UNAUTHORIZED はフォームエラーにしない", async () => {
-    const createTag = vi.fn(async () => {
+    const createTag = vi.fn<Deps["createTag"]>(async () => {
       throw new ORPCError("UNAUTHORIZED", { defined: true });
     });
 
@@ -80,7 +86,7 @@ describe(executeCreateTagFromPicker, () => {
   });
 
   test("その他の失敗は作成エラーとして返す", async () => {
-    const createTag = vi.fn(async () => {
+    const createTag = vi.fn<Deps["createTag"]>(async () => {
       throw new Error("network");
     });
 

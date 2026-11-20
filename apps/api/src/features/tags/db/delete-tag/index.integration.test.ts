@@ -32,11 +32,13 @@ describe(deleteTag, () => {
     });
 
     expect(output).toStrictEqual({ kind: "deleted" });
-    expect(await db.select().from(tagsTable)).toStrictEqual([]);
-    expect(await db.select().from(bookmarkTagsTable)).toStrictEqual([]);
-    expect(
-      await db.select().from(bookmarkTable).where(eq(bookmarkTable.id, "bm-1"))
-    ).toHaveLength(1);
+    await expect(db.select().from(tagsTable)).resolves.toStrictEqual([]);
+    await expect(db.select().from(bookmarkTagsTable)).resolves.toStrictEqual(
+      []
+    );
+    await expect(
+      db.select().from(bookmarkTable).where(eq(bookmarkTable.id, "bm-1"))
+    ).resolves.toHaveLength(1);
   });
 
   test("他人のタグは not-found で、タグと紐付けは残る", async () => {
@@ -52,8 +54,8 @@ describe(deleteTag, () => {
     });
 
     expect(output).toStrictEqual({ kind: "not-found" });
-    expect(await db.select().from(tagsTable)).toHaveLength(1);
-    expect(await db.select().from(bookmarkTagsTable)).toHaveLength(1);
+    await expect(db.select().from(tagsTable)).resolves.toHaveLength(1);
+    await expect(db.select().from(bookmarkTagsTable)).resolves.toHaveLength(1);
   });
 
   test("存在しない id は not-found", async () => {

@@ -117,7 +117,11 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
               path: "bookmarks/create",
             })
           );
-          expect(response.status, JSON.stringify(headers)).toBe(403);
+          // 失敗したときにどの header set かを出すため、headers ごと比べる。
+          expect({ headers, status: response.status }).toStrictEqual({
+            headers,
+            status: 403,
+          });
         }
         await expect(
           getDb().select().from(bookmarkTable)
@@ -141,7 +145,10 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
             path: "bookmarks/create",
           })
         );
-        expect(response.status, JSON.stringify(headers)).toBe(200);
+        expect({ headers, status: response.status }).toStrictEqual({
+          headers,
+          status: 200,
+        });
       }
       await expect(
         getDb().select({ url: bookmarkTable.url }).from(bookmarkTable)
@@ -161,14 +168,14 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       });
 
       expect(created).toStrictEqual({ id: expect.any(String) });
-      expect(await bookmarkRow(getDb(), created.id)).toMatchObject({
+      await expect(bookmarkRow(getDb(), created.id)).resolves.toMatchObject({
         favorite: false,
         note: "memo",
         title: "Example",
         url: "https://example.com/a",
         userId: actor.id,
       });
-      expect(await tagIdsOf(getDb(), created.id)).toStrictEqual([tag]);
+      await expect(tagIdsOf(getDb(), created.id)).resolves.toStrictEqual([tag]);
     });
 
     test("他ユーザーのタグは 409 invalid-tag で、行を作らない", async () => {
@@ -257,12 +264,12 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
           url: "https://example.com/renamed",
         })
       ).resolves.toStrictEqual({ id });
-      expect(await bookmarkRow(getDb(), id)).toMatchObject({
+      await expect(bookmarkRow(getDb(), id)).resolves.toMatchObject({
         note: null,
         title: "Renamed",
         url: "https://example.com/renamed",
       });
-      expect(await tagIdsOf(getDb(), id)).toStrictEqual([newTag]);
+      await expect(tagIdsOf(getDb(), id)).resolves.toStrictEqual([newTag]);
     });
 
     test("他ユーザーの bookmark は 404 で、変更しない", async () => {
@@ -280,7 +287,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
           url: "https://example.com/stolen",
         })
       ).rejects.toMatchObject(notFound);
-      expect(await bookmarkRow(getDb(), id)).toMatchObject({
+      await expect(bookmarkRow(getDb(), id)).resolves.toMatchObject({
         title: "secret",
         userId: other.id,
       });
@@ -309,7 +316,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       await expect(
         as(actor).bookmarks.update({ ...input, tags: [own, own] })
       ).rejects.toMatchObject({ code: "invalid-tag", status: 409 });
-      expect(await tagIdsOf(getDb(), id)).toStrictEqual([own]);
+      await expect(tagIdsOf(getDb(), id)).resolves.toStrictEqual([own]);
     });
 
     test("自分の別 bookmark と同じ URL は 409 duplicate-url", async () => {
@@ -479,7 +486,7 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       await expect(
         client.bookmarks.setFavorite({ favorite: true, id })
       ).rejects.toMatchObject(notFound);
-      expect(await bookmarkRow(getDb(), id)).toMatchObject({
+      await expect(bookmarkRow(getDb(), id)).resolves.toMatchObject({
         deletedAt: null,
         favorite: false,
       });
@@ -492,9 +499,9 @@ describe("bookmarks（本番 migration を適用した libSQL）", () => {
       await expect(
         client.bookmarks.setFavorite({ favorite: true, id })
       ).resolves.toStrictEqual({ id });
-      expect((await bookmarkRow(getDb(), id))?.favorite).toBe(true);
+      expect((await bookmarkRow(getDb(), id))?.favorite).toBeTruthy();
       await client.bookmarks.setFavorite({ favorite: false, id });
-      expect((await bookmarkRow(getDb(), id))?.favorite).toBe(false);
+      expect((await bookmarkRow(getDb(), id))?.favorite).toBeFalsy();
     });
   });
 });
