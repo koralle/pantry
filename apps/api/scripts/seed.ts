@@ -664,7 +664,7 @@ const latestUsedAt = (
   tagName: string,
   planned: readonly PlannedBookmark[]
 ): Date | null => {
-  const normalized = toTagName(tagName).normalized;
+  const { normalized } = toTagName(tagName);
   const usedAt = planned
     .filter((bookmark) =>
       bookmark.tagNames.some(

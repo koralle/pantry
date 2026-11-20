@@ -10,7 +10,7 @@ import { resetBookmarkListCache } from "./reset-bookmark-list-cache";
 
 describe(resetBookmarkListCache, () => {
   test("infinite list query を remove し、保存したスクロール位置を捨てる", () => {
-    const removeQueries = vi.fn();
+    const removeQueries = vi.fn<() => void>();
     rememberBookmarkListScroll(
       bookmarkListSearchIdentity({ tags: ["react"] }),
       480

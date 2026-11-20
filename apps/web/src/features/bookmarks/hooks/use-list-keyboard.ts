@@ -57,7 +57,8 @@ export const useListKeyboard = ({
   const navigate = useNavigate();
   const [selection, setSelection] = useState({ identity, index: -1 });
   const index = selection.identity === identity ? selection.index : -1;
-  const selectedId = index >= 0 ? ids[index] : undefined;
+  // index が -1 のとき `ids[-1]` は undefined になるため、範囲チェックは不要。
+  const selectedId = ids[index];
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

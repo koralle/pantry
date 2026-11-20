@@ -81,7 +81,11 @@ describe("tags（本番 migration を適用した libSQL）", () => {
               path: "tags/create",
             })
           );
-          expect(response.status, JSON.stringify(headers)).toBe(403);
+          // 失敗したときにどの header set かを出すため、headers ごと比べる。
+          expect({ headers, status: response.status }).toStrictEqual({
+            headers,
+            status: 403,
+          });
         }
         await expect(getDb().select().from(tagsTable)).resolves.toStrictEqual(
           []
@@ -142,7 +146,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       });
 
       expect(created).toStrictEqual({ id: expect.any(Number) });
-      expect(await tagRow(getDb(), created.id)).toMatchObject({
+      await expect(tagRow(getDb(), created.id)).resolves.toMatchObject({
         color: null,
         name: "Work",
         normalizedName: "work",
@@ -193,7 +197,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
           sortOrder: 3,
         })
       ).resolves.toStrictEqual({ id });
-      expect(await tagRow(getDb(), id)).toMatchObject({
+      await expect(tagRow(getDb(), id)).resolves.toMatchObject({
         color: "#ff0000",
         name: "Job",
         normalizedName: "job",
@@ -237,7 +241,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
         defined: true,
         status: 404,
       });
-      expect(await tagRow(getDb(), id)).toMatchObject({
+      await expect(tagRow(getDb(), id)).resolves.toMatchObject({
         name: "secret",
         pinned: false,
         userId: other.id,
@@ -275,7 +279,7 @@ describe("tags（本番 migration を適用した libSQL）", () => {
       await expect(
         createTestClient(getDb(), actor).tags.delete({ id })
       ).resolves.toStrictEqual({ id });
-      expect(await tagRow(getDb(), id)).toBeUndefined();
+      await expect(tagRow(getDb(), id)).resolves.toBeUndefined();
       await expect(
         getDb()
           .select()
@@ -300,7 +304,9 @@ describe("tags（本番 migration を適用した libSQL）", () => {
         defined: true,
         status: 404,
       });
-      expect(await tagRow(getDb(), id)).toMatchObject({ userId: other.id });
+      await expect(tagRow(getDb(), id)).resolves.toMatchObject({
+        userId: other.id,
+      });
     });
 
     test("不正な id は 400 BAD_REQUEST", async () => {

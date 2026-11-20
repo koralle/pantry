@@ -51,7 +51,7 @@ describe(toUpdateTagCommand, () => {
         pinned: false,
         sortOrder: 0,
       })
-    ).toThrow();
+    ).toThrow(/Invalid/u);
     expect(() =>
       parseInput({
         color: "#12345",
@@ -60,7 +60,7 @@ describe(toUpdateTagCommand, () => {
         pinned: false,
         sortOrder: 0,
       })
-    ).toThrow();
+    ).toThrow(/Invalid/u);
   });
 });
 

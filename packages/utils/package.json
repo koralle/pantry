@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc"
+    "typecheck": "tsrs"
   },
   "dependencies": {
     "@internationalized/date": "catalog:date"

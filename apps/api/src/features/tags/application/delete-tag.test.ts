@@ -23,7 +23,7 @@ function fakeDeleteTag(output: DeleteTagOutput): DeleteTag {
   return async (_input: DeleteTagInput) => output;
 }
 
-describe("deleteTagInputSchema", () => {
+describe("deleteTagInputSchema の parse", () => {
   test("正の整数の id を受け付ける", () => {
     expect(v.parse(deleteTagInputSchema, { id: 3 })).toStrictEqual({
       id: parseTagId(3),
@@ -31,8 +31,10 @@ describe("deleteTagInputSchema", () => {
   });
 
   test("0 以下や小数の id は拒否する", () => {
-    expect(() => v.parse(deleteTagInputSchema, { id: 0 })).toThrow();
-    expect(() => v.parse(deleteTagInputSchema, { id: 1.5 })).toThrow();
+    expect(() => v.parse(deleteTagInputSchema, { id: 0 })).toThrow(/Invalid/u);
+    expect(() => v.parse(deleteTagInputSchema, { id: 1.5 })).toThrow(
+      /Invalid/u
+    );
   });
 });
 

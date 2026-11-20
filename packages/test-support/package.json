@@ -6,7 +6,7 @@
     "./libsql": "./src/libsql/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc"
+    "typecheck": "tsrs"
   },
   "dependencies": {
     "testcontainers": "catalog:test"

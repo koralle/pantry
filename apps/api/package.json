@@ -12,7 +12,7 @@
     "preview": "pnpm run build && vite preview",
     "test": "vitest run --project workers --project node",
     "test:db": "vitest run --project db",
-    "typecheck": "tsc"
+    "typecheck": "tsrs"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "catalog:authentication",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "catalog:build",
     "@cloudflare/vitest-plugin": "catalog:test",
+    "@interfere/landmines": "catalog:lint",
     "@libsql/client": "catalog:database",
     "@orpc/client": "catalog:rpc",
     "@orpc/contract": "catalog:rpc",

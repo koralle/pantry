@@ -14,4 +14,7 @@ export const getRpcClient = createIsomorphicFn()
     const { serverRpcClient } = await import("./client.server");
     return serverRpcClient;
   })
+  // isomorphic fn は server / client で同じ async 形状を要求する（`promise-function-async`）。
+  // client 側は同期値なので await は無い。
+  // oxlint-disable-next-line eslint/require-await
   .client(async (): Promise<AppClient> => rpcClient);

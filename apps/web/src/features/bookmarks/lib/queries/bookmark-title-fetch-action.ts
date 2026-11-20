@@ -14,7 +14,8 @@ export const bookmarkTitleFetchAction: BookmarkTitleFetchAction = async (
   { url }
 ) => {
   try {
-    const fetchedTitle = await (await getRpcClient()).bookmarks.title({ url });
+    const client = await getRpcClient();
+    const fetchedTitle = await client.bookmarks.title({ url });
     if (fetchedTitle === null) {
       return {
         status: "error",

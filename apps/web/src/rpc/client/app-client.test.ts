@@ -13,7 +13,7 @@ const recordingLink = (name: string, calls: string[]): ClientLink<object> => ({
   },
 });
 
-describe("isApiProcedurePath", () => {
+describe(isApiProcedurePath, () => {
   test("api-contract の procedure だけを api 行きと判定する", () => {
     expect(isApiProcedurePath(["health"])).toBe(true);
     expect(isApiProcedurePath(["me"])).toBe(true);
@@ -25,17 +25,20 @@ describe("isApiProcedurePath", () => {
     expect(isApiProcedurePath(["bookmarks", "title"])).toBe(false);
   });
 
-  test("contract に無い path・router の途中・prototype の key は web 行き", () => {
+  test("contract に無い path と router の途中は web 行き", () => {
     expect(isApiProcedurePath(["auth", "session"])).toBe(false);
     expect(isApiProcedurePath(["tags"])).toBe(false);
     expect(isApiProcedurePath(["bookmarks", "counts"])).toBe(false);
     expect(isApiProcedurePath(["health", "extra"])).toBe(false);
+  });
+
+  test("prototype の key と空の path は web 行き", () => {
     expect(isApiProcedurePath(["toString"])).toBe(false);
     expect(isApiProcedurePath([])).toBe(false);
   });
 });
 
-describe("createAppLink", () => {
+describe(createAppLink, () => {
   test("contract の procedure は api link、残りは web link へ送る", async () => {
     const calls: string[] = [];
     const client: AppClient = createORPCClient(

@@ -14,7 +14,7 @@
     "migrate:prod": "drizzle-kit migrate",
     "studio:dev": "drizzle-kit studio",
     "test": "vitest run",
-    "typecheck": "tsc"
+    "typecheck": "tsrs"
   },
   "dependencies": {
     "@libsql/client": "catalog:database",

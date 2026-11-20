@@ -16,7 +16,7 @@ function fakeFetchPageTitle(output: FetchPageTitleOutput): FetchPageTitle {
   return async () => output;
 }
 
-describe("fetchPageTitleInputSchema", () => {
+describe("fetchPageTitleInputSchema の parse", () => {
   test("http / https の URL を受け付ける", () => {
     expect(
       v.parse(fetchPageTitleInputSchema, { url: "https://example.com" })
@@ -28,7 +28,7 @@ describe("fetchPageTitleInputSchema", () => {
   test("ftp などは拒否する", () => {
     expect(() =>
       v.parse(fetchPageTitleInputSchema, { url: "ftp://example.com" })
-    ).toThrow();
+    ).toThrow(/http または https の URL/u);
   });
 });
 

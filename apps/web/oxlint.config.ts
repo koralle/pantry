@@ -1,10 +1,40 @@
-import { createOxlintConfig } from "@pantry/forge/oxlint";
+import { createOxlintConfig, vitestPreset } from "@pantry/forge/oxlint";
+import landmines from "ultracite/oxlint/landmines";
+import react from "ultracite/oxlint/react";
+import tanstack from "ultracite/oxlint/tanstack";
 
 // Oxlint はファイルごとに「最も近い設定」だけを使い、親設定とは自動マージしない。
 // そのためこのファイルは apps/web 配下のルート oxlint.config.ts を置き換える。
 // 全パッケージに効かせたい設定は @pantry/forge/oxlint に置き、ここには差分だけを書く。
 // パスはこのファイル（apps/web）からの相対で書く。
+// landmines は「エージェントが green にするための近道」を止める opt-in プリセット。
+// react / tanstack は React と TanStack Router を使うこのアプリだけに効かせる。
 export default createOxlintConfig({
+  extends: [react, tanstack, landmines, vitestPreset],
+  jsPlugins: [
+    ...(landmines.jsPlugins ?? []),
+    { name: "storybook", specifier: "eslint-plugin-storybook" },
+  ],
+  rules: {
+    // コメントは「なぜ」を残す規約（.agents/rules/ultracite.md）。差分を語るコメントの検出は要らない。
+    "landmines-style/no-comments": "off",
+    // 戻り値型は UI と hook の契約として明示する規約。
+    "landmines-types/no-explicit-return-types": "off",
+    // vi.fn での依存差し替えを前提にしたテストが残っている。MSW へ寄せるのは別作業。
+    "landmines-testing/no-test-doubles": "off",
+    // workerd 上の初回呼び出しは既定の 5 秒に収まらないことがあるため、この 1 件だけ待ち時間を延ばす。
+    "landmines-testing/no-flake-masking": [
+      "error",
+      { allow: { "apps/web/src/rpc/client/client-boundary.test.ts": 1 } },
+    ],
+    // react プリセットのうち、このリポジトリで無効にしているもの。
+    // プリセットを extends に移したため、forge 側の rules では上書きできない（extends が勝つ）。
+    // `react/todo` はコードの TODO コメントではなく、oxlint 側の未実装マーカー
+    // （`(BuildHIR::lowerAssignment) Handle ...`）を報告するため無効化する。
+    // authClient の読み込みは effect 起点で setState する（TanStack Query へ寄せるのは別作業）。
+    "react/set-state-in-effect": "off",
+    "react/todo": "off",
+  },
   overrides: [
     {
       files: ["src/routes/**/*.ts", "src/routes/**/*.tsx"],
@@ -13,6 +43,9 @@ export default createOxlintConfig({
         "no-use-before-define": "off",
         "react/function-component-definition": "off",
         "require-await": "off",
+        // TanStack Router は `throw redirect()` / `throw notFound()` を制御フローに使う。
+        // 投げる値は Error ではなく Response 相当なので、ルート層だけ例外にする。
+        "typescript/only-throw-error": "off",
         "unicorn/no-await-expression-member": "off",
       },
     },
@@ -54,8 +87,30 @@ export default createOxlintConfig({
       },
     },
     {
+      // eslint-plugin-storybook の flat/recommended 相当。
+      // Oxlint の files は ESLint の extglob（`@(ts|tsx)`）を解釈せず黙って無視するため brace で書く。
+      files: [
+        "**/*.stories.{ts,tsx,js,jsx,mjs,cjs}",
+        "**/*.story.{ts,tsx,js,jsx,mjs,cjs}",
+      ],
+      rules: {
+        "storybook/await-interactions": "error",
+        "storybook/context-in-play-function": "error",
+        "storybook/default-exports": "error",
+        "storybook/hierarchy-separator": "error",
+        "storybook/no-redundant-story-name": "error",
+        "storybook/no-renderer-packages": "error",
+        "storybook/prefer-pascal-case": "error",
+        "storybook/story-exports": "error",
+        "storybook/use-storybook-expect": "error",
+        "storybook/use-storybook-testing-library": "error",
+      },
+    },
+    {
       files: ["src/storybook/main.ts"],
       rules: {
+        // storybook/no-uninstalled-addons は `export default { addons: [...] }` しか読まない。
+        // この config は defineMain({...}) なので、addon の検査は効かない。
         "unicorn/prefer-import-meta-properties": "off",
       },
     },
@@ -77,6 +132,11 @@ export default createOxlintConfig({
         "typescript/no-unsafe-type-assertion": "off",
         "unicorn/no-lonely-if": "off",
       },
+    },
+    {
+      // ルートのソース契約を見るテストで、対象は隣の index.tsx（import ではなく readFileSync で読む）。
+      files: ["src/routes/**/*.test.ts"],
+      rules: { "landmines-structure/colocated-tests": "off" },
     },
   ],
 });

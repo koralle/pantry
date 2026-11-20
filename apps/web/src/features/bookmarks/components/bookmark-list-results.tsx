@@ -38,7 +38,7 @@ const hasTagFilter = (search: BookmarkSearchSchema): boolean =>
   search.tags !== undefined && search.tags.length > 0;
 
 export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
-  const tags = search.tags;
+  const { tags } = search;
   if (tags !== undefined && tags.length > 0) {
     return tags.join(" / ");
   }

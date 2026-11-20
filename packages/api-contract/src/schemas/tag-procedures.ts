@@ -23,7 +23,7 @@ export const updateTagInputSchema = v.object({
   sortOrder: v.number(),
   color: v.nullable(
     // UI は固定パレット (#RRGGBB) のみだが、#RGB も CSS として有効なので許す
-    v.pipe(v.string(), v.regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/))
+    v.pipe(v.string(), v.regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/u))
   ),
 });
 

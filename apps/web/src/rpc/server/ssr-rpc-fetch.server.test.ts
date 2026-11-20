@@ -3,7 +3,10 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 import { describe, expect, test, vi } from "vitest";
 
+import { createAppRouter } from "../contract/create-app-router";
+import type { AppRouter, AppRouterDeps } from "../contract/create-app-router";
 import { stubAppRouterDeps } from "../contract/test-deps";
+import { ssrRpcFetch } from "./ssr-rpc-fetch.server";
 
 const mocks = vi.hoisted(() => ({
   getRequestHeaders: vi.fn<() => Headers>(),
@@ -14,22 +17,20 @@ vi.mock("@tanstack/react-start/server", () => ({
   getRequestHeaders: () => mocks.getRequestHeaders(),
 }));
 
-import { createAppRouter } from "../contract/create-app-router";
-import type { AppRouter } from "../contract/create-app-router";
-import { ssrRpcFetch } from "./ssr-rpc-fetch.server";
-
 function capturingSessionRouter() {
   const capturedCookies: (string | null)[] = [];
   const capturedHeaders: Headers[] = [];
-  const getSession = vi.fn(async (headers: Headers) => {
-    capturedCookies.push(headers.get("cookie"));
-    capturedHeaders.push(headers);
-    return {
-      email: "user-1@example.com",
-      id: "user-1",
-      name: "koralle",
-    };
-  });
+  const getSession = vi.fn<AppRouterDeps["getSession"]>(
+    async (headers: Headers) => {
+      capturedCookies.push(headers.get("cookie"));
+      capturedHeaders.push(headers);
+      return {
+        email: "user-1@example.com",
+        id: "user-1",
+        name: "koralle",
+      };
+    }
+  );
   const router = createAppRouter({
     ...stubAppRouterDeps(),
     fetchPageTitle: async () => ({ kind: "unavailable" }),

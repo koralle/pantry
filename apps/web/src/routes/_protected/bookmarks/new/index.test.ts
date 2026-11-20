@@ -55,10 +55,13 @@ describe("new bookmark route", () => {
     expect(routeSource).not.toContain("bookmark-workbench-form");
   });
 
-  test("新規作成ラベルと空の初期値を渡す", () => {
+  test("新規作成のラベルを渡す", () => {
     expect(routeSource).toContain('submitLabel="登録する"');
     expect(routeSource).toContain('pendingLabel="保存中…"');
     expect(routeSource).toContain('heading="ブックマークを登録"');
+  });
+
+  test("空の初期値を渡す", () => {
     expect(routeSource).toContain('url: ""');
     expect(routeSource).toContain('title: ""');
     expect(routeSource).toContain("note: null");

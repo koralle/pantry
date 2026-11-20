@@ -101,15 +101,16 @@ export const listBookmarks = async (
 
   if (decodedCursor !== null && decodedCursor !== undefined) {
     const cursorDate = new Date(decodedCursor.createdAtMs);
-    conditions.push(
-      or(
-        lt(bookmarkTable.createdAt, cursorDate),
-        and(
-          eq(bookmarkTable.createdAt, cursorDate),
-          lt(bookmarkTable.id, decodedCursor.id)
-        )
-      )!
+    const cursorCondition = or(
+      lt(bookmarkTable.createdAt, cursorDate),
+      and(
+        eq(bookmarkTable.createdAt, cursorDate),
+        lt(bookmarkTable.id, decodedCursor.id)
+      )
     );
+    if (cursorCondition !== undefined) {
+      conditions.push(cursorCondition);
+    }
   }
 
   const bookmarks = await db

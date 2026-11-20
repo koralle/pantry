@@ -10,7 +10,7 @@
  * SYNC: When modified, update these files to stay in sync:
  * - ./index.stories.tsx (stories for new/changed variants)
  *
- * Last synced props: label, placeholder, selectedKey, onSelectionChange, searchPlaceholder, searchLabel, className, css
+ * Last synced props: label, placeholder, value, onChange, searchPlaceholder, searchLabel, className, css
  */
 
 import { ChevronDown } from "lucide-react";
@@ -263,7 +263,7 @@ const StyledSelectItem = (props: Omit<StyledSelectItemProps, "className">) => (
  *
  * @example
  * ```
- * <StyledSelect label="並び" selectedKey="newest" onSelectionChange={onSort}>
+ * <StyledSelect label="並び" value="newest" onChange={onSort}>
  *   <StyledSelect.Item id="newest">新しい順</StyledSelect.Item>
  *   <StyledSelect.Item id="updated">更新順</StyledSelect.Item>
  * </StyledSelect>

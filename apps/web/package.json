@@ -14,7 +14,7 @@
     "preview": "pnpm run build && vite preview",
     "storybook": "storybook dev -p 6006 -c src/storybook",
     "test": "vitest run",
-    "typecheck": "tsc"
+    "typecheck": "tsrs"
   },
   "dependencies": {
     "@better-auth/passkey": "catalog:authentication",
@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "catalog:test",
+    "@interfere/landmines": "catalog:lint",
     "@pandacss/dev": "catalog:ui",
     "@pandacss/mcp": "catalog:ui",
     "@pantry/env": "workspace:*",
@@ -61,6 +62,7 @@
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@vitejs/plugin-react": "catalog:build",
+    "eslint-plugin-storybook": "catalog:lint",
     "postcss": "catalog:ui",
     "react-scan": "catalog:",
     "storybook": "catalog:storybook",

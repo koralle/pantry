@@ -1,7 +1,7 @@
 import { getFormProps, useForm } from "@conform-to/react";
 import { parseWithValibot } from "@conform-to/valibot";
 import { Check } from "lucide-react";
-import { useRef, useTransition } from "react";
+import { useEffect, useRef, useTransition } from "react";
 
 import { StyledButton } from "../../../../../shared/components/styled-button";
 import {
@@ -14,13 +14,17 @@ import { srOnly } from "../../../../../shared/styles/sr-only";
 import { BookmarkTagPicker } from "../../bookmark-tag-picker";
 import { BookmarkFormFields, BookmarkFormNoteField } from "./fields";
 import { bookmarkFormSchema } from "./schema";
-
-export { bookmarkFormSchema } from "./schema";
 import type { BookmarkFormOutput } from "./schema";
 import { BookmarkFormSummary } from "./summary";
-import type { BookmarkFormFieldKey, BookmarkFormProps } from "./types";
+import type {
+  BookmarkFormFieldKey,
+  BookmarkFormProps,
+  BookmarkFormServerError,
+} from "./types";
 import { useBookmarkTagDraft } from "./use-bookmark-tag-draft";
 import { useBookmarkTitleFetch } from "./use-bookmark-title-fetch";
+
+export { bookmarkFormSchema } from "./schema";
 
 export type {
   BookmarkEditorError,
@@ -41,6 +45,38 @@ const readFormValue = (formId: string, name: string): string => {
   const value = new FormData(formElement).get(name);
   return typeof value === "string" ? value : "";
 };
+
+/**
+ * Summary へ流す候補を「重複除去せずに」集めるだけにする。完全一致の除去は
+ * BookmarkFormSummary に任せる。責務境界を、
+ *   BookmarkForm = どのエラーを summary に流すか (発生源の選択)
+ *   BookmarkFormSummary = 表示上の重複除去
+ * で分ける。
+ */
+const collectSummaryMessages = ({
+  formErrors,
+  formStatus,
+  serverError,
+  titleFetchError,
+}: {
+  formErrors: readonly string[] | undefined;
+  formStatus: string | undefined;
+  serverError: BookmarkFormServerError | null;
+  titleFetchError: string | null | undefined;
+}): string[] =>
+  [
+    ...(formStatus === "error" ? ["入力内容を確認してください"] : []),
+    ...(formErrors ?? []),
+    serverError?.summary,
+    serverError?.fields?.url,
+    serverError?.fields?.title,
+    serverError?.fields?.note,
+    serverError?.fields?.tags,
+    titleFetchError,
+  ].filter(
+    (message): message is string =>
+      message !== null && message !== undefined && message !== ""
+  );
 
 export const BookmarkForm = ({
   initialValues,
@@ -74,8 +110,12 @@ export const BookmarkForm = ({
     tagCandidates,
     tagsReady,
   });
+  // Conform は onValidate/onSubmit を初回 render のクロージャで保持するため、
+  // 最新の tagIds は ref 経由で読む。render 中に書き換えないよう effect で同期する。
   const tagIdsRef = useRef(tagIds);
-  tagIdsRef.current = tagIds;
+  useEffect(() => {
+    tagIdsRef.current = tagIds;
+  }, [tagIds]);
 
   const [form, fields] = useForm<BookmarkFormOutput>({
     defaultValue: {
@@ -126,24 +166,12 @@ export const BookmarkForm = ({
   const busy = pending || isFetchingTitle;
   const submitDisabled = busy || isCreatingTag;
 
-  // Summary 候補は「重複除去せずに」集めるだけにする。完全一致の除去は
-  // BookmarkFormSummary に任せる。責務境界を、
-  //   BookmarkForm = どのエラーを summary に流すか (発生源の選択)
-  //   BookmarkFormSummary = 表示上の重複除去
-  // で分ける。
-  const summaryCandidates = [
-    ...(form.status === "error" ? ["入力内容を確認してください"] : []),
-    ...(form.errors ?? []),
-    serverError?.summary,
-    serverError?.fields?.url,
-    serverError?.fields?.title,
-    serverError?.fields?.note,
-    serverError?.fields?.tags,
+  const summaryCandidates = collectSummaryMessages({
+    formErrors: form.errors,
+    formStatus: form.status,
+    serverError,
     titleFetchError,
-  ].filter(
-    (message): message is string =>
-      message !== null && message !== undefined && message !== ""
-  );
+  });
 
   const handleClearFieldError = (key: BookmarkFormFieldKey) => {
     // Conform の field error は Conform が所有し、

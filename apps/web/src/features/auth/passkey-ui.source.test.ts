@@ -19,22 +19,24 @@ describe("passkey UI contracts", () => {
     expect(passkeyIndex).toBeGreaterThan(-1);
     expect(passwordIndex).toBeGreaterThan(passkeyIndex);
     expect(page).toMatch(
-      /<ClientOnly fallback=\{null\}>\s*<PasskeySignIn signInAction=\{signInWithPasskey\} \/>\s*<\/ClientOnly>/
+      /<ClientOnly fallback=\{null\}>\s*<PasskeySignIn signInAction=\{signInWithPasskey\} \/>\s*<\/ClientOnly>/u
     );
+  });
 
+  test("passkey のボタンは presentational で、認証の判断を自前で持たない", async () => {
     const signIn = await readSource(
       "features/auth/components/passkey/sign-in.tsx"
     );
     expect(signIn).toContain("パスキーでログイン");
     expect(signIn).toContain("または");
     expect(signIn).toContain("await signInAction()");
-    expect(signIn).not.toContain("authClient");
-    expect(signIn).not.toContain("useRouter");
-    expect(signIn).not.toContain("autoFill");
-    expect(signIn).not.toContain("isConditionalMediationAvailable");
-    expect(signIn).not.toContain("useEffect");
     expect(signIn).toContain("if (!isWebAuthnAvailable())");
+    expect(signIn).not.toMatch(
+      /authClient|useRouter|autoFill|isConditionalMediationAvailable|useEffect/u
+    );
+  });
 
+  test("password form は browser の autofill に従う", async () => {
     const form = await readSource(
       "features/auth/components/sign-in-form/index.tsx"
     );

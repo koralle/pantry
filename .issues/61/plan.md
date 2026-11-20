@@ -176,11 +176,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useActionState } from "react";
 import * as v from "valibot";
 
+import type { BookmarkSelectType } from "../../../../db/schema/bookmark";
 import {
   getBookmark,
   updateBookmark,
 } from "../../../../features/bookmarks/bookmark.function";
-import type { BookmarkSelectType } from "../../../../db/schema/bookmark";
 
 export const Route = createFileRoute("/_protected/bookmarks/$id/edit")({
   loader: async ({ params }) => {

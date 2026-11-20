@@ -214,7 +214,7 @@ describe(insertBookmark, () => {
 
     await expect(
       insertBookmark(db, createCommand("user-a", { tagIds: [workTagId] }))
-    ).rejects.toThrow();
+    ).rejects.toThrow(/Failed query: insert into "bookmark_tags"/u);
 
     await expect(db.select().from(bookmarkTable)).resolves.toHaveLength(0);
     await expect(db.select().from(bookmarkTagsTable)).resolves.toHaveLength(0);

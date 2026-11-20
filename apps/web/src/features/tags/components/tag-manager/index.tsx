@@ -26,7 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { useState, useTransition } from "react";
-import type { FormEvent } from "react";
+import type { SyntheticEvent } from "react";
 import {
   Dialog,
   Heading,
@@ -351,7 +351,7 @@ const TagNameForm = ({
   const [error, setError] = useState<string | null>(null);
   const [isSaving, startSaveTransition] = useTransition();
 
-  const submit = (event: FormEvent) => {
+  const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const parsed = v.safeParse(tagNameSchema, draft);
     if (!parsed.success) {

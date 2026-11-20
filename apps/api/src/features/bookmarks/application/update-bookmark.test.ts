@@ -53,8 +53,7 @@ describe(executeUpdateBookmark, () => {
       ok: true,
       value: { id: expect.any(String) },
     });
-    expect(port).toHaveBeenCalledOnce();
-    expect(port).toHaveBeenCalledWith({
+    expect(port).toHaveBeenCalledExactlyOnceWith({
       bookmarkId: command.id,
       note: command.note,
       tagIds: [tagId(1)],

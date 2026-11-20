@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 
 import { bookmarkFormSchema } from "./schema";
 
-describe("bookmarkFormSchema", () => {
+describe("bookmarkFormSchema の parse", () => {
   test("parses URL and title into branded values", () => {
     const result = v.safeParse(bookmarkFormSchema, {
       note: "memo",
@@ -11,12 +11,11 @@ describe("bookmarkFormSchema", () => {
       url: "https://example.com/article",
     });
 
-    expect(result.success).toBeTruthy();
-    if (result.success) {
-      expect(result.output.url).toBe("https://example.com/article");
-      expect(result.output.title).toBe("Example Article");
-      expect(result.output.note).toBe("memo");
-    }
+    expect(result.success && result.output).toStrictEqual({
+      note: "memo",
+      title: "Example Article",
+      url: "https://example.com/article",
+    });
   });
 
   test("normalizes an empty note to null", () => {
@@ -26,9 +25,6 @@ describe("bookmarkFormSchema", () => {
       url: "https://example.com/article",
     });
 
-    expect(result.success).toBeTruthy();
-    if (result.success) {
-      expect(result.output.note).toBeNull();
-    }
+    expect(result.success && result.output.note).toBeNull();
   });
 });

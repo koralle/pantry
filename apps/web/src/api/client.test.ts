@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { apiBrowserClient } from "./client";
 
-describe("apiBrowserClient", () => {
+describe("apiBrowserClient の /rpc 送信", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });

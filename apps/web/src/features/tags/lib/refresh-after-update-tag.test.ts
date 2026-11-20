@@ -4,7 +4,7 @@ import { refreshAfterUpdateTag } from "./refresh-after-update-tag";
 
 describe(refreshAfterUpdateTag, () => {
   test("routeの再取得が失敗してもrejectしない", async () => {
-    const invalidate = vi.fn(async () => {
+    const invalidate = vi.fn<() => Promise<void>>(async () => {
       throw new Error("loader failed");
     });
     const consoleError = vi

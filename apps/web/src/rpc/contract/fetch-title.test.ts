@@ -12,11 +12,13 @@ import { createAppRouter } from "./create-app-router";
 import type { AppRouter } from "./create-app-router";
 import { stubAppRouterDeps } from "./test-deps";
 
+type ReadDeps = Parameters<typeof createAppRouter>[0];
+
 const userId = "user-1";
 
 function authenticatedRouter(
   fetchPageTitle: FetchPageTitle,
-  getSession = vi.fn()
+  getSession = vi.fn<ReadDeps["getSession"]>()
 ) {
   getSession.mockResolvedValue({
     email: `${userId}@example.com`,
@@ -40,20 +42,26 @@ function createTestClient(router: AppRouter, headers?: HeadersInit) {
   return client;
 }
 
+/** 拒否理由を取り出す（`then(onFulfilled, onRejected)` は lint で禁止されている）。 */
+async function rejectionOf(promise: Promise<unknown>): Promise<unknown> {
+  try {
+    await promise;
+    return null;
+  } catch (error) {
+    return error;
+  }
+}
+
 describe("FetchPageTitle RPC", () => {
   test("未認証のリクエストは 401 UNAUTHORIZED を返す", async () => {
     const router = createAppRouter({
       ...stubAppRouterDeps(),
-      fetchPageTitle: async () => ({ kind: "unavailable" }),
       getSession: async () => null,
     });
     const client = createTestClient(router);
-    const rejected = await client.bookmarks
-      .title({ url: "https://example.com" })
-      .then(
-        () => null,
-        (error: unknown) => error
-      );
+    const rejected = await rejectionOf(
+      client.bookmarks.title({ url: "https://example.com" })
+    );
 
     expect(rejected).toBeInstanceOf(ORPCError);
     expect((rejected as ORPCError<string, unknown>).code).toBe("UNAUTHORIZED");
@@ -86,12 +94,9 @@ describe("FetchPageTitle RPC", () => {
       kind: "url-not-allowed",
     }));
     const client = createTestClient(router);
-    const rejected = await client.bookmarks
-      .title({ url: "http://localhost" })
-      .then(
-        () => null,
-        (error: unknown) => error
-      );
+    const rejected = await rejectionOf(
+      client.bookmarks.title({ url: "http://localhost" })
+    );
 
     expect(rejected).toBeInstanceOf(ORPCError);
     const error = rejected as ORPCError<string, unknown>;
@@ -125,17 +130,14 @@ describe("FetchPageTitle RPC", () => {
   });
 
   test("不正な URL 入力は 400 BAD_REQUEST を返し、port を呼ばない", async () => {
-    const fetchPageTitle = vi.fn(
+    const fetchPageTitle = vi.fn<ReadDeps["fetchPageTitle"]>(
       async () => ({ kind: "unavailable" }) as const
     );
     const router = authenticatedRouter(fetchPageTitle);
     const client = createTestClient(router);
-    const rejected = await client.bookmarks
-      .title({ url: "not-a-url" } as any)
-      .then(
-        () => null,
-        (error: unknown) => error
-      );
+    const rejected = await rejectionOf(
+      client.bookmarks.title({ url: "not-a-url" })
+    );
 
     expect(rejected).toBeInstanceOf(ORPCError);
     expect((rejected as ORPCError<string, unknown>).code).toBe("BAD_REQUEST");
