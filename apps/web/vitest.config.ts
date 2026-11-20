@@ -27,6 +27,8 @@ const pathnameOf = (url: string): string => {
  */
 const anyIntegrationTests = "src/**/*.integration.test.ts";
 const nodeTests = [
+  // oxlint の設定を読むので workerd ではなく Node で動かす。
+  "oxlint.config.test.ts",
   "src/routes/_protected/tags/index.test.ts",
   "src/features/tags/hooks/use-touch-tag-last-used.test.ts",
   "src/rpc/source-boundary.test.ts",

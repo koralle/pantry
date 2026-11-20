@@ -16,6 +16,7 @@ import tanstack from "ultracite/oxlint/tanstack";
 
 // react-doctor CLI が package.json から組み立てるのと同じ能力の集合。
 // react:18 / react:19 / react:19.2 は React 19.3 で満たされる階段。
+// shortcut: 依存を足したらここも足す。package.json からの自動導出はしていない。
 const capabilities: ReadonlySet<Capability> = new Set([
   "react",
   "react-aria",
@@ -32,9 +33,34 @@ const reactDoctorEntryByKey = new Map(
   REACT_DOCTOR_RULES.map((entry) => [entry.key, entry])
 );
 
-// Ultracite の react プリセットが既に有効にしている組み込みルール名（接頭辞を落としたもの）。
+// Ultracite の react プリセットのうち、このリポジトリが無効にしているもの。
+// 組み込み側の有効判定にも使う（両方黙る穴を作らないため）。
+const disabledBuiltInReactRules: Readonly<Record<string, OxlintRuleSeverity>> =
+  {
+    "react/set-state-in-effect": "off",
+    "react/todo": "off",
+  };
+
+// oxlint の深刻度は文字列か [深刻度, オプション] の配列で書ける。
+const severityOf = (value: unknown): string => {
+  const head = Array.isArray(value) ? (value as readonly unknown[])[0] : value;
+  return typeof head === "string" ? head : "error";
+};
+
+// Ultracite の react プリセットで実際に有効な組み込みルール名（接頭辞を落としたもの）。
+// プリセットには off の項目も入っているので、値を見ないと「組み込みも react-doctor も
+// 黙る」ルールができる。
 const builtInReactRuleNames = new Set(
-  Object.keys(react.rules ?? {}).map((key) => key.slice(key.indexOf("/") + 1))
+  Object.entries(react.rules ?? {}).flatMap(([key, value]) => {
+    const severity = severityOf(value);
+    if (severity === "off" || severity === "allow") {
+      return [];
+    }
+    if (disabledBuiltInReactRules[key] === "off") {
+      return [];
+    }
+    return [key.slice(key.indexOf("/") + 1)];
+  })
 );
 
 // Oxlint は rules をそのまま登録するだけで、CLI がやっている requires
@@ -42,7 +68,7 @@ const builtInReactRuleNames = new Set(
 // 満たせないルールを落とし、入っていないライブラリ向けのルールを走らせない。
 // 移植版（oxc の react / jsx-a11y / react_perf 由来）は、組み込み側が有効な
 // ものだけ落とす。同じ指摘を 2 回出さないため。
-const isReactDoctorRuleEnabled = (key: string): boolean => {
+export const isReactDoctorRuleEnabled = (key: string): boolean => {
   const entry = reactDoctorEntryByKey.get(key);
   if (entry === undefined) {
     return false;
