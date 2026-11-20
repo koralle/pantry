@@ -15,6 +15,7 @@ import {
 import { useBookmarkListPagination } from "../hooks/use-bookmark-list-pagination";
 import { useListKeyboard } from "../hooks/use-list-keyboard";
 import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
+import { bookmarkListTitle } from "../lib/list/bookmark-list-title";
 import { BookmarkListContent } from "./bookmark-list";
 import type { BookmarkRowProps } from "./bookmark-row";
 
@@ -36,20 +37,6 @@ const loadMoreErrorNote = css({
 
 const hasTagFilter = (search: BookmarkSearchSchema): boolean =>
   search.tags !== undefined && search.tags.length > 0;
-
-export const bookmarkListTitle = (search: BookmarkSearchSchema): string => {
-  const { tags } = search;
-  if (tags !== undefined && tags.length > 0) {
-    return tags.join(" / ");
-  }
-  if (search.view === "inbox") {
-    return "未整理";
-  }
-  if (search.view === "favorites") {
-    return "お気に入り";
-  }
-  return "最近保存したもの";
-};
 
 const countQueryOptionsFor = (view: BookmarkSearchSchema["view"]) => {
   if (view === "inbox") {

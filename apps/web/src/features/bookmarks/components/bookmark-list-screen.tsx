@@ -10,14 +10,12 @@ import { button } from "../../../shared/components/styled-button/styles";
 import type { BookmarkSearchSchema } from "../../navigation/lib/bookmark-search";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import { detailSearchFromList } from "../../navigation/lib/bookmark-search-builders";
-// import { useTouchTagLastUsedOnce } from "../../tags/hooks/use-touch-tag-last-used";
 import { bookmarkListSearchIdentity } from "../lib/list/bookmark-list-scroll-session";
+// import { useTouchTagLastUsedOnce } from "../../tags/hooks/use-touch-tag-last-used";
+import { bookmarkListTitle } from "../lib/list/bookmark-list-title";
 import { listColumn } from "../styles";
 import { BookmarkListContent } from "./bookmark-list";
-import {
-  BookmarkListResults,
-  bookmarkListTitle,
-} from "./bookmark-list-results";
+import { BookmarkListResults } from "./bookmark-list-results";
 
 const ListError = ({ resetErrorBoundary }: FallbackProps) => (
   <div role="alert">

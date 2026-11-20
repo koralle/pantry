@@ -24,12 +24,6 @@ export const RootDocument = ({
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <title>Pantry</title>
-      {import.meta.env.DEV ? (
-        <script
-          crossOrigin="anonymous"
-          src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
-      ) : null}
       <HeadContent />
     </head>
     <body>

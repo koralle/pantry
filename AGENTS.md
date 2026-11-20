@@ -58,6 +58,7 @@
 | `pnpm run migrate:prod` | Turso本番DBへDrizzleマイグレーション適用（CI。`@pantry/db`） |
 | `pnpm run studio:dev` | Drizzle Studio を起動（`@pantry/db`） |
 | `pnpm run db:seed` | Turso開発DBへテスト／開発データを投入 |
+| `pnpm run doctor` | React Doctor（React 専用の静的診断。`apps/web` を走査する） |
 | `pnpm run check` | Ultracite（Oxlint + Oxfmt）の検査 |
 | `pnpm run fix` | Ultracite の自動修正 |
 | `pnpm run lint:markup` | HTML/JSX のアクセシビリティ・マークアップ検査（markuplint） |

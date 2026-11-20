@@ -15,12 +15,12 @@ interface TagListProps {
 
 export const TagLinkList = ({
   renderTagLinkListItem,
-}: TagListProps): ReactNode[] => {
+}: TagListProps): ReactNode => {
   const { data: tags } = useSuspenseQuery(
     orpc.tags.shelf.queryOptions({ staleTime: 5000 })
   );
 
-  return tags.map((tag): ReactNode => renderTagLinkListItem(tag));
+  return <>{tags.map((tag): ReactNode => renderTagLinkListItem(tag))}</>;
 };
 
 export const TagLink = ({ tag }: { tag: ShelfTag }) => {

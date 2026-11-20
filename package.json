@@ -12,6 +12,7 @@
     "deploy:api": "pnpm --filter @pantry/api run deploy",
     "dev": "pnpm --filter @pantry/web run dev",
     "dev:api": "pnpm --filter @pantry/api run dev",
+    "doctor": "react-doctor",
     "fix": "ultracite fix --type-aware --no-error-on-unmatched-pattern",
     "knip": "knip",
     "lint:markup": "markuplint \"**/*.{tsx,jsx}\"",
@@ -35,6 +36,7 @@
     "markuplint": "catalog:lint",
     "oxfmt": "catalog:format",
     "oxlint": "catalog:lint",
+    "react-doctor": "catalog:lint",
     "tsrs": "catalog:lint",
     "typescript": "catalog:typescript",
     "ultracite": "catalog:lint"

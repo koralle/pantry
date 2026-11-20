@@ -1,7 +1,21 @@
 import { createOxlintConfig, vitestPreset } from "@pantry/forge/oxlint";
+import type { OxlintRuleSeverity } from "oxlint-plugin-react-doctor";
+import {
+  RECOMMENDED_RULES,
+  TANSTACK_QUERY_RULES,
+  TANSTACK_START_RULES,
+} from "oxlint-plugin-react-doctor";
 import landmines from "ultracite/oxlint/landmines";
 import react from "ultracite/oxlint/react";
 import tanstack from "ultracite/oxlint/tanstack";
+
+// react-doctor の推奨セットは既定で warning が多い。厳し目なので全件 error にする。
+// tanstack 系は framework が global ではないため推奨セットに入らない。
+// どのプリセットも off を含まないので、キーだけ使って error に置き換える。
+const asErrors = (
+  rules: Readonly<Record<string, OxlintRuleSeverity>>
+): Record<string, "error"> =>
+  Object.fromEntries(Object.keys(rules).map((key) => [key, "error"]));
 
 // Oxlint はファイルごとに「最も近い設定」だけを使い、親設定とは自動マージしない。
 // そのためこのファイルは apps/web 配下のルート oxlint.config.ts を置き換える。
@@ -14,8 +28,28 @@ export default createOxlintConfig({
   jsPlugins: [
     ...(landmines.jsPlugins ?? []),
     { name: "storybook", specifier: "eslint-plugin-storybook" },
+    { name: "react-doctor", specifier: "oxlint-plugin-react-doctor" },
   ],
+  // react-doctor 本体（CLI）と同じ前提を渡す。`portedRuleMode` を curated に
+  // しないと、oxc から移植した react 系ルールが upstream 挙動（誤検知寄り）で動く。
+  settings: {
+    "react-doctor": {
+      capabilities: [
+        "react",
+        "react-aria",
+        "ssr",
+        "tanstack-query",
+        "tanstack-start",
+        "typescript",
+      ],
+      framework: "tanstack-start",
+      portedRuleMode: "curated",
+    },
+  },
   rules: {
+    ...asErrors(RECOMMENDED_RULES),
+    ...asErrors(TANSTACK_START_RULES),
+    ...asErrors(TANSTACK_QUERY_RULES),
     // コメントは「なぜ」を残す規約（.agents/rules/ultracite.md）。差分を語るコメントの検出は要らない。
     "landmines-style/no-comments": "off",
     // 戻り値型は UI と hook の契約として明示する規約。
@@ -137,6 +171,24 @@ export default createOxlintConfig({
       // ルートのソース契約を見るテストで、対象は隣の index.tsx（import ではなく readFileSync で読む）。
       files: ["src/routes/**/*.test.ts"],
       rules: { "landmines-structure/colocated-tests": "off" },
+    },
+    {
+      // renderToString で hook を描画し、描画中に戻り値を受け取るハーネス。
+      // props のコールバックを描画中に呼ぶのは、DOM も effect も使わずに hook を
+      // 検証するための意図的な手段なので、この 2 ファイルだけ除外する。
+      files: [
+        "src/features/auth/hooks/use-email-sign-in.test.tsx",
+        "src/features/auth/hooks/use-passkey-sign-in.test.tsx",
+      ],
+      rules: { "react-doctor/no-prop-callback-in-render": "off" },
+    },
+    {
+      // QuickAddRound は 300 行超で分岐も多い。分割は別作業として切り出す。
+      files: ["src/features/bookmarks/components/quick-add/index.tsx"],
+      rules: {
+        "react-doctor/no-giant-component": "off",
+        "react-doctor/no-high-complexity-react-function": "off",
+      },
     },
   ],
 });

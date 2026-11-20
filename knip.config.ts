@@ -19,6 +19,8 @@ const config: KnipConfig = {
   },
   workspaces: {
     ".": {
+      // React Doctor の設定（`react-doctor/api` を import する）
+      entry: ["doctor.config.ts"],
       ignoreDependencies: [
         // Used by git hooks; excluded from analysis via `lefthook: false` above
         "lefthook",
@@ -55,8 +57,6 @@ const config: KnipConfig = {
       ignoreDependencies: [
         // Virtual module: `cloudflare:workers` (Workers runtime, not an npm package)
         "cloudflare",
-        // Dev-only CDN script URL in RootDocument; intentionally not module-imported
-        "react-scan",
         // Self-hosted typeface loaded via @import in src/index.css
         "@fontsource/noto-sans-jp",
       ],

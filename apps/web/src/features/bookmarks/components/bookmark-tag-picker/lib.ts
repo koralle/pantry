@@ -17,6 +17,8 @@ export interface TagCandidate {
   readonly sortOrder: number;
 }
 
+const normalizedName = (name: string): string => toTagName(name).normalized;
+
 export const filterTagCandidates = <T extends { readonly name: string }>(
   sortedTags: readonly T[],
   query: string
@@ -26,9 +28,7 @@ export const filterTagCandidates = <T extends { readonly name: string }>(
     return [...sortedTags];
   }
 
-  return sortedTags.filter((tag) =>
-    toTagName(tag.name).normalized.includes(needle)
-  );
+  return sortedTags.filter((tag) => normalizedName(tag.name).includes(needle));
 };
 
 export const canOfferCreateTag = (input: {
