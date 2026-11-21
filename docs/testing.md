@@ -17,13 +17,10 @@
 
 TypeSpec/OpenAPI契約テストは実施しない。アプリケーション境界はTanStack Start Server Functionである。
 
-## 2.1 UI ブラウザテスト（Storybook）
+## 2.1 UI ブラウザテスト（Storybook・Vitest Browser Mode）
 
-UI のブラウザ検証の正本は Storybook の Story と `play` 関数とする。Vitest Browser Mode は追加しない。
-
-- Route Story（例: ブックマーク編集）は `Route` を起点に、Ideal / Blank / Loading / Error を網羅する。
-- Component Story は注入された port（fake）で更新 Result とフォームエラーを再現する。
-- Server Function / Router / DB は Story 内で mock または fake port に差し替え、本番実装を直接呼ばない。
+- **Storybook（Story + `play` 関数）**: Route Story や Component Story で画面単位の状態（Ideal / Blank / Loading / Error）とインタラクションを検証する。Server Function / Router / DB は Story 内で mock または fake port に差し替え、本番実装を直接呼ばない。
+- **Vitest Browser Mode（`pnpm run test:browser`）**: 実ブラウザのレイアウト・`getComputedStyle`・`window` のキーボード／貼付イベント・Clipboard API などを伴う Hook や共有 UI コンポーネントは `apps/web/src/**/*.browser.test.{ts,tsx}` として Chromium（`@vitest/browser-playwright`）で検証する。通常のスクリプト（`pnpm run test`）とは project を分離している。
 
 ## 2.2 DB Integration（実 libSQL）
 

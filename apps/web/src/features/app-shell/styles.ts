@@ -2,29 +2,76 @@ import { css, cva } from "styled-system/css";
 
 /**
  * App-shell surfaces: top bar, workbench bar, navigation rail,
- * bottom tabs, and the mobile quick-add FAB. Dimensions follow the approved
- * mock (mocks/2026-09-16-directions) — keep arbitrary values aligned with it.
+ * bottom tabs, and the mobile quick-add FAB.
  */
 
 export const topbar = css({
   alignItems: "center",
   background: "bg.surface",
-  blockSize: "[3.25rem]",
   borderBlockEndColor: "border.default",
   borderBlockEndStyle: "solid",
   borderBlockEndWidth: "thin",
-  columnGap: "3.5",
+  columnGap: "3",
   display: "flex",
   flexShrink: "0",
-  paddingInline: "4",
+  justifyContent: "space-between",
+  minBlockSize: "[3.5rem]",
+  paddingBlock: "1.5",
+  paddingInline: { base: "3.5", md: "5" },
+  position: "relative",
+  zIndex: "20",
+});
+
+export const topbarActions = css({
+  alignItems: "center",
+  columnGap: "2.5",
+  display: "flex",
+  marginInlineStart: "auto",
+});
+
+export const desktopOnlyWrap = css({
+  display: "none",
+  md: {
+    display: "inline-flex",
+  },
 });
 
 export const wordmark = css({
+  "@media (hover: hover) and (pointer: fine)": {
+    "&:hover": {
+      color: "accent.solid",
+    },
+  },
+  "@media (pointer: coarse)": {
+    minBlockSize: "touch",
+  },
+  alignItems: "center",
+  borderRadius: "box",
   color: "fg.default",
+  columnGap: "2",
+  display: "inline-flex",
   fontSize: "sm",
-  fontWeight: "extrabold",
-  letterSpacing: "[0.04em]",
+  fontWeight: "bold",
+  letterSpacing: "[-0.01em]",
+  minBlockSize: "[2.25rem]",
+  paddingInline: "1",
   textDecoration: "none",
+  transitionDuration: "hover",
+  transitionProperty: "color",
+  transitionTimingFunction: "out",
+});
+
+export const wordmarkBadge = css({
+  alignItems: "center",
+  background:
+    "linear-gradient(150deg, token(colors.pantry.brandStart), token(colors.pantry.brandEnd))",
+  blockSize: "[1.75rem]",
+  borderRadius: "box",
+  color: "white",
+  display: "inline-flex",
+  flexShrink: "0",
+  inlineSize: "[1.75rem]",
+  justifyContent: "center",
 });
 
 /**
@@ -53,15 +100,18 @@ export const workbenchBar = css({
   columnGap: "3",
   display: "flex",
   flexShrink: "0",
-  paddingBlock: "2.5",
-  paddingInline: "3.5",
+  minBlockSize: "[3.5rem]",
+  paddingBlock: "1.5",
+  paddingInline: { base: "3.5", md: "5" },
+  position: "relative",
+  zIndex: "20",
 });
 
 export const workbenchWordmark = css({
   display: "none",
-  marginInlineStart: "2.5",
+  marginInlineStart: "2",
   md: {
-    display: "block",
+    display: "inline-flex",
   },
 });
 
@@ -70,7 +120,7 @@ export const workbenchBarFlex = css({
 });
 
 export const workbenchBarTitle = css({
-  fontSize: "xs",
+  fontSize: "sm",
   fontWeight: "bold",
   md: {
     display: "none",
@@ -98,15 +148,17 @@ export const skipLink = css({
   borderColor: "accent.solid",
   borderRadius: "box",
   borderStyle: "solid",
-  borderWidth: "thin",
+  borderWidth: "medium",
   color: "fg.default",
-  insetBlockStart: "4",
-  insetInlineStart: "4",
+  fontSize: "xs",
+  fontWeight: "semibold",
+  insetBlockStart: "3",
+  insetInlineStart: "3",
   paddingBlock: "2",
-  paddingInline: "3",
+  paddingInline: "3.5",
   position: "absolute",
   textDecoration: "none",
-  zIndex: "10",
+  zIndex: "50",
 });
 
 export const shellBody = css({
@@ -123,35 +175,40 @@ export const rail = css({
   display: "none",
   flexDirection: "column",
   flexShrink: "0",
+  inlineSize: "[14.5rem]",
   md: {
     display: "flex",
   },
   overflowY: "auto",
-  paddingBlock: "3.5",
-  paddingInline: "2.5",
-  rowGap: "0.5",
-  width: "[13.5rem]",
+  overscrollBehavior: "contain",
+  paddingBlock: "4",
+  paddingInline: "3",
+  rowGap: "1",
 });
 
 export const railItem = cva({
   base: {
-    "@media (any-hover: hover)": {
+    "@media (hover: hover) and (pointer: fine)": {
       "&:hover": {
         background: "surface.muted",
         color: "fg.default",
       },
     },
     alignItems: "center",
-    borderRadius: "[0.4375rem]",
+    borderRadius: "[0.5rem]",
     color: "fg.muted",
-    columnGap: "[0.5625rem]",
+    columnGap: "2.5",
     display: "flex",
-    fontSize: "[0.8125rem]",
+    fontSize: "xs",
+    fontWeight: "medium",
+    minBlockSize: "[2.25rem]",
+    minInlineSize: "0",
     paddingBlock: "1.5",
     paddingInline: "2.5",
     textDecoration: "none",
     transitionDuration: "hover",
     transitionProperty: "background-color, color",
+    transitionTimingFunction: "out",
   },
   defaultVariants: {
     active: false,
@@ -166,35 +223,82 @@ export const railItem = cva({
         "& .pantry-rail-icon": {
           color: "accent.solid",
         },
+        "@media (hover: hover) and (pointer: fine)": {
+          "&:hover": {
+            background: "accent.subtle",
+            color: "accent.solid",
+          },
+        },
         background: "accent.subtle",
         color: "accent.solid",
-        fontWeight: "bold",
+        fontWeight: "semibold",
       },
     },
   },
 });
 
 export const railIcon = css({
-  blockSize: "[0.9375rem]",
-  color: "fg.faint",
+  blockSize: "[1rem]",
+  color: "fg.muted",
   flexShrink: "0",
-  inlineSize: "[0.9375rem]",
+  inlineSize: "[1rem]",
+});
+
+export const railLabel = css({
+  flex: "1",
+  minInlineSize: "0",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
 });
 
 export const railCount = css({
   color: "fg.faint",
+  flexShrink: "0",
   fontFamily: "mono",
-  fontSize: "[0.6875rem]",
+  fontSize: "2xs",
+  fontVariantNumeric: "tabular-nums",
   marginInlineStart: "auto",
 });
 
-export const railSection = css({
-  color: "fg.faint",
-  fontSize: "[0.625rem]",
-  fontWeight: "bold",
-  letterSpacing: "[0.08em]",
+export const railSectionRow = css({
+  alignItems: "center",
+  display: "flex",
+  justifyContent: "space-between",
+  marginBlockStart: "3.5",
   paddingBlockEnd: "1",
-  paddingBlockStart: "2.5",
+  paddingInline: "2.5",
+});
+
+export const railSection = css({
+  color: "fg.muted",
+  fontSize: "2xs",
+  fontWeight: "bold",
+  letterSpacing: "[0.04em]",
+  margin: "0",
+});
+
+export const railManageLink = css({
+  "@media (hover: hover) and (pointer: fine)": {
+    "&:hover": {
+      textDecoration: "underline",
+      textUnderlineOffset: "3px",
+    },
+  },
+  borderRadius: "box",
+  color: "accent.solid",
+  fontSize: "2xs",
+  fontWeight: "semibold",
+  paddingBlock: "0.5",
+  paddingInline: "1.5",
+  textDecoration: "none",
+});
+
+export const railError = css({
+  color: "fg.muted",
+  fontSize: "2xs",
+  margin: "0",
+  paddingBlock: "2",
   paddingInline: "2.5",
 });
 
@@ -205,6 +309,8 @@ export const shellMain = css({
   minBlockSize: "0",
   minInlineSize: "0",
   overflowY: "auto",
+  overscrollBehavior: "contain",
+  scrollPaddingBottom: "[calc(4.5rem + env(safe-area-inset-bottom, 0px))]",
 });
 
 export const bottomTabs = css({
@@ -213,26 +319,42 @@ export const bottomTabs = css({
   borderBlockStartColor: "border.default",
   borderBlockStartStyle: "solid",
   borderBlockStartWidth: "thin",
-  display: "flex",
+  display: "grid",
   flexShrink: "0",
-  justifyContent: "space-around",
+  gridTemplateColumns: "1fr 1fr auto 1fr 1fr",
+  justifyItems: "center",
   md: {
     display: "none",
   },
-  minBlockSize: "[3.875rem]",
-  paddingBlockEnd: "2",
+  minBlockSize: "[3.75rem]",
+  paddingBlockEnd: "[max(0.5rem, env(safe-area-inset-bottom, 0px))]",
+  paddingBlockStart: "1",
+  paddingInline: "2",
+  position: "relative",
+  zIndex: "20",
 });
 
 export const tabItem = cva({
   base: {
     alignItems: "center",
-    color: "fg.faint",
+    borderRadius: "box",
+    color: "fg.muted",
     display: "flex",
     flexDirection: "column",
-    fontSize: "[0.5625rem]",
+    fontSize: "2xs",
+    fontWeight: "medium",
+    justifyContent: "center",
+    lineHeight: "tight",
+    minBlockSize: "touch",
+    minInlineSize: "touch",
+    paddingBlock: "1",
     paddingInline: "2",
-    rowGap: "[0.1875rem]",
+    rowGap: "1",
     textDecoration: "none",
+    transitionDuration: "hover",
+    transitionProperty: "color, background-color",
+    transitionTimingFunction: "out",
+    whiteSpace: "nowrap",
   },
   defaultVariants: {
     active: false,
@@ -249,22 +371,27 @@ export const tabItem = cva({
 });
 
 export const fab = css({
-  _active: {
-    scale: "0.94",
+  "@media (prefers-reduced-motion: no-preference)": {
+    _active: {
+      scale: "0.94",
+    },
   },
   alignItems: "center",
   background: "accent.solid",
-  blockSize: "[2.75rem]",
-  borderRadius: "[0.9375rem]",
-  boxShadow: "[0 6px 16px rgba(15,118,110,.4)]",
+  blockSize: "[3rem]",
+  borderColor: "bg.surface",
+  borderRadius: "full",
+  borderStyle: "solid",
+  borderWidth: "thick",
+  boxShadow: "fab",
   color: "accent.fg",
   display: "flex",
-  inlineSize: "[2.75rem]",
+  inlineSize: "[3rem]",
   justifyContent: "center",
-  marginBlockStart: "[-1.375rem]",
+  marginBlockStart: "[-1.25rem]",
   scale: "1",
   textDecoration: "none",
   transitionDuration: "hover",
-  transitionProperty: "scale",
-  transitionTimingFunction: "press",
+  transitionProperty: "scale, background-color",
+  transitionTimingFunction: "out",
 });

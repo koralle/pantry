@@ -6,22 +6,20 @@ export const tagsPage = css({
   flex: "1",
   flexDirection: "column",
   minBlockSize: "0",
+  overscrollBehavior: "contain",
   overflowY: "auto",
-  paddingBlock: "4",
-  paddingInline: "4",
-  md: {
-    paddingBlock: "6",
-    paddingInline: "6",
-  },
+  paddingBlock: { base: "4", md: "6" },
+  paddingInline: { base: "3.5", md: "6" },
 });
 
-/** モックの `.page-inner` — 行が読みやすい幅に抑える。 */
+/** 読みやすい幅で中央に配置する。 */
 export const tagsPageInner = css({
   display: "flex",
   flexDirection: "column",
-  maxInlineSize: "[35rem]",
-  minBlockSize: "0",
   inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[44rem]",
+  minBlockSize: "0",
 });
 
 export const tagsHeadRow = css({
@@ -31,16 +29,24 @@ export const tagsHeadRow = css({
 });
 
 export const tagsTitle = css({
-  fontSize: "[1.0625rem]",
+  color: "fg.default",
+  fontSize: { base: "md", md: "lg" },
   fontWeight: "bold",
   letterSpacing: "tight",
   margin: "0",
 });
 
 export const tagsCount = css({
-  color: "fg.faint",
+  alignItems: "center",
+  background: "surface.muted",
+  borderRadius: "full",
+  color: "fg.muted",
+  display: "inline-flex",
   fontFamily: "mono",
   fontSize: "2xs",
+  fontWeight: "medium",
+  paddingBlock: "0.5",
+  paddingInline: "2",
 });
 
 /** `新規タグ`（desktop）と `+`（mobile）は display で切り替える。 */
@@ -57,7 +63,7 @@ export const tagsHeadCreateMobile = css({
 /** Loading 中の `読み込み中…` — head row の右端に寄せる。 */
 export const tagsLoadingNote = css({
   alignItems: "center",
-  color: "fg.faint",
+  color: "fg.muted",
   columnGap: "1.5",
   display: "inline-flex",
   fontSize: "2xs",
@@ -66,20 +72,26 @@ export const tagsLoadingNote = css({
 
 /** `タグを検索…` の枠付きボックス。input は枠なしで内側に置く。 */
 export const tagSearchBox = css({
+  "@media (hover: hover) and (pointer: fine)": {
+    "&:hover:not(:focus-within)": {
+      borderColor: "fg.faint",
+    },
+  },
   _focusWithin: {
     borderColor: "accent.solid",
-    boxShadow: "[0_0_0_3px_{colors.accent.subtle}]",
+    boxShadow: "accentRing",
   },
   alignItems: "center",
   background: "bg.surface",
-  borderColor: "border.default",
-  borderRadius: "[0.5625rem]",
+  borderColor: "border.control",
+  borderRadius: "box",
   borderStyle: "solid",
   borderWidth: "thin",
   columnGap: "2",
   display: "flex",
-  marginBlockStart: "2.5",
-  paddingBlock: "2",
+  marginBlockStart: "3",
+  minBlockSize: "touch",
+  paddingBlock: "1.5",
   paddingInline: "3",
   transitionDuration: "hover",
   transitionProperty: "border-color, box-shadow",
@@ -100,49 +112,61 @@ export const tagSearchInput = css({
   color: "fg.default",
   flex: "1",
   fontFamily: "inherit",
-  fontSize: "sm",
+  fontSize: "[max(1rem, 0.875rem)]",
+  md: {
+    fontSize: "sm",
+  },
   minInlineSize: "0",
   outline: "none",
   padding: "0",
 });
 
 export const tagRowList = css({
+  background: "bg.surface",
+  borderColor: "border.default",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  boxShadow: "surface",
   display: "flex",
   flexDirection: "column",
+  listStyle: "none",
+  margin: "0",
   marginBlockStart: "4",
+  overflow: "hidden",
+  padding: "0",
+  "& > li + li": {
+    borderBlockStartColor: "border.default",
+    borderBlockStartStyle: "solid",
+    borderBlockStartWidth: "thin",
+  },
 });
 
 export const tagRow = css({
-  "@media (any-hover: hover)": {
+  "@media (hover: hover) and (pointer: fine)": {
     "&:hover": {
       background: "surface.muted",
     },
   },
   alignItems: "center",
-  borderBlockEndColor: "border.default",
-  borderBlockEndStyle: "solid",
-  borderBlockEndWidth: "thin",
-  borderRadius: "box",
   columnGap: "2.5",
   display: "flex",
   fontSize: "sm",
-  paddingBlock: "3",
-  paddingInline: "2.5",
+  minBlockSize: "[3.25rem]",
+  paddingBlock: "2",
+  paddingInline: { base: "3.5", md: "4" },
   transitionDuration: "hover",
   transitionProperty: "background-color",
-  md: {
-    paddingBlock: "[0.5625rem]",
-    paddingInline: "1",
-  },
 });
 
-/** 行タップでそのタグの一覧へ。dot・名前・件数・chevron まで Link が担う。 */
+/** 行タップでそのタグの一覧へ。dot・名前・件数まで Link が担う。 */
 export const tagRowLink = css({
   alignItems: "center",
   color: "fg.default",
   columnGap: "2.5",
   display: "flex",
   flex: "1",
+  minBlockSize: "[2.5rem]",
   minInlineSize: "0",
   textDecoration: "none",
 });
@@ -156,7 +180,7 @@ export const tagRowName = css({
 });
 
 export const tagRowCount = css({
-  color: "fg.faint",
+  color: "fg.muted",
   flexShrink: "0",
   fontFamily: "mono",
   fontSize: "2xs",
@@ -164,40 +188,25 @@ export const tagRowCount = css({
   whiteSpace: "nowrap",
 });
 
-/** mobile の行末 chevron。Link の中の装飾で、別ボタンにはしない。 */
-export const tagRowChevron = css({
-  color: "fg.faint",
-  display: { base: "inline-flex", md: "none" },
-  flexShrink: "0",
-});
-
-/** desktop の行末アクション（rename / delete）。mobile では chevron に譲る。 */
+/** 行末アクション（rename / delete）。モバイル・デスクトップ共通で操作できる。 */
 export const tagRowOps = css({
   columnGap: "1",
-  display: { base: "none", md: "flex" },
+  display: "flex",
   flexShrink: "0",
-  marginInlineStart: "auto",
 });
 
 export const tagRowSkeleton = css({
   alignItems: "center",
-  borderBlockEndColor: "border.default",
-  borderBlockEndStyle: "solid",
-  borderBlockEndWidth: "thin",
   columnGap: "2.5",
   display: "flex",
-  paddingBlock: "3.5",
-  paddingInline: "2.5",
-  md: {
-    paddingBlock: "3",
-    paddingInline: "1",
-  },
+  minBlockSize: "[3.25rem]",
+  paddingBlock: "3",
+  paddingInline: { base: "3.5", md: "4" },
 });
 
 /** ダイアログ内の `タグ名` ラベル。フィールドの余白は dialogField が持つ。 */
 export const tagDialogLabel = css({
-  color: "fg.muted",
-  fontSize: "2xs",
-  fontWeight: "bold",
-  letterSpacing: "[0.02em]",
+  color: "fg.default",
+  fontSize: "xs",
+  fontWeight: "semibold",
 });

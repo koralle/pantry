@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, UserRound } from "lucide-react";
+import { ArrowLeft, Package, UserRound } from "lucide-react";
 import { css, cx } from "styled-system/css";
 
 import { iconButton } from "../../../shared/components/icon-button/styles";
@@ -7,6 +7,7 @@ import { backlink } from "../../../shared/styles/detail";
 import { defaultBookmarkSearch } from "../../navigation/lib/bookmark-search";
 import {
   wordmark,
+  wordmarkBadge,
   workbenchBar,
   workbenchBarFlex,
   workbenchBarTitle,
@@ -56,7 +57,7 @@ export const WorkbenchBar = ({
       search={backSearch ?? {}}
       to={backTo}
     >
-      <ArrowLeft aria-hidden size={13} />
+      <ArrowLeft aria-hidden size={14} />
       {mobileBackLabel === undefined ? (
         backLabel
       ) : (
@@ -71,7 +72,10 @@ export const WorkbenchBar = ({
       search={defaultBookmarkSearch}
       to="/bookmarks"
     >
-      PANTRY
+      <span aria-hidden className={wordmarkBadge}>
+        <Package size={15} />
+      </span>
+      <span translate="no">Pantry</span>
     </Link>
     <span aria-hidden className={workbenchBarFlex} />
     <span className={workbenchBarTitle}>{title}</span>
@@ -81,7 +85,7 @@ export const WorkbenchBar = ({
       className={iconButton({ size: "lg" })}
       to="/settings"
     >
-      <UserRound aria-hidden size={17} />
+      <UserRound aria-hidden size={18} />
     </Link>
   </header>
 );

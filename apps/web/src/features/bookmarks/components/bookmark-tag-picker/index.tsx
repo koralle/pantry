@@ -23,7 +23,9 @@ import {
   dialog,
   dialogBody,
   dialogHeader,
+  dialogSelectedCount,
   dialogTitle,
+  dialogTitleGroup,
   statusMessage,
   trigger,
 } from "./styles";
@@ -122,20 +124,26 @@ export const BookmarkTagPicker = ({
             <Modal className={dialog}>
               <Dialog className={dialogBody}>
                 <div className={dialogHeader}>
-                  <Heading slot="title" className={dialogTitle}>
-                    タグを選ぶ
-                  </Heading>
-                  <StyledButton slot="close">完了</StyledButton>
+                  <div className={dialogTitleGroup}>
+                    <Heading slot="title" className={dialogTitle}>
+                      タグを選ぶ
+                    </Heading>
+                    {selectedTags.length > 0 ? (
+                      <span className={dialogSelectedCount}>
+                        {selectedTags.length}件選択中
+                      </span>
+                    ) : null}
+                  </div>
+                  <StyledButton slot="close" size="sm" visual="accent">
+                    完了
+                  </StyledButton>
                 </div>
                 <TagPickerPanel
                   tagCandidates={tagCandidates}
                   selectedTags={selectedTags}
                   query={query}
                   onQueryChange={setQuery}
-                  onToggleTag={(tag) => {
-                    onToggleTag(tag);
-                    closePicker();
-                  }}
+                  onToggleTag={onToggleTag}
                   onCreateTag={handleCreateTag}
                   tagsReady={tagsReady}
                   isCreatingTag={isCreatingTag}

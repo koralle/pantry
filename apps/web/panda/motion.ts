@@ -6,15 +6,20 @@ import {
 
 export const motion = defineTokens({
   durations: {
-    press: { value: "120ms" },
+    press: { value: "130ms" },
+    hover: { value: "150ms" },
     crossfade: { value: "160ms" },
-    hover: { value: "180ms" },
+    modalExit: { value: "160ms" },
     fadeUp: { value: "200ms" },
-    spin: { value: "1s" },
-    skeleton: { value: "1.2s" },
+    modal: { value: "220ms" },
+    spin: { value: "0.75s" },
+    skeleton: { value: "1.4s" },
   },
   easings: {
-    press: { value: "cubic-bezier(0.16, 1, 0.3, 1)" },
+    out: { value: "cubic-bezier(0.23, 1, 0.32, 1)" },
+    inOut: { value: "cubic-bezier(0.77, 0, 0.175, 1)" },
+    drawer: { value: "cubic-bezier(0.32, 0.72, 0, 1)" },
+    press: { value: "cubic-bezier(0.23, 1, 0.32, 1)" },
   },
 });
 
@@ -39,23 +44,29 @@ export const animationStyles = defineAnimationStyles({
       animationDuration: "crossfade",
       animationFillMode: "both",
       animationName: "crossfade",
-      animationTimingFunction: "ease-out",
+      animationTimingFunction: "out",
     },
   },
   fadeUp: {
     value: {
-      animationDuration: "fadeUp",
+      animationDuration: "crossfade",
       animationFillMode: "both",
-      animationName: "fadeUp",
-      animationTimingFunction: "ease-out",
+      animationName: "crossfade",
+      animationTimingFunction: "out",
+      "@media (prefers-reduced-motion: no-preference)": {
+        animationDuration: "fadeUp",
+        animationName: "fadeUp",
+      },
     },
   },
   skeleton: {
     value: {
-      animationDuration: "skeleton",
-      animationIterationCount: "infinite",
-      animationName: "skeletonPulse",
-      animationTimingFunction: "ease-in-out",
+      "@media (prefers-reduced-motion: no-preference)": {
+        animationDuration: "skeleton",
+        animationIterationCount: "infinite",
+        animationName: "skeletonPulse",
+        animationTimingFunction: "ease-in-out",
+      },
     },
   },
 });

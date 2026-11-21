@@ -1,45 +1,49 @@
 import { css, cva } from "styled-system/css";
 
+export const listInner = css({
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[68rem]",
+  paddingInline: { base: "3", md: "6" },
+});
+
 export const listHead = css({
   alignItems: "center",
   columnGap: "3",
   display: "flex",
-  paddingBlockEnd: "1.5",
-  paddingBlockStart: "2.5",
-  paddingInline: "[1.125rem]",
-  md: {
-    paddingBlockEnd: "2.5",
-    paddingBlockStart: "4.5",
-    paddingInline: "4",
-  },
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[68rem]",
+  paddingBlockEnd: { base: "2.5", md: "3" },
+  paddingBlockStart: { base: "3.5", md: "5" },
+  paddingInline: { base: "3", md: "6" },
 });
 
 export const listTitle = css({
-  color: "fg.faint",
-  fontSize: "2xs",
+  color: "fg.default",
+  fontSize: { base: "md", md: "lg" },
   fontWeight: "bold",
-  letterSpacing: "[0.08em]",
-  textTransform: "uppercase",
-  md: {
-    color: "fg.default",
-    fontSize: "lg",
-    letterSpacing: "-0.01em",
-    textTransform: "none",
-  },
+  letterSpacing: "-0.015em",
+  lineHeight: "tight",
+  margin: "0",
 });
 
 export const listSub = css({
-  display: "none",
-  md: {
-    color: "fg.faint",
-    display: "inline",
-    fontFamily: "mono",
-    fontSize: "2xs",
-  },
+  alignItems: "center",
+  background: "surface.muted",
+  borderRadius: "full",
+  color: "fg.muted",
+  display: "inline-flex",
+  flexShrink: "0",
+  fontFamily: "mono",
+  fontSize: "2xs",
+  fontWeight: "medium",
+  paddingBlock: "0.5",
+  paddingInline: "2",
 });
 
 export const listTools = css({
-  columnGap: "1.5",
+  columnGap: "2",
   display: "flex",
   marginInlineStart: "auto",
 });
@@ -58,7 +62,9 @@ export const listScroll = css({
   flexDirection: "column",
   flex: "1",
   minBlockSize: "0",
+  overscrollBehavior: "contain",
   overflowY: "auto",
+  paddingBlockEnd: "4",
 });
 
 export const stateFill = css({
@@ -67,24 +73,37 @@ export const stateFill = css({
 
 export const segControl = css({
   background: "bg.surface",
-  borderColor: "border.default",
-  borderRadius: "[0.4375rem]",
+  borderColor: "border.control",
+  borderRadius: "box",
   borderStyle: "solid",
   borderWidth: "thin",
   display: { base: "none", md: "flex" },
   overflow: "hidden",
+  padding: "0.5",
+  gap: "0.5",
 });
 
 export const segItem = cva({
   base: {
     alignItems: "center",
-    color: "fg.faint",
-    columnGap: "[0.3125rem]",
-    display: "flex",
-    fontSize: "[0.6875rem]",
+    borderRadius: "[0.3125rem]",
+    color: "fg.muted",
+    columnGap: "1.5",
+    display: "inline-flex",
+    fontSize: "2xs",
+    fontWeight: "medium",
+    minBlockSize: "[1.875rem]",
     paddingBlock: "1",
     paddingInline: "2.5",
     textDecoration: "none",
+    transitionDuration: "hover",
+    transitionProperty: "background-color, color",
+    "@media (hover: hover) and (pointer: fine)": {
+      _hover: {
+        background: "surface.muted",
+        color: "fg.default",
+      },
+    },
   },
   defaultVariants: {
     on: false,
@@ -95,55 +114,100 @@ export const segItem = cva({
       true: {
         background: "fg.default",
         color: "bg.canvas",
+        "@media (hover: hover) and (pointer: fine)": {
+          _hover: {
+            background: "fg.default",
+            color: "bg.canvas",
+          },
+        },
       },
     },
   },
 });
 
 export const hintBar = css({
-  alignItems: "center",
   background: "bg.surface",
   borderBlockStartColor: "border.default",
   borderBlockStartStyle: "solid",
   borderBlockStartWidth: "thin",
-  blockSize: "[2.125rem]",
-  color: "fg.faint",
-  columnGap: "[1.125rem]",
-  display: { base: "none", md: "flex" },
+  color: "fg.muted",
+  display: { base: "none", md: "block" },
   flexShrink: "0",
-  fontSize: "[0.6875rem]",
-  paddingInline: "5",
-  "& b": {
-    color: "fg.muted",
-    fontWeight: "semibold",
-  },
+  fontSize: "2xs",
+  paddingBlock: "2",
+});
+
+export const hintBarInner = css({
+  alignItems: "center",
+  columnGap: "5",
+  display: "flex",
+  flexWrap: "wrap",
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[68rem]",
+  paddingInline: "6",
+  rowGap: "1.5",
+});
+
+export const hintItem = css({
+  alignItems: "center",
+  columnGap: "1.5",
+  display: "inline-flex",
+});
+
+export const hintKeys = css({
+  alignItems: "center",
+  columnGap: "1",
+  display: "inline-flex",
 });
 
 export const cardGrid = css({
   alignContent: "start",
   display: { base: "none", md: "grid" },
   gap: "3.5",
-  gridTemplateColumns: "repeat(3, 1fr)",
-  paddingBlockEnd: "3",
+  gridTemplateColumns: "repeat(auto-fill, minmax(17.5rem, 1fr))",
+  inlineSize: "100%",
+  listStyle: "none",
+  marginBlock: "0",
+  marginInline: "auto",
+  maxInlineSize: "[68rem]",
+  paddingBlockEnd: "4",
   paddingBlockStart: "0.5",
-  paddingInline: "4",
+  paddingInline: "6",
 });
 
-export const cardLink = cva({
+export const cardCell = css({
+  display: "flex",
+  minInlineSize: "0",
+});
+
+export const cardSurface = cva({
   base: {
     background: "bg.surface",
-    borderRadius: "[0.875rem]",
-    boxShadow: "[0 1px 3px rgba(0,0,0,.07)]",
+    borderColor: "border.default",
+    borderRadius: "sheet",
+    borderStyle: "solid",
+    borderWidth: "thin",
+    boxShadow: "card",
     color: "fg.default",
     display: "flex",
+    flex: "1",
     flexDirection: "column",
     overflow: "hidden",
-    padding: "3.5",
-    textDecoration: "none",
+    padding: "4",
+    position: "relative",
     transitionDuration: "hover",
-    transitionProperty: "box-shadow",
-    _hover: {
-      boxShadow: "[0 4px 12px rgba(0,0,0,.10)]",
+    transitionProperty: "border-color, box-shadow, background-color",
+    transitionTimingFunction: "out",
+    "&:has([data-primary-link]:focus-visible)": {
+      outline: "2px solid token(colors.accent.solid)",
+      outlineOffset: "2px",
+    },
+    "@media (hover: hover) and (pointer: fine)": {
+      _hover: {
+        borderColor: "border.control",
+        boxShadow: "cardHover",
+      },
     },
   },
   defaultVariants: {
@@ -154,6 +218,7 @@ export const cardLink = cva({
       false: {},
       true: {
         background: "accent.subtle",
+        borderColor: "border.accent",
       },
     },
   },
@@ -166,7 +231,7 @@ export const cardTop = css({
 });
 
 export const cardDomain = css({
-  color: "fg.faint",
+  color: "fg.muted",
   fontFamily: "mono",
   fontSize: "2xs",
   minInlineSize: "0",
@@ -175,20 +240,41 @@ export const cardDomain = css({
   whiteSpace: "nowrap",
 });
 
-export const cardStar = css({
-  color: "star.solid",
+export const cardTopRight = css({
+  alignItems: "center",
+  columnGap: "1.5",
   display: "flex",
   flexShrink: "0",
   marginInlineStart: "auto",
 });
 
-export const cardTitle = css({
-  fontSize: "[0.8125rem]",
-  fontWeight: "bold",
+export const cardStar = css({
+  color: "star.solid",
+  display: "inline-flex",
+  flexShrink: "0",
+});
+
+export const cardTitleWrap = css({
+  marginBlockStart: "2.5",
+});
+
+export const cardPrimaryLink = css({
+  color: "fg.default",
+  display: "-webkit-box",
+  fontSize: "sm",
+  fontWeight: "semibold",
   lineClamp: 2,
   lineHeight: "1.45",
-  marginBlockStart: "2",
   minBlockSize: "[2.9em]",
+  textDecoration: "none",
+  _after: {
+    content: '""',
+    inset: "0",
+    position: "absolute",
+  },
+  _focusVisible: {
+    outline: "none",
+  },
 });
 
 export const cardFoot = css({
@@ -198,12 +284,15 @@ export const cardFoot = css({
   borderBlockStartWidth: "thin",
   columnGap: "1.5",
   display: "flex",
-  marginBlockStart: "2.5",
-  paddingBlockStart: "2.5",
+  flexWrap: "wrap",
+  marginBlockStart: "auto",
+  paddingBlockStart: "3",
+  paddingTop: "3",
+  rowGap: "1.5",
 });
 
 export const cardDate = css({
-  color: "fg.faint",
+  color: "fg.muted",
   flexShrink: "0",
   fontFamily: "mono",
   fontSize: "2xs",
@@ -216,187 +305,287 @@ export const rowsMobileOnly = css({
   },
 });
 
-export const rows = css({
-  display: "flex",
-  flex: "1",
-  flexDirection: "column",
-  minBlockSize: "0",
-  overflowY: "auto",
-  paddingInline: "1.5",
+export const rowsWrap = css({
+  inlineSize: "100%",
+  marginInline: "auto",
+  maxInlineSize: "[68rem]",
+  paddingInline: { base: "3", md: "6" },
 });
 
-export const rowLink = cva({
-  base: {
-    alignItems: "center",
-    color: "fg.default",
-    display: "flex",
-    textDecoration: "none",
+export const rowsSurface = css({
+  background: "bg.surface",
+  borderColor: "border.default",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  boxShadow: "surface",
+  listStyle: "none",
+  margin: "0",
+  overflow: "hidden",
+  padding: "0",
+  "& > li + li": {
+    borderBlockStartColor: "border.default",
+    borderBlockStartStyle: "solid",
+    borderBlockStartWidth: "thin",
   },
-  variants: {
-    layout: {
-      desktop: {
-        borderRadius: "[0.5625rem]",
-        blockSize: "[2.875rem]",
-        columnGap: "3",
-        display: { base: "none", md: "flex" },
-        fontSize: "sm",
-        paddingInline: "3",
-      },
-      mobile: {
-        alignItems: "flex-start",
-        borderRadius: "0.75rem",
-        columnGap: "[0.6875rem]",
-        display: { base: "flex", md: "none" },
-        minBlockSize: "3.5rem",
-        paddingBlock: "[0.5625rem]",
-        paddingInline: "2.5",
-      },
+});
+
+export const rows = css({
+  background: "bg.surface",
+  borderColor: "border.default",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  boxShadow: "surface",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  "& > div + div": {
+    borderBlockStartColor: "border.default",
+    borderBlockStartStyle: "solid",
+    borderBlockStartWidth: "thin",
+  },
+});
+
+export const rowArticle = cva({
+  base: {
+    alignItems: { base: "flex-start", md: "center" },
+    color: "fg.default",
+    columnGap: "3",
+    display: "grid",
+    gridTemplateColumns: "auto minmax(0, 1fr) auto",
+    paddingBlock: { base: "3", md: "2.5" },
+    paddingInline: { base: "3.5", md: "4" },
+    position: "relative",
+    transitionDuration: "hover",
+    transitionProperty: "background-color",
+    transitionTimingFunction: "out",
+    "&:has([data-primary-link]:focus-visible)": {
+      outline: "2px solid token(colors.accent.solid)",
+      outlineOffset: "-2px",
     },
-    selected: {
-      true: {
-        background: "accent.subtle",
+    "@media (hover: hover) and (pointer: fine)": {
+      _hover: {
+        background: "surface.muted",
       },
     },
   },
   defaultVariants: {
-    layout: "desktop",
+    selected: false,
+  },
+  variants: {
+    selected: {
+      false: {},
+      true: {
+        background: "accent.subtle",
+        boxShadow: "inset 3px 0 0 token(colors.accent.solid)",
+        "@media (hover: hover) and (pointer: fine)": {
+          _hover: {
+            background: "accent.subtle",
+          },
+        },
+      },
+    },
   },
 });
 
-export const rowHover = css({
-  _hover: {
-    background: "surface.muted",
-  },
+export const rowTile = css({
+  paddingBlockStart: { base: "0.5", md: "0" },
 });
 
-export const rowTitle = css({
-  fontWeight: "semibold",
+export const rowContent = css({
+  alignItems: { base: "stretch", md: "center" },
+  columnGap: "3",
+  display: "flex",
+  flexDirection: { base: "column", md: "row" },
   minInlineSize: "0",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
+  rowGap: "1.5",
 });
 
-export const rowDomain = css({
-  color: "fg.faint",
-  flexShrink: "0",
-  fontFamily: "mono",
-  fontSize: "2xs",
-  whiteSpace: "nowrap",
+export const rowTitleWrap = css({
+  minInlineSize: "0",
+  md: {
+    flex: "1",
+  },
+});
+
+export const rowPrimaryLink = css({
+  color: "fg.default",
+  display: "-webkit-box",
+  fontSize: "sm",
+  fontWeight: "semibold",
+  lineClamp: 2,
+  lineHeight: "1.4",
+  textDecoration: "none",
+  md: {
+    display: "block",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+  _after: {
+    content: '""',
+    inset: "0",
+    position: "absolute",
+  },
+  _focusVisible: {
+    outline: "none",
+  },
 });
 
 export const rowTags = css({
   alignItems: "center",
   columnGap: "1.5",
   display: "flex",
-  flexShrink: "0",
-  marginInlineStart: "auto",
+  flexWrap: "wrap",
+  md: {
+    flexShrink: "0",
+    order: "2",
+  },
+  rowGap: "1",
 });
 
-export const rowDate = css({
-  color: "fg.faint",
-  flexShrink: "0",
+export const rowTagOverflow = css({
+  background: "surface.muted",
+  borderRadius: "full",
+  color: "fg.muted",
   fontFamily: "mono",
   fontSize: "2xs",
-  inlineSize: "[3.25rem]",
-  textAlign: "end",
+  lineHeight: "1.4",
+  paddingBlock: "0.5",
+  paddingInline: "2",
 });
 
-export const rowStar = css({
-  color: "star.solid",
-  flexShrink: "0",
-  display: "flex",
-});
-
-export const rowStarInline = css({
-  color: "star.solid",
-  display: "inline-flex",
-  marginInlineStart: "1",
-  verticalAlign: "-1px",
-});
-
-export const rowMain = css({
-  display: "flex",
-  flexDirection: "column",
-  minInlineSize: "0",
-  rowGap: "[0.25rem]",
-});
-
-export const rowTitleMobile = css({
-  fontSize: "sm",
-  fontWeight: "semibold",
-  lineClamp: 2,
-  lineHeight: "1.35",
-});
-
-export const rowMeta = css({
+export const rowMetaLine = css({
   alignItems: "center",
-  color: "fg.faint",
+  color: "fg.muted",
   columnGap: "1.5",
   display: "flex",
   fontFamily: "mono",
   fontSize: "2xs",
   minInlineSize: "0",
+  md: {
+    flexShrink: "0",
+    justifyContent: "flex-end",
+    order: "3",
+  },
 });
 
-export const rowMetaDots = css({
-  alignItems: "center",
-  columnGap: "[0.3125rem]",
-  display: "flex",
+export const rowDomain = css({
+  minInlineSize: "0",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  md: {
+    maxInlineSize: "[12rem]",
+  },
+});
+
+export const rowMetaSep = css({
+  color: "fg.faint",
   flexShrink: "0",
 });
 
-export const rowMetaDot = css({
-  borderRadius: "full",
-  blockSize: "[0.4375rem]",
-  inlineSize: "[0.4375rem]",
+export const rowDate = css({
+  flexShrink: "0",
+  whiteSpace: "nowrap",
+});
+
+export const rowStar = css({
+  color: "star.solid",
+  display: "inline-flex",
+  flexShrink: "0",
+});
+
+export const externalActionLink = css({
+  alignItems: "center",
+  borderRadius: "box",
+  color: "fg.faint",
+  display: "inline-flex",
+  flexShrink: "0",
+  justifyContent: "center",
+  minBlockSize: "touch",
+  minInlineSize: "touch",
+  position: "relative",
+  textDecoration: "none",
+  transitionDuration: "hover",
+  transitionProperty: "background-color, color",
+  zIndex: "1",
+  "@media (pointer: fine)": {
+    minBlockSize: "[2rem]",
+    minInlineSize: "[2rem]",
+  },
+  "@media (hover: hover) and (pointer: fine)": {
+    _hover: {
+      background: "surface.muted",
+      color: "fg.default",
+    },
+  },
+  _focusVisible: {
+    outline: "2px solid token(colors.accent.solid)",
+    outlineOffset: "2px",
+  },
 });
 
 export const quickAddStrip = css({
   alignItems: "center",
   background: "bg.surface",
-  border: "1px dashed token(colors.border.default)",
-  borderRadius: "[0.5625rem]",
-  color: "fg.faint",
+  borderColor: "border.control",
+  borderRadius: "sheet",
+  borderStyle: "dashed",
+  borderWidth: "thin",
+  color: "fg.muted",
   columnGap: "2.5",
   display: { base: "none", md: "flex" },
   fontSize: "xs",
-  marginBlockEnd: "2.5",
-  marginInline: "4",
-  paddingBlock: "2",
+  marginBlockEnd: "3",
+  paddingBlock: "2.5",
   paddingInline: "3.5",
   textDecoration: "none",
+  transitionDuration: "hover",
+  transitionProperty: "background-color, border-color, color",
+  "@media (hover: hover) and (pointer: fine)": {
+    _hover: {
+      background: "accent.hover",
+      borderColor: "border.accent",
+      color: "fg.default",
+    },
+  },
 });
 
 export const quickAddBadge = css({
   alignItems: "center",
   background: "accent.solid",
-  borderRadius: "[0.375rem]",
-  blockSize: "[1.125rem]",
+  borderRadius: "box",
+  blockSize: "[1.375rem]",
   color: "accent.fg",
   display: "flex",
   flexShrink: "0",
-  inlineSize: "[1.125rem]",
+  inlineSize: "[1.375rem]",
   justifyContent: "center",
 });
 
 export const inboxCallout = css({
   alignItems: "center",
   background:
-    "linear-gradient(115deg, token(colors.pantry.inboxStart), token(colors.pantry.inboxEnd))",
-  borderRadius: "0.75rem",
+    "linear-gradient(115deg, token(colors.inbox.bgStart), token(colors.inbox.bgEnd))",
+  borderColor: "inbox.border",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
   color: "fg.default",
   columnGap: "3",
   display: "flex",
   marginBlockEnd: "3",
-  marginInline: "1.5",
-  paddingBlock: "2.5",
-  paddingInline: "3.5",
+  paddingBlock: { base: "2.5", md: "3" },
+  paddingInline: { base: "3.5", md: "4" },
   textDecoration: "none",
-  md: {
-    marginInline: "4",
-    paddingBlock: "[0.6875rem]",
-    paddingInline: "4",
+  transitionDuration: "hover",
+  transitionProperty: "border-color, box-shadow",
+  "@media (hover: hover) and (pointer: fine)": {
+    _hover: {
+      boxShadow: "surface",
+    },
   },
 });
 
@@ -404,30 +593,22 @@ export const inboxBadge = css({
   alignItems: "center",
   background: "bg.surface",
   borderRadius: "[0.5rem]",
-  blockSize: "[1.625rem]",
-  boxShadow: "[0 1px 3px rgba(0,0,0,0.08)]",
-  color: "pantry.inboxFg",
+  blockSize: { base: "[1.75rem]", md: "[2.125rem]" },
+  boxShadow: "surface",
+  color: "inbox.fg",
   display: "flex",
   flexShrink: "0",
-  inlineSize: "[1.625rem]",
+  inlineSize: { base: "[1.75rem]", md: "[2.125rem]" },
   justifyContent: "center",
-  md: {
-    borderRadius: "[0.625rem]",
-    blockSize: "[2.125rem]",
-    inlineSize: "[2.125rem]",
-  },
 });
 
 export const inboxTitle = css({
-  fontSize: "xs",
+  fontSize: { base: "xs", md: "sm" },
   fontWeight: "bold",
-  md: {
-    fontSize: "sm",
-  },
 });
 
 export const inboxSub = css({
-  color: "pantry.inboxSub",
+  color: "inbox.sub",
   fontSize: "2xs",
 });
 
@@ -437,18 +618,14 @@ export const inboxAction = css({
   borderRadius: "full",
   color: "bg.canvas",
   columnGap: "1.5",
-  display: "none",
+  display: { base: "none", md: "flex" },
   flexShrink: "0",
   fontSize: "2xs",
   fontWeight: "bold",
   marginInlineStart: "auto",
-  paddingBlock: "[0.4375rem]",
-  paddingInline: "[0.8125rem]",
-  textDecoration: "none",
+  paddingBlock: "1.5",
+  paddingInline: "3.5",
   whiteSpace: "nowrap",
-  md: {
-    display: "flex",
-  },
 });
 
 export const desktopOnlyText = css({
@@ -467,13 +644,15 @@ export const mobileOnlyText = css({
 export const listBanner = css({
   alignItems: "center",
   background: "danger.surface",
-  borderRadius: "[0.5625rem]",
+  borderColor: "danger.border",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
   color: "danger.solid",
   columnGap: "2.5",
   display: "flex",
   fontSize: "xs",
-  marginBlockEnd: "2.5",
-  marginInline: "4",
+  marginBlockEnd: "3",
   paddingBlock: "2",
   paddingInline: "3.5",
 });
@@ -500,13 +679,10 @@ export const skeletonRow = css({
   columnGap: "3",
   display: "flex",
   minBlockSize: "[3.5rem]",
-  paddingBlock: "[0.5625rem]",
-  paddingInline: "2.5",
+  paddingBlock: "2.5",
+  paddingInline: { base: "3.5", md: "4" },
   md: {
-    blockSize: "[2.875rem]",
-    minBlockSize: "0",
-    paddingBlock: "0",
-    paddingInline: "3",
+    minBlockSize: "[3rem]",
   },
 });
 
@@ -515,5 +691,5 @@ export const skeletonBody = css({
   flex: "1",
   flexDirection: "column",
   minInlineSize: "0",
-  rowGap: "[0.4375rem]",
+  rowGap: "1.5",
 });

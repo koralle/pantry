@@ -7,6 +7,10 @@ export const globalCss = defineGlobalStyles({
   "::placeholder": {
     opacity: "unset",
   },
+  "::selection": {
+    background: "accent.subtle",
+    color: "fg.default",
+  },
   ':disabled, [aria-disabled="true"]': {
     cursor: "default",
   },
@@ -14,27 +18,24 @@ export const globalCss = defineGlobalStyles({
     outline: "2px solid",
     outlineColor: "accent.solid",
     outlineOffset: "2px",
+    "@media (forced-colors: active)": {
+      outlineColor: "CanvasText",
+    },
   },
   ":root": {
     WebkitTapHighlightColor: "transparent",
     WebkitTextSizeAdjust: "100%",
     accentColor: "accent.solid",
-    colorScheme: "light",
+    colorScheme: "light dark",
     fontFamily: "body",
     fontSizeAdjust: "from-font",
     lineBreak: "strict",
     lineHeight: "body",
-    overflowWrap: "anywhere",
+    scrollbarColor: "token(colors.fg.faint) transparent",
     scrollbarGutter: "stable",
     textAutospace: "normal",
     textSizeAdjust: "100%",
     textSpacingTrim: "trim-start",
-  },
-  "@media (prefers-reduced-motion: reduce)": {
-    "*, *::before, *::after": {
-      animation: "none !important",
-      transition: "none !important",
-    },
   },
   '[hidden]:not([hidden="until-found"])': {
     display: "none !important",
@@ -53,6 +54,9 @@ export const globalCss = defineGlobalStyles({
     textDecorationLine: "unset",
     textDecorationThickness: "from-font",
   },
+  ":where(a, code)": {
+    overflowWrap: "anywhere",
+  },
   "address:lang(ja)": {
     fontStyle: "unset",
   },
@@ -64,6 +68,7 @@ export const globalCss = defineGlobalStyles({
     color: "fg.default",
     margin: 0,
     minBlockSize: "100dvb",
+    overflowWrap: "break-word",
   },
   "button, input, select, textarea, ::file-selector-button": {
     borderColor: "unset",
@@ -105,6 +110,9 @@ export const globalCss = defineGlobalStyles({
     maxBlockSize: "unset",
     maxInlineSize: "unset",
   },
+  "dialog:modal": {
+    overscrollBehavior: "contain",
+  },
   "dialog, [popover]": {
     border: "unset",
     overscrollBehaviorBlock: "contain",
@@ -112,6 +120,8 @@ export const globalCss = defineGlobalStyles({
   },
   "dialog::backdrop": {
     backgroundColor: "oklch(0% 0 0deg / 30%)",
+    overflow: "hidden",
+    overscrollBehavior: "contain",
   },
   "dialog:not([open], [popover]), [popover]:not(:popover-open)": {
     display: "none !important",
@@ -133,9 +143,13 @@ export const globalCss = defineGlobalStyles({
     fontWeight: "bold",
     lineHeight: "tight",
     marginBlock: "unset",
-    textWrap: "pretty",
+    textWrap: "balance",
   },
-  "h2, h3, h4, h5, h6": {
+  "h2, h3": {
+    marginBlock: "unset",
+    textWrap: "balance",
+  },
+  "h4, h5, h6": {
     marginBlock: "unset",
   },
   "i:lang(ja), cite:lang(ja), dfn:lang(ja)": {
@@ -167,11 +181,12 @@ export const globalCss = defineGlobalStyles({
   legend: {
     paddingInline: "unset",
   },
-  "p, blockquote, figure, pre, address, ul, ol, dl, menu": {
+  p: {
     marginBlock: "unset",
-  },
-  "p:lang(en)": {
     textWrap: "pretty",
+  },
+  "blockquote, figure, pre, address, ul, ol, dl, menu": {
+    marginBlock: "unset",
   },
   pre: {
     textAutospace: "no-autospace",
@@ -182,7 +197,7 @@ export const globalCss = defineGlobalStyles({
   },
   textarea: {
     marginBlock: "unset",
-    resize: "block",
+    resize: "vertical",
   },
   "ul, ol, menu": {
     listStyleType: '""',

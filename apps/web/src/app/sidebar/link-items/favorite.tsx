@@ -7,9 +7,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { cx } from "styled-system/css";
 
 import {
-  railItem,
-  railIcon,
   railCount,
+  railIcon,
+  railItem,
+  railLabel,
 } from "../../../features/app-shell/styles";
 import { orpc } from "../../../rpc/client/query";
 
@@ -36,12 +37,13 @@ export const FavoriteBookmarkLink = () => {
 
   return (
     <Link
-      to="/bookmarks"
-      search={{ view: "favorites" }}
+      aria-current={isActive ? "page" : undefined}
       className={railItem({ active: isActive })}
+      search={{ view: "favorites" }}
+      to="/bookmarks"
     >
-      <Star className={cx(railIcon, "pantry-rail-icon")} />
-      お気に入り
+      <Star aria-hidden className={cx(railIcon, "pantry-rail-icon")} />
+      <span className={railLabel}>お気に入り</span>
       <ErrorBoundary
         fallback={<span className={cx(railCount, "pantry-rail-count")}>0</span>}
       >

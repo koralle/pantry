@@ -19,39 +19,65 @@ const box = css({
   flexDirection: "column",
   justifyContent: "center",
   paddingBlock: "10",
-  paddingInline: "4",
-  rowGap: "2",
+  paddingInline: "5",
+  rowGap: "2.5",
   textAlign: "center",
 });
 
-const iconStyle = css({
-  color: "fg.faint",
+const iconBadge = css({
+  alignItems: "center",
+  background: "surface.muted",
+  borderColor: "border.default",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  color: "fg.muted",
+  display: "inline-flex",
+  blockSize: "12",
+  inlineSize: "12",
+  justifyContent: "center",
+  marginBlockEnd: "1",
 });
 
-const dangerIconStyle = css({
+const dangerBadge = css({
+  alignItems: "center",
+  background: "danger.surface",
+  borderColor: "danger.border",
+  borderRadius: "sheet",
+  borderStyle: "solid",
+  borderWidth: "thin",
   color: "danger.solid",
+  display: "inline-flex",
+  blockSize: "12",
+  inlineSize: "12",
+  justifyContent: "center",
+  marginBlockEnd: "1",
 });
 
 const titleStyle = css({
   color: "fg.default",
-  fontSize: "sm",
-  fontWeight: "semibold",
+  fontSize: "md",
+  fontWeight: "bold",
   margin: "0",
+  textWrap: "balance",
 });
 
 const descriptionStyle = css({
   color: "fg.muted",
   fontSize: "xs",
+  lineHeight: "relaxed",
   margin: "0",
+  maxInlineSize: "[24rem]",
+  textWrap: "pretty",
 });
 
 const actionStyle = css({
-  columnGap: "2",
+  columnGap: "2.5",
   display: "flex",
   flexWrap: "wrap",
   justifyContent: "center",
-  marginBlockStart: "1",
-  rowGap: "2",
+  marginBlockStart: "2",
+  rowGap: "2.5",
 });
 
 export interface StateViewProps {
@@ -73,11 +99,9 @@ export const StateView = ({
 }: StateViewProps) => (
   <div className={cx(box, className)}>
     {Icon ? (
-      <Icon
-        aria-hidden
-        className={tone === "danger" ? dangerIconStyle : iconStyle}
-        size={20}
-      />
+      <span className={tone === "danger" ? dangerBadge : iconBadge}>
+        <Icon aria-hidden size={20} />
+      </span>
     ) : null}
     <p className={titleStyle}>{title}</p>
     {description ? <p className={descriptionStyle}>{description}</p> : null}

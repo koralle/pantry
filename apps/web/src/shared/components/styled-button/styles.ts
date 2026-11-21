@@ -5,43 +5,50 @@ import { cva } from "styled-system/css";
  *
  * `visual` covers chrome roles (neutral, accent CTA, destructive).
  * `size` scales padding / min-height / font-size; `md` preserves the
- * previous single-size look (`minBlockSize: touch`, padding 2/4).
+ * standard touch-friendly height (`minBlockSize: touch`, padding 2/4).
  *
  * Exported so callers can keep composing with `className={button()}`
  * or `button.raw()` (e.g. Link / Dialog) without switching to StyledButton.
  */
 export const button = cva({
   base: {
-    "@media (any-hover: hover)": {
+    "@media (hover: hover) and (pointer: fine)": {
       "&:hover:not(:disabled)": {
-        background: "accent.subtle",
-        borderColor: "border.accent",
+        background: "surface.muted",
+        borderColor: "fg.muted",
       },
     },
-    _active: {
-      scale: "0.98",
+    "@media (pointer: coarse)": {
+      minBlockSize: "touch",
+    },
+    "@media (prefers-reduced-motion: no-preference)": {
+      _active: {
+        scale: "0.97",
+      },
     },
     _disabled: {
-      cursor: "wait",
-      opacity: "0.6",
+      cursor: "not-allowed",
+      opacity: "0.55",
     },
     alignItems: "center",
     background: "bg.surface",
-    borderColor: "border.default",
+    borderColor: "border.control",
     borderRadius: "box",
     borderStyle: "solid",
     borderWidth: "thin",
     color: "fg.default",
-    columnGap: "[0.25em]",
+    columnGap: "[0.375em]",
     cursor: "pointer",
     display: "inline-flex",
     fontWeight: "semibold",
     justifyContent: "center",
+    lineHeight: "tight",
     scale: "1",
     textDecoration: "none",
     transitionDuration: "hover",
     transitionProperty: "scale, background-color, border-color, color, opacity",
-    transitionTimingFunction: "press",
+    transitionTimingFunction: "out",
+    whiteSpace: "nowrap",
   },
   defaultVariants: {
     size: "md",
@@ -51,11 +58,12 @@ export const button = cva({
     size: {
       lg: {
         fontSize: "md",
-        minBlockSize: "[3.5rem]",
+        minBlockSize: "[3.25rem]",
         paddingBlock: "3",
         paddingInline: "5",
       },
       md: {
+        fontSize: "xs",
         minBlockSize: "touch",
         paddingBlock: "2",
         paddingInline: "4",
@@ -64,18 +72,18 @@ export const button = cva({
         fontSize: "xs",
         minBlockSize: "[2.25rem]",
         paddingBlock: "1.5",
-        paddingInline: "3",
+        paddingInline: "3.5",
       },
       xs: {
         fontSize: "xs",
-        minBlockSize: "[1.75rem]",
+        minBlockSize: "[2rem]",
         paddingBlock: "1",
-        paddingInline: "2",
+        paddingInline: "2.5",
       },
     },
     visual: {
       accent: {
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           "&:hover:not(:disabled)": {
             background: "accent.solidHover",
             borderColor: "accent.solidHover",
@@ -89,12 +97,12 @@ export const button = cva({
       chip: {
         background: "surface.tag",
         borderColor: "border.accent",
-        columnGap: "1",
+        columnGap: "1.5",
         fontSize: "xs",
         paddingInline: "3",
       },
       ghost: {
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           "&:hover:not(:disabled)": {
             background: "surface.muted",
             borderColor: "transparent",
@@ -104,7 +112,7 @@ export const button = cva({
         borderColor: "transparent",
       },
       quiet: {
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           "&:hover:not(:disabled)": {
             background: "accent.subtle",
             borderColor: "transparent",
@@ -115,10 +123,10 @@ export const button = cva({
         color: "accent.solid",
       },
       danger: {
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           "&:hover:not(:disabled)": {
             background: "danger.surface",
-            borderColor: "border.danger",
+            borderColor: "danger.solid",
             color: "danger.solid",
           },
         },
@@ -133,9 +141,9 @@ export const button = cva({
           borderColor: "accent.solid",
           color: "accent.solid",
         },
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           '&:hover:not(:disabled):not([aria-pressed="true"])': {
-            background: "transparent",
+            background: "surface.muted",
             borderColor: "border.accent",
             color: "fg.default",
           },

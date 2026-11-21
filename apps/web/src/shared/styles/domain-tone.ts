@@ -15,21 +15,13 @@ export const DOMAIN_TONES = [
 
 export type DomainTone = (typeof DOMAIN_TONES)[number];
 
-export const toneFor = (seed: string): DomainTone => {
-  let hash = 0;
-  for (const char of seed) {
-    hash = Math.trunc(hash * 31 + (char.codePointAt(0) ?? 0));
-  }
-  return DOMAIN_TONES[Math.abs(hash) % DOMAIN_TONES.length] ?? "slate";
-};
+const HASH_MOD = 2_147_483_647;
 
-export const domainToneVar: Record<DomainTone, string> = {
-  teal: "var(--colors-domain-teal)",
-  blue: "var(--colors-domain-blue)",
-  violet: "var(--colors-domain-violet)",
-  pink: "var(--colors-domain-pink)",
-  green: "var(--colors-domain-green)",
-  orange: "var(--colors-domain-orange)",
-  yellow: "var(--colors-domain-yellow)",
-  slate: "var(--colors-domain-slate)",
+/** 31-bit prime rolling hash distributes domain and tag names evenly across tones. */
+export const toneFor = (seed: string): DomainTone => {
+  let hash = 5381;
+  for (const char of seed) {
+    hash = (hash * 33 + (char.codePointAt(0) ?? 0)) % HASH_MOD;
+  }
+  return DOMAIN_TONES[hash % DOMAIN_TONES.length] ?? "slate";
 };

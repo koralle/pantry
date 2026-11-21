@@ -7,9 +7,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { cx } from "styled-system/css";
 
 import {
-  railItem,
-  railIcon,
   railCount,
+  railIcon,
+  railItem,
+  railLabel,
 } from "../../../features/app-shell/styles";
 import { orpc } from "../../../rpc/client/query";
 import { useIsInbox } from "../../../shared/hooks/use-is-inbox";
@@ -32,14 +33,14 @@ export const InboxBookmarkLink = () => {
   return (
     <Link
       aria-current={isActive ? "page" : undefined}
-      to="/bookmarks"
+      className={railItem({ active: isActive })}
       search={{
         view: "inbox",
       }}
-      className={railItem({ active: isActive })}
+      to="/bookmarks"
     >
-      <Inbox className={cx(railIcon, "pantry-rail-icon")} />
-      未整理
+      <Inbox aria-hidden className={cx(railIcon, "pantry-rail-icon")} />
+      <span className={railLabel}>未整理</span>
       <ErrorBoundary
         fallback={<span className={cx(railCount, "pantry-rail-count")}>0</span>}
       >

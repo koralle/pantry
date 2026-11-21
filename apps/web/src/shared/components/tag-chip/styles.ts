@@ -2,12 +2,15 @@ import { cva } from "styled-system/css";
 
 export const tagChip = cva({
   base: {
-    background: "surface.tag",
-    borderColor: "border.accent",
-    borderRadius: "box",
+    background: "surface.muted",
+    borderColor: "border.default",
+    borderRadius: "full",
     borderStyle: "solid",
     borderWidth: "thin",
     color: "fg.default",
+    transitionDuration: "hover",
+    transitionProperty: "background-color, border-color",
+    transitionTimingFunction: "out",
   },
   defaultVariants: {
     visual: "interactive",
@@ -26,15 +29,27 @@ export const tagChip = cva({
         cursor: "default",
         display: "inline-flex",
         fontSize: "2xs",
+        fontWeight: "medium",
         lineHeight: "tight",
         minBlockSize: "0",
-        paddingBlock: "0.5",
-        paddingInline: "1.5",
+        paddingBlock: "1",
+        paddingInline: "2",
       },
       link: {
+        "@media (hover: hover) and (pointer: fine)": {
+          "&:hover": {
+            background: "accent.subtle",
+            borderColor: "border.accent",
+          },
+        },
         alignItems: "center",
         columnGap: "1.5",
         display: "inline-flex",
+        fontSize: "2xs",
+        fontWeight: "medium",
+        minBlockSize: "[1.75rem]",
+        paddingBlock: "1",
+        paddingInline: "2.5",
         textDecoration: "none",
       },
     },
@@ -44,7 +59,7 @@ export const tagChip = cva({
 export const tagDot = cva({
   base: {
     blockSize: "[0.5rem]",
-    borderRadius: "[0.1875rem]",
+    borderRadius: "full",
     display: "inline-block",
     flexShrink: "0",
     inlineSize: "[0.5rem]",

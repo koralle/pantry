@@ -7,17 +7,23 @@ import { cva } from "styled-system/css";
  */
 export const iconButton = cva({
   base: {
-    "@media (any-hover: hover)": {
+    "@media (hover: hover) and (pointer: fine)": {
       "&:hover:not(:disabled)": {
         background: "surface.muted",
         color: "fg.default",
       },
     },
-    _active: {
-      scale: "0.92",
+    "@media (pointer: coarse)": {
+      minBlockSize: "touch",
+      minInlineSize: "touch",
+    },
+    "@media (prefers-reduced-motion: no-preference)": {
+      _active: {
+        scale: "0.95",
+      },
     },
     _disabled: {
-      cursor: "wait",
+      cursor: "not-allowed",
       opacity: "0.5",
     },
     alignItems: "center",
@@ -33,8 +39,8 @@ export const iconButton = cva({
     justifyContent: "center",
     scale: "1",
     transitionDuration: "hover",
-    transitionProperty: "scale, background-color, color, opacity",
-    transitionTimingFunction: "press",
+    transitionProperty: "scale, background-color, border-color, color, opacity",
+    transitionTimingFunction: "out",
   },
   defaultVariants: {
     active: false,
@@ -45,34 +51,35 @@ export const iconButton = cva({
     active: {
       false: {},
       true: {
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           "&:hover:not(:disabled)": {
             background: "accent.subtle",
             color: "accent.solid",
           },
         },
         background: "accent.subtle",
+        borderColor: "border.accent",
         color: "accent.solid",
       },
     },
     size: {
       sm: {
-        blockSize: "[1.5rem]",
-        inlineSize: "[1.5rem]",
+        minBlockSize: "[2rem]",
+        minInlineSize: "[2rem]",
       },
       md: {
-        blockSize: "[1.75rem]",
-        inlineSize: "[1.75rem]",
+        minBlockSize: "[2.25rem]",
+        minInlineSize: "[2.25rem]",
       },
       lg: {
-        blockSize: "[2.25rem]",
-        inlineSize: "[2.25rem]",
+        minBlockSize: "[2.5rem]",
+        minInlineSize: "[2.5rem]",
       },
     },
     tone: {
       default: {},
       danger: {
-        "@media (any-hover: hover)": {
+        "@media (hover: hover) and (pointer: fine)": {
           "&:hover:not(:disabled)": {
             background: "danger.surface",
             color: "danger.solid",

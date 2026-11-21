@@ -48,6 +48,9 @@ import { skeletonBar, spinner } from "../../../../shared/styles/feedback";
 import {
   desktopOnlyText,
   hintBar,
+  hintBarInner,
+  hintItem,
+  hintKeys,
   inboxAction,
   inboxBadge,
   inboxCallout,
@@ -56,6 +59,7 @@ import {
   listBanner,
   listBannerAction,
   listHead,
+  listInner,
   listScroll,
   listSub,
   listTitle,
@@ -65,6 +69,8 @@ import {
   quickAddStrip,
   rows,
   rowsMobileOnly,
+  rowsSurface,
+  rowsWrap,
   segControl,
   segItem,
   skeletonBody,
@@ -83,7 +89,7 @@ export interface ListHeadProps {
 
 export const ListHead = ({ title, count, tools }: ListHeadProps) => (
   <div className={listHead}>
-    <h2 className={listTitle}>{title}</h2>
+    <h1 className={listTitle}>{title}</h1>
     {count === undefined ? null : <span className={listSub}>{count} 件</span>}
     {tools ? <div className={listTools}>{tools}</div> : null}
   </div>
@@ -94,20 +100,22 @@ export const QuickAddStrip = ({
 }: {
   search?: BookmarkDetailSearch | undefined;
 }) => (
-  <Link className={quickAddStrip} search={search} to="/bookmarks/quick">
-    <span className={quickAddBadge}>
-      <Plus aria-hidden size={12} />
-    </span>
-    URLをペーストすると、登録画面が開きます
-    <span
-      className={css({
-        display: { base: "none", md: "block" },
-        marginInlineStart: "auto",
-      })}
-    >
-      <Kbd>⌘V</Kbd>
-    </span>
-  </Link>
+  <div className={listInner}>
+    <Link className={quickAddStrip} search={search} to="/bookmarks/quick">
+      <span className={quickAddBadge}>
+        <Plus aria-hidden size={12} />
+      </span>
+      URLをペーストすると、登録画面が開きます
+      <span
+        className={css({
+          display: { base: "none", md: "block" },
+          marginInlineStart: "auto",
+        })}
+      >
+        <Kbd>⌘V</Kbd>
+      </span>
+    </Link>
+  </div>
 );
 
 export interface InboxCalloutProps {
@@ -117,33 +125,35 @@ export interface InboxCalloutProps {
 }
 
 export const InboxCallout = ({ count, layout }: InboxCalloutProps) => (
-  <Link
-    className={inboxCallout}
-    search={{
-      ...defaultBookmarkSearch,
-      ...(layout === "cards" ? { layout: "cards" as const } : {}),
-      view: "inbox",
-    }}
-    to="/bookmarks"
-  >
-    <span className={inboxBadge}>
-      <Inbox aria-hidden size={15} />
-    </span>
-    <div>
-      <div className={inboxTitle}>
-        <span className={desktopOnlyText}>未整理が {count} 件あります</span>
-        <span className={mobileOnlyText}>未整理 {count} 件</span>
+  <div className={listInner}>
+    <Link
+      className={inboxCallout}
+      search={{
+        ...defaultBookmarkSearch,
+        ...(layout === "cards" ? { layout: "cards" as const } : {}),
+        view: "inbox",
+      }}
+      to="/bookmarks"
+    >
+      <span className={inboxBadge}>
+        <Inbox aria-hidden size={15} />
+      </span>
+      <div>
+        <div className={inboxTitle}>
+          <span className={desktopOnlyText}>未整理が {count} 件あります</span>
+          <span className={mobileOnlyText}>未整理 {count} 件</span>
+        </div>
+        <div className={inboxSub}>
+          <span className={desktopOnlyText}>タグを付けると棚に移ります</span>
+          <span className={mobileOnlyText}>まとめて整理 →</span>
+        </div>
       </div>
-      <div className={inboxSub}>
-        <span className={desktopOnlyText}>タグを付けると棚に移ります</span>
-        <span className={mobileOnlyText}>まとめて整理 →</span>
-      </div>
-    </div>
-    <span className={inboxAction}>
-      まとめて整理
-      <ArrowRight aria-hidden size={12} />
-    </span>
-  </Link>
+      <span className={inboxAction}>
+        まとめて整理
+        <ArrowRight aria-hidden size={12} />
+      </span>
+    </Link>
+  </div>
 );
 
 export interface ListBannerProps {
@@ -152,16 +162,18 @@ export interface ListBannerProps {
 }
 
 export const ListBanner = ({ children, onRetry }: ListBannerProps) => (
-  <output className={listBanner}>
-    <CloudOff aria-hidden size={15} />
-    {children}
-    {onRetry ? (
-      <button className={listBannerAction} onClick={onRetry} type="button">
-        <RotateCw aria-hidden size={12} />
-        再試行
-      </button>
-    ) : null}
-  </output>
+  <div className={listInner}>
+    <output className={listBanner}>
+      <CloudOff aria-hidden size={15} />
+      {children}
+      {onRetry ? (
+        <button className={listBannerAction} onClick={onRetry} type="button">
+          <RotateCw aria-hidden size={12} />
+          再試行
+        </button>
+      ) : null}
+    </output>
+  </div>
 );
 
 export interface BookmarkRowsProps {
@@ -176,10 +188,16 @@ export const BookmarkRows = ({
   selectedId,
   mobileOnly,
 }: BookmarkRowsProps) => (
-  <div className={cx(rows, mobileOnly === true ? rowsMobileOnly : undefined)}>
-    {items.map((item) => (
-      <BookmarkRow key={item.id} {...item} selected={item.id === selectedId} />
-    ))}
+  <div
+    className={mobileOnly === true ? cx(rowsWrap, rowsMobileOnly) : rowsWrap}
+  >
+    <ul className={rowsSurface}>
+      {items.map((item) => (
+        <li key={item.id}>
+          <BookmarkRow {...item} selected={item.id === selectedId} />
+        </li>
+      ))}
+    </ul>
   </div>
 );
 
@@ -211,16 +229,18 @@ export interface BookmarkRowsSkeletonProps {
 export const BookmarkRowsSkeleton = ({
   rows: count = 5,
 }: BookmarkRowsSkeletonProps) => (
-  <div aria-hidden className={rows} data-testid="rows-skeleton">
-    {Array.from({ length: count }, (_, i) => (
-      <div className={skeletonRow} key={`skeleton-${i + 1}`}>
-        <span className={`${skeletonBar} ${skeletonTile}`} />
-        <span className={skeletonBody}>
-          <span className={`${skeletonBar} ${skeletonBar1}`} />
-          <span className={`${skeletonBar} ${skeletonBar2}`} />
-        </span>
-      </div>
-    ))}
+  <div aria-hidden className={rowsWrap} data-testid="rows-skeleton">
+    <div className={rows}>
+      {Array.from({ length: count }, (_, i) => (
+        <div className={skeletonRow} key={`skeleton-${i + 1}`}>
+          <span className={`${skeletonBar} ${skeletonTile}`} />
+          <span className={skeletonBody}>
+            <span className={`${skeletonBar} ${skeletonBar1}`} />
+            <span className={`${skeletonBar} ${skeletonBar2}`} />
+          </span>
+        </div>
+      ))}
+    </div>
   </div>
 );
 
@@ -273,18 +293,24 @@ export const ViewToggle = ({
 
 export const HintBar = () => (
   <div className={hintBar}>
-    <span>
-      <b>j</b> <b>k</b> 移動
-    </span>
-    <span>
-      <b>⏎</b> 開く
-    </span>
-    <span>
-      <b>T</b> タグで絞る
-    </span>
-    <span>
-      <b>N</b> 新規登録
-    </span>
+    <div className={hintBarInner}>
+      <span className={hintItem}>
+        <span className={hintKeys}>
+          <Kbd>j</Kbd>
+          <Kbd>k</Kbd>
+        </span>
+        移動
+      </span>
+      <span className={hintItem}>
+        <Kbd>⏎</Kbd> 開く
+      </span>
+      <span className={hintItem}>
+        <Kbd>T</Kbd> タグで絞る
+      </span>
+      <span className={hintItem}>
+        <Kbd>N</Kbd> 新規登録
+      </span>
+    </div>
   </div>
 );
 

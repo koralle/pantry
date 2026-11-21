@@ -1,16 +1,35 @@
 /**
  * @file use-list-keyboard.ts
  *
- * Input:    item ids, layout, navigate
- * Output:   selectedId + j/k・矢印・Enter・T の一覧キーボード操作
+ * Input:    item ids, layout, detailSearch, navigate
+ * Output:   selectedId + j/k・矢印・Enter・T・N・Escape・貼付の一覧キーボード操作
  * Position: 一覧画面のショートカット（spec: screens/list, shell ヒントバー）
  */
 
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import type { BookmarkDetailSearch } from "../../navigation/lib/bookmark-search";
+import { pastedUrl } from "../lib/pasted-url";
+
 const CARD_GRID_COLUMNS = 3;
 const DESKTOP_QUERY = "(min-width: 48em)";
+
+const getCardGridColumns = (): number => {
+  const grid = document.querySelector<HTMLElement>("[data-card-grid]");
+  if (grid !== null) {
+    const computed = window.getComputedStyle(grid);
+    // 非表示のグリッドは used value ではなく `repeat(auto-fill, ...)` のような
+    // 指定値を返すため、列数として数えられない。
+    if (computed.display !== "none") {
+      const templateColumns = computed.gridTemplateColumns.trim();
+      if (templateColumns !== "" && templateColumns !== "none") {
+        return Math.max(1, templateColumns.split(/\s+/u).length);
+      }
+    }
+  }
+  return window.matchMedia(DESKTOP_QUERY).matches ? CARD_GRID_COLUMNS : 1;
+};
 
 const isEditableTarget = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
@@ -48,11 +67,13 @@ export const useListKeyboard = ({
   ids,
   cards,
   identity,
+  detailSearch,
 }: {
   readonly ids: readonly string[];
   readonly cards: boolean;
   /** 一覧条件が変わったら選択をリセットするための同一性キー */
   readonly identity: string;
+  readonly detailSearch?: BookmarkDetailSearch | undefined;
 }): { selectedId: string | undefined } => {
   const navigate = useNavigate();
   const [selection, setSelection] = useState({ identity, index: -1 });
@@ -69,6 +90,23 @@ export const useListKeyboard = ({
         return;
       }
       const key = normalizeKey(event.key);
+
+      if (key === "Escape") {
+        if (index !== -1) {
+          event.preventDefault();
+          setSelection({ identity, index: -1 });
+        }
+        return;
+      }
+
+      if (key === "n") {
+        event.preventDefault();
+        void navigate({
+          search: detailSearch ?? {},
+          to: "/bookmarks/quick",
+        });
+        return;
+      }
 
       if (key === "t") {
         const firstTag = document.querySelector<HTMLElement>("[data-rail-tag]");
@@ -91,10 +129,7 @@ export const useListKeyboard = ({
         return;
       }
 
-      const column =
-        cards && window.matchMedia(DESKTOP_QUERY).matches
-          ? CARD_GRID_COLUMNS
-          : 1;
+      const column = cards ? getCardGridColumns() : 1;
       const delta = cards
         ? {
             ArrowDown: column,
@@ -113,11 +148,28 @@ export const useListKeyboard = ({
       setSelection({ identity, index: clampIndex(index, delta, ids.length) });
     };
 
+    const onPaste = (event: ClipboardEvent) => {
+      if (isEditableTarget(event.target) || isShortcutBlocked(event.target)) {
+        return;
+      }
+      const url = pastedUrl(event.clipboardData?.getData("text") ?? "");
+      if (url === null) {
+        return;
+      }
+      event.preventDefault();
+      void navigate({
+        search: { ...detailSearch, url },
+        to: "/bookmarks/quick",
+      });
+    };
+
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("paste", onPaste);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("paste", onPaste);
     };
-  }, [cards, identity, ids.length, index, navigate, selectedId]);
+  }, [cards, detailSearch, identity, ids.length, index, navigate, selectedId]);
 
   useEffect(() => {
     if (selectedId === undefined) {

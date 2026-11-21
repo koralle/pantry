@@ -8,6 +8,7 @@ import {
   fieldErr,
   fieldGroup,
   flabel,
+  flabelReq,
   inputBox,
   inputBoxField,
   inputBoxIcon,
@@ -79,7 +80,7 @@ export const BookmarkFormNoteField = ({
         />
       </div>
       {noteError === undefined ? null : (
-        <p id={note.errorId} className={fieldErr}>
+        <p id={note.errorId} className={fieldErr} role="alert">
           <CircleAlert size={12} aria-hidden /> {noteError}
         </p>
       )}
@@ -112,6 +113,9 @@ export const BookmarkFormFields = ({
       <div className={fieldGroup}>
         <label className={flabel} htmlFor={fields.url.id}>
           URL
+          <span aria-hidden="true" className={flabelReq}>
+            *
+          </span>
         </label>
         <div className={inputRow}>
           <div className={inputBox({ invalid: urlError !== undefined })}>
@@ -121,9 +125,12 @@ export const BookmarkFormFields = ({
             <Input
               {...getInputProps(fields.url, { type: "url" })}
               className={inputBoxField}
+              autoCapitalize="none"
               autoComplete="url"
+              enterKeyHint="next"
               placeholder="https://example.com/article"
               required
+              spellCheck={false}
               aria-invalid={urlError !== undefined}
               aria-describedby={
                 urlError === undefined ? undefined : fields.url.errorId
@@ -145,7 +152,7 @@ export const BookmarkFormFields = ({
           </StyledButton>
         </div>
         {urlError === undefined ? null : (
-          <p id={fields.url.errorId} className={fieldErr}>
+          <p id={fields.url.errorId} className={fieldErr} role="alert">
             <CircleAlert size={12} aria-hidden /> {urlError}
           </p>
         )}
@@ -154,12 +161,16 @@ export const BookmarkFormFields = ({
       <div className={fieldGroup}>
         <label className={flabel} htmlFor={fields.title.id}>
           タイトル
+          <span aria-hidden="true" className={flabelReq}>
+            *
+          </span>
         </label>
         <div className={inputBox({ invalid: titleError !== undefined })}>
           <Input
             {...getInputProps(fields.title, { type: "text" })}
             className={inputBoxField}
             autoComplete="off"
+            enterKeyHint="next"
             placeholder="タイトル（URLから自動取得）"
             required
             aria-invalid={titleError !== undefined}
@@ -172,7 +183,7 @@ export const BookmarkFormFields = ({
           />
         </div>
         {titleError === undefined ? null : (
-          <p id={fields.title.errorId} className={fieldErr}>
+          <p id={fields.title.errorId} className={fieldErr} role="alert">
             <CircleAlert size={12} aria-hidden /> {titleError}
           </p>
         )}

@@ -1,8 +1,8 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { parseWithValibot } from "@conform-to/valibot";
 import type { Result } from "@pantry/utils/result";
-import { CircleAlert, Lock, LogIn, Mail } from "lucide-react";
-import { startTransition, useActionState } from "react";
+import { CircleAlert, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import { startTransition, useActionState, useState } from "react";
 import { cx } from "styled-system/css";
 
 import { StyledButton } from "../../../../shared/components/styled-button";
@@ -19,7 +19,14 @@ import { srOnly } from "../../../../shared/styles/sr-only";
 import type { SignInError } from "../../lib/sign-in-error";
 import { signInSchema } from "../../lib/sign-in-schema";
 import type { SignInSchema } from "../../lib/sign-in-schema";
-import { signInForm, workbenchFields, workbenchForm } from "./styles";
+import {
+  passwordInput,
+  passwordToggle,
+  passwordWrap,
+  signInForm,
+  workbenchFields,
+  workbenchForm,
+} from "./styles";
 
 type EmailSignInAction = (
   credentials: SignInSchema
@@ -37,9 +44,23 @@ const signInErrorMessage = (error: SignInError): string => {
   return "サインインに失敗しました。入力内容を確認してください";
 };
 
+const FieldErrorLine = ({
+  id,
+  message,
+}: {
+  readonly id: string;
+  readonly message: string | null | undefined;
+}) =>
+  message ? (
+    <p className={fieldError} id={id} role="alert">
+      <CircleAlert aria-hidden size={12} /> {message}
+    </p>
+  ) : null;
+
 export const SignInWithEmailAndPasswordForm = ({
   signInAction,
 }: SignInWithEmailAndPasswordFormProps) => {
+  const [showPassword, setShowPassword] = useState(false);
   const [signInError, throwError, isPending] = useActionState(
     async (_previous: SignInError | null, formData: FormData) => {
       const submission = parseWithValibot(formData, {
@@ -96,59 +117,84 @@ export const SignInWithEmailAndPasswordForm = ({
       {...getFormProps(form)}
       action={throwError}
     >
-      {signInError === null || signInError === undefined ? null : (
-        <div className={formSummary} role="alert" aria-live="polite">
+      {signInError ? (
+        <div aria-live="polite" className={formSummary} role="alert">
           <CircleAlert aria-hidden className={formSummaryIcon} size={14} />
           <p className={formSummaryText}>{signInErrorMessage(signInError)}</p>
         </div>
-      )}
+      ) : null}
 
       <fieldset className={workbenchFields} disabled={isPending}>
         <legend className={srOnly}>サインイン</legend>
 
         <div className={field}>
           <StyledLabel htmlFor={fields.email.id}>
-            <Mail size={16} aria-hidden />
+            <Mail aria-hidden size={15} />
             メール
           </StyledLabel>
 
           <StyledInput
             {...getInputProps(fields.email, { type: "email" })}
+            aria-describedby={emailError ? fields.email.errorId : undefined}
+            aria-invalid={Boolean(emailError)}
+            autoCapitalize="none"
             autoComplete="email"
+            enterKeyHint="next"
             placeholder="you@example.com"
             required
-            aria-invalid={emailError !== null && emailError !== undefined}
+            spellCheck={false}
           />
-          {emailError === null || emailError === undefined ? null : (
-            <p className={fieldError}>
-              <CircleAlert size={12} aria-hidden /> {emailError}
-            </p>
-          )}
+          <FieldErrorLine id={fields.email.errorId} message={emailError} />
         </div>
 
         <div className={field}>
           <StyledLabel htmlFor={fields.password.id}>
-            <Lock size={16} aria-hidden />
+            <Lock aria-hidden size={15} />
             パスワード
           </StyledLabel>
 
-          <StyledInput
-            {...getInputProps(fields.password, { type: "password" })}
-            autoComplete="current-password"
-            placeholder="••••••••"
-            required
-            aria-invalid={passwordError !== null && passwordError !== undefined}
+          <div className={passwordWrap}>
+            <StyledInput
+              {...getInputProps(fields.password, {
+                type: showPassword ? "text" : "password",
+              })}
+              aria-describedby={
+                passwordError ? fields.password.errorId : undefined
+              }
+              aria-invalid={Boolean(passwordError)}
+              autoComplete="current-password"
+              className={passwordInput}
+              enterKeyHint="done"
+              placeholder="••••••••"
+              required
+            />
+            <button
+              aria-label={
+                showPassword ? "パスワードを隠す" : "パスワードを表示"
+              }
+              aria-pressed={showPassword}
+              className={passwordToggle}
+              onClick={() => {
+                setShowPassword((prev) => !prev);
+              }}
+              type="button"
+            >
+              {showPassword ? (
+                <EyeOff aria-hidden size={16} />
+              ) : (
+                <Eye aria-hidden size={16} />
+              )}
+            </button>
+          </div>
+          <FieldErrorLine
+            id={fields.password.errorId}
+            message={passwordError}
           />
-          {passwordError === null || passwordError === undefined ? null : (
-            <p className={fieldError}>
-              <CircleAlert size={12} aria-hidden /> {passwordError}
-            </p>
-          )}
         </div>
       </fieldset>
 
-      <StyledButton type="submit" isDisabled={isPending}>
-        <LogIn size={16} aria-hidden />
+      <StyledButton isDisabled={isPending} type="submit">
+        <LogIn aria-hidden size={16} />
         {isPending ? "サインイン中..." : "サインイン"}
       </StyledButton>
     </form>
